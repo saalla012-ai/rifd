@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, X, Moon, Sun, Sparkles } from "lucide-react";
+import { Menu, X, Moon, Sun, Sparkles, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -16,6 +17,8 @@ const NAV = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { theme, toggle } = useTheme();
+  const { user, loading } = useAuth();
+  const isAuthed = !loading && !!user;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -53,12 +56,23 @@ export function SiteHeader() {
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
-            <Link to="/auth">تسجيل دخول</Link>
-          </Button>
-          <Button asChild size="sm" className="hidden md:inline-flex shadow-elegant">
-            <Link to="/onboarding">ابدأ مجاناً</Link>
-          </Button>
+          {isAuthed ? (
+            <Button asChild size="sm" className="hidden md:inline-flex shadow-elegant gap-2">
+              <Link to="/dashboard">
+                <LayoutDashboard className="h-4 w-4" />
+                لوحة التحكم
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+                <Link to="/auth">تسجيل دخول</Link>
+              </Button>
+              <Button asChild size="sm" className="hidden md:inline-flex shadow-elegant">
+                <Link to="/onboarding">ابدأ مجاناً</Link>
+              </Button>
+            </>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -91,12 +105,20 @@ export function SiteHeader() {
             </Link>
           ))}
           <div className="mt-2 flex gap-2 border-t border-border pt-3">
-            <Button asChild variant="outline" size="sm" className="flex-1">
-              <Link to="/auth" onClick={() => setOpen(false)}>تسجيل دخول</Link>
-            </Button>
-            <Button asChild size="sm" className="flex-1">
-              <Link to="/onboarding" onClick={() => setOpen(false)}>ابدأ مجاناً</Link>
-            </Button>
+            {isAuthed ? (
+              <Button asChild size="sm" className="flex-1">
+                <Link to="/dashboard" onClick={() => setOpen(false)}>لوحة التحكم</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Link to="/auth" onClick={() => setOpen(false)}>تسجيل دخول</Link>
+                </Button>
+                <Button asChild size="sm" className="flex-1">
+                  <Link to="/onboarding" onClick={() => setOpen(false)}>ابدأ مجاناً</Link>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
       </div>
