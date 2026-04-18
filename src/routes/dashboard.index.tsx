@@ -61,10 +61,12 @@ function DashboardPage() {
         supabase
           .from("generations")
           .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
           .eq("is_favorite", true),
         supabase
           .from("generations")
           .select("id, type, prompt, created_at, metadata")
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(5),
       ]);
