@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VsChatgptRouteImport } from './routes/vs-chatgpt'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -23,6 +24,8 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalRefundRouteImport } from './routes/legal.refund'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as HooksExpiringSubscriptionsRouteImport } from './routes/hooks/expiring-subscriptions'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
 import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templates'
 import { Route as DashboardStoreProfileRouteImport } from './routes/dashboard.store-profile'
@@ -38,12 +41,21 @@ import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiInvoiceRequestIdRouteImport } from './routes/api.invoice.$requestId'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
   path: '/vs-chatgpt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -109,6 +121,17 @@ const LegalRefundRoute = LegalRefundRouteImport.update({
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HooksExpiringSubscriptionsRoute =
+  HooksExpiringSubscriptionsRouteImport.update({
+    id: '/hooks/expiring-subscriptions',
+    path: '/hooks/expiring-subscriptions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardUsageRoute = DashboardUsageRouteImport.update({
@@ -187,11 +210,34 @@ const DashboardBillingIndexRoute = DashboardBillingIndexRouteImport.update({
   path: '/billing/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInvoiceRequestIdRoute = ApiInvoiceRequestIdRouteImport.update({
   id: '/api/invoice/$requestId',
   path: '/api/invoice/$requestId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DashboardBillingConfirmRequestIdRoute =
   DashboardBillingConfirmRequestIdRouteImport.update({
     id: '/billing/confirm/$requestId',
@@ -209,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -224,13 +271,19 @@ export interface FileRoutesByFullPath {
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -241,6 +294,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -256,13 +310,19 @@ export interface FileRoutesByTo {
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -275,6 +335,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -290,13 +351,19 @@ export interface FileRoutesById {
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -310,6 +377,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
+    | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -325,13 +393,19 @@ export interface FileRouteTypes {
     | '/dashboard/store-profile'
     | '/dashboard/templates'
     | '/dashboard/usage'
+    | '/email/unsubscribe'
+    | '/hooks/expiring-subscriptions'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard/'
     | '/api/invoice/$requestId'
+    | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
+    | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -342,6 +416,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
+    | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -357,13 +432,19 @@ export interface FileRouteTypes {
     | '/dashboard/store-profile'
     | '/dashboard/templates'
     | '/dashboard/usage'
+    | '/email/unsubscribe'
+    | '/hooks/expiring-subscriptions'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard'
     | '/api/invoice/$requestId'
+    | '/lovable/email/suppression'
     | '/dashboard/billing'
     | '/dashboard/billing/confirm/$requestId'
+    | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
@@ -375,6 +456,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
+    | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -390,13 +472,19 @@ export interface FileRouteTypes {
     | '/dashboard/store-profile'
     | '/dashboard/templates'
     | '/dashboard/usage'
+    | '/email/unsubscribe'
+    | '/hooks/expiring-subscriptions'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard/'
     | '/api/invoice/$requestId'
+    | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
+    | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -409,6 +497,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   VsChatgptRoute: typeof VsChatgptRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
@@ -416,10 +505,16 @@ export interface RootRouteChildren {
   ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
   ApiTelegramDiscoverChatsRoute: typeof ApiTelegramDiscoverChatsRoute
   ApiTelegramSetChatIdRoute: typeof ApiTelegramSetChatIdRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  HooksExpiringSubscriptionsRoute: typeof HooksExpiringSubscriptionsRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
   ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -429,6 +524,13 @@ declare module '@tanstack/react-router' {
       path: '/vs-chatgpt'
       fullPath: '/vs-chatgpt'
       preLoaderRoute: typeof VsChatgptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -520,6 +622,20 @@ declare module '@tanstack/react-router' {
       path: '/legal/privacy'
       fullPath: '/legal/privacy'
       preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hooks/expiring-subscriptions': {
+      id: '/hooks/expiring-subscriptions'
+      path: '/hooks/expiring-subscriptions'
+      fullPath: '/hooks/expiring-subscriptions'
+      preLoaderRoute: typeof HooksExpiringSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/usage': {
@@ -627,11 +743,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/invoice/$requestId': {
       id: '/api/invoice/$requestId'
       path: '/api/invoice/$requestId'
       fullPath: '/api/invoice/$requestId'
       preLoaderRoute: typeof ApiInvoiceRequestIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/billing/confirm/$requestId': {
@@ -686,6 +830,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   VsChatgptRoute: VsChatgptRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
@@ -693,10 +838,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,
   ApiTelegramDiscoverChatsRoute: ApiTelegramDiscoverChatsRoute,
   ApiTelegramSetChatIdRoute: ApiTelegramSetChatIdRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  HooksExpiringSubscriptionsRoute: HooksExpiringSubscriptionsRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
   ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
