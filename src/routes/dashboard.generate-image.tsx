@@ -10,6 +10,7 @@ import { IMAGE_PROMPTS } from "@/lib/prompts-data";
 import { cn } from "@/lib/utils";
 import { generateImage } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
+import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 
 type ImgSearch = { template?: string };
 
@@ -32,6 +33,7 @@ function GenerateImagePage() {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
   const router = useRouter();
 
   const template = IMAGE_PROMPTS.find((p) => p.id === templateId) ?? IMAGE_PROMPTS[0];
@@ -52,7 +54,12 @@ function GenerateImagePage() {
       toast.success("تم توليد الصورة ✨");
       router.invalidate();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "خطأ في التوليد");
+      const msg = e instanceof Error ? e.message : "خطأ في التوليد";
+      if (isQuotaError(msg)) {
+        setQuotaDialog({ open: true, reason: msg });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -162,6 +169,13 @@ function GenerateImagePage() {
           </div>
         </div>
       </div>
+
+      <QuotaExceededDialog
+        open={quotaDialog.open}
+        onOpenChange={(v) => setQuotaDialog((s) => ({ ...s, open: v }))}
+        kind="صورة"
+        reason={quotaDialog.reason}
+      />
     </DashboardShell>
   );
 }
