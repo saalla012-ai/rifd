@@ -1,0 +1,105 @@
+import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Menu, X, Moon, Sun, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/hooks/use-theme";
+import { cn } from "@/lib/utils";
+
+const NAV = [
+  { to: "/", label: "الرئيسية" },
+  { to: "/library", label: "المكتبة" },
+  { to: "/vs-chatgpt", label: "vs ChatGPT" },
+  { to: "/pricing", label: "الأسعار" },
+  { to: "/about", label: "من نحن" },
+] as const;
+
+export function SiteHeader() {
+  const [open, setOpen] = useState(false);
+  const { theme, toggle } = useTheme();
+
+  return (
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        <Link to="/" className="flex items-center gap-2 font-bold">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary text-primary-foreground shadow-elegant">
+            <Sparkles className="h-5 w-5" />
+          </span>
+          <span className="text-lg">
+            رِفد <span className="text-xs font-medium text-muted-foreground">للتقنية</span>
+          </span>
+        </Link>
+
+        <nav className="hidden items-center gap-1 md:flex">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              activeProps={{ className: "bg-secondary text-foreground" }}
+              activeOptions={{ exact: item.to === "/" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle}
+            aria-label="تبديل الوضع"
+            className="hidden sm:inline-flex"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+            <Link to="/auth">تسجيل دخول</Link>
+          </Button>
+          <Button asChild size="sm" className="hidden md:inline-flex shadow-elegant">
+            <Link to="/onboarding">ابدأ مجاناً</Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="القائمة"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          "border-t border-border md:hidden",
+          open ? "block" : "hidden"
+        )}
+      >
+        <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => setOpen(false)}
+              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+              activeProps={{ className: "bg-secondary text-foreground" }}
+              activeOptions={{ exact: item.to === "/" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="mt-2 flex gap-2 border-t border-border pt-3">
+            <Button asChild variant="outline" size="sm" className="flex-1">
+              <Link to="/auth" onClick={() => setOpen(false)}>تسجيل دخول</Link>
+            </Button>
+            <Button asChild size="sm" className="flex-1">
+              <Link to="/onboarding" onClick={() => setOpen(false)}>ابدأ مجاناً</Link>
+            </Button>
+          </div>
+        </nav>
+      </div>
+    </header>
+  );
+}
