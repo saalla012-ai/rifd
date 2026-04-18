@@ -601,10 +601,56 @@ function RequestCard({
   const [adminNotes, setAdminNotes] = useState(request.admin_notes ?? "");
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const normalizedWa = normalizeSaudiPhone(request.whatsapp);
   const waUrl = `https://wa.me/${normalizedWa ?? request.whatsapp.replace(/[^\d]/g, "")}`;
   const hasReceipt = Boolean(request.receipt_path);
   const isPdf = request.receipt_path?.toLowerCase().endsWith(".pdf");
+
+  async function downloadInvoice() {
+    setDownloadingInvoice(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) {
+        toast.error("الجلسة منتهية، أعد تسجيل الدخول");
+        return;
+      }
+      const res = await fetch(`/api/invoice/${request.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        let msg = `فشل التنزيل (${res.status})`;
+        try {
+          const j = await res.json();
+          if (j?.error) msg = `فشل: ${j.error}`;
+        } catch {
+          // ignore
+        }
+        toast.error(msg);
+        return;
+      }
+      const blob = await res.blob();
+      // اسم الملف من Content-Disposition إن وُجد، وإلا اسم افتراضي
+      const cd = res.headers.get("content-disposition") ?? "";
+      const match = cd.match(/filename="?([^"]+)"?/i);
+      const filename = match?.[1] ?? `invoice-${request.id.slice(0, 8)}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("تم تنزيل الفاتورة ✅");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  }
+
 
   async function loadReceipt() {
     if (!request.receipt_path || receiptUrl) return;
