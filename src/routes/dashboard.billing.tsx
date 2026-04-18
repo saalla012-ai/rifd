@@ -357,6 +357,11 @@ function BillingPage() {
                     </span>
                   </div>
                 </div>
+                <div className="mt-1 text-[11px] font-bold text-primary">
+                  {plan === "pro"
+                    ? "≈ 2.6 ر.س يومياً • أرخص من فنجان قهوة ☕"
+                    : "≈ 39.8 ر.س لكل متجر (5 ملفات) • يعادل موظف بـ4,000 ر.س"}
+                </div>
                 <div className="mt-1 text-[11px] font-medium text-warning">
                   ⚠️ سيرتفع لـ {futurePrice} ر.س بعد اكتمال 1000 عضو
                 </div>
