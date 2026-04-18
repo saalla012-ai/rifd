@@ -306,6 +306,13 @@ function ConfirmRequestPage() {
                   onCopy={() => copyToClipboard(bankHolder, "اسم المستفيد")}
                 />
                 <BankRow
+                  label="رقم الحساب"
+                  value={bankAccountNumber}
+                  copyable
+                  ltr
+                  onCopy={() => copyToClipboard(bankAccountNumber, "رقم الحساب")}
+                />
+                <BankRow
                   label="رقم الآيبان (IBAN)"
                   value={bankIban}
                   copyable
