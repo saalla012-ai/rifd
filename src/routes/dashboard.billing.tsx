@@ -206,8 +206,8 @@ function BillingPage() {
   }
 
   const isPaidUser = profile?.plan && profile.plan !== "free";
-  const proMonthlyDiscounted = applyDiscount(PLAN_PRICES.pro.monthly);
-  const businessMonthlyDiscounted = applyDiscount(PLAN_PRICES.business.monthly);
+  const proFutureMonthly = priceAfterIncrease(PLAN_PRICES.pro.monthly);
+  const businessFutureMonthly = priceAfterIncrease(PLAN_PRICES.business.monthly);
 
   return (
     <DashboardShell>
@@ -283,12 +283,12 @@ function BillingPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pro">
-                      احترافي — {proMonthlyDiscounted} ر.س/شهر
-                      <span className="ml-1 text-xs text-muted-foreground line-through">{PLAN_PRICES.pro.monthly}</span>
+                      احترافي — {PLAN_PRICES.pro.monthly} ر.س/شهر
+                      <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {proFutureMonthly} لاحقاً)</span>
                     </SelectItem>
                     <SelectItem value="business">
-                      أعمال — {businessMonthlyDiscounted} ر.س/شهر
-                      <span className="ml-1 text-xs text-muted-foreground line-through">{PLAN_PRICES.business.monthly}</span>
+                      أعمال — {PLAN_PRICES.business.monthly} ر.س/شهر
+                      <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {businessFutureMonthly} لاحقاً)</span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -346,7 +346,7 @@ function BillingPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[10px] font-bold text-gold">
-                    خصم {discountPct}% للمؤسسين
+                    🔒 سعر المؤسسين — مجمّد مدى الحياة
                   </span>
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2">
@@ -356,12 +356,12 @@ function BillingPage() {
                       ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}
                     </span>
                   </div>
-                  <span className="text-sm text-muted-foreground line-through">
-                    {originalPrice} ر.س
-                  </span>
                 </div>
-                <div className="mt-1 text-[11px] font-medium text-success">
-                  ✓ سعرك ثابت مدى الحياة
+                <div className="mt-1 text-[11px] font-medium text-warning">
+                  ⚠️ سيرتفع لـ {futurePrice} ر.س بعد اكتمال 1000 عضو
+                </div>
+                <div className="mt-0.5 text-[11px] font-medium text-success">
+                  ✓ سعرك ثابت مدى الحياة — لن يتأثر بأي زيادة مستقبلية
                 </div>
               </div>
               <Button
@@ -397,7 +397,7 @@ function BillingPage() {
                 </span>
               </div>
               <h3 className="mt-3 text-xl font-extrabold">
-                خصم {discountPct}% — لأول 1000 عضو
+                احجز سعرك قبل الزيادة — أول 1000 عضو
               </h3>
 
               <div className="mt-5 rounded-xl bg-card/50 p-4 backdrop-blur">
@@ -411,13 +411,13 @@ function BillingPage() {
                 </div>
                 <Progress value={seatsPct} className="mt-2 h-2" />
                 <p className="mt-2 text-xs text-muted-foreground">
-                  البرنامج محدود بـ{seatsTotal.toLocaleString("ar-SA")} عضو فقط بهذا السعر
+                  بعد اكتمال {seatsTotal.toLocaleString("ar-SA")} عضو سترتفع الأسعار {increasePct}%
                 </p>
               </div>
 
               <ul className="mt-5 space-y-2.5 text-sm">
                 {[
-                  `🔥 خصم ${discountPct}% ثابت مدى الحياة (لن يتغير أبداً)`,
+                  `🔒 سعرك مجمّد مدى الحياة — لن يرتفع أبداً حتى لو ارتفعت الأسعار`,
                   "💬 دعم مباشر من المؤسس على مدار الساعة 24/7",
                   "⚡ تأكيد فوري للطلب — بدون قوائم انتظار",
                   "🎯 تأثيرك على خارطة الطريق (تقترح ميزات نطورها)",
