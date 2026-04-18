@@ -12,7 +12,7 @@ export const Route = createFileRoute("/dashboard/usage")({
 });
 
 const LIMITS = {
-  free: { text: 5, image: 0 },
+  free: { text: 5, image: 2 },
   pro: { text: 1000, image: 60 },
   business: { text: 5000, image: 300 },
 };
@@ -74,9 +74,7 @@ function UsagePage() {
             <span>{usage?.image_count ?? 0} / {limits.image}</span>
           </div>
           <Progress value={imgPct} className="mt-3" />
-          <p className="mt-2 text-xs text-muted-foreground">
-            {limits.image === 0 ? "متاحة في الباقة الاحترافية فقط" : "يتجدد في 1 من الشهر القادم"}
-          </p>
+          <p className="mt-2 text-xs text-muted-foreground">يتجدد بداية الشهر القادم</p>
         </div>
       </div>
     </DashboardShell>

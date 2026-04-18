@@ -22,7 +22,7 @@ import { buildTextSystemPrompt, buildImagePrompt, type StoreContext } from "./pr
 type DbClient = SupabaseClient<Database>;
 
 const PLAN_LIMITS: Record<string, { text: number; image: number }> = {
-  free: { text: 5, image: 0 },
+  free: { text: 5, image: 2 },
   pro: { text: 1000, image: 60 },
   business: { text: 5000, image: 300 },
 };
@@ -167,9 +167,6 @@ export const generateImage = createServerFn({ method: "POST" })
     const plan = (profile?.plan ?? "free") as keyof typeof PLAN_LIMITS;
     const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
     const used = usage?.image_count ?? 0;
-    if (limits.image === 0) {
-      throw new Error("توليد الصور متاح في الباقة الاحترافية فقط. رقّ باقتك.");
-    }
     if (used >= limits.image) {
       throw new Error(
         `وصلت حدّ صور باقتك (${limits.image} صورة شهرياً). رقّ باقتك للاستمرار.`
