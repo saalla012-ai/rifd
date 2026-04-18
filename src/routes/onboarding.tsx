@@ -57,21 +57,25 @@ function OnboardingPage() {
   return (
     <MarketingLayout>
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <div className="mb-6 flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">الخطوة {step} من 4</span>
-          <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">تخطّي</Link>
-        </div>
-        <div className="mb-8 flex gap-1.5">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className={cn(
-                "h-1.5 flex-1 rounded-full transition-colors",
-                i <= step ? "bg-primary" : "bg-secondary"
-              )}
-            />
-          ))}
-        </div>
+        {step <= 4 && (
+          <>
+            <div className="mb-6 flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">الخطوة {step} من 4</span>
+              <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">تخطّي</Link>
+            </div>
+            <div className="mb-8 flex gap-1.5">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-1.5 flex-1 rounded-full transition-colors",
+                    i <= step ? "bg-primary" : "bg-secondary"
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="rounded-2xl border border-border bg-card p-7 shadow-elegant">
           {step === 1 && (

@@ -171,8 +171,9 @@ function LibraryPage() {
                         </span>
                       )}
                       {!p.freeTier && (
-                        <span className="inline-flex items-center gap-0.5 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                          <Lock className="h-2.5 w-2.5" /> Pro
+                        <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                          <Lock className="h-2.5 w-2.5" />
+                          <span>Pro</span>
                         </span>
                       )}
                     </div>
