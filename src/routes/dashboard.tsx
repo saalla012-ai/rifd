@@ -1,26 +1,97 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wand2, Image as ImageIcon, Sparkles, TrendingUp, Clock, Star } from "lucide-react";
+import { Wand2, Image as ImageIcon, Sparkles, TrendingUp, Clock, Star, FileText } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "لوحة التحكم — رِفد" }] }),
   component: DashboardPage,
 });
 
-const RECENT = [
-  { title: "منشور إنستقرام لإطلاق العطر", time: "قبل ساعة", type: "نص" },
-  { title: "بوستر جمعة بيضاء", time: "قبل 3 ساعات", type: "صورة" },
-  { title: "وصف منتج عبايات", time: "أمس", type: "نص" },
-  { title: "إعلان ميتا", time: "أمس", type: "نص" },
-];
+const LIMITS = {
+  free: { text: 5, image: 0, label: "مجاني" },
+  pro: { text: 1000, image: 60, label: "احترافي" },
+  business: { text: 5000, image: 300, label: "أعمال" },
+};
+
+function currentMonth() {
+  const d = new Date();
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+type RecentItem = {
+  id: string;
+  type: "text" | "image" | "image_enhance";
+  prompt: string;
+  created_at: string;
+  metadata: { template_title?: string } | null;
+};
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "الآن";
+  if (m < 60) return `قبل ${m} د`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `قبل ${h} س`;
+  const d = Math.floor(h / 24);
+  return `قبل ${d} يوم`;
+}
 
 function DashboardPage() {
+  const { user, profile } = useAuth();
+  const [stats, setStats] = useState<{ text: number; image: number; favs: number } | null>(null);
+  const [recent, setRecent] = useState<RecentItem[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const month = currentMonth();
+      const [usageRes, favsRes, recentRes] = await Promise.all([
+        supabase
+          .from("usage_logs")
+          .select("text_count, image_count")
+          .eq("user_id", user.id)
+          .eq("month", month)
+          .maybeSingle(),
+        supabase
+          .from("generations")
+          .select("id", { count: "exact", head: true })
+          .eq("is_favorite", true),
+        supabase
+          .from("generations")
+          .select("id, type, prompt, created_at, metadata")
+          .order("created_at", { ascending: false })
+          .limit(5),
+      ]);
+      setStats({
+        text: usageRes.data?.text_count ?? 0,
+        image: usageRes.data?.image_count ?? 0,
+        favs: favsRes.count ?? 0,
+      });
+      setRecent((recentRes.data as RecentItem[] | null) ?? []);
+    })();
+  }, [user]);
+
+  const plan = (profile?.plan ?? "free") as keyof typeof LIMITS;
+  const limits = LIMITS[plan];
+
+  const profileFields = [
+    profile?.store_name, profile?.product_type, profile?.audience, profile?.tone, profile?.brand_color,
+  ];
+  const filled = profileFields.filter(Boolean).length;
+  const completionPct = Math.round((filled / profileFields.length) * 100);
+
   return (
     <DashboardShell>
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold">مرحباً 👋</h1>
+        <h1 className="text-2xl font-extrabold">
+          مرحباً {profile?.full_name ?? profile?.store_name ?? ""} 👋
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           هذي نظرة سريعة على نشاطك في رِفد
         </p>
@@ -28,10 +99,10 @@ function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "توليدات نصية", value: "23 / ∞", icon: Wand2, color: "text-primary" },
-          { label: "توليدات صور", value: "12 / 60", icon: ImageIcon, color: "text-gold" },
-          { label: "المفضلة", value: "8", icon: Star, color: "text-warning" },
-          { label: "الباقة", value: "احترافي", icon: Sparkles, color: "text-success" },
+          { label: "توليدات نصية (هذا الشهر)", value: `${stats?.text ?? 0} / ${limits.text}`, icon: Wand2, color: "text-primary" },
+          { label: "توليدات صور (هذا الشهر)", value: `${stats?.image ?? 0} / ${limits.image}`, icon: ImageIcon, color: "text-gold" },
+          { label: "المفضلة", value: `${stats?.favs ?? 0}`, icon: Star, color: "text-warning" },
+          { label: "الباقة", value: limits.label, icon: Sparkles, color: "text-success" },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-border bg-card p-4 shadow-soft">
             <div className="flex items-center justify-between">
@@ -48,12 +119,12 @@ function DashboardPage() {
           <h3 className="text-base font-bold">إجراءات سريعة ⚡</h3>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {[
-              { to: "/dashboard/generate-text", label: "📱 منشور إنستقرام" },
-              { to: "/dashboard/generate-text", label: "🛍️ وصف منتج" },
-              { to: "/dashboard/generate-image", label: "🎨 بوستر إعلاني" },
-              { to: "/dashboard/generate-image", label: "📸 تحسين صورة" },
-            ].map((q) => (
-              <Button key={q.label} asChild variant="outline" className="justify-start">
+              { to: "/dashboard/generate-text" as const, label: "📱 منشور إنستقرام" },
+              { to: "/dashboard/generate-text" as const, label: "🛍️ وصف منتج" },
+              { to: "/dashboard/generate-image" as const, label: "🎨 بوستر إعلاني" },
+              { to: "/dashboard/generate-image" as const, label: "📸 صورة منتج" },
+            ].map((q, i) => (
+              <Button key={i} asChild variant="outline" className="justify-start">
                 <Link to={q.to}>{q.label}</Link>
               </Button>
             ))}
@@ -62,8 +133,10 @@ function DashboardPage() {
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <h3 className="text-base font-bold">حصة الصور</h3>
-          <Progress value={20} className="mt-3" />
-          <p className="mt-2 text-xs text-muted-foreground">12 من 60 صورة هذا الشهر</p>
+          <Progress value={limits.image === 0 ? 0 : ((stats?.image ?? 0) / limits.image) * 100} className="mt-3" />
+          <p className="mt-2 text-xs text-muted-foreground">
+            {stats?.image ?? 0} من {limits.image} صورة هذا الشهر
+          </p>
           <Button asChild size="sm" variant="link" className="mt-2 h-auto p-0 text-primary">
             <Link to="/dashboard/usage">عرض التفاصيل ←</Link>
           </Button>
@@ -77,34 +150,44 @@ function DashboardPage() {
             <Link to="/dashboard/library">عرض الكل ←</Link>
           </Button>
         </div>
-        <ul className="mt-3 divide-y divide-border">
-          {RECENT.map((r, i) => (
-            <li key={i} className="flex items-center justify-between py-3 text-sm">
-              <span className="font-medium">{r.title}</span>
-              <span className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="rounded-full bg-secondary px-2 py-0.5">{r.type}</span>
-                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {r.time}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
+        {recent.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            ما عندك توليدات بعد. ابدأ من <Link to="/dashboard/generate-text" className="text-primary">توليد نص</Link>.
+          </p>
+        ) : (
+          <ul className="mt-3 divide-y divide-border">
+            {recent.map((r) => (
+              <li key={r.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                <span className="flex min-w-0 items-center gap-2">
+                  {r.type === "text" ? <FileText className="h-3 w-3 shrink-0 text-primary" /> : <ImageIcon className="h-3 w-3 shrink-0 text-gold" />}
+                  <span className="truncate font-medium">{r.metadata?.template_title ?? r.prompt.slice(0, 50)}</span>
+                </span>
+                <span className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {timeAgo(r.created_at)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="flex items-center gap-2 font-bold">
-              <TrendingUp className="h-4 w-4 text-primary" /> ملف متجرك مكتمل بنسبة 80%
-            </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              أكمل المعلومات للحصول على نتائج أكثر تخصصاً
-            </p>
+      {completionPct < 100 && (
+        <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="flex items-center gap-2 font-bold">
+                <TrendingUp className="h-4 w-4 text-primary" /> ملف متجرك مكتمل بنسبة {completionPct}%
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                أكمل المعلومات للحصول على نتائج أكثر تخصصاً
+              </p>
+            </div>
+            <Button asChild size="sm">
+              <Link to="/dashboard/store-profile">إكمال</Link>
+            </Button>
           </div>
-          <Button asChild size="sm">
-            <Link to="/dashboard/store-profile">إكمال</Link>
-          </Button>
         </div>
-      </div>
+      )}
     </DashboardShell>
   );
 }

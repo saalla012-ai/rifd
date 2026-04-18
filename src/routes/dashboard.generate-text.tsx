@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Wand2, Copy, Check, Loader2 } from "lucide-react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { Wand2, Copy, Check, Loader2, Star } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { TEXT_PROMPTS } from "@/lib/prompts-data";
-import { generateDemoResult } from "@/lib/demo-results";
+import { generateText } from "@/server/ai-functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "توليد نص — رِفد" }] }),
@@ -18,38 +19,80 @@ export const Route = createFileRoute("/dashboard/generate-text")({
 });
 
 function GenerateTextPage() {
-  const [prompt, setPrompt] = useState(TEXT_PROMPTS[0].id);
+  const [templateId, setTemplateId] = useState(TEXT_PROMPTS[0].id);
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
 
-  const generate = () => {
+  const template = TEXT_PROMPTS.find((p) => p.id === templateId) ?? TEXT_PROMPTS[0];
+
+  const generate = async () => {
+    if (!topic.trim()) {
+      toast.error("اكتب الموضوع/التفاصيل أولاً");
+      return;
+    }
     setLoading(true);
-    setTimeout(() => {
-      setResult(generateDemoResult({ storeName: topic || "متجرك", productType: "dropshipping", audience: "young" }));
+    setResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("سجّل الدخول أولاً");
+
+      const out = await generateText({
+        data: { prompt: topic, templateTitle: template.title, templateId: template.id },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      setResult(out.result);
+      setRemaining(out.remaining);
+      toast.success("تم التوليد ✨");
+      router.invalidate();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "خطأ في التوليد");
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
+  };
+
+  const copy = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(result);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
     <DashboardShell>
-      <h1 className="text-2xl font-extrabold">توليد نص</h1>
-      <p className="mt-1 text-sm text-muted-foreground">اختر قالب وكتب فكرتك — نحن نتكفّل بالباقي</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold">توليد نص</h1>
+          <p className="mt-1 text-sm text-muted-foreground">اختر قالب واكتب فكرتك — نحن نتكفّل بالباقي</p>
+        </div>
+        {remaining !== null && (
+          <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">
+            باقي {remaining} توليدة
+          </span>
+        )}
+      </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="space-y-4">
             <div>
               <Label>اختر قالباً</Label>
-              <Select value={prompt} onValueChange={setPrompt}>
+              <Select value={templateId} onValueChange={setTemplateId}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {TEXT_PROMPTS.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.badge && <Star className="ml-1 inline h-3 w-3 text-gold" />}
+                      {p.title}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="mt-1 text-xs text-muted-foreground">{template.description}</p>
             </div>
             <div>
               <Label htmlFor="topic">الموضوع / التفاصيل</Label>
@@ -57,9 +100,11 @@ function GenerateTextPage() {
                 id="topic"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="مثلاً: عرض جديد على عطر شرقي بسعر 199 ر.س"
+                placeholder="مثلاً: عرض جديد على عطر شرقي بسعر 199 ر.س لمناسبة اليوم الوطني"
                 className="mt-1 min-h-32"
+                maxLength={2000}
               />
+              <p className="mt-1 text-xs text-muted-foreground">{topic.length}/2000</p>
             </div>
             <Button onClick={generate} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري التوليد...</> : <><Wand2 className="h-4 w-4" /> ولّد النص</>}
@@ -72,7 +117,7 @@ function GenerateTextPage() {
             <h3 className="font-bold">النتيجة</h3>
             {result && (
               <button
-                onClick={() => { navigator.clipboard.writeText(result); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+                onClick={copy}
                 className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs"
               >
                 {copied ? <><Check className="h-3 w-3 text-success" /> تم</> : <><Copy className="h-3 w-3" /> نسخ</>}
@@ -86,6 +131,11 @@ function GenerateTextPage() {
               النتيجة بتظهر هنا
             </div>
           )}
+          <div className="mt-3 text-center">
+            <Link to="/dashboard/library" className="text-xs text-primary hover:underline">
+              شوف كل توليداتك في المكتبة ←
+            </Link>
+          </div>
         </div>
       </div>
     </DashboardShell>
