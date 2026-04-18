@@ -1,98 +1,86 @@
 
 
-## المراجعة الاحترافية النهائية قبل التنفيذ
+## الهدف
+إرسال إشعار تيليجرام تلقائي للأدمن (saalla012@gmail.com) فور إنشاء أي طلب اشتراك جديد، باستخدام موصّل **Telegram** عبر Lovable Connector Gateway (مجاني، بدون Twilio).
 
-### ما تم التحقق منه
-قرأت الملفات الحقيقية للتأكد من دقة الخطة:
-- `dashboard.billing.confirm.$requestId.tsx` (الموجود حالياً)
-- `dashboard.billing.tsx` (نموذج الاشتراك)
-- `dashboard.settings.tsx` (تحقق الواتساب الحالي)
-- `app_settings` يحتوي `whatsapp_number` و`bank_*` ✅
+## المعمارية
 
-### الاكتشافات الحرجة
+```text
+[المستخدم يضغط "تقديم الطلب"]
+        │
+        ▼
+[INSERT في subscription_requests]
+        │
+        ▼ (Database Trigger AFTER INSERT)
+[pg_net → POST إلى TanStack server route]
+        │
+        ▼
+[/api/notify-telegram-admin]
+   - يتحقق من secret header (HMAC)
+   - يقرأ تفاصيل الطلب من DB (admin client)
+   - يُنسّق رسالة عربية مع الخطة، الإيميل، واتساب، الاسم
+        │
+        ▼
+[Connector Gateway → Telegram sendMessage]
+        │
+        ▼
+[إشعار يصل تيليجرام الأدمن فوراً]
+```
 
-| # | الاكتشاف | التأثير على الخطة |
-|---|---------|-------------------|
-| 1 | `subscription_requests.whatsapp` موجود حالياً بصيغ مختلفة | الـHelper **يجب** أن يقبل أي صيغة قديمة عند العرض، ويُطبّع فقط عند الكتابة الجديدة |
-| 2 | `app_settings.whatsapp_number = '966582286215'` (E.164 بدون +) | معيار التخزين الموحّد = **E.164 بدون +** (نفس النمط الموجود) |
-| 3 | لا توجد مكتبة QR مثبتة | نضيف `qrcode.react` (≈12KB، client-only، آمنة) |
-| 4 | صفحة `confirm` الحالية فيها بالفعل: نسخ IBAN + رفع إيصال + تتبع حالة + Realtime | **لا نهدم** — نعيد ترتيب البطل والثانوي فقط |
-| 5 | `dashboard.billing.tsx` نموذجه بسيط (اسم متجر + واتساب + ملاحظات) ✅ | يحتاج فقط استبدال تحقق الواتساب |
-| 6 | لا حاجة لـmigration | كل الحقول موجودة |
+## الخطوات
 
-### القرار النهائي (مُحكم)
+### 1) ربط موصّل Telegram
+استدعاء `standard_connectors--connect` بـ `connector_id: telegram` لربط البوت. بعد الربط يتوفر `TELEGRAM_API_KEY` + `LOVABLE_API_KEY` كأسرار سيرفر.
 
-**سبب التحويل**: نص ثابت `رِفد للتقنية` (بدون رقم طلب، بدون أي إضافة) قابل للنسخ بزر واحد. رقم الطلب القصير `#A7F3` يُعرض **منفصلاً** للقراءة فقط (للأدمن لو سأل عنه).
+### 2) إضافة سرّين إضافيين
+- `TELEGRAM_ADMIN_CHAT_ID`: رقم Chat ID الخاص بك (سنطلبه عبر `add_secret`)
+- `NOTIFY_WEBHOOK_SECRET`: قيمة عشوائية للتحقق من أن الطلب يأتي فعلاً من DB trigger
 
-**تحقق الواتساب** — حل موحّد بثلاث دوال في `src/lib/phone.ts`:
-- `normalizeSaudiPhone(input)` → يطبّع لأي من الصيغ المقبولة إلى `9665XXXXXXXX`
-- `validateSaudiPhone(input)` → `boolean` بعد التطبيع: يطابق `/^9665\d{8}$/`
-- `formatSaudiPhoneDisplay(input)` → `+966 5X XXX XXXX` للعرض الجميل
+### 3) إنشاء Server Route
+ملف `src/routes/api.notify-telegram-admin.ts`:
+- يستقبل POST مع `{ request_id }` + header `x-webhook-secret`
+- يتحقق من `NOTIFY_WEBHOOK_SECRET`
+- يجلب الطلب عبر `supabaseAdmin` من `subscription_requests` + بيانات `profiles`
+- يُنسّق رسالة عربية مع emoji 🆕 وروابط سريعة (واتساب + لوحة الأدمن)
+- يستدعي `https://connector-gateway.lovable.dev/telegram/sendMessage` بـ `parse_mode: HTML`
 
-يقبل: `0512345678`, `512345678`, `+966512345678`, `00966512345678`, `966512345678`, مع/بدون مسافات وشرطات.
-يرفض: أقل/أكثر من المطلوب، يبدأ بغير 5، يحوي حروف.
+### 4) تفعيل extension `pg_net`
+عبر migration: `CREATE EXTENSION IF NOT EXISTS pg_net;`
 
----
+### 5) Database Trigger
+دالة `notify_admin_on_subscription_request()` + trigger `AFTER INSERT ON subscription_requests`:
+- تستخدم `net.http_post` لاستدعاء `/api/notify-telegram-admin` مع `request_id` + `x-webhook-secret`
+- لا تُفشل INSERT لو فشل الإشعار (try/catch)
 
-## الملفات
+### 6) صفحة اختبار سريع (اختيارية)
+زر صغير في `/admin/subscriptions` لإرسال إشعار تجريبي يدوياً للتأكد من عمل القناة.
 
-### جديد
-**`src/lib/phone.ts`** — Helper مع 3 دوال + Zod refinement جاهز للاستخدام
+## شكل الرسالة المتوقعة
 
-### تعديلات
+```text
+🆕 طلب اشتراك جديد
 
-**`src/routes/dashboard.billing.confirm.$requestId.tsx`** — إعادة هيكلة احترافية:
-1. شريط حالة رفيع أعلى الصفحة (بدلاً من stepper كبير)
-2. كرت "تفاصيل الطلب" مدمج: رقم الطلب `#A7F3` + الباقة + المبلغ شامل ضريبة 15%
-3. كرت "بيانات التحويل":
-   - البنك / المستفيد / IBAN [نسخ]
-   - **سبب التحويل**: box برتقالي بارز يحوي `رِفد للتقنية` + زر نسخ
-   - المبلغ النهائي (مع الضريبة) [نسخ]
-4. **QR code** للـIBAN (مكتبة `qrcode.react`) — وسط الصفحة
-5. **زر البطل الأخضر الكبير**: "✅ أكدت الدفع — تواصل عبر واتساب"
-   - يفتح `wa.me/{adminWhatsApp}` برسالة جاهزة:
-     ```
-     السلام عليكم،
-     أكدت تحويل {amount} ر.س
-     رقم الطلب: #{shortId}
-     الباقة: {planLabel} {cycleLabel}
-     ```
-6. زر واتساب ثانوي رمادي: "💬 محتاج مساعدة في الدفع؟"
-7. `<details>` مطوي أسفل: "ارفع إيصال التحويل (اختياري — لتسريع التفعيل)" — الكود الحالي يبقى كاملاً داخله
+الخطة: Pro (شهري)
+المتجر: متجر الأمل
+الإيميل: user@example.com
+واتساب: +966501234567
+طريقة الدفع: تحويل بنكي
+الحالة: pending
 
-**`src/routes/dashboard.billing.tsx`**:
-- استيراد `validateSaudiPhone` + `normalizeSaudiPhone`
-- استبدال أي تحقق يدوي للواتساب بالـHelper
-- تطبيع الرقم قبل `insert`
-- placeholder: `0512345678`، رسالة خطأ: "أدخل رقم سعودي صحيح يبدأ بـ 5"
+🔗 فتح لوحة الأدمن
+💬 محادثة العميل واتساب
+```
 
-**`src/routes/dashboard.settings.tsx`**:
-- استبدال `/^[0-9+\s-]{8,20}$/` بـ`validateSaudiPhone`
-- تطبيع قبل `update`
-- نفس placeholder ورسالة الخطأ
+## التفاصيل التقنية
 
-**`src/routes/onboarding.tsx`** (إن كان يحوي حقل واتساب — أتحقق وأطبّق نفس النمط)
+- **عدم تخزين Token في الكود**: كل القيم تُقرأ من `process.env` على السيرفر فقط
+- **حماية Endpoint**: header secret + RLS bypass فقط بعد التحقق
+- **Idempotency**: لا حاجة (INSERT مرة واحدة per request)
+- **عدم كسر INSERT عند فشل تيليجرام**: trigger يستخدم BEGIN/EXCEPTION/END
+- **Logs**: نطبع نتيجة استدعاء `sendMessage` للتشخيص عبر `stack_modern--server-function-logs`
 
-**`src/routes/admin.subscriptions.tsx`**:
-- عرض الواتساب بـ`formatSaudiPhoneDisplay` للقراءة فقط (الأرقام القديمة تظهر كما هي إن لم تطابق)
-- رابط واتساب الأدمن للعميل: `wa.me/{normalizedPhone}`
-
-### Dependency
-- `qrcode.react` (≈12KB)
-
-### بدون migration
-كل الحقول موجودة. لا تغييرات DB.
-
----
-
-## ضمانات الجودة
-- `npx tsc --noEmit` بعد التنفيذ
-- اختبار يدوي: أرقام بصيغ مختلفة (`0512345678`, `+966512345678`, `0612345678`-مرفوض, `05123`-مرفوض)
-- اختبار بصري على viewport الحالي 968px والموبايل 375px
-- التأكد من عمل QR + النسخ + رابط واتساب البطل
-- التأكد من عدم كسر تتبع Realtime ورفع الإيصال الاختياري
-
-## مخاطر مُدارة
-- **الأرقام القديمة في DB** قد لا تطابق التحقق الجديد → عند العرض نستخدم fallback يعرض الرقم كما هو إن فشل التطبيع. عند **الكتابة الجديدة فقط** نفرض التحقق الصارم.
-- **QR code**: يحوي IBAN فقط (نص). معظم تطبيقات البنوك السعودية تقرأ IBAN من نص. لا نعتمد معيار EMV (غير موحّد سعودياً).
+## ما أحتاجه منك قبل التنفيذ
+1. **Bot Token** من BotFather
+2. **Chat ID** الخاص بك (يفضّل التأكد عبر `getUpdates`)
+3. الموافقة على ربط موصّل Telegram
 
