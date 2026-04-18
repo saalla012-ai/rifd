@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { currentRiyadhMonth } from "@/lib/usage-month";
 
 export const Route = createFileRoute("/dashboard/usage")({
   head: () => ({ meta: [{ title: "الاستخدام — رِفد" }] }),
@@ -18,8 +19,7 @@ const LIMITS = {
 };
 
 function currentMonth() {
-  const d = new Date();
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  return currentRiyadhMonth();
 }
 
 function UsagePage() {
