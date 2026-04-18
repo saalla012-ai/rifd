@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          bank_account_holder: string | null
+          bank_iban: string | null
+          bank_name: string | null
+          founding_program_active: boolean
+          founding_total_seats: number
+          id: number
+          updated_at: string
+          whatsapp_number: string
+        }
+        Insert: {
+          bank_account_holder?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          founding_program_active?: boolean
+          founding_total_seats?: number
+          id?: number
+          updated_at?: string
+          whatsapp_number?: string
+        }
+        Update: {
+          bank_account_holder?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          founding_program_active?: boolean
+          founding_total_seats?: number
+          id?: number
+          updated_at?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           created_at: string
@@ -101,6 +134,60 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_requests: {
+        Row: {
+          activated_at: string | null
+          activated_until: string | null
+          admin_notes: string | null
+          billing_cycle: string
+          created_at: string
+          email: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          plan: Database["public"]["Enums"]["user_plan"]
+          status: Database["public"]["Enums"]["subscription_request_status"]
+          store_name: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_until?: string | null
+          admin_notes?: string | null
+          billing_cycle?: string
+          created_at?: string
+          email: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          plan: Database["public"]["Enums"]["user_plan"]
+          status?: Database["public"]["Enums"]["subscription_request_status"]
+          store_name?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp: string
+        }
+        Update: {
+          activated_at?: string | null
+          activated_until?: string | null
+          admin_notes?: string | null
+          billing_cycle?: string
+          created_at?: string
+          email?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          plan?: Database["public"]["Enums"]["user_plan"]
+          status?: Database["public"]["Enums"]["subscription_request_status"]
+          store_name?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       usage_logs: {
         Row: {
           id: string
@@ -165,6 +252,12 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user"
       generation_type: "text" | "image" | "image_enhance"
+      subscription_request_status:
+        | "pending"
+        | "contacted"
+        | "activated"
+        | "rejected"
+        | "expired"
       user_plan: "free" | "pro" | "business"
     }
     CompositeTypes: {
@@ -295,6 +388,13 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       generation_type: ["text", "image", "image_enhance"],
+      subscription_request_status: [
+        "pending",
+        "contacted",
+        "activated",
+        "rejected",
+        "expired",
+      ],
       user_plan: ["free", "pro", "business"],
     },
   },
