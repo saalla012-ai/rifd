@@ -209,7 +209,11 @@ function PricingPage() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-6 md:grid-cols-3">
             {PLANS.map((plan) => {
-              const price = yearly ? plan.price.yearly : plan.price.monthly;
+              const originalPrice = yearly ? plan.price.yearly : plan.price.monthly;
+              const isPaid = originalPrice > 0;
+              const price = isPaid
+                ? Math.round(originalPrice * (1 - discountPct / 100))
+                : 0;
               return (
                 <div
                   key={plan.id}
@@ -228,12 +232,22 @@ function PricingPage() {
                   <h3 className="text-xl font-bold">{plan.name}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
 
-                  <div className="mt-5 flex items-baseline gap-1">
+                  <div className="mt-5 flex items-baseline gap-2">
                     <span className="text-4xl font-extrabold">{price}</span>
                     <span className="text-sm text-muted-foreground">
                       ر.س / {yearly ? "سنوياً" : "شهرياً"}
                     </span>
+                    {isPaid && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        {originalPrice}
+                      </span>
+                    )}
                   </div>
+                  {isPaid && (
+                    <div className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-bold text-success">
+                      ⚡ خصم {discountPct}% للمؤسسين
+                    </div>
+                  )}
                   {yearly && plan.price.monthly > 0 && (
                     <p className="text-xs text-success">
                       توفر {plan.price.monthly * 12 - plan.price.yearly} ر.س سنوياً
