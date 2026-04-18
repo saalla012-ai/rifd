@@ -50,10 +50,10 @@ const PLAN_PRICES = {
   business: { monthly: 199, yearly: 1990 },
 } as const;
 
-const FOUNDING_DISCOUNT_PCT = 30;
+const FUTURE_INCREASE_PCT = 30;
 
-function applyDiscount(price: number) {
-  return Math.round(price * (1 - FOUNDING_DISCOUNT_PCT / 100));
+function priceAfterIncrease(price: number) {
+  return Math.round(price * (1 + FUTURE_INCREASE_PCT / 100));
 }
 
 const STATUS_META: Record<
@@ -139,10 +139,10 @@ function BillingPage() {
   const seatsLeft = Math.max(0, seatsTotal - seatsTaken);
   const seatsPct = (seatsTaken / seatsTotal) * 100;
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
-  const discountPct = settings?.founding_discount_pct ?? FOUNDING_DISCOUNT_PCT;
+  const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
 
-  const originalPrice = PLAN_PRICES[plan][billingCycle];
-  const price = Math.round(originalPrice * (1 - discountPct / 100));
+  const price = PLAN_PRICES[plan][billingCycle];
+  const futurePrice = Math.round(price * (1 + increasePct / 100));
   const planLabel = PLAN_LABELS[plan];
 
   const pendingRequest = useMemo(
@@ -156,7 +156,8 @@ function BillingPage() {
       "أرغب بالاشتراك في برنامج الأعضاء المؤسسين لرِفد",
       "",
       `📦 الباقة: ${planLabel} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
-      `💰 السعر بعد خصم ${discountPct}%: ${price} ر.س (بدلاً من ${originalPrice} ر.س)`,
+      `💰 سعر المؤسسين المجمّد: ${price} ر.س (سيرتفع لـ ${futurePrice} ر.س بعد اكتمال 1000 عضو)`,
+      `🔒 سعرك ثابت مدى الحياة لن يتغير`,
       storeName ? `🏪 المتجر: ${storeName}` : "",
       `📱 واتساب: ${whatsapp}`,
       `📧 البريد: ${user?.email ?? ""}`,
