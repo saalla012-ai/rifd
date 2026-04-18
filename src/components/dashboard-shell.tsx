@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -13,9 +13,11 @@ import {
   Sparkles,
   LogOut,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -27,6 +29,10 @@ const NAV = [
   { to: "/dashboard/usage", label: "الاستخدام", icon: BarChart3 },
   { to: "/dashboard/billing", label: "الفواتير", icon: CreditCard },
   { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
+] as const;
+
+const ADMIN_NAV = [
+  { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
 ] as const;
 
 export function DashboardShell({ children }: { children: ReactNode }) {
