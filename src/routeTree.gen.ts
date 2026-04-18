@@ -17,6 +17,16 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalRefundRouteImport } from './routes/legal.refund'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
+import { Route as DashboardStoreProfileRouteImport } from './routes/dashboard.store-profile'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library'
+import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
+import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
+import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
@@ -58,37 +68,117 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalRefundRoute = LegalRefundRouteImport.update({
+  id: '/legal/refund',
+  path: '/legal/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardUsageRoute = DashboardUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStoreProfileRoute = DashboardStoreProfileRouteImport.update({
+  id: '/store-profile',
+  path: '/store-profile',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLibraryRoute = DashboardLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardGenerateTextRoute = DashboardGenerateTextRouteImport.update({
+  id: '/generate-text',
+  path: '/generate-text',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardGenerateImageRoute = DashboardGenerateImageRouteImport.update({
+  id: '/generate-image',
+  path: '/generate-image',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBillingRoute = DashboardBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/generate-image': typeof DashboardGenerateImageRoute
+  '/dashboard/generate-text': typeof DashboardGenerateTextRoute
+  '/dashboard/library': typeof DashboardLibraryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refund': typeof LegalRefundRoute
+  '/legal/terms': typeof LegalTermsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/generate-image': typeof DashboardGenerateImageRoute
+  '/dashboard/generate-text': typeof DashboardGenerateTextRoute
+  '/dashboard/library': typeof DashboardLibraryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refund': typeof LegalRefundRoute
+  '/legal/terms': typeof LegalTermsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/generate-image': typeof DashboardGenerateImageRoute
+  '/dashboard/generate-text': typeof DashboardGenerateTextRoute
+  '/dashboard/library': typeof DashboardLibraryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/refund': typeof LegalRefundRoute
+  '/legal/terms': typeof LegalTermsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +191,16 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/vs-chatgpt'
+    | '/dashboard/billing'
+    | '/dashboard/generate-image'
+    | '/dashboard/generate-text'
+    | '/dashboard/library'
+    | '/dashboard/settings'
+    | '/dashboard/store-profile'
+    | '/dashboard/usage'
+    | '/legal/privacy'
+    | '/legal/refund'
+    | '/legal/terms'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +211,16 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/vs-chatgpt'
+    | '/dashboard/billing'
+    | '/dashboard/generate-image'
+    | '/dashboard/generate-text'
+    | '/dashboard/library'
+    | '/dashboard/settings'
+    | '/dashboard/store-profile'
+    | '/dashboard/usage'
+    | '/legal/privacy'
+    | '/legal/refund'
+    | '/legal/terms'
   id:
     | '__root__'
     | '/'
@@ -121,17 +231,30 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/vs-chatgpt'
+    | '/dashboard/billing'
+    | '/dashboard/generate-image'
+    | '/dashboard/generate-text'
+    | '/dashboard/library'
+    | '/dashboard/settings'
+    | '/dashboard/store-profile'
+    | '/dashboard/usage'
+    | '/legal/privacy'
+    | '/legal/refund'
+    | '/legal/terms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   LibraryRoute: typeof LibraryRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   VsChatgptRoute: typeof VsChatgptRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalRefundRoute: typeof LegalRefundRoute
+  LegalTermsRoute: typeof LegalTermsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,18 +315,115 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/refund': {
+      id: '/legal/refund'
+      path: '/legal/refund'
+      fullPath: '/legal/refund'
+      preLoaderRoute: typeof LegalRefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/usage': {
+      id: '/dashboard/usage'
+      path: '/usage'
+      fullPath: '/dashboard/usage'
+      preLoaderRoute: typeof DashboardUsageRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/store-profile': {
+      id: '/dashboard/store-profile'
+      path: '/store-profile'
+      fullPath: '/dashboard/store-profile'
+      preLoaderRoute: typeof DashboardStoreProfileRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/library': {
+      id: '/dashboard/library'
+      path: '/library'
+      fullPath: '/dashboard/library'
+      preLoaderRoute: typeof DashboardLibraryRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/generate-text': {
+      id: '/dashboard/generate-text'
+      path: '/generate-text'
+      fullPath: '/dashboard/generate-text'
+      preLoaderRoute: typeof DashboardGenerateTextRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/generate-image': {
+      id: '/dashboard/generate-image'
+      path: '/generate-image'
+      fullPath: '/dashboard/generate-image'
+      preLoaderRoute: typeof DashboardGenerateImageRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/billing': {
+      id: '/dashboard/billing'
+      path: '/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof DashboardBillingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
+
+interface DashboardRouteChildren {
+  DashboardBillingRoute: typeof DashboardBillingRoute
+  DashboardGenerateImageRoute: typeof DashboardGenerateImageRoute
+  DashboardGenerateTextRoute: typeof DashboardGenerateTextRoute
+  DashboardLibraryRoute: typeof DashboardLibraryRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardStoreProfileRoute: typeof DashboardStoreProfileRoute
+  DashboardUsageRoute: typeof DashboardUsageRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardBillingRoute: DashboardBillingRoute,
+  DashboardGenerateImageRoute: DashboardGenerateImageRoute,
+  DashboardGenerateTextRoute: DashboardGenerateTextRoute,
+  DashboardLibraryRoute: DashboardLibraryRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardStoreProfileRoute: DashboardStoreProfileRoute,
+  DashboardUsageRoute: DashboardUsageRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   LibraryRoute: LibraryRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   VsChatgptRoute: VsChatgptRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalRefundRoute: LegalRefundRoute,
+  LegalTermsRoute: LegalTermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
