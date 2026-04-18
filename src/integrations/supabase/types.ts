@@ -152,6 +152,8 @@ export type Database = {
           notes: string | null
           payment_method: string | null
           plan: Database["public"]["Enums"]["user_plan"]
+          receipt_path: string | null
+          receipt_uploaded_at: string | null
           status: Database["public"]["Enums"]["subscription_request_status"]
           store_name: string | null
           updated_at: string
@@ -169,6 +171,8 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           plan: Database["public"]["Enums"]["user_plan"]
+          receipt_path?: string | null
+          receipt_uploaded_at?: string | null
           status?: Database["public"]["Enums"]["subscription_request_status"]
           store_name?: string | null
           updated_at?: string
@@ -186,6 +190,8 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           plan?: Database["public"]["Enums"]["user_plan"]
+          receipt_path?: string | null
+          receipt_uploaded_at?: string | null
           status?: Database["public"]["Enums"]["subscription_request_status"]
           store_name?: string | null
           updated_at?: string
