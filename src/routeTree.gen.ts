@@ -27,6 +27,7 @@ import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library
 import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
+import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
@@ -118,6 +119,11 @@ const DashboardBillingRoute = DashboardBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => DashboardRoute,
 } as any)
+const ApiDemoGenerateRoute = ApiDemoGenerateRouteImport.update({
+  id: '/api/demo-generate',
+  path: '/api/demo-generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/vs-chatgpt'
+    | '/api/demo-generate'
     | '/dashboard/billing'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/vs-chatgpt'
+    | '/api/demo-generate'
     | '/dashboard/billing'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/vs-chatgpt'
+    | '/api/demo-generate'
     | '/dashboard/billing'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -252,6 +264,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   VsChatgptRoute: typeof VsChatgptRoute
+  ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/demo-generate': {
+      id: '/api/demo-generate'
+      path: '/api/demo-generate'
+      fullPath: '/api/demo-generate'
+      preLoaderRoute: typeof ApiDemoGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -421,6 +441,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   VsChatgptRoute: VsChatgptRoute,
+  ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
