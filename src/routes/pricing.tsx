@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Sparkles, ShieldCheck, Star, Crown, Users } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { TrustBadges } from "@/components/trust-badges";
+import { SubscribersCounter } from "@/components/subscribers-counter";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
@@ -114,21 +115,27 @@ function PricingPage() {
   const [yearly, setYearly] = useState(false);
   const { user } = useAuth();
   const [seatsLeft, setSeatsLeft] = useState<number | null>(null);
-  const [seatsTotal, setSeatsTotal] = useState<number>(50);
+  const [seatsTotal, setSeatsTotal] = useState<number>(1000);
+  const [discountPct, setDiscountPct] = useState<number>(30);
 
   useEffect(() => {
     void (async () => {
       const [settingsRes, takenRes] = await Promise.all([
-        supabase.from("app_settings").select("founding_total_seats").eq("id", 1).maybeSingle(),
+        supabase
+          .from("app_settings")
+          .select("founding_total_seats, founding_discount_pct")
+          .eq("id", 1)
+          .maybeSingle(),
         supabase
           .from("subscription_requests")
           .select("id", { count: "exact", head: true })
           .in("status", ["activated", "contacted"]),
       ]);
-      const total = settingsRes.data?.founding_total_seats ?? 50;
+      const total = settingsRes.data?.founding_total_seats ?? 1000;
       const taken = takenRes.count ?? 0;
       setSeatsTotal(total);
       setSeatsLeft(Math.max(0, total - taken));
+      setDiscountPct((settingsRes.data?.founding_discount_pct as number | undefined) ?? 30);
     })();
   }, []);
 
@@ -140,27 +147,34 @@ function PricingPage() {
         <div className="mx-auto max-w-3xl px-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
             <Crown className="h-3.5 w-3.5" />
-            برنامج الأعضاء المؤسسين — مفتوح حالياً
+            خصم {discountPct}% لأول 1000 عضو — ساري الآن
           </div>
           <h1 className="mt-4 text-3xl font-extrabold sm:text-5xl">
             ابدأ مجاناً، <span className="text-gradient-primary">ادفع لما تكبر</span>
           </h1>
           <p className="mt-3 text-muted-foreground">
-            بدون رسوم خفية، بدون التزام طويل، وضمان استرجاع 7 أيام كامل
+            تأكيد فوري • دعم 24/7 • ضمان استرجاع 7 أيام كامل
           </p>
+
+          {/* Live subscribers counter */}
+          <div className="mx-auto mt-5 max-w-md">
+            <SubscribersCounter />
+          </div>
 
           {/* Founding members seats counter */}
           {seatsLeft !== null && seatsLeft > 0 && (
-            <div className="mx-auto mt-6 max-w-md rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
+            <div className="mx-auto mt-4 max-w-md rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1.5 font-bold text-gold">
-                  <Users className="h-4 w-4" /> المقاعد المتبقية للمؤسسين
+                  <Users className="h-4 w-4" /> المقاعد المتبقية بخصم {discountPct}%
                 </span>
-                <span className="font-extrabold text-gold">{seatsLeft} / {seatsTotal}</span>
+                <span className="font-extrabold text-gold">
+                  {seatsLeft.toLocaleString("ar-SA")} / {seatsTotal.toLocaleString("ar-SA")}
+                </span>
               </div>
               <Progress value={((seatsTotal - seatsLeft) / seatsTotal) * 100} className="mt-2 h-2" />
               <p className="mt-2 text-xs text-muted-foreground">
-                السعر ثابت مدى الحياة لكل من ينضم في هذه المرحلة 🔒
+                السعر بخصم {discountPct}% ثابت مدى الحياة لكل من ينضم في هذه المرحلة 🔒
               </p>
             </div>
           )}
@@ -195,7 +209,11 @@ function PricingPage() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-6 md:grid-cols-3">
             {PLANS.map((plan) => {
-              const price = yearly ? plan.price.yearly : plan.price.monthly;
+              const originalPrice = yearly ? plan.price.yearly : plan.price.monthly;
+              const isPaid = originalPrice > 0;
+              const price = isPaid
+                ? Math.round(originalPrice * (1 - discountPct / 100))
+                : 0;
               return (
                 <div
                   key={plan.id}
@@ -214,12 +232,22 @@ function PricingPage() {
                   <h3 className="text-xl font-bold">{plan.name}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
 
-                  <div className="mt-5 flex items-baseline gap-1">
+                  <div className="mt-5 flex items-baseline gap-2">
                     <span className="text-4xl font-extrabold">{price}</span>
                     <span className="text-sm text-muted-foreground">
                       ر.س / {yearly ? "سنوياً" : "شهرياً"}
                     </span>
+                    {isPaid && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        {originalPrice}
+                      </span>
+                    )}
                   </div>
+                  {isPaid && (
+                    <div className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-bold text-success">
+                      ⚡ خصم {discountPct}% للمؤسسين
+                    </div>
+                  )}
                   {yearly && plan.price.monthly > 0 && (
                     <p className="text-xs text-success">
                       توفر {plan.price.monthly * 12 - plan.price.yearly} ر.س سنوياً

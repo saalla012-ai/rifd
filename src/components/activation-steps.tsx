@@ -1,17 +1,17 @@
-import { FileText, MessageCircle, CreditCard, Sparkles } from "lucide-react";
+import { CheckCircle2, MessageCircle, CreditCard, Sparkles } from "lucide-react";
 
 const STEPS = [
   {
-    icon: FileText,
-    title: "تعبّي النموذج",
-    desc: "اختر الباقة وأدخل معلوماتك",
-    duration: "30 ثانية",
+    icon: CheckCircle2,
+    title: "تأكيد فوري للطلب",
+    desc: "يصلك تأكيد لحظي بعد إرسال النموذج",
+    duration: "فوراً",
   },
   {
     icon: MessageCircle,
     title: "نتواصل معك واتساب",
-    desc: "يصلك رد من المؤسس مباشرة",
-    duration: "خلال 5 دقائق",
+    desc: "رد مباشر من المؤسس على مدار الساعة",
+    duration: "خلال دقائق",
   },
   {
     icon: CreditCard,
@@ -30,15 +30,17 @@ const STEPS = [
 export function ActivationSteps() {
   return (
     <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-      <div className="mb-1 flex items-center gap-2">
+      <div className="mb-1 flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-[11px] font-bold text-success">
-          عملية شفافة
+          تأكيد فوري
         </span>
-        <span className="text-xs text-muted-foreground">المتوسط الفعلي: 15 دقيقة</span>
+        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
+          دعم 24/7
+        </span>
       </div>
       <h2 className="mt-2 text-lg font-bold">كيف يتم التفعيل؟</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        4 خطوات بسيطة، مع متابعة شخصية من المؤسس
+        لا توجد قوائم انتظار — فريق الدعم متاح على مدار الساعة لتأكيد طلبك
       </p>
 
       <ol className="mt-5 space-y-3">

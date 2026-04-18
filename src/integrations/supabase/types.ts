@@ -19,6 +19,8 @@ export type Database = {
           bank_account_holder: string | null
           bank_iban: string | null
           bank_name: string | null
+          founding_base_count: number
+          founding_discount_pct: number
           founding_program_active: boolean
           founding_total_seats: number
           id: number
@@ -29,6 +31,8 @@ export type Database = {
           bank_account_holder?: string | null
           bank_iban?: string | null
           bank_name?: string | null
+          founding_base_count?: number
+          founding_discount_pct?: number
           founding_program_active?: boolean
           founding_total_seats?: number
           id?: number
@@ -39,6 +43,8 @@ export type Database = {
           bank_account_holder?: string | null
           bank_iban?: string | null
           bank_name?: string | null
+          founding_base_count?: number
+          founding_discount_pct?: number
           founding_program_active?: boolean
           founding_total_seats?: number
           id?: number
