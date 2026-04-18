@@ -99,7 +99,62 @@ function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* بطاقات الأدوات الرئيسية */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          {
+            to: "/dashboard/generate-text" as const,
+            title: "توليد نص",
+            desc: "منشورات، أوصاف منتجات، إعلانات",
+            icon: Wand2,
+            tone: "from-primary/20 via-primary/5 to-transparent",
+            iconBg: "bg-primary/15 text-primary",
+            cta: "ابدأ الكتابة",
+          },
+          {
+            to: "/dashboard/generate-image" as const,
+            title: "توليد صور",
+            desc: "بوسترات وصور منتجات بالـAI",
+            icon: ImageIcon,
+            tone: "from-gold/25 via-gold/5 to-transparent",
+            iconBg: "bg-gold/15 text-gold",
+            cta: "أنشئ صورة",
+          },
+          {
+            to: "/dashboard/edit-image" as const,
+            title: "تعديل صور",
+            desc: "ارفع صورتك وعدّلها بالذكاء",
+            icon: ImagePlus,
+            tone: "from-success/25 via-success/5 to-transparent",
+            iconBg: "bg-success/15 text-success",
+            cta: "عدّل صورة",
+            badge: "جديد",
+          },
+        ].map((card) => (
+          <Link
+            key={card.to}
+            to={card.to}
+            className={`group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${card.tone} bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elegant`}
+          >
+            {card.badge && (
+              <span className="absolute top-3 left-3 rounded-full bg-success px-2 py-0.5 text-[10px] font-bold text-success-foreground">
+                {card.badge}
+              </span>
+            )}
+            <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${card.iconBg}`}>
+              <card.icon className="h-5 w-5" />
+            </div>
+            <h3 className="mt-3 text-lg font-extrabold">{card.title}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{card.desc}</p>
+            <div className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-primary transition-transform group-hover:-translate-x-1">
+              {card.cta} <ArrowLeft className="h-4 w-4" />
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* إحصائيات */}
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "توليدات نصية (هذا الشهر)", value: `${stats?.text ?? 0} / ${limits.text}`, icon: Wand2, color: "text-primary" },
           { label: "توليدات صور (هذا الشهر)", value: `${stats?.image ?? 0} / ${limits.image}`, icon: ImageIcon, color: "text-gold" },
