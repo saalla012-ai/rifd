@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Sparkles, Copy, Check, Loader2, Wand2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,11 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  generateDemoResult,
-  PRODUCT_TYPES,
-  AUDIENCES,
-} from "@/lib/demo-results";
+import { PRODUCT_TYPES, AUDIENCES } from "@/lib/demo-results";
 
 export function LiveAiDemo() {
   const [storeName, setStoreName] = useState("");
@@ -24,15 +21,27 @@ export function LiveAiDemo() {
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setLoading(true);
     setResult(null);
     setCopied(false);
-    // محاكاة استدعاء AI واقعي بـ ~1.5 ثانية
-    setTimeout(() => {
-      setResult(generateDemoResult({ storeName, productType, audience }));
+    try {
+      const res = await fetch("/api/demo-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeName, productType, audience }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error ?? "فشل التوليد");
+        return;
+      }
+      setResult(json.result);
+    } catch {
+      toast.error("حصل خطأ في الاتصال — حاول مرة ثانية");
+    } finally {
       setLoading(false);
-    }, 1400);
+    }
   };
 
   const handleCopy = () => {
@@ -51,7 +60,7 @@ export function LiveAiDemo() {
           </span>
           <div>
             <h3 className="text-sm font-bold">جرّب الآن — بدون تسجيل</h3>
-            <p className="text-xs text-muted-foreground">شوف نتيجة حقيقية في 10 ثواني</p>
+            <p className="text-xs text-muted-foreground">AI حقيقي • نتيجة في 5-10 ثواني</p>
           </div>
         </div>
         <span className="hidden items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-[10px] font-bold text-success sm:inline-flex">
