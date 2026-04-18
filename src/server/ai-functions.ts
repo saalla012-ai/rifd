@@ -18,6 +18,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { chatComplete, AIError } from "./lovable-ai";
 import { buildTextSystemPrompt, buildImagePrompt, type StoreContext } from "./prompts";
+import { currentRiyadhMonth } from "@/lib/usage-month";
 
 type DbClient = SupabaseClient<Database>;
 
@@ -27,9 +28,9 @@ const PLAN_LIMITS: Record<string, { text: number; image: number }> = {
   business: { text: 5000, image: 300 },
 };
 
+// مفتاح شهر الاستخدام بتوقيت الرياض (UTC+3) لتفادي فارق 3 ساعات في حدود الشهر.
 function currentMonth(): string {
-  const d = new Date();
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  return currentRiyadhMonth();
 }
 
 async function loadProfileAndUsage(db: DbClient, userId: string) {
