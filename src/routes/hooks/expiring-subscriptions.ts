@@ -32,7 +32,8 @@ export const Route = createFileRoute("/hooks/expiring-subscriptions")({
           );
         }
 
-        // Authorization عبر Bearer (anon أو service role)
+        // Authorization عبر Bearer (anon أو service role) — كلاهما مقبول
+        // لأن المسار idempotent (يفحص email_send_log قبل الإرسال)
         const authHeader = request.headers.get("authorization");
         if (!authHeader?.startsWith("Bearer ")) {
           return Response.json({ error: "Unauthorized" }, { status: 401 });
