@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Sparkles, ArrowLeft, Check, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PRODUCT_TYPES, AUDIENCES, generateDemoResult } from "@/lib/demo-results";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/onboarding")({
@@ -33,6 +36,8 @@ const TONES = [
 ];
 
 function OnboardingPage() {
+  const navigate = useNavigate();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [storeName, setStoreName] = useState("");
   const [productType, setProductType] = useState("dropshipping");
@@ -42,17 +47,67 @@ function OnboardingPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
+  // المستخدم لازم يكون مسجل دخول للوصول
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      void navigate({ to: "/auth" });
+      return;
+    }
+    // إذا أكمل onboarding من قبل → dashboard مباشرة
+    if (profile?.onboarded) {
+      void navigate({ to: "/dashboard" });
+    }
+    // عبّي القيم لو فيه profile جزئي
+    if (profile?.store_name) setStoreName(profile.store_name);
+    if (profile?.product_type) setProductType(profile.product_type);
+    if (profile?.audience) setAudience(profile.audience);
+    if (profile?.tone) setTone(profile.tone);
+    if (profile?.brand_color) setColor(profile.brand_color);
+  }, [authLoading, user, profile, navigate]);
+
   const next = () => setStep((s) => Math.min(5, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
 
-  const finish = () => {
+  const finish = async () => {
+    if (!user) return;
     setGenerating(true);
-    setTimeout(() => {
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          store_name: storeName.trim(),
+          product_type: productType,
+          audience,
+          tone,
+          brand_color: color,
+          onboarded: true,
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+      await refreshProfile();
+
+      // Demo نتيجة محلية (سيستبدل بـAI حقيقي في المرحلة C)
       setResult(generateDemoResult({ storeName, productType, audience }));
-      setGenerating(false);
       setStep(5);
-    }, 1600);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "فشل حفظ ملف المتجر");
+    } finally {
+      setGenerating(false);
+    }
   };
+
+  if (authLoading || !user) {
+    return (
+      <MarketingLayout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      </MarketingLayout>
+    );
+  }
 
   return (
     <MarketingLayout>
@@ -61,7 +116,7 @@ function OnboardingPage() {
           <>
             <div className="mb-6 flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">الخطوة {step} من 4</span>
-              <Link to="/" className="text-xs text-muted-foreground hover:text-foreground">تخطّي</Link>
+              <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">تخطّي</Link>
             </div>
             <div className="mb-8 flex gap-1.5">
               {[1, 2, 3, 4].map((i) => (
@@ -183,7 +238,7 @@ function OnboardingPage() {
               <div className="flex gap-2">
                 <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
                 <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
-                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري التوليد...</> : <>أنشئ أول محتوى لي ✨</>}
+                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الحفظ...</> : <>أنشئ أول محتوى لي ✨</>}
                 </Button>
               </div>
             </div>

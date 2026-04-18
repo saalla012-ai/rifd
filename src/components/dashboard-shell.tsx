@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { ReactNode, useEffect } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Wand2,
@@ -11,7 +11,10 @@ import {
   Settings,
   Sparkles,
   LogOut,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -25,6 +28,37 @@ const NAV = [
 ] as const;
 
 export function DashboardShell({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
+  const { user, profile, loading, signOut } = useAuth();
+
+  // حماية: غير المسجلين يُحوَّلون إلى /auth
+  useEffect(() => {
+    if (!loading && !user) {
+      void navigate({ to: "/auth" });
+    }
+  }, [loading, user, navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("تم تسجيل الخروج");
+      void navigate({ to: "/" });
+    } catch {
+      toast.error("فشل تسجيل الخروج");
+    }
+  };
+
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const displayName = profile?.full_name || profile?.store_name || user.email?.split("@")[0] || "مستخدم";
+  const initial = displayName.charAt(0).toUpperCase();
+
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-l border-sidebar-border bg-sidebar md:flex">
@@ -34,6 +68,19 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </span>
           <span>رِفد</span>
         </Link>
+
+        <div className="border-b border-sidebar-border px-4 py-3">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full gradient-primary text-sm font-bold text-primary-foreground">
+              {initial}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{displayName}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            </div>
+          </div>
+        </div>
+
         <nav className="flex-1 space-y-1 p-3">
           {NAV.map((item) => (
             <Link
@@ -49,13 +96,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="border-t border-sidebar-border p-3">
-          <Link
-            to="/"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-sidebar-accent"
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-sidebar-accent"
           >
             <LogOut className="h-4 w-4" />
             تسجيل الخروج
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -65,6 +112,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             <Link to="/" className="flex items-center gap-2 font-bold">
               <Sparkles className="h-4 w-4 text-primary" /> رِفد
             </Link>
+            <button
+              onClick={handleLogout}
+              aria-label="تسجيل الخروج"
+              className="rounded-md p-2 text-muted-foreground hover:bg-secondary"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
           <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2">
             {NAV.map((item) => (
