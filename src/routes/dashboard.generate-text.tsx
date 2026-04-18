@@ -60,7 +60,12 @@ function GenerateTextPage() {
       toast.success("تم التوليد ✨");
       router.invalidate();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "خطأ في التوليد");
+      const msg = e instanceof Error ? e.message : "خطأ في التوليد";
+      if (isQuotaError(msg)) {
+        setQuotaDialog({ open: true, reason: msg });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
