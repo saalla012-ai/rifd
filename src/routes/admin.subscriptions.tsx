@@ -38,6 +38,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatSaudiPhoneDisplay, normalizeSaudiPhone } from "@/lib/phone";
+import { sendTransactionalEmail } from "@/lib/email/send";
 
 export const Route = createFileRoute("/admin/subscriptions")({
   head: () => ({ meta: [{ title: "إدارة الاشتراكات — رِفد" }] }),
@@ -152,6 +153,34 @@ function AdminSubscriptionsPage() {
         toast.error("تم تحديث الطلب لكن فشل ترقية الباقة في الملف");
       } else {
         toast.success(`تم تفعيل باقة ${PLAN_LABELS[req.plan]} للمستخدم ✨`);
+      }
+
+      // إرسال بريد إشعار التفعيل للعميل (لا يكسر التدفق إن فشل)
+      try {
+        const activatedUntilDate = updates.activated_until
+          ? new Date(updates.activated_until).toLocaleDateString("ar-SA", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : undefined;
+        await sendTransactionalEmail({
+          templateName: "subscription-activated",
+          recipientEmail: req.email,
+          idempotencyKey: `sub-activated-${req.id}`,
+          templateData: {
+            fullName: req.store_name ?? undefined,
+            planLabel: PLAN_LABELS[req.plan],
+            billingCycleLabel:
+              req.billing_cycle === "yearly" ? "سنوي" : "شهري",
+            activatedUntil: activatedUntilDate,
+            invoiceUrl: `${window.location.origin}/api/invoice/${req.id}`,
+            dashboardUrl: `${window.location.origin}/dashboard/billing`,
+          },
+        });
+      } catch (e) {
+        console.warn("فشل إرسال بريد التفعيل:", e);
+        toast.warning("تم التفعيل لكن لم يُرسَل بريد الإشعار");
       }
     } else {
       toast.success("تم تحديث حالة الطلب");

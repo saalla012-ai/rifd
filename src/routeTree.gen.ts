@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VsChatgptRouteImport } from './routes/vs-chatgpt'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -23,6 +24,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalRefundRouteImport } from './routes/legal.refund'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as HooksExpiringSubscriptionsRouteImport } from './routes/hooks/expiring-subscriptions'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
 import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templates'
@@ -49,6 +51,11 @@ import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/d
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
   path: '/vs-chatgpt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -116,6 +123,12 @@ const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   path: '/legal/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HooksExpiringSubscriptionsRoute =
+  HooksExpiringSubscriptionsRouteImport.update({
+    id: '/hooks/expiring-subscriptions',
+    path: '/hooks/expiring-subscriptions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -242,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -258,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -279,6 +294,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -295,6 +311,7 @@ export interface FileRoutesByTo {
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -318,6 +335,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -334,6 +352,7 @@ export interface FileRoutesById {
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -358,6 +377,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
+    | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -374,6 +394,7 @@ export interface FileRouteTypes {
     | '/dashboard/templates'
     | '/dashboard/usage'
     | '/email/unsubscribe'
+    | '/hooks/expiring-subscriptions'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
@@ -395,6 +416,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
+    | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -411,6 +433,7 @@ export interface FileRouteTypes {
     | '/dashboard/templates'
     | '/dashboard/usage'
     | '/email/unsubscribe'
+    | '/hooks/expiring-subscriptions'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
@@ -433,6 +456,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
+    | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -449,6 +473,7 @@ export interface FileRouteTypes {
     | '/dashboard/templates'
     | '/dashboard/usage'
     | '/email/unsubscribe'
+    | '/hooks/expiring-subscriptions'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
@@ -472,6 +497,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   VsChatgptRoute: typeof VsChatgptRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
@@ -480,6 +506,7 @@ export interface RootRouteChildren {
   ApiTelegramDiscoverChatsRoute: typeof ApiTelegramDiscoverChatsRoute
   ApiTelegramSetChatIdRoute: typeof ApiTelegramSetChatIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  HooksExpiringSubscriptionsRoute: typeof HooksExpiringSubscriptionsRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -497,6 +524,13 @@ declare module '@tanstack/react-router' {
       path: '/vs-chatgpt'
       fullPath: '/vs-chatgpt'
       preLoaderRoute: typeof VsChatgptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -588,6 +622,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/privacy'
       fullPath: '/legal/privacy'
       preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hooks/expiring-subscriptions': {
+      id: '/hooks/expiring-subscriptions'
+      path: '/hooks/expiring-subscriptions'
+      fullPath: '/hooks/expiring-subscriptions'
+      preLoaderRoute: typeof HooksExpiringSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -789,6 +830,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   VsChatgptRoute: VsChatgptRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
@@ -797,6 +839,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTelegramDiscoverChatsRoute: ApiTelegramDiscoverChatsRoute,
   ApiTelegramSetChatIdRoute: ApiTelegramSetChatIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  HooksExpiringSubscriptionsRoute: HooksExpiringSubscriptionsRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
@@ -809,3 +852,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
