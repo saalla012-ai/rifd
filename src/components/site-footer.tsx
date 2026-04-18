@@ -42,7 +42,8 @@ export function SiteFooter() {
               <li><Link to="/legal/refund" className="text-muted-foreground hover:text-foreground">سياسة الاسترجاع</Link></li>
               <li>
                 <a href="mailto:hello@rifd.tech" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
-                  <Mail className="h-3.5 w-3.5" /> hello@rifd.tech
+                  <Mail className="h-3.5 w-3.5" />
+                  <span>hello@rifd.tech</span>
                 </a>
               </li>
             </ul>
