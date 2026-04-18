@@ -49,7 +49,7 @@ async function moveToDlq(
     recipient_email: payload.to,
     status: 'dlq',
     error_message: reason,
-  })
+  } as any)
   const { error } = await supabase.rpc('move_to_dlq' as any, {
     source_queue: queue,
     dlq_name: `${queue}_dlq`,
@@ -89,7 +89,7 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
 
-        const supabase = createClient<any>(supabaseUrl, supabaseServiceKey)
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
         // 1. Check rate-limit cooldown and read queue config
         const { data: state } = await supabase
