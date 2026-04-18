@@ -201,17 +201,20 @@ function AdminSubscriptionsPage() {
             مراجعة طلبات الأعضاء المؤسسين وتفعيل الباقات
           </p>
         </div>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">الكل ({requests.length})</SelectItem>
-            <SelectItem value="pending">قيد الانتظار ({counts.pending})</SelectItem>
-            <SelectItem value="contacted">تم التواصل ({counts.contacted})</SelectItem>
-            <SelectItem value="activated">مفعّل ({counts.activated})</SelectItem>
-            <SelectItem value="rejected">مرفوض</SelectItem>
-            <SelectItem value="expired">منتهي</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap items-center gap-2">
+          <NotificationsTools />
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل ({requests.length})</SelectItem>
+              <SelectItem value="pending">قيد الانتظار ({counts.pending})</SelectItem>
+              <SelectItem value="contacted">تم التواصل ({counts.contacted})</SelectItem>
+              <SelectItem value="activated">مفعّل ({counts.activated})</SelectItem>
+              <SelectItem value="rejected">مرفوض</SelectItem>
+              <SelectItem value="expired">منتهي</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
