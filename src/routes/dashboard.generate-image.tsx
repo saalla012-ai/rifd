@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Image as ImageIcon, Loader2, Zap, Crown, Download } from "lucide-react";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
+import { Image as ImageIcon, Loader2, Zap, Crown, Download, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,23 @@ import { cn } from "@/lib/utils";
 import { generateImage } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 
+type ImgSearch = { template?: string };
+
 export const Route = createFileRoute("/dashboard/generate-image")({
   head: () => ({ meta: [{ title: "توليد صور — رِفد" }] }),
+  validateSearch: (s: Record<string, unknown>): ImgSearch => ({
+    template: typeof s.template === "string" ? s.template : undefined,
+  }),
   component: GenerateImagePage,
 });
 
 function GenerateImagePage() {
+  const search = useSearch({ from: "/dashboard/generate-image" });
+  const initial = search.template && IMAGE_PROMPTS.some((p) => p.id === search.template)
+    ? search.template
+    : IMAGE_PROMPTS[0].id;
   const [quality, setQuality] = useState<"flash" | "pro">("flash");
-  const [templateId, setTemplateId] = useState(IMAGE_PROMPTS[0].id);
+  const [templateId, setTemplateId] = useState(initial);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -56,11 +65,16 @@ function GenerateImagePage() {
           <h1 className="text-2xl font-extrabold">توليد صور</h1>
           <p className="mt-1 text-sm text-muted-foreground">بوسترات وصور منتجات بنص عربي بارز</p>
         </div>
-        {remaining !== null && (
-          <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
-            باقي {remaining} صورة
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-1">
+            <Link to="/dashboard/templates"><LayoutGrid className="h-3.5 w-3.5" /> كل القوالب</Link>
+          </Button>
+          {remaining !== null && (
+            <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
+              باقي {remaining} صورة
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

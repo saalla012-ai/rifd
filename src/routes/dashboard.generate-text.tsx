@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Wand2, Copy, Check, Loader2, Star } from "lucide-react";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
+import { Wand2, Copy, Check, Loader2, Star, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -13,13 +13,22 @@ import { TEXT_PROMPTS } from "@/lib/prompts-data";
 import { generateText } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 
+type TextSearch = { template?: string };
+
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "توليد نص — رِفد" }] }),
+  validateSearch: (s: Record<string, unknown>): TextSearch => ({
+    template: typeof s.template === "string" ? s.template : undefined,
+  }),
   component: GenerateTextPage,
 });
 
 function GenerateTextPage() {
-  const [templateId, setTemplateId] = useState(TEXT_PROMPTS[0].id);
+  const search = useSearch({ from: "/dashboard/generate-text" });
+  const initial = search.template && TEXT_PROMPTS.some((p) => p.id === search.template)
+    ? search.template
+    : TEXT_PROMPTS[0].id;
+  const [templateId, setTemplateId] = useState(initial);
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -69,11 +78,16 @@ function GenerateTextPage() {
           <h1 className="text-2xl font-extrabold">توليد نص</h1>
           <p className="mt-1 text-sm text-muted-foreground">اختر قالب واكتب فكرتك — نحن نتكفّل بالباقي</p>
         </div>
-        {remaining !== null && (
-          <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">
-            باقي {remaining} توليدة
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-1">
+            <Link to="/dashboard/templates"><LayoutGrid className="h-3.5 w-3.5" /> كل القوالب</Link>
+          </Button>
+          {remaining !== null && (
+            <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">
+              باقي {remaining} توليدة
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
