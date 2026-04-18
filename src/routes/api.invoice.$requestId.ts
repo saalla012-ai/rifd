@@ -216,8 +216,8 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
 
           const regBytes = readFontBytes(notoRegularUrl);
           const boldBytes = readFontBytes(notoBoldUrl);
-          const fontReg = await pdfDoc.embedFont(regBytes, { subset: true });
-          const fontBold = await pdfDoc.embedFont(boldBytes, { subset: true });
+          const fontReg = await pdfDoc.embedFont(regBytes, { subset: false });
+          const fontBold = await pdfDoc.embedFont(boldBytes, { subset: false });
 
           const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
 
