@@ -201,6 +201,7 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           const pdfDoc = await PDFDocument.create();
           pdfDoc.registerFontkit(fontkit);
 
+          console.log("font types", typeof notoRegularBuf, notoRegularBuf instanceof ArrayBuffer, notoRegularBuf instanceof Uint8Array, (notoRegularBuf as any)?.byteLength, (notoRegularBuf as any)?.length, typeof notoRegularBuf === "string" ? (notoRegularBuf as string).slice(0, 80) : "");
           const fontReg = await pdfDoc.embedFont(notoRegularBuf as ArrayBuffer, { subset: true });
           const fontBold = await pdfDoc.embedFont(notoBoldBuf as ArrayBuffer, { subset: true });
 
