@@ -5,8 +5,10 @@ import fontkit from "@pdf-lib/fontkit";
 // @ts-expect-error - no types
 import ArabicReshaper from "arabic-reshaper";
 import bidiFactory from "bidi-js";
-import notoRegularUrl from "@/assets/fonts/NotoNaskhArabic-Regular.ttf?url";
-import notoBoldUrl from "@/assets/fonts/NotoNaskhArabic-Bold.ttf?url";
+// @ts-expect-error - Vite arraybuffer import
+import notoRegularBuf from "@/assets/fonts/NotoNaskhArabic-Regular.ttf?arraybuffer";
+// @ts-expect-error - Vite arraybuffer import
+import notoBoldBuf from "@/assets/fonts/NotoNaskhArabic-Bold.ttf?arraybuffer";
 import type { Database } from "@/integrations/supabase/types";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -85,12 +87,6 @@ function invoiceNumber(requestId: string, activatedAt: string | null): string {
   return `INV-${year}-${short}`;
 }
 
-async function loadFontBytes(request: Request, fontUrl: string): Promise<ArrayBuffer> {
-  const url = new URL(fontUrl, request.url);
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`Failed to load font: ${url}`);
-  return await res.arrayBuffer();
-}
 
 export const Route = createFileRoute("/api/invoice/$requestId")({
   server: {
@@ -205,12 +201,8 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           const pdfDoc = await PDFDocument.create();
           pdfDoc.registerFontkit(fontkit);
 
-          const [regBytes, boldBytes] = await Promise.all([
-            loadFontBytes(request, notoRegularUrl),
-            loadFontBytes(request, notoBoldUrl),
-          ]);
-          const fontReg = await pdfDoc.embedFont(regBytes, { subset: true });
-          const fontBold = await pdfDoc.embedFont(boldBytes, { subset: true });
+          const fontReg = await pdfDoc.embedFont(notoRegularBuf as ArrayBuffer, { subset: true });
+          const fontBold = await pdfDoc.embedFont(notoBoldBuf as ArrayBuffer, { subset: true });
 
           const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
 
