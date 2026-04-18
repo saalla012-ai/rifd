@@ -87,6 +87,19 @@ function invoiceNumber(requestId: string, activatedAt: string | null): string {
   return `INV-${year}-${short}`;
 }
 
+/** يقرأ ملف خط من الـbundle عبر Node fs. */
+function readFontBytes(urlOrPath: string): Uint8Array {
+  let fsPath: string;
+  if (urlOrPath.startsWith("file://")) {
+    fsPath = fileURLToPath(urlOrPath);
+  } else if (urlOrPath.startsWith("/")) {
+    const clean = urlOrPath.split("?")[0];
+    fsPath = process.cwd() + clean;
+  } else {
+    fsPath = urlOrPath;
+  }
+  return new Uint8Array(readFileSync(fsPath));
+}
 
 export const Route = createFileRoute("/api/invoice/$requestId")({
   server: {
