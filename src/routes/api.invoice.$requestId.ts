@@ -206,8 +206,8 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           const pdfDoc = await PDFDocument.create();
           pdfDoc.registerFontkit(fontkit);
 
-          const regBytes = readFontBytes(notoRegularUrl);
-          const boldBytes = readFontBytes(notoBoldUrl);
+          const regBytes = readFontBytes(amiriRegularUrl);
+          const boldBytes = readFontBytes(amiriBoldUrl);
           const fontReg = await pdfDoc.embedFont(regBytes, { subset: false });
           const fontBold = await pdfDoc.embedFont(boldBytes, { subset: false });
 
