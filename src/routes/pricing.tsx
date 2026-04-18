@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Sparkles, ShieldCheck, Star, Crown, Users } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
+import { TrustBadges } from "@/components/trust-badges";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
@@ -252,12 +253,15 @@ function PricingPage() {
             })}
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="mt-10">
+            <TrustBadges items={6} />
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4 text-primary" /> ضمان 7 أيام كامل
             </span>
             <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4 text-primary" /> دفع آمن بـStripe / مدى / Apple Pay
+              <Check className="h-4 w-4 text-primary" /> تحويل بنكي سعودي آمن
             </span>
             <span className="flex items-center gap-1.5">
               <Star className="h-4 w-4 text-gold" /> فاتورة ضريبية رسمية
