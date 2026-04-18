@@ -238,8 +238,8 @@ function BillingPage() {
     });
   }
 
-  const proFutureMonthly = priceAfterIncrease(PLAN_PRICES.pro.monthly);
-  const businessFutureMonthly = priceAfterIncrease(PLAN_PRICES.business.monthly);
+  const proFutureMonthly = PRO_FUTURE_MONTHLY;
+  const businessFutureMonthly = BUSINESS_FUTURE_MONTHLY;
 
   return (
     <DashboardShell>
