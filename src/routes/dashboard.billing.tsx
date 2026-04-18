@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Crown,
   ShieldCheck,
@@ -90,6 +90,7 @@ type RequestRow = {
 
 function BillingPage() {
   const { user, profile, refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [seatsTaken, setSeatsTaken] = useState<number>(0);
   const [requests, setRequests] = useState<RequestRow[]>([]);
@@ -199,10 +200,13 @@ function BillingPage() {
       return;
     }
 
-    toast.success("تم إرسال طلبك! جاري فتح واتساب لإكمال التفاصيل...");
-    window.open(buildWhatsappUrl(data.id), "_blank", "noopener,noreferrer");
-    await loadAll();
+    toast.success("✅ تم استلام طلبك! ننتقل لصفحة التأكيد...");
     await refreshProfile();
+    // ننتقل لصفحة التأكيد المخصصة بدل فتح واتساب مباشرة
+    void navigate({
+      to: "/dashboard/billing/confirm/$requestId",
+      params: { requestId: data.id },
+    });
   }
 
   const isPaidUser = profile?.plan && profile.plan !== "free";
