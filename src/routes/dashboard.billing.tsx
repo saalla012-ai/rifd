@@ -267,8 +267,13 @@ function BillingPage() {
               <h2 className="text-lg font-bold">طلب الاشتراك</h2>
             </div>
             <p className="mb-5 text-sm text-muted-foreground">
-              املأ المعلومات وسنفتح لك واتساب فوراً لإكمال التفاصيل وتفعيل حسابك خلال 15 دقيقة.
+              املأ المعلومات وسنفتح لك واتساب فوراً مع تأكيد لحظي للطلب — دعم متاح 24/7.
             </p>
+
+            {/* Live subscribers counter — social proof */}
+            <div className="mb-5">
+              <SubscribersCounter />
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -276,8 +281,14 @@ function BillingPage() {
                 <Select value={plan} onValueChange={(v) => setPlan(v as "pro" | "business")}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pro">احترافي — {PLAN_PRICES.pro.monthly} ر.س/شهر</SelectItem>
-                    <SelectItem value="business">أعمال — {PLAN_PRICES.business.monthly} ر.س/شهر</SelectItem>
+                    <SelectItem value="pro">
+                      احترافي — {proMonthlyDiscounted} ر.س/شهر
+                      <span className="ml-1 text-xs text-muted-foreground line-through">{PLAN_PRICES.pro.monthly}</span>
+                    </SelectItem>
+                    <SelectItem value="business">
+                      أعمال — {businessMonthlyDiscounted} ر.س/شهر
+                      <span className="ml-1 text-xs text-muted-foreground line-through">{PLAN_PRICES.business.monthly}</span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -330,11 +341,26 @@ function BillingPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-secondary/50 p-4">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/30 bg-gradient-to-l from-gold/10 via-secondary/50 to-secondary/50 p-4">
               <div>
-                <div className="text-xs text-muted-foreground">الإجمالي</div>
-                <div className="text-2xl font-extrabold">
-                  {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[10px] font-bold text-gold">
+                    خصم {discountPct}% للمؤسسين
+                  </span>
+                </div>
+                <div className="mt-1.5 flex items-baseline gap-2">
+                  <div className="text-2xl font-extrabold text-foreground">
+                    {price}{" "}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}
+                    </span>
+                  </div>
+                  <span className="text-sm text-muted-foreground line-through">
+                    {originalPrice} ر.س
+                  </span>
+                </div>
+                <div className="mt-1 text-[11px] font-medium text-success">
+                  ✓ سعرك ثابت مدى الحياة
                 </div>
               </div>
               <Button
@@ -369,7 +395,9 @@ function BillingPage() {
                   الأعضاء المؤسسين
                 </span>
               </div>
-              <h3 className="mt-3 text-xl font-extrabold">امتيازات حصرية للأوائل</h3>
+              <h3 className="mt-3 text-xl font-extrabold">
+                خصم {discountPct}% — لأول 1000 عضو
+              </h3>
 
               <div className="mt-5 rounded-xl bg-card/50 p-4 backdrop-blur">
                 <div className="flex items-center justify-between text-sm">
@@ -377,21 +405,21 @@ function BillingPage() {
                     <Users className="h-4 w-4 text-gold" /> المقاعد المتبقية
                   </span>
                   <span className="font-extrabold text-gold">
-                    {loading ? "..." : `${seatsLeft} / ${seatsTotal}`}
+                    {loading ? "..." : `${seatsLeft.toLocaleString("ar-SA")} / ${seatsTotal.toLocaleString("ar-SA")}`}
                   </span>
                 </div>
                 <Progress value={seatsPct} className="mt-2 h-2" />
                 <p className="mt-2 text-xs text-muted-foreground">
-                  البرنامج محدود بـ{seatsTotal} عضو فقط
+                  البرنامج محدود بـ{seatsTotal.toLocaleString("ar-SA")} عضو فقط بهذا السعر
                 </p>
               </div>
 
               <ul className="mt-5 space-y-2.5 text-sm">
                 {[
-                  "🔒 سعر مدى الحياة (لن يتغير حتى لو رفعنا الأسعار لاحقاً)",
-                  "💬 دعم مباشر من المؤسس عبر واتساب",
+                  `🔥 خصم ${discountPct}% ثابت مدى الحياة (لن يتغير أبداً)`,
+                  "💬 دعم مباشر من المؤسس على مدار الساعة 24/7",
+                  "⚡ تأكيد فوري للطلب — بدون قوائم انتظار",
                   "🎯 تأثيرك على خارطة الطريق (تقترح ميزات نطورها)",
-                  "⚡ تفعيل خلال 15 دقيقة من إرسال الطلب",
                   "🧾 فاتورة ضريبية رسمية بعد كل دفعة",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
