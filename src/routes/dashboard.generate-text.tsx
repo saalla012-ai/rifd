@@ -35,6 +35,7 @@ function GenerateTextPage() {
   const [result, setResult] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
   const router = useRouter();
 
   const template = TEXT_PROMPTS.find((p) => p.id === templateId) ?? TEXT_PROMPTS[0];
