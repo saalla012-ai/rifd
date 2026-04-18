@@ -758,6 +758,22 @@ function RequestCard({
               <MessageCircle className="ml-1 h-3 w-3" /> واتساب
             </a>
           </Button>
+          {request.status === "activated" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={downloadInvoice}
+              disabled={downloadingInvoice}
+              title="تنزيل الفاتورة الضريبية PDF"
+            >
+              {downloadingInvoice ? (
+                <Loader2 className="ml-1 h-3 w-3 animate-spin" />
+              ) : (
+                <FileText className="ml-1 h-3 w-3" />
+              )}
+              فاتورة PDF
+            </Button>
+          )}
         </div>
       </div>
 
