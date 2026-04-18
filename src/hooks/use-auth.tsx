@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -47,6 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // يحتفظ بآخر userId تم تحميل بياناته، حتى لا نُكرّر استعلامات profiles + user_roles
+  // عندما يُطلِق Supabase أحداث متعدّدة (INITIAL_SESSION, SIGNED_IN, TOKEN_REFRESHED…)
+  // أو عند إعادة التهيئة في React StrictMode.
+  const loadedUserIdRef = useRef<string | null>(null);
+
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
@@ -66,7 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(!!data);
   };
 
-  const loadUserData = async (userId: string) => {
+  const loadUserData = async (userId: string, force = false) => {
+    if (!force && loadedUserIdRef.current === userId) return;
+    loadedUserIdRef.current = userId;
     // نشغّل البروفايل والدور بالتوازي — استعلامان فقط لكل جلسة بدلاً من تكرارهما في كل مكوّن.
     await Promise.all([loadProfile(userId), loadIsAdmin(userId)]);
   };
@@ -83,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             void loadUserData(newSession.user.id);
           }, 0);
         } else {
+          loadedUserIdRef.current = null;
           setProfile(null);
           setIsAdmin(false);
         }
@@ -111,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    loadedUserIdRef.current = null;
     setProfile(null);
     setIsAdmin(false);
     setUser(null);

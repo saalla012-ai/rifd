@@ -47,29 +47,34 @@ function DashboardPage() {
   const [stats, setStats] = useState<{ text: number; image: number; favs: number } | null>(null);
   const [recent, setRecent] = useState<RecentItem[]>([]);
 
+  // نستخدم user.id (string) كـdependency بدل كائن user (يتغيّر مرجعه عند كل auth event)
+  // لتفادي تكرار الاستعلامات على usage_logs و generations عند re-renders.
+  const userId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
+    let cancelled = false;
     (async () => {
       const month = currentMonth();
       const [usageRes, favsRes, recentRes] = await Promise.all([
         supabase
           .from("usage_logs")
           .select("text_count, image_count")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("month", month)
           .maybeSingle(),
         supabase
           .from("generations")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("is_favorite", true),
         supabase
           .from("generations")
           .select("id, type, prompt, created_at, metadata")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(5),
       ]);
+      if (cancelled) return;
       setStats({
         text: usageRes.data?.text_count ?? 0,
         image: usageRes.data?.image_count ?? 0,
@@ -77,7 +82,10 @@ function DashboardPage() {
       });
       setRecent((recentRes.data as RecentItem[] | null) ?? []);
     })();
-  }, [user]);
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   const plan = (profile?.plan ?? "free") as keyof typeof LIMITS;
   const limits = LIMITS[plan];

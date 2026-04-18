@@ -27,19 +27,26 @@ function UsagePage() {
   const [usage, setUsage] = useState<{ text_count: number; image_count: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // user.id (string) دائم، بينما كائن user يتغيّر مرجعه عند كل auth event.
+  const userId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
+    let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("usage_logs")
         .select("text_count, image_count")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("month", currentMonth())
         .maybeSingle();
+      if (cancelled) return;
       setUsage(data ?? { text_count: 0, image_count: 0 });
       setLoading(false);
     })();
-  }, [user]);
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   const plan = (profile?.plan ?? "free") as keyof typeof LIMITS;
   const limits = LIMITS[plan];
