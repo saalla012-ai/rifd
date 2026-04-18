@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Quote, Star } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
+import { UrgencyBar } from "@/components/urgency-bar";
 import { TrustBar } from "@/components/trust-bar";
 import { HomeHero } from "@/components/home-hero";
+import { SavingsCounter } from "@/components/savings-counter";
+import { BeforeAfter } from "@/components/before-after";
 import { HomeFeatures } from "@/components/home-features";
 import { ComparisonTable } from "@/components/comparison-table";
 import { Button } from "@/components/ui/button";
@@ -11,16 +14,16 @@ import { CATEGORIES, PROMPTS } from "@/lib/prompts-data";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "رِفد للتقنية — منصة سعودية لتوليد محتوى المتاجر بالذكاء الاصطناعي" },
+      { title: "رِفد — اكتب 30 منشور لمتجرك في 5 دقائق بالعامية السعودية" },
       {
         name: "description",
         content:
-          "40 قالب AI جاهز بالعامية السعودية — منشورات، أوصاف منتجات، إعلانات وبوسترات في 10 ثواني. جرّب مجاناً بدون بطاقة.",
+          "تعبت تكتب منشورات متجرك؟ رِفد يكتب لك 30 منشور بالعامية السعودية في 5 دقائق بدل 5 ساعات. 40 قالب جاهز + توليد صور وبوسترات. جرّب مجاناً بدون بطاقة.",
       },
-      { property: "og:title", content: "رِفد للتقنية — آلة محتوى ذكية لمتجرك السعودي" },
+      { property: "og:title", content: "رِفد — آلة محتوى ذكية لمتجرك السعودي بالعامية" },
       {
         property: "og:description",
-        content: "حوّل متجرك إلى آلة محتوى. ChatGPT و Gemini مدرّبين بالعامية السعودية.",
+        content: "30 منشور في 5 دقائق بالعامية السعودية — بدل ما تقعد 5 ساعات. وفّر 800+ ر.س شهرياً.",
       },
     ],
   }),
@@ -30,8 +33,11 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <MarketingLayout>
+      <UrgencyBar />
       <TrustBar />
       <HomeHero />
+      <SavingsCounter />
+      <BeforeAfter />
       <HomeFeatures />
 
       {/* مقارنة مختصرة */}
