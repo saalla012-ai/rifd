@@ -283,11 +283,11 @@ function BillingPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pro">
-                      احترافي — {PLAN_PRICES.pro.monthly} ر.س/شهر
+                      احترافي — {PLAN_PRICES.pro.monthly} ر.س/شهر · 🔥 الأكثر اختياراً
                       <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {proFutureMonthly} لاحقاً)</span>
                     </SelectItem>
                     <SelectItem value="business">
-                      أعمال — {PLAN_PRICES.business.monthly} ر.س/شهر
+                      أعمال — {PLAN_PRICES.business.monthly} ر.س/شهر · 👑 الأفضل قيمة للوكالات
                       <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {businessFutureMonthly} لاحقاً)</span>
                     </SelectItem>
                   </SelectContent>
