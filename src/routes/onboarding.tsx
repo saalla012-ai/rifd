@@ -13,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PRODUCT_TYPES, AUDIENCES, generateDemoResult } from "@/lib/demo-results";
+import { PRODUCT_TYPES, AUDIENCES } from "@/lib/demo-results";
 import { supabase } from "@/integrations/supabase/client";
+import { generateText } from "@/server/ai-functions";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -74,6 +75,7 @@ function OnboardingPage() {
     setGenerating(true);
 
     try {
+      // 1) احفظ ملف المتجر
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -89,11 +91,25 @@ function OnboardingPage() {
       if (error) throw error;
       await refreshProfile();
 
-      // Demo نتيجة محلية (سيستبدل بـAI حقيقي في المرحلة C)
-      setResult(generateDemoResult({ storeName, productType, audience }));
+      // 2) ولّد أول منشور حقيقي عبر AI (يستخدم سياق الملف الجديد)
+      const productLabel =
+        PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
+      const audienceLabel =
+        AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
+      const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${storeName.trim()}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
+
+      const out = await generateText({
+        data: {
+          prompt: promptText,
+          templateTitle: "منشور ترحيبي",
+          templateId: "onboarding-welcome",
+        },
+      });
+
+      setResult(out.result);
       setStep(5);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "فشل حفظ ملف المتجر");
+      toast.error(err instanceof Error ? err.message : "فشل إنشاء المحتوى");
     } finally {
       setGenerating(false);
     }
