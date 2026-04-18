@@ -1,42 +1,38 @@
 
 
-## المشكلة
-الحروف العربية في الـPDF تظهر منفصلة لأن `pdf-lib` + `arabic-reshaper` لا ينتج ligatures صحيحة مع Noto Naskh الحالي.
+## ما تبقى فعلياً
 
-## الحل
-استبدال خط Noto Naskh بخط **Amiri** (Regular + Bold) بصيغة TTF تقليدية تحتوي Arabic Presentation Forms مدمجة. Amiri معروف بدعمه الممتاز للـreshaping عبر `arabic-reshaper` + `bidi-js` مع `pdf-lib`.
+بعد إلغاء الفاتورة من النطاق:
+1. **DNS معلّق** — حاجز خارجي (يدوي من جانبك، لا أستطيع تعديله).
+2. **اختبار تذكيرات الانتهاء** — لم يُختبر بعد على بيانات حقيقية.
+3. **تنظيف سجلات DLQ القديمة** — تلوّث لوحة المراقبة.
 
-## التنفيذ
+## الخطوة التالية المقترحة: اختبار تذكيرات الانتهاء
 
-### 1) إضافة خطوط Amiri
-- تحميل `Amiri-Regular.ttf` و `Amiri-Bold.ttf` من Google Fonts (مفتوحة المصدر، SIL OFL).
-- وضعها في `src/assets/fonts/`.
-- (اختياري) حذف ملفات Noto القديمة.
+هذا أهم شيء غير مُختبر في النظام. الكود موجود في `src/routes/hooks/expiring-subscriptions.ts` و pg_cron يستدعيه يومياً 9 صباحاً UTC، لكن لم نتأكد عملياً أنه:
+- يجد الاشتراكات المنتهية خلال 7 أيام و خلال يوم واحد
+- يضعها في الطابور بـ `idempotencyKey` صحيح
+- لا يكرر الإرسال عند الاستدعاء مرتين
 
-### 2) تحديث `src/routes/api.invoice.$requestId.ts`
-- تغيير الاستيراد:
-  ```ts
-  import amiriRegularUrl from "@/assets/fonts/Amiri-Regular.ttf?url";
-  import amiriBoldUrl from "@/assets/fonts/Amiri-Bold.ttf?url";
-  ```
-- استبدال `notoRegularUrl` / `notoBoldUrl` بمتغيرات Amiri في `readFontBytes(...)`.
-- الإبقاء على نفس منطق `shapeArabic` (reshaper + bidi) — Amiri يحوي الـPresentation Forms المطلوبة فيُرسم الحروف موصولة.
-- `subset: false` يبقى كما هو (مهم لتجنّب فقدان الـligatures عند التضمين).
+### خطة الاختبار
 
-### 3) التحقق بعد التنفيذ
-- بعد التطبيق، تنزيل فاتورة لطلب مفعّل والتأكد بصرياً أن:
-  - الحروف العربية موصولة بشكل صحيح
-  - الأرقام والنص اللاتيني في اتجاهها الصحيح
-  - لا توجد مربعات سوداء أو حروف مفقودة
+1. **استعلام تشخيصي** على `subscription_requests` لمعرفة كم اشتراك مفعّل ينتهي خلال 7 أيام / خلال يوم.
+2. **(اختياري) تعديل صلاحية اشتراك تجريبي** ليصبح `activated_until = now() + 7 days` أو `+ 1 day` لضمان وجود حالة اختبار.
+3. **استدعاء يدوي** للـhook عبر:
+   ```
+   curl -X POST https://<app>/hooks/expiring-subscriptions
+   ```
+4. **التحقق من النتائج**:
+   - `email_send_log` — صفوف جديدة بـ `template_name = 'subscription-expiring'`
+   - `pgmq.metrics_all()` — نمو `transactional-email`
+   - استدعاء ثانٍ فوراً ← عدم تكرار الإدخال (بفضل `idempotencyKey`).
+5. **بعد اكتمال DNS** — التحقق أن الحالة تنتقل من `pending` إلى `sent`.
+
+## بالتوازي: تنظيف DLQ القديم
+حذف صفوف `email_send_log` بحالة `dlq` السابقة لتاريخ تفعيل البريد على مستوى المشروع، حتى تُظهر اللوحة الحالة الحقيقية فقط.
 
 ## الملفات المتأثرة
-| ملف | تغيير |
-|---|---|
-| `src/assets/fonts/Amiri-Regular.ttf` | جديد |
-| `src/assets/fonts/Amiri-Bold.ttf` | جديد |
-| `src/routes/api.invoice.$requestId.ts` | تبديل مراجع الخطوط |
-| `src/assets/fonts/NotoNaskhArabic-*.ttf` | حذف (تنظيف) |
-
-## ملاحظة
-إن استمرت مشكلة فصل الحروف حتى مع Amiri، فالسبب الجذري هو أن `arabic-reshaper` لا يُخرج Presentation Forms متوافقة. الخطة الاحتياطية: التبديل إلى مكتبة `harfbuzzjs` للـshaping (تتطلب تغييراً أكبر).
+لا تعديلات على الكود. فقط:
+- استعلامات SQL للتشخيص + تعديل بيانات اختبار + تنظيف DLQ
+- استدعاء HTTP واحد للـhook
 
