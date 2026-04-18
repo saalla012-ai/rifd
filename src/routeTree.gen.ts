@@ -30,6 +30,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settin
 import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library'
 import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
+import { Route as DashboardEditImageRouteImport } from './routes/dashboard.edit-image'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
@@ -139,6 +140,11 @@ const DashboardGenerateImageRoute = DashboardGenerateImageRouteImport.update({
   path: '/generate-image',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardEditImageRoute = DashboardEditImageRouteImport.update({
+  id: '/edit-image',
+  path: '/edit-image',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardBillingRoute = DashboardBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
   '/dashboard/library': typeof DashboardLibraryRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
   '/dashboard/library': typeof DashboardLibraryRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
   '/dashboard/library': typeof DashboardLibraryRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/dashboard/billing'
+    | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
     | '/dashboard/library'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/dashboard/billing'
+    | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
     | '/dashboard/library'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/dashboard/billing'
+    | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
     | '/dashboard/library'
@@ -480,6 +492,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGenerateImageRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/edit-image': {
+      id: '/dashboard/edit-image'
+      path: '/edit-image'
+      fullPath: '/dashboard/edit-image'
+      preLoaderRoute: typeof DashboardEditImageRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/billing': {
       id: '/dashboard/billing'
       path: '/billing'
@@ -506,6 +525,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardBillingRoute: typeof DashboardBillingRoute
+  DashboardEditImageRoute: typeof DashboardEditImageRoute
   DashboardGenerateImageRoute: typeof DashboardGenerateImageRoute
   DashboardGenerateTextRoute: typeof DashboardGenerateTextRoute
   DashboardLibraryRoute: typeof DashboardLibraryRoute
@@ -518,6 +538,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBillingRoute: DashboardBillingRoute,
+  DashboardEditImageRoute: DashboardEditImageRoute,
   DashboardGenerateImageRoute: DashboardGenerateImageRoute,
   DashboardGenerateTextRoute: DashboardGenerateTextRoute,
   DashboardLibraryRoute: DashboardLibraryRoute,

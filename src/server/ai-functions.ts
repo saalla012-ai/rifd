@@ -231,3 +231,111 @@ export const generateImage = createServerFn({ method: "POST" })
       remaining: limits.image - used - 1,
     };
   });
+
+// ============================================================
+// editImage — يأخذ صورة input + تعليمات تعديل، يرجع صورة معدّلة
+// يستخدم نفس حصة image_count.
+// ============================================================
+export const editImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      imageDataUrl: string;
+      prompt: string;
+      templateTitle: string;
+      templateId: string;
+    }) => {
+      if (!input.imageDataUrl?.startsWith("data:image/")) {
+        throw new Error("صيغة الصورة غير صحيحة");
+      }
+      // ~10MB كحد أقصى للـbase64 (≈ 7.5MB صورة فعلية)
+      if (input.imageDataUrl.length > 14_000_000) {
+        throw new Error("حجم الصورة كبير جداً (الحد الأقصى ~10MB)");
+      }
+      if (!input.prompt?.trim()) throw new Error("اكتب وصف التعديل");
+      if (input.prompt.length > 1500) throw new Error("الوصف طويل جداً");
+      return input;
+    }
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    const { profile, usage, month } = await loadProfileAndUsage(supabase, userId);
+
+    const plan = (profile?.plan ?? "free") as keyof typeof PLAN_LIMITS;
+    const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+    const used = usage?.image_count ?? 0;
+    if (used >= limits.image) {
+      throw new Error(
+        `وصلت حدّ صور باقتك (${limits.image} صورة شهرياً). رقّ باقتك للاستمرار.`
+      );
+    }
+
+    const ctx: StoreContext = profile ?? {};
+    const brandHint = ctx.brand_color
+      ? ` Use brand accent color ${ctx.brand_color} where appropriate.`
+      : "";
+    const fullPrompt = `${data.prompt}. Maintain photorealistic quality, clean composition, professional e-commerce look.${brandHint}`;
+
+    const model = "google/gemini-3.1-flash-image-preview";
+
+    let editedDataUrl: string;
+    try {
+      const out = await chatComplete({
+        model,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: fullPrompt },
+              { type: "image_url", image_url: { url: data.imageDataUrl } },
+            ],
+          },
+        ],
+        modalities: ["image", "text"],
+      });
+      editedDataUrl = out.images[0];
+      if (!editedDataUrl) throw new Error("لم يتم توليد صورة معدّلة");
+    } catch (e) {
+      if (e instanceof AIError) throw new Error(e.message);
+      throw e;
+    }
+
+    // Upload edited image to storage
+    const match = editedDataUrl.match(/^data:(image\/[a-z0-9+]+);base64,(.+)$/i);
+    if (!match) throw new Error("صيغة الصورة الناتجة غير مدعومة");
+    const mime = match[1];
+    const ext = mime.split("/")[1].replace("+xml", "");
+    const bytes = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
+    const filename = `${userId}/edited-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+    const { error: upErr } = await supabase.storage
+      .from("generated-images")
+      .upload(filename, bytes, { contentType: mime, upsert: false });
+    if (upErr) throw new Error(`فشل حفظ الصورة: ${upErr.message}`);
+
+    const { data: pub } = supabase.storage
+      .from("generated-images")
+      .getPublicUrl(filename);
+    const publicUrl = pub.publicUrl;
+
+    await Promise.all([
+      supabase.from("generations").insert({
+        user_id: userId,
+        type: "image_enhance",
+        prompt: data.prompt,
+        result: publicUrl,
+        template: data.templateId,
+        model_used: model,
+        metadata: {
+          template_title: data.templateTitle,
+          storage_path: filename,
+        },
+      }),
+      bumpUsage(supabase, userId, month, "image"),
+    ]);
+
+    return {
+      url: publicUrl,
+      remaining: limits.image - used - 1,
+    };
+  });
