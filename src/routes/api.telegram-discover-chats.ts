@@ -13,9 +13,15 @@ type TgChat = {
   title?: string;
 };
 
+type BotInfo = {
+  id?: number;
+  username?: string;
+  first_name?: string;
+};
+
 /**
- * يقرأ آخر التحديثات من البوت ويستخرج المحادثات الفريدة
- * (خاصّة + مجموعات + قنوات) ليختار الأدمن وجهة الإشعارات.
+ * يحذف الـ webhook (إن وُجد) ثم يقرأ آخر التحديثات من البوت
+ * ويستخرج المحادثات الفريدة. كذلك يعيد بيانات البوت من getMe.
  * محمي: لا يعمل إلا للمستخدم admin.
  */
 export const Route = createFileRoute("/api/telegram-discover-chats")({
@@ -59,14 +65,44 @@ export const Route = createFileRoute("/api/telegram-discover-chats")({
 
           if (!roleRow) return jsonError("forbidden: admin only", 403);
 
-          // getUpdates بدون offset (يجلب آخر ~100 تحديث)
+          const tgHeaders = {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": TELEGRAM_API_KEY,
+            "Content-Type": "application/json",
+          };
+
+          // 1) deleteWebhook (آمن — لو ما في webhook ما يصير شيء)
+          //    drop_pending_updates=false عشان نحافظ على آخر الرسائل
+          await fetch(`${GATEWAY_URL}/deleteWebhook`, {
+            method: "POST",
+            headers: tgHeaders,
+            body: JSON.stringify({ drop_pending_updates: false }),
+          }).catch(() => null);
+
+          // 2) getMe
+          let bot: BotInfo = {};
+          try {
+            const meRes = await fetch(`${GATEWAY_URL}/getMe`, {
+              method: "POST",
+              headers: tgHeaders,
+              body: JSON.stringify({}),
+            });
+            const meData = await meRes.json();
+            if (meRes.ok && meData.ok) {
+              bot = {
+                id: meData.result?.id,
+                username: meData.result?.username,
+                first_name: meData.result?.first_name,
+              };
+            }
+          } catch {
+            // ignore — لن يفشل بسبب getMe
+          }
+
+          // 3) getUpdates
           const tgRes = await fetch(`${GATEWAY_URL}/getUpdates`, {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "X-Connection-Api-Key": TELEGRAM_API_KEY,
-              "Content-Type": "application/json",
-            },
+            headers: tgHeaders,
             body: JSON.stringify({ timeout: 0, allowed_updates: ["message"] }),
           });
 
@@ -99,7 +135,12 @@ export const Route = createFileRoute("/api/telegram-discover-chats")({
           const chats = Array.from(chatsMap.values());
 
           return new Response(
-            JSON.stringify({ ok: true, chats, updates_count: updates.length }),
+            JSON.stringify({
+              ok: true,
+              chats,
+              bot,
+              updates_count: updates.length,
+            }),
             { status: 200, headers: { "Content-Type": "application/json" } }
           );
         } catch (error) {
