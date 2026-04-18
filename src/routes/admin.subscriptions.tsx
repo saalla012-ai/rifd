@@ -11,6 +11,8 @@ import {
   FileX,
   Download,
   ExternalLink,
+  Bell,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
