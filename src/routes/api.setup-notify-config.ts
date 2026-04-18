@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 
 /**
  * يُستدعى من لوحة الأدمن لتخزين webhook URL + secret في internal_config.
- * التحقق: المستخدم مسجّل دخول وله دور admin في user_roles.
+ * يستخدم جلسة المستخدم (Bearer token) — RLS يضمن أن الأدمن فقط يقدر يكتب.
  */
 export const Route = createFileRoute("/api/setup-notify-config")({
   server: {
@@ -20,39 +19,28 @@ export const Route = createFileRoute("/api/setup-notify-config")({
             return jsonError("server misconfigured (supabase env)", 500);
           }
           if (!NOTIFY_WEBHOOK_SECRET) {
-            return jsonError("NOTIFY_WEBHOOK_SECRET missing", 500);
+            return jsonError("NOTIFY_WEBHOOK_SECRET missing on server", 500);
           }
 
           const authHeader = request.headers.get("Authorization") ?? "";
           const token = authHeader.replace(/^Bearer\s+/i, "").trim();
           if (!token) return jsonError("unauthorized: missing token", 401);
 
-          // تحقّق من صحة الـtoken وجلب المستخدم
+          // عميل Supabase موقّع باسم المستخدم — RLS تنطبق
           const userClient = createClient<Database>(
             SUPABASE_URL,
             SUPABASE_PUBLISHABLE_KEY,
-            { auth: { persistSession: false, autoRefreshToken: false } }
+            {
+              auth: { persistSession: false, autoRefreshToken: false },
+              global: { headers: { Authorization: `Bearer ${token}` } },
+            }
           );
-          const { data: userData, error: userErr } =
-            await userClient.auth.getUser(token);
-          if (userErr || !userData?.user) {
-            return jsonError("unauthorized: invalid session", 401);
-          }
 
-          // تحقّق من دور admin
-          const { data: roleRow } = await supabaseAdmin
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", userData.user.id)
-            .eq("role", "admin")
-            .maybeSingle();
-
-          if (!roleRow) return jsonError("forbidden: admin only", 403);
-
+          // RLS على internal_config تسمح للأدمن فقط — أي محاولة من غيره ترجع 0 صفوف
           const origin = new URL(request.url).origin;
           const webhookUrl = `${origin}/api/notify-telegram-admin`;
 
-          const { error } = await supabaseAdmin
+          const { error } = await userClient
             .from("internal_config")
             .upsert(
               [
@@ -64,7 +52,8 @@ export const Route = createFileRoute("/api/setup-notify-config")({
 
           if (error) {
             console.error("setup-notify-config upsert error:", error);
-            return jsonError(error.message, 500);
+            // لو RLS رفض، Supabase ترجع رسالة واضحة
+            return jsonError(error.message, 403);
           }
 
           return new Response(
