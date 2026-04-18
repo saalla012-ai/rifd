@@ -17,7 +17,7 @@ export function SubscribersCounter({
 }) {
   const [count, setCount] = useState<number | null>(null);
   const [bumped, setBumped] = useState(false);
-  const baseRef = useRef<number>(563);
+  const baseRef = useRef<number>(564);
 
   useEffect(() => {
     let mounted = true;
@@ -31,7 +31,7 @@ export function SubscribersCounter({
           .in("status", ["activated", "contacted", "pending"]),
       ]);
       if (!mounted) return;
-      const base = (settingsRes.data?.founding_base_count as number | undefined) ?? 563;
+      const base = (settingsRes.data?.founding_base_count as number | undefined) ?? 564;
       baseRef.current = base;
       setCount(base + (takenRes.count ?? 0));
     })();
