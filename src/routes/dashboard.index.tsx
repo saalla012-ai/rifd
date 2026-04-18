@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wand2, Image as ImageIcon, Sparkles, TrendingUp, Clock, Star, FileText } from "lucide-react";
+import { Wand2, Image as ImageIcon, ImagePlus, Sparkles, TrendingUp, Clock, Star, FileText, ArrowLeft } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
