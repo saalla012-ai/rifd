@@ -13,7 +13,7 @@ export const Route = createFileRoute("/dashboard/")({
 });
 
 const LIMITS = {
-  free: { text: 5, image: 0, label: "مجاني" },
+  free: { text: 5, image: 2, label: "مجاني" },
   pro: { text: 1000, image: 60, label: "احترافي" },
   business: { text: 5000, image: 300, label: "أعمال" },
 };
