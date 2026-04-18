@@ -14,16 +14,158 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      generations: {
+        Row: {
+          created_at: string
+          id: string
+          is_favorite: boolean
+          metadata: Json | null
+          model_used: string | null
+          prompt: string
+          result: string | null
+          template: string | null
+          type: Database["public"]["Enums"]["generation_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          metadata?: Json | null
+          model_used?: string | null
+          prompt: string
+          result?: string | null
+          template?: string | null
+          type: Database["public"]["Enums"]["generation_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          metadata?: Json | null
+          model_used?: string | null
+          prompt?: string
+          result?: string | null
+          template?: string | null
+          type?: Database["public"]["Enums"]["generation_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          audience: string | null
+          brand_color: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          onboarded: boolean
+          plan: Database["public"]["Enums"]["user_plan"]
+          product_type: string | null
+          store_name: string | null
+          tone: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          audience?: string | null
+          brand_color?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          onboarded?: boolean
+          plan?: Database["public"]["Enums"]["user_plan"]
+          product_type?: string | null
+          store_name?: string | null
+          tone?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          audience?: string | null
+          brand_color?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          onboarded?: boolean
+          plan?: Database["public"]["Enums"]["user_plan"]
+          product_type?: string | null
+          store_name?: string | null
+          tone?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      usage_logs: {
+        Row: {
+          id: string
+          image_count: number
+          month: string
+          text_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          image_count?: number
+          month: string
+          text_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          image_count?: number
+          month?: string
+          text_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      generation_type: "text" | "image" | "image_enhance"
+      user_plan: "free" | "pro" | "business"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +292,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      generation_type: ["text", "image", "image_enhance"],
+      user_plan: ["free", "pro", "business"],
+    },
   },
 } as const
