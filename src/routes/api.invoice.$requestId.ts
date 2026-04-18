@@ -5,10 +5,10 @@ import fontkit from "@pdf-lib/fontkit";
 // @ts-expect-error - no types
 import ArabicReshaper from "arabic-reshaper";
 import bidiFactory from "bidi-js";
-// @ts-expect-error - Vite arraybuffer import
-import notoRegularBuf from "@/assets/fonts/NotoNaskhArabic-Regular.ttf?arraybuffer";
-// @ts-expect-error - Vite arraybuffer import
-import notoBoldBuf from "@/assets/fonts/NotoNaskhArabic-Bold.ttf?arraybuffer";
+import notoRegularUrl from "@/assets/fonts/NotoNaskhArabic-Regular.ttf?url";
+import notoBoldUrl from "@/assets/fonts/NotoNaskhArabic-Bold.ttf?url";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { Database } from "@/integrations/supabase/types";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -201,9 +201,10 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           const pdfDoc = await PDFDocument.create();
           pdfDoc.registerFontkit(fontkit);
 
-          console.log("font types", typeof notoRegularBuf, notoRegularBuf instanceof ArrayBuffer, notoRegularBuf instanceof Uint8Array, (notoRegularBuf as any)?.byteLength, (notoRegularBuf as any)?.length, typeof notoRegularBuf === "string" ? (notoRegularBuf as string).slice(0, 80) : "");
-          const fontReg = await pdfDoc.embedFont(notoRegularBuf as ArrayBuffer, { subset: true });
-          const fontBold = await pdfDoc.embedFont(notoBoldBuf as ArrayBuffer, { subset: true });
+          const regBytes = readFontBytes(notoRegularUrl);
+          const boldBytes = readFontBytes(notoBoldUrl);
+          const fontReg = await pdfDoc.embedFont(regBytes, { subset: true });
+          const fontBold = await pdfDoc.embedFont(boldBytes, { subset: true });
 
           const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
 
