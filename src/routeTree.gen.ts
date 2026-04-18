@@ -39,6 +39,7 @@ import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as ApiInvoiceRequestIdRouteImport } from './routes/api.invoice.$requestId'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
@@ -192,6 +193,12 @@ const ApiInvoiceRequestIdRoute = ApiInvoiceRequestIdRouteImport.update({
   path: '/api/invoice/$requestId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DashboardBillingConfirmRequestIdRoute =
   DashboardBillingConfirmRequestIdRouteImport.update({
     id: '/billing/confirm/$requestId',
@@ -231,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -263,6 +271,7 @@ export interface FileRoutesByTo {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -297,6 +306,7 @@ export interface FileRoutesById {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/dashboard/billing'
     | '/dashboard/billing/confirm/$requestId'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -397,6 +409,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -420,6 +433,7 @@ export interface RootRouteChildren {
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
   ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -634,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInvoiceRequestIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/billing/confirm/$requestId': {
       id: '/dashboard/billing/confirm/$requestId'
       path: '/billing/confirm/$requestId'
@@ -697,6 +718,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
   ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
