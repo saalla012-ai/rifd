@@ -11,6 +11,8 @@ import {
   FileX,
   Download,
   ExternalLink,
+  Bell,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -199,17 +201,20 @@ function AdminSubscriptionsPage() {
             مراجعة طلبات الأعضاء المؤسسين وتفعيل الباقات
           </p>
         </div>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">الكل ({requests.length})</SelectItem>
-            <SelectItem value="pending">قيد الانتظار ({counts.pending})</SelectItem>
-            <SelectItem value="contacted">تم التواصل ({counts.contacted})</SelectItem>
-            <SelectItem value="activated">مفعّل ({counts.activated})</SelectItem>
-            <SelectItem value="rejected">مرفوض</SelectItem>
-            <SelectItem value="expired">منتهي</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap items-center gap-2">
+          <NotificationsTools />
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل ({requests.length})</SelectItem>
+              <SelectItem value="pending">قيد الانتظار ({counts.pending})</SelectItem>
+              <SelectItem value="contacted">تم التواصل ({counts.contacted})</SelectItem>
+              <SelectItem value="activated">مفعّل ({counts.activated})</SelectItem>
+              <SelectItem value="rejected">مرفوض</SelectItem>
+              <SelectItem value="expired">منتهي</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -237,6 +242,69 @@ function AdminSubscriptionsPage() {
         )}
       </div>
     </DashboardShell>
+  );
+}
+
+function NotificationsTools() {
+  const [setupLoading, setSetupLoading] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
+
+  async function callApi(path: string, body: object) {
+    const secret = window.prompt(
+      "أدخل NOTIFY_WEBHOOK_SECRET للتأكيد (يُستخدم مرة واحدة فقط):"
+    );
+    if (!secret) return null;
+    return fetch(path, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-webhook-secret": secret,
+      },
+      body: JSON.stringify(body),
+    });
+  }
+
+  async function handleSetup() {
+    setSetupLoading(true);
+    try {
+      const res = await callApi("/api/setup-notify-config", {});
+      if (!res) return;
+      const data = await res.json();
+      if (res.ok) toast.success(`تم تخزين إعدادات الإشعار ✅`);
+      else toast.error(`فشل: ${data.error ?? res.status}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
+    } finally {
+      setSetupLoading(false);
+    }
+  }
+
+  async function handleTest() {
+    setTestLoading(true);
+    try {
+      const res = await callApi("/api/notify-telegram-admin", { test: true });
+      if (!res) return;
+      const data = await res.json();
+      if (res.ok) toast.success("تم إرسال إشعار تجريبي ✅");
+      else toast.error(`فشل: ${data.error ?? res.status}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
+    } finally {
+      setTestLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex gap-2">
+      <Button size="sm" variant="outline" onClick={handleSetup} disabled={setupLoading} title="تخزين رابط + سرّ الإشعارات في DB (مرة واحدة)">
+        {setupLoading ? <Loader2 className="ml-1 h-3 w-3 animate-spin" /> : <Settings2 className="ml-1 h-3 w-3" />}
+        إعداد الإشعارات
+      </Button>
+      <Button size="sm" variant="outline" onClick={handleTest} disabled={testLoading}>
+        {testLoading ? <Loader2 className="ml-1 h-3 w-3 animate-spin" /> : <Bell className="ml-1 h-3 w-3" />}
+        اختبار تيليجرام
+      </Button>
+    </div>
   );
 }
 

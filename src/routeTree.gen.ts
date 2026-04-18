@@ -31,6 +31,8 @@ import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library
 import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
 import { Route as DashboardEditImageRouteImport } from './routes/dashboard.edit-image'
+import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
+import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
@@ -146,6 +148,16 @@ const DashboardEditImageRoute = DashboardEditImageRouteImport.update({
   path: '/edit-image',
   getParentRoute: () => DashboardRoute,
 } as any)
+const ApiSetupNotifyConfigRoute = ApiSetupNotifyConfigRouteImport.update({
+  id: '/api/setup-notify-config',
+  path: '/api/setup-notify-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotifyTelegramAdminRoute = ApiNotifyTelegramAdminRouteImport.update({
+  id: '/api/notify-telegram-admin',
+  path: '/api/notify-telegram-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDemoGenerateRoute = ApiDemoGenerateRouteImport.update({
   id: '/api/demo-generate',
   path: '/api/demo-generate',
@@ -181,6 +193,8 @@ export interface FileRoutesByFullPath {
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
+  '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
+  '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -208,6 +222,8 @@ export interface FileRoutesByTo {
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
+  '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
+  '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -237,6 +253,8 @@ export interface FileRoutesById {
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
+  '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
+  '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -267,6 +285,8 @@ export interface FileRouteTypes {
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
+    | '/api/notify-telegram-admin'
+    | '/api/setup-notify-config'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -294,6 +314,8 @@ export interface FileRouteTypes {
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
+    | '/api/notify-telegram-admin'
+    | '/api/setup-notify-config'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -322,6 +344,8 @@ export interface FileRouteTypes {
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
+    | '/api/notify-telegram-admin'
+    | '/api/setup-notify-config'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -351,6 +375,8 @@ export interface RootRouteChildren {
   VsChatgptRoute: typeof VsChatgptRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
+  ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
+  ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -512,6 +538,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEditImageRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/setup-notify-config': {
+      id: '/api/setup-notify-config'
+      path: '/api/setup-notify-config'
+      fullPath: '/api/setup-notify-config'
+      preLoaderRoute: typeof ApiSetupNotifyConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notify-telegram-admin': {
+      id: '/api/notify-telegram-admin'
+      path: '/api/notify-telegram-admin'
+      fullPath: '/api/notify-telegram-admin'
+      preLoaderRoute: typeof ApiNotifyTelegramAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/demo-generate': {
       id: '/api/demo-generate'
       path: '/api/demo-generate'
@@ -588,6 +628,8 @@ const rootRouteChildren: RootRouteChildren = {
   VsChatgptRoute: VsChatgptRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
+  ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,
+  ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
