@@ -158,6 +158,8 @@ function BillingPage() {
     [requests]
   );
 
+  const isPaidUser = Boolean(profile?.plan && profile.plan !== "free");
+
   // Auto-redirect: لو في طلب pending → ننقله مباشرة لصفحة التأكيد
   // (إلا لو مفعّل بالفعل — يبقى يشوف صفحة الفوترة)
   useEffect(() => {
@@ -168,7 +170,7 @@ function BillingPage() {
       replace: true,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, pendingRequest?.id]);
+  }, [loading, pendingRequest?.id, isPaidUser]);
 
   function buildWhatsappUrl(reqId?: string) {
     const lines = [
