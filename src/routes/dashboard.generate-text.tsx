@@ -12,6 +12,7 @@ import {
 import { TEXT_PROMPTS } from "@/lib/prompts-data";
 import { generateText } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
+import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 
 type TextSearch = { template?: string };
 
@@ -34,6 +35,7 @@ function GenerateTextPage() {
   const [result, setResult] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
   const router = useRouter();
 
   const template = TEXT_PROMPTS.find((p) => p.id === templateId) ?? TEXT_PROMPTS[0];
@@ -58,7 +60,12 @@ function GenerateTextPage() {
       toast.success("تم التوليد ✨");
       router.invalidate();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "خطأ في التوليد");
+      const msg = e instanceof Error ? e.message : "خطأ في التوليد";
+      if (isQuotaError(msg)) {
+        setQuotaDialog({ open: true, reason: msg });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -152,6 +159,13 @@ function GenerateTextPage() {
           </div>
         </div>
       </div>
+
+      <QuotaExceededDialog
+        open={quotaDialog.open}
+        onOpenChange={(v) => setQuotaDialog((s) => ({ ...s, open: v }))}
+        kind="نص"
+        reason={quotaDialog.reason}
+      />
     </DashboardShell>
   );
 }
