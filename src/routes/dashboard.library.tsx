@@ -36,10 +36,12 @@ function LibraryPage() {
   }, [user]);
 
   const load = async () => {
+    if (!user) return;
     setLoading(true);
     const { data, error } = await supabase
       .from("generations")
       .select("*")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) toast.error(error.message);
