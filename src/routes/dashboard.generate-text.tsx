@@ -12,6 +12,7 @@ import {
 import { TEXT_PROMPTS } from "@/lib/prompts-data";
 import { generateText } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
+import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 
 type TextSearch = { template?: string };
 
