@@ -14,6 +14,7 @@ import {
   Bell,
   Settings2,
   Search,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
