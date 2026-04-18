@@ -1,0 +1,85 @@
+import {
+  Brain,
+  Image as ImageIcon,
+  Library,
+  Languages,
+  ShieldCheck,
+  Zap,
+  Store,
+  CreditCard,
+} from "lucide-react";
+
+const FEATURES = [
+  {
+    icon: Brain,
+    title: "ذاكرة متجرك الدائمة",
+    desc: "نحفظ اسم متجرك، جمهورك، نبرتك وألوانك — كل توليدة تجي مخصصة بدون ما تكتب التفاصيل من جديد.",
+  },
+  {
+    icon: Library,
+    title: "40 قالب جاهز",
+    desc: "30 قالب نصي + 10 قوالب صور، كلها مصممة لأصحاب المتاجر السعوديين، بنقرة واحدة فقط.",
+  },
+  {
+    icon: Languages,
+    title: "عامية سعودية أصيلة",
+    desc: "لا فصحى مكسّرة ولا ترجمة آلية — نصوص بنبرة سعودية حقيقية تكسب ثقة عملائك.",
+  },
+  {
+    icon: ImageIcon,
+    title: "بوسترات بالعربي",
+    desc: "صور إعلانية بنص عربي بارز + تحسين صور منتجاتك بخلفية احترافية — بدون مصمم.",
+  },
+  {
+    icon: Zap,
+    title: "نتيجة في 10 ثواني",
+    desc: "لا انتظار، لا هندسة برومبتات. تختار القالب، تكتب فكرتك، وتحصل على نتيجة جاهزة للنشر.",
+  },
+  {
+    icon: Store,
+    title: "تكامل مع متجرك",
+    desc: "نصوص جاهزة للصق في سلة، زد، شوبيفاي — مع وصف، عنوان SEO، ومواصفات.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "آمن ومتوافق PDPL",
+    desc: "بياناتك محفوظة في خوادم آمنة، متوافقة مع نظام حماية البيانات السعودي.",
+  },
+  {
+    icon: CreditCard,
+    title: "فاتورة ضريبية SAR",
+    desc: "اشتراكات بالريال السعودي + فاتورة ضريبية رسمية لكل عملية دفع.",
+  },
+];
+
+export function HomeFeatures() {
+  return (
+    <section className="border-t border-border bg-background py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-extrabold sm:text-4xl">
+            كل ما تحتاجه عشان <span className="text-gradient-primary">تبيع أكثر</span>
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            أدوات مصممة خصيصاً للسوق السعودي — ليست مجرد ChatGPT بواجهة عربية
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-elegant"
+            >
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:gradient-primary group-hover:text-primary-foreground">
+                <f.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-bold">{f.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
