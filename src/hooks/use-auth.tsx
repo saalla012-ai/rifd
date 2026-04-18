@@ -26,6 +26,13 @@ type AuthContextValue = {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  /**
+   * هل المستخدم الحالي يحمل دور "admin"؟
+   * يُحمَّل مرة واحدة عند تسجيل الدخول ويُشارَك بين جميع المكونات،
+   * تجنباً لاستعلامات user_roles المكررة (سابقاً 6 طلبات/ثانية).
+   * null أثناء التحميل، true/false بعد التحقق.
+   */
+  isAdmin: boolean | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -37,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadProfile = async (userId: string) => {
@@ -48,6 +56,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile((data as Profile | null) ?? null);
   };
 
+  const loadIsAdmin = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    setIsAdmin(!!data);
+  };
+
+  const loadUserData = async (userId: string) => {
+    // نشغّل البروفايل والدور بالتوازي — استعلامان فقط لكل جلسة بدلاً من تكرارهما في كل مكوّن.
+    await Promise.all([loadProfile(userId), loadIsAdmin(userId)]);
+  };
+
   useEffect(() => {
     // CRITICAL: subscribe BEFORE getSession to avoid missing events
     const { data: subscription } = supabase.auth.onAuthStateChange(
@@ -57,10 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (newSession?.user) {
           // Defer DB call to avoid deadlocks inside the auth callback
           setTimeout(() => {
-            void loadProfile(newSession.user.id);
+            void loadUserData(newSession.user.id);
           }, 0);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -69,8 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        void loadProfile(s.user.id).finally(() => setLoading(false));
+        void loadUserData(s.user.id).finally(() => setLoading(false));
       } else {
+        setIsAdmin(false);
         setLoading(false);
       }
     });
@@ -87,13 +112,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setIsAdmin(false);
     setUser(null);
     setSession(null);
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, session, profile, loading, refreshProfile, signOut }}
+      value={{
+        user,
+        session,
+        profile,
+        isAdmin,
+        loading,
+        refreshProfile,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

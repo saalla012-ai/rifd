@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -39,8 +38,7 @@ const ADMIN_NAV = [
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
-  const { user, profile, loading, signOut } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, profile, loading, isAdmin, signOut } = useAuth();
 
   // حماية: غير المسجلين يُحوَّلون إلى /auth
   useEffect(() => {
@@ -48,18 +46,6 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       void navigate({ to: "/auth" });
     }
   }, [loading, user, navigate]);
-
-  // فحص دور الأدمن
-  useEffect(() => {
-    if (!user) { setIsAdmin(false); return; }
-    void supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle()
-      .then(({ data }) => setIsAdmin(!!data));
-  }, [user]);
 
   const handleLogout = async () => {
     try {
