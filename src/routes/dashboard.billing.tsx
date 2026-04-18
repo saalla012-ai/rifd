@@ -344,46 +344,58 @@ function BillingPage() {
             </div>
           </form>
 
-          {/* Founding members card */}
-          <aside className="rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent p-6 shadow-gold">
-            <div className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-gold" />
-              <span className="text-xs font-bold uppercase tracking-wide text-gold">
-                الأعضاء المؤسسين
-              </span>
-            </div>
-            <h3 className="mt-3 text-xl font-extrabold">امتيازات حصرية للأوائل</h3>
+          {/* Right column: Founder card + Steps + Founding members */}
+          <div className="space-y-5">
+            <FounderCard whatsappNumber={whatsappNumber} />
+            <ActivationSteps />
 
-            <div className="mt-5 rounded-xl bg-card/50 p-4 backdrop-blur">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Users className="h-4 w-4 text-gold" /> المقاعد المتبقية
-                </span>
-                <span className="font-extrabold text-gold">
-                  {loading ? "..." : `${seatsLeft} / ${seatsTotal}`}
+            <aside className="rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent p-6 shadow-gold">
+              <div className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-gold" />
+                <span className="text-xs font-bold uppercase tracking-wide text-gold">
+                  الأعضاء المؤسسين
                 </span>
               </div>
-              <Progress value={seatsPct} className="mt-2 h-2" />
-              <p className="mt-2 text-xs text-muted-foreground">
-                البرنامج محدود بـ{seatsTotal} عضو فقط
-              </p>
-            </div>
+              <h3 className="mt-3 text-xl font-extrabold">امتيازات حصرية للأوائل</h3>
 
-            <ul className="mt-5 space-y-2.5 text-sm">
-              {[
-                "🔒 سعر مدى الحياة (لن يتغير حتى لو رفعنا الأسعار لاحقاً)",
-                "💬 دعم مباشر من المؤسس عبر واتساب",
-                "🎯 تأثيرك على خارطة الطريق (تقترح ميزات نطورها)",
-                "⚡ تفعيل خلال 15 دقيقة من إرسال الطلب",
-                "🧾 فاتورة ضريبية رسمية بعد كل دفعة",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
+              <div className="mt-5 rounded-xl bg-card/50 p-4 backdrop-blur">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Users className="h-4 w-4 text-gold" /> المقاعد المتبقية
+                  </span>
+                  <span className="font-extrabold text-gold">
+                    {loading ? "..." : `${seatsLeft} / ${seatsTotal}`}
+                  </span>
+                </div>
+                <Progress value={seatsPct} className="mt-2 h-2" />
+                <p className="mt-2 text-xs text-muted-foreground">
+                  البرنامج محدود بـ{seatsTotal} عضو فقط
+                </p>
+              </div>
+
+              <ul className="mt-5 space-y-2.5 text-sm">
+                {[
+                  "🔒 سعر مدى الحياة (لن يتغير حتى لو رفعنا الأسعار لاحقاً)",
+                  "💬 دعم مباشر من المؤسس عبر واتساب",
+                  "🎯 تأثيرك على خارطة الطريق (تقترح ميزات نطورها)",
+                  "⚡ تفعيل خلال 15 دقيقة من إرسال الطلب",
+                  "🧾 فاتورة ضريبية رسمية بعد كل دفعة",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          </div>
+        </div>
+      )}
+
+      {/* Trust badges grid — visible to everyone */}
+      {!isPaidUser && (
+        <div className="mt-6">
+          <TrustBadges items={6} />
         </div>
       )}
 
