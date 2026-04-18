@@ -31,6 +31,8 @@ import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library
 import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
 import { Route as DashboardEditImageRouteImport } from './routes/dashboard.edit-image'
+import { Route as ApiTelegramSetChatIdRouteImport } from './routes/api.telegram-set-chat-id'
+import { Route as ApiTelegramDiscoverChatsRouteImport } from './routes/api.telegram-discover-chats'
 import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
@@ -148,6 +150,17 @@ const DashboardEditImageRoute = DashboardEditImageRouteImport.update({
   path: '/edit-image',
   getParentRoute: () => DashboardRoute,
 } as any)
+const ApiTelegramSetChatIdRoute = ApiTelegramSetChatIdRouteImport.update({
+  id: '/api/telegram-set-chat-id',
+  path: '/api/telegram-set-chat-id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelegramDiscoverChatsRoute =
+  ApiTelegramDiscoverChatsRouteImport.update({
+    id: '/api/telegram-discover-chats',
+    path: '/api/telegram-discover-chats',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSetupNotifyConfigRoute = ApiSetupNotifyConfigRouteImport.update({
   id: '/api/setup-notify-config',
   path: '/api/setup-notify-config',
@@ -195,6 +208,8 @@ export interface FileRoutesByFullPath {
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
+  '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
+  '/api/telegram-set-chat-id': typeof ApiTelegramSetChatIdRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -224,6 +239,8 @@ export interface FileRoutesByTo {
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
+  '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
+  '/api/telegram-set-chat-id': typeof ApiTelegramSetChatIdRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -255,6 +272,8 @@ export interface FileRoutesById {
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
+  '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
+  '/api/telegram-set-chat-id': typeof ApiTelegramSetChatIdRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -287,6 +306,8 @@ export interface FileRouteTypes {
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
+    | '/api/telegram-discover-chats'
+    | '/api/telegram-set-chat-id'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -316,6 +337,8 @@ export interface FileRouteTypes {
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
+    | '/api/telegram-discover-chats'
+    | '/api/telegram-set-chat-id'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -346,6 +369,8 @@ export interface FileRouteTypes {
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
+    | '/api/telegram-discover-chats'
+    | '/api/telegram-set-chat-id'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -377,6 +402,8 @@ export interface RootRouteChildren {
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
   ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
+  ApiTelegramDiscoverChatsRoute: typeof ApiTelegramDiscoverChatsRoute
+  ApiTelegramSetChatIdRoute: typeof ApiTelegramSetChatIdRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -538,6 +565,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEditImageRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/telegram-set-chat-id': {
+      id: '/api/telegram-set-chat-id'
+      path: '/api/telegram-set-chat-id'
+      fullPath: '/api/telegram-set-chat-id'
+      preLoaderRoute: typeof ApiTelegramSetChatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telegram-discover-chats': {
+      id: '/api/telegram-discover-chats'
+      path: '/api/telegram-discover-chats'
+      fullPath: '/api/telegram-discover-chats'
+      preLoaderRoute: typeof ApiTelegramDiscoverChatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/setup-notify-config': {
       id: '/api/setup-notify-config'
       path: '/api/setup-notify-config'
@@ -630,6 +671,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,
   ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,
+  ApiTelegramDiscoverChatsRoute: ApiTelegramDiscoverChatsRoute,
+  ApiTelegramSetChatIdRoute: ApiTelegramSetChatIdRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
