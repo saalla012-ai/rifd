@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Sparkles, ShieldCheck, Star } from "lucide-react";
+import { Check, Sparkles, ShieldCheck, Star, Crown, Users } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/pricing")({
@@ -108,14 +111,35 @@ const FAQS = [
 
 function PricingPage() {
   const [yearly, setYearly] = useState(false);
+  const { user } = useAuth();
+  const [seatsLeft, setSeatsLeft] = useState<number | null>(null);
+  const [seatsTotal, setSeatsTotal] = useState<number>(50);
+
+  useEffect(() => {
+    void (async () => {
+      const [settingsRes, takenRes] = await Promise.all([
+        supabase.from("app_settings").select("founding_total_seats").eq("id", 1).maybeSingle(),
+        supabase
+          .from("subscription_requests")
+          .select("id", { count: "exact", head: true })
+          .in("status", ["activated", "contacted"]),
+      ]);
+      const total = settingsRes.data?.founding_total_seats ?? 50;
+      const taken = takenRes.count ?? 0;
+      setSeatsTotal(total);
+      setSeatsLeft(Math.max(0, total - taken));
+    })();
+  }, []);
+
+  const ctaTarget = user ? "/dashboard/billing" : "/auth";
 
   return (
     <MarketingLayout>
       <section className="border-b border-border bg-secondary/30 py-12 sm:py-16">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            أسعار شفافة بالريال السعودي
+          <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
+            <Crown className="h-3.5 w-3.5" />
+            برنامج الأعضاء المؤسسين — مفتوح حالياً
           </div>
           <h1 className="mt-4 text-3xl font-extrabold sm:text-5xl">
             ابدأ مجاناً، <span className="text-gradient-primary">ادفع لما تكبر</span>
@@ -123,6 +147,22 @@ function PricingPage() {
           <p className="mt-3 text-muted-foreground">
             بدون رسوم خفية، بدون التزام طويل، وضمان استرجاع 7 أيام كامل
           </p>
+
+          {/* Founding members seats counter */}
+          {seatsLeft !== null && seatsLeft > 0 && (
+            <div className="mx-auto mt-6 max-w-md rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-1.5 font-bold text-gold">
+                  <Users className="h-4 w-4" /> المقاعد المتبقية للمؤسسين
+                </span>
+                <span className="font-extrabold text-gold">{seatsLeft} / {seatsTotal}</span>
+              </div>
+              <Progress value={((seatsTotal - seatsLeft) / seatsTotal) * 100} className="mt-2 h-2" />
+              <p className="mt-2 text-xs text-muted-foreground">
+                السعر ثابت مدى الحياة لكل من ينضم في هذه المرحلة 🔒
+              </p>
+            </div>
+          )}
 
           <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-border bg-card p-1.5">
             <button
@@ -194,7 +234,7 @@ function PricingPage() {
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     )}
                   >
-                    <Link to={plan.id === "business" ? "/about" : "/onboarding"}>
+                    <Link to={plan.id === "free" ? "/onboarding" : ctaTarget}>
                       {plan.cta}
                     </Link>
                   </Button>

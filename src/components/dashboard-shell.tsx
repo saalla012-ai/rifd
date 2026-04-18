@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -13,9 +13,11 @@ import {
   Sparkles,
   LogOut,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -29,9 +31,14 @@ const NAV = [
   { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ] as const;
 
+const ADMIN_NAV = [
+  { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
+] as const;
+
 export function DashboardShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user, profile, loading, signOut } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // حماية: غير المسجلين يُحوَّلون إلى /auth
   useEffect(() => {
@@ -39,6 +46,18 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       void navigate({ to: "/auth" });
     }
   }, [loading, user, navigate]);
+
+  // فحص دور الأدمن
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    void supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -96,6 +115,24 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               {item.label}
             </Link>
           ))}
+          {isAdmin && (
+            <>
+              <div className="mt-4 mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-gold/80">
+                الإدارة
+              </div>
+              {ADMIN_NAV.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gold hover:bg-gold/10"
+                  activeProps={{ className: "bg-gold/15 text-gold" }}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+            </>
+          )}
         </nav>
         <div className="border-t border-sidebar-border p-3">
           <button
