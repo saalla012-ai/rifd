@@ -225,7 +225,8 @@ function ConfirmRequestPage() {
   // بيانات البنك
   const bankHolder = settings?.bank_account_holder ?? "محمود محمد علي";
   const bankIban = settings?.bank_iban ?? "SA0805000068204185025000";
-  const bankName = settings?.bank_name ?? "البنك الأهلي السعودي (SNB)";
+  const bankName = settings?.bank_name ?? "مصرف الإنماء";
+  const bankAccountNumber = "68204185025000";
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
 
   const waConfirmUrl = buildConfirmedWhatsappUrl({
@@ -305,6 +306,13 @@ function ConfirmRequestPage() {
                   onCopy={() => copyToClipboard(bankHolder, "اسم المستفيد")}
                 />
                 <BankRow
+                  label="رقم الحساب"
+                  value={bankAccountNumber}
+                  copyable
+                  ltr
+                  onCopy={() => copyToClipboard(bankAccountNumber, "رقم الحساب")}
+                />
+                <BankRow
                   label="رقم الآيبان (IBAN)"
                   value={bankIban}
                   copyable
@@ -360,7 +368,7 @@ function ConfirmRequestPage() {
             <section className="mt-4 rounded-2xl border-2 border-success bg-gradient-to-br from-success/10 via-success/5 to-transparent p-6 shadow-elegant">
               <h2 className="text-center text-xl font-extrabold">بعد ما تحوّل المبلغ</h2>
               <p className="mt-1 text-center text-sm text-muted-foreground">
-                اضغط الزر وأرسل لنا الرسالة الجاهزة على واتساب — نراجع ونفعّل خلال ساعات قليلة.
+                اضغط الزر وأرسل لنا الرسالة الجاهزة على واتساب — التفعيل خلال دقائق ⚡
               </p>
               <Button
                 asChild
