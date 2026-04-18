@@ -339,10 +339,8 @@ function BillingPage() {
               </Button>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-success" /> تفعيل خلال 15 دقيقة</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-success" /> ضمان استرجاع 7 أيام</span>
-              <span className="flex items-center gap-1.5"><Crown className="h-3.5 w-3.5 text-gold" /> سعر مدى الحياة</span>
+            <div className="mt-4 rounded-xl border border-success/20 bg-success/5 p-3">
+              <TrustBadges variant="row" items={4} />
             </div>
           </form>
 
