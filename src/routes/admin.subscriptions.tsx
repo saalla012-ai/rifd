@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { formatSaudiPhoneDisplay, normalizeSaudiPhone } from "@/lib/phone";
 
 export const Route = createFileRoute("/admin/subscriptions")({
   head: () => ({ meta: [{ title: "إدارة الاشتراكات — رِفد" }] }),
@@ -273,7 +274,8 @@ function RequestCard({
   const [adminNotes, setAdminNotes] = useState(request.admin_notes ?? "");
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
-  const waUrl = `https://wa.me/${request.whatsapp.replace(/[^\d]/g, "")}`;
+  const normalizedWa = normalizeSaudiPhone(request.whatsapp);
+  const waUrl = `https://wa.me/${normalizedWa ?? request.whatsapp.replace(/[^\d]/g, "")}`;
   const hasReceipt = Boolean(request.receipt_path);
   const isPdf = request.receipt_path?.toLowerCase().endsWith(".pdf");
 
@@ -314,7 +316,7 @@ function RequestCard({
           <h3 className="mt-2 font-bold">{request.store_name || "بدون اسم متجر"}</h3>
           <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span>📧 {request.email}</span>
-            <span dir="ltr">📱 {request.whatsapp}</span>
+            <span dir="ltr">📱 {formatSaudiPhoneDisplay(request.whatsapp)}</span>
             <span>💳 {request.payment_method === "bank_transfer_sa" ? "تحويل بنكي" : "أخرى"}</span>
             <span>🕐 {new Date(request.created_at).toLocaleString("ar-SA")}</span>
             {request.receipt_uploaded_at && (

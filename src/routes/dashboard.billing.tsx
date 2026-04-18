@@ -33,6 +33,13 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import {
+  formatSaudiPhoneDisplay,
+  normalizeSaudiPhone,
+  validateSaudiPhone,
+  SAUDI_PHONE_ERROR,
+  SAUDI_PHONE_PLACEHOLDER,
+} from "@/lib/phone";
 
 export const Route = createFileRoute("/dashboard/billing")({
   head: () => ({ meta: [{ title: "الفواتير والاشتراك — رِفد" }] }),
@@ -113,7 +120,7 @@ function BillingPage() {
 
   useEffect(() => {
     if (profile?.store_name) setStoreName(profile.store_name);
-    if (profile?.whatsapp) setWhatsapp(profile.whatsapp);
+    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
   }, [profile]);
 
   async function loadAll() {
@@ -178,6 +185,11 @@ function BillingPage() {
       toast.error("الرجاء إدخال رقم الواتساب");
       return;
     }
+    if (!validateSaudiPhone(whatsapp)) {
+      toast.error(SAUDI_PHONE_ERROR);
+      return;
+    }
+    const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setSubmitting(true);
     const { data, error } = await supabase
       .from("subscription_requests")
@@ -186,7 +198,7 @@ function BillingPage() {
         plan,
         billing_cycle: billingCycle,
         store_name: storeName || null,
-        whatsapp: whatsapp.trim(),
+        whatsapp: normalizedWhatsapp,
         email: user.email ?? "",
         payment_method: paymentMethod,
         notes: notes || null,
@@ -322,8 +334,11 @@ function BillingPage() {
                   dir="ltr"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder="+9665XXXXXXXX"
+                  placeholder={SAUDI_PHONE_PLACEHOLDER}
                 />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  رقم جوال سعودي يبدأ بـ 5 — نتواصل معك من خلاله
+                </p>
               </div>
               <div className="sm:col-span-2">
                 <Label className="mb-1.5 block">طريقة الدفع المفضلة</Label>
