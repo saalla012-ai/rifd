@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VsChatgptRouteImport } from './routes/vs-chatgpt'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
@@ -21,6 +23,7 @@ import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalRefundRouteImport } from './routes/legal.refund'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
+import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templates'
 import { Route as DashboardStoreProfileRouteImport } from './routes/dashboard.store-profile'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library'
@@ -32,6 +35,11 @@ import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
   path: '/vs-chatgpt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -47,6 +55,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -87,6 +100,11 @@ const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
 const DashboardUsageRoute = DashboardUsageRouteImport.update({
   id: '/usage',
   path: '/usage',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTemplatesRoute = DashboardTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardStoreProfileRoute = DashboardStoreProfileRouteImport.update({
@@ -130,9 +148,11 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
@@ -141,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
@@ -151,9 +172,11 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
@@ -162,6 +185,7 @@ export interface FileRoutesByTo {
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
@@ -173,9 +197,11 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
@@ -184,6 +210,7 @@ export interface FileRoutesById {
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
@@ -196,9 +223,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/dashboard'
+    | '/forgot-password'
     | '/library'
     | '/onboarding'
     | '/pricing'
+    | '/reset-password'
     | '/vs-chatgpt'
     | '/api/demo-generate'
     | '/dashboard/billing'
@@ -207,6 +236,7 @@ export interface FileRouteTypes {
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
+    | '/dashboard/templates'
     | '/dashboard/usage'
     | '/legal/privacy'
     | '/legal/refund'
@@ -217,9 +247,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/dashboard'
+    | '/forgot-password'
     | '/library'
     | '/onboarding'
     | '/pricing'
+    | '/reset-password'
     | '/vs-chatgpt'
     | '/api/demo-generate'
     | '/dashboard/billing'
@@ -228,6 +260,7 @@ export interface FileRouteTypes {
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
+    | '/dashboard/templates'
     | '/dashboard/usage'
     | '/legal/privacy'
     | '/legal/refund'
@@ -238,9 +271,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/dashboard'
+    | '/forgot-password'
     | '/library'
     | '/onboarding'
     | '/pricing'
+    | '/reset-password'
     | '/vs-chatgpt'
     | '/api/demo-generate'
     | '/dashboard/billing'
@@ -249,6 +284,7 @@ export interface FileRouteTypes {
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
+    | '/dashboard/templates'
     | '/dashboard/usage'
     | '/legal/privacy'
     | '/legal/refund'
@@ -260,9 +296,11 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LibraryRoute: typeof LibraryRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   VsChatgptRoute: typeof VsChatgptRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
@@ -277,6 +315,13 @@ declare module '@tanstack/react-router' {
       path: '/vs-chatgpt'
       fullPath: '/vs-chatgpt'
       preLoaderRoute: typeof VsChatgptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -298,6 +343,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -354,6 +406,13 @@ declare module '@tanstack/react-router' {
       path: '/usage'
       fullPath: '/dashboard/usage'
       preLoaderRoute: typeof DashboardUsageRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/templates': {
+      id: '/dashboard/templates'
+      path: '/templates'
+      fullPath: '/dashboard/templates'
+      preLoaderRoute: typeof DashboardTemplatesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/store-profile': {
@@ -415,6 +474,7 @@ interface DashboardRouteChildren {
   DashboardLibraryRoute: typeof DashboardLibraryRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStoreProfileRoute: typeof DashboardStoreProfileRoute
+  DashboardTemplatesRoute: typeof DashboardTemplatesRoute
   DashboardUsageRoute: typeof DashboardUsageRoute
 }
 
@@ -425,6 +485,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardLibraryRoute: DashboardLibraryRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStoreProfileRoute: DashboardStoreProfileRoute,
+  DashboardTemplatesRoute: DashboardTemplatesRoute,
   DashboardUsageRoute: DashboardUsageRoute,
 }
 
@@ -437,9 +498,11 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LibraryRoute: LibraryRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   VsChatgptRoute: VsChatgptRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
@@ -449,12 +512,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
