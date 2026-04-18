@@ -31,6 +31,7 @@ import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.ge
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
@@ -142,6 +143,11 @@ const ApiDemoGenerateRoute = ApiDemoGenerateRouteImport.update({
   path: '/api/demo-generate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/admin/subscriptions',
+  path: '/admin/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/vs-chatgpt'
+    | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/dashboard/billing'
     | '/dashboard/generate-image'
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/vs-chatgpt'
+    | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/dashboard/billing'
     | '/dashboard/generate-image'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/vs-chatgpt'
+    | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/dashboard/billing'
     | '/dashboard/generate-image'
@@ -302,6 +314,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   VsChatgptRoute: typeof VsChatgptRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDemoGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/admin/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -504,6 +524,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   VsChatgptRoute: VsChatgptRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,

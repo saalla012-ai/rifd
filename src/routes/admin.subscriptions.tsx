@@ -99,7 +99,12 @@ function AdminSubscriptionsPage() {
 
   async function updateStatus(req: Req, newStatus: Req["status"], adminNotes?: string) {
     setSavingId(req.id);
-    const updates: Record<string, unknown> = { status: newStatus };
+    const updates: {
+      status: Req["status"];
+      admin_notes?: string | null;
+      activated_at?: string;
+      activated_until?: string;
+    } = { status: newStatus };
     if (adminNotes !== undefined) updates.admin_notes = adminNotes;
 
     if (newStatus === "activated") {
