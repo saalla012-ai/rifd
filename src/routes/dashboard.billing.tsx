@@ -156,7 +156,7 @@ function BillingPage() {
       "أرغب بالاشتراك في برنامج الأعضاء المؤسسين لرِفد",
       "",
       `📦 الباقة: ${planLabel} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
-      `💰 السعر: ${price} ر.س`,
+      `💰 السعر بعد خصم ${discountPct}%: ${price} ر.س (بدلاً من ${originalPrice} ر.س)`,
       storeName ? `🏪 المتجر: ${storeName}` : "",
       `📱 واتساب: ${whatsapp}`,
       `📧 البريد: ${user?.email ?? ""}`,
@@ -205,6 +205,8 @@ function BillingPage() {
   }
 
   const isPaidUser = profile?.plan && profile.plan !== "free";
+  const proMonthlyDiscounted = applyDiscount(PLAN_PRICES.pro.monthly);
+  const businessMonthlyDiscounted = applyDiscount(PLAN_PRICES.business.monthly);
 
   return (
     <DashboardShell>
