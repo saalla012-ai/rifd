@@ -368,7 +368,7 @@ function ConfirmRequestPage() {
             <section className="mt-4 rounded-2xl border-2 border-success bg-gradient-to-br from-success/10 via-success/5 to-transparent p-6 shadow-elegant">
               <h2 className="text-center text-xl font-extrabold">بعد ما تحوّل المبلغ</h2>
               <p className="mt-1 text-center text-sm text-muted-foreground">
-                اضغط الزر وأرسل لنا الرسالة الجاهزة على واتساب — نراجع ونفعّل خلال ساعات قليلة.
+                اضغط الزر وأرسل لنا الرسالة الجاهزة على واتساب — التفعيل خلال دقائق ⚡
               </p>
               <Button
                 asChild
