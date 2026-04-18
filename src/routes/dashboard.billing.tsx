@@ -63,6 +63,9 @@ function priceAfterIncrease(price: number) {
   return Math.round(price * (1 + FUTURE_INCREASE_PCT / 100));
 }
 
+const PRO_FUTURE_MONTHLY = priceAfterIncrease(79);
+const BUSINESS_FUTURE_MONTHLY = priceAfterIncrease(199);
+
 const STATUS_META: Record<
   string,
   { label: string; tone: "warning" | "info" | "success" | "danger" | "muted"; icon: typeof Clock }
