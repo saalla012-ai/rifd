@@ -33,12 +33,13 @@ export function UrgencyBar() {
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-4 py-1.5 text-center text-xs font-bold sm:text-sm">
         <Flame className="h-4 w-4 animate-pulse" />
         <span>العرض الافتتاحي — خصم 50% على أول شهرين</span>
-        {mounted && timeLeft && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-foreground/15 px-2 py-0.5 text-[11px]">
-            <Clock className="h-3 w-3" />
-            ينتهي خلال {timeLeft}
-          </span>
-        )}
+        <span
+          className="inline-flex items-center gap-1 rounded-full bg-foreground/15 px-2 py-0.5 text-[11px]"
+          suppressHydrationWarning
+        >
+          <Clock className="h-3 w-3" />
+          ينتهي خلال {mounted && timeLeft ? timeLeft : "قريباً"}
+        </span>
       </div>
     </div>
   );
