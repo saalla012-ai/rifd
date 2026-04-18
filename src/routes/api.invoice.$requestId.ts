@@ -98,7 +98,10 @@ function readFontBytes(urlOrPath: string): Uint8Array {
   } else {
     fsPath = urlOrPath;
   }
-  return new Uint8Array(readFileSync(fsPath));
+  console.log("[invoice] reading font from", { input: urlOrPath, fsPath });
+  const bytes = new Uint8Array(readFileSync(fsPath));
+  console.log("[invoice] font bytes length", bytes.length, "first 4 bytes", Array.from(bytes.slice(0, 4)));
+  return bytes;
 }
 
 export const Route = createFileRoute("/api/invoice/$requestId")({
