@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Bell,
   Settings2,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -245,9 +246,22 @@ function AdminSubscriptionsPage() {
   );
 }
 
+type DiscoveredChat = {
+  chat_id: number;
+  type: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  title?: string;
+};
+
 function NotificationsTools() {
   const [setupLoading, setSetupLoading] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
+  const [discoverLoading, setDiscoverLoading] = useState(false);
+  const [discoverOpen, setDiscoverOpen] = useState(false);
+  const [chats, setChats] = useState<DiscoveredChat[]>([]);
+  const [savingChatId, setSavingChatId] = useState<number | null>(null);
 
   async function getAccessToken(): Promise<string | null> {
     const { data } = await supabase.auth.getSession();
@@ -283,7 +297,6 @@ function NotificationsTools() {
   async function handleTest() {
     setTestLoading(true);
     try {
-      // الأدمن لديه صلاحية SELECT على internal_config — نقرأ السرّ المخزّن
       const { data: rows, error } = await supabase
         .from("internal_config")
         .select("key,value")
@@ -317,14 +330,169 @@ function NotificationsTools() {
     }
   }
 
+  async function handleDiscover() {
+    setDiscoverLoading(true);
+    setDiscoverOpen(true);
+    setChats([]);
+    try {
+      const token = await getAccessToken();
+      if (!token) {
+        toast.error("الجلسة منتهية، أعد تسجيل الدخول");
+        setDiscoverOpen(false);
+        return;
+      }
+      const res = await fetch("/api/telegram-discover-chats", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(`فشل الاكتشاف: ${data.error ?? res.status}`);
+        return;
+      }
+      setChats(data.chats ?? []);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
+    } finally {
+      setDiscoverLoading(false);
+    }
+  }
+
+  async function handleSelectChat(chat: DiscoveredChat) {
+    setSavingChatId(chat.chat_id);
+    try {
+      const token = await getAccessToken();
+      if (!token) {
+        toast.error("الجلسة منتهية، أعد تسجيل الدخول");
+        return;
+      }
+      const res = await fetch("/api/telegram-set-chat-id", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ chat_id: chat.chat_id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`تم اعتماد المحادثة ✅ (${chat.chat_id})`);
+        setDiscoverOpen(false);
+      } else {
+        toast.error(`فشل الحفظ: ${data.error ?? res.status}`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
+    } finally {
+      setSavingChatId(null);
+    }
+  }
+
   return (
-    <div className="flex gap-2">
-      <Button size="sm" variant="outline" onClick={handleSetup} disabled={setupLoading} title="تخزين رابط + سرّ الإشعارات في DB (مرة واحدة)">
-        {setupLoading ? <Loader2 className="ml-1 h-3 w-3 animate-spin" /> : <Settings2 className="ml-1 h-3 w-3" />}
+    <div className="flex flex-wrap gap-2">
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={handleSetup}
+        disabled={setupLoading}
+        title="تخزين رابط + سرّ الإشعارات في DB (مرة واحدة)"
+      >
+        {setupLoading ? (
+          <Loader2 className="ml-1 h-3 w-3 animate-spin" />
+        ) : (
+          <Settings2 className="ml-1 h-3 w-3" />
+        )}
         إعداد الإشعارات
       </Button>
-      <Button size="sm" variant="outline" onClick={handleTest} disabled={testLoading}>
-        {testLoading ? <Loader2 className="ml-1 h-3 w-3 animate-spin" /> : <Bell className="ml-1 h-3 w-3" />}
+
+      <Dialog open={discoverOpen} onOpenChange={setDiscoverOpen}>
+        <DialogTrigger asChild>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDiscover}
+            disabled={discoverLoading}
+            title="اقرأ آخر المحادثات من البوت واختر وجهة الإشعارات"
+          >
+            {discoverLoading ? (
+              <Loader2 className="ml-1 h-3 w-3 animate-spin" />
+            ) : (
+              <Search className="ml-1 h-3 w-3" />
+            )}
+            اكتشاف Chat ID
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>اختر وجهة إشعارات تيليجرام</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2 space-y-2 max-h-[60vh] overflow-auto">
+            {discoverLoading && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!discoverLoading && chats.length === 0 && (
+              <div className="rounded-lg border border-warning/40 bg-warning/5 p-4 text-sm text-foreground">
+                <p className="font-bold mb-1">لم نجد أي محادثات.</p>
+                <p className="text-muted-foreground">
+                  افتح تيليجرام، ابحث عن البوت، أرسل له{" "}
+                  <code className="rounded bg-muted px-1">/start</code> ثم اضغط
+                  "اكتشاف Chat ID" مرة أخرى.
+                </p>
+              </div>
+            )}
+            {chats.map((c) => {
+              const name =
+                c.title ??
+                [c.first_name, c.last_name].filter(Boolean).join(" ") ??
+                "بدون اسم";
+              return (
+                <div
+                  key={c.chat_id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold truncate">{name}</div>
+                    <div className="text-xs text-muted-foreground" dir="ltr">
+                      {c.username ? `@${c.username} · ` : ""}
+                      {c.type} · {c.chat_id}
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleSelectChat(c)}
+                    disabled={savingChatId !== null}
+                  >
+                    {savingChatId === c.chat_id ? (
+                      <Loader2 className="ml-1 h-3 w-3 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="ml-1 h-3 w-3" />
+                    )}
+                    استخدم هذا
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={handleTest}
+        disabled={testLoading}
+      >
+        {testLoading ? (
+          <Loader2 className="ml-1 h-3 w-3 animate-spin" />
+        ) : (
+          <Bell className="ml-1 h-3 w-3" />
+        )}
         اختبار تيليجرام
       </Button>
     </div>

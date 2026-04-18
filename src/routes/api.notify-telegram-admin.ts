@@ -71,7 +71,19 @@ export const Route = createFileRoute("/api/notify-telegram-admin")({
       POST: async ({ request }) => {
         try {
           const expectedSecret = process.env.NOTIFY_WEBHOOK_SECRET;
-          const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+
+          // الأولوية لـ chat_id المخزّن في DB، ثم fallback لـ env
+          let adminChatId: string | null = null;
+          const { data: cfgRow } = await supabaseAdmin
+            .from("internal_config")
+            .select("value")
+            .eq("key", "telegram_admin_chat_id")
+            .maybeSingle();
+          if (cfgRow?.value) {
+            adminChatId = cfgRow.value;
+          } else if (process.env.TELEGRAM_ADMIN_CHAT_ID) {
+            adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+          }
 
           if (!expectedSecret) {
             console.error("NOTIFY_WEBHOOK_SECRET not configured");
