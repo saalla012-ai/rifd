@@ -255,12 +255,19 @@ type DiscoveredChat = {
   title?: string;
 };
 
+type BotInfo = {
+  id?: number;
+  username?: string;
+  first_name?: string;
+};
+
 function NotificationsTools() {
   const [setupLoading, setSetupLoading] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
   const [discoverLoading, setDiscoverLoading] = useState(false);
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const [chats, setChats] = useState<DiscoveredChat[]>([]);
+  const [bot, setBot] = useState<BotInfo | null>(null);
   const [savingChatId, setSavingChatId] = useState<number | null>(null);
 
   async function getAccessToken(): Promise<string | null> {
@@ -355,6 +362,7 @@ function NotificationsTools() {
         return;
       }
       setChats(data.chats ?? []);
+      setBot(data.bot ?? null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
     } finally {
@@ -430,6 +438,26 @@ function NotificationsTools() {
           <DialogHeader>
             <DialogTitle>اختر وجهة إشعارات تيليجرام</DialogTitle>
           </DialogHeader>
+
+          {bot?.username && (
+            <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+              <div className="text-muted-foreground mb-1">البوت المتصل:</div>
+              <a
+                href={`https://t.me/${bot.username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-primary hover:underline inline-flex items-center gap-1"
+                dir="ltr"
+              >
+                @{bot.username}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              {bot.first_name && (
+                <span className="text-muted-foreground"> · {bot.first_name}</span>
+              )}
+            </div>
+          )}
+
           <div className="mt-2 space-y-2 max-h-[60vh] overflow-auto">
             {discoverLoading && (
               <div className="flex justify-center py-8">
@@ -437,13 +465,47 @@ function NotificationsTools() {
               </div>
             )}
             {!discoverLoading && chats.length === 0 && (
-              <div className="rounded-lg border border-warning/40 bg-warning/5 p-4 text-sm text-foreground">
-                <p className="font-bold mb-1">لم نجد أي محادثات.</p>
-                <p className="text-muted-foreground">
-                  افتح تيليجرام، ابحث عن البوت، أرسل له{" "}
-                  <code className="rounded bg-muted px-1">/start</code> ثم اضغط
-                  "اكتشاف Chat ID" مرة أخرى.
-                </p>
+              <div className="rounded-lg border border-warning/40 bg-warning/5 p-4 text-sm text-foreground space-y-3">
+                <p className="font-bold">لم نجد أي محادثات بعد.</p>
+                <ol className="list-decimal pr-5 space-y-1 text-muted-foreground">
+                  <li>
+                    افتح البوت{" "}
+                    {bot?.username ? (
+                      <a
+                        href={`https://t.me/${bot.username}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                        dir="ltr"
+                      >
+                        @{bot.username}
+                      </a>
+                    ) : (
+                      "في تيليجرام"
+                    )}
+                    .
+                  </li>
+                  <li>
+                    اضغط <strong>Start</strong> أو أرسل{" "}
+                    <code className="rounded bg-muted px-1">/start</code>.
+                  </li>
+                  <li>أرسل أي رسالة (مثلاً: مرحبا).</li>
+                  <li>ارجع هنا واضغط "إعادة المحاولة".</li>
+                </ol>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDiscover}
+                  disabled={discoverLoading}
+                  className="w-full"
+                >
+                  {discoverLoading ? (
+                    <Loader2 className="ml-1 h-3 w-3 animate-spin" />
+                  ) : (
+                    <Search className="ml-1 h-3 w-3" />
+                  )}
+                  إعادة المحاولة
+                </Button>
               </div>
             )}
             {chats.map((c) => {
