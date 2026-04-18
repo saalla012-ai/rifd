@@ -9,6 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  formatSaudiPhoneDisplay,
+  normalizeSaudiPhone,
+  validateSaudiPhone,
+  SAUDI_PHONE_ERROR,
+  SAUDI_PHONE_PLACEHOLDER,
+} from "@/lib/phone";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "الإعدادات — رِفد" }] }),
@@ -24,15 +31,20 @@ function SettingsPage() {
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name ?? "");
-      setWhatsapp(profile.whatsapp ?? "");
+      // Show stored value in pretty form if normalizable, else raw
+      setWhatsapp(profile.whatsapp ? formatSaudiPhoneDisplay(profile.whatsapp) : "");
     }
   }, [profile]);
 
   const save = async () => {
     if (!user) return;
-    if (whatsapp && !/^[0-9+\s-]{8,20}$/.test(whatsapp.trim())) {
-      toast.error("رقم واتساب غير صحيح");
-      return;
+    let normalizedWhatsapp: string | null = null;
+    if (whatsapp.trim()) {
+      if (!validateSaudiPhone(whatsapp)) {
+        toast.error(SAUDI_PHONE_ERROR);
+        return;
+      }
+      normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
     }
     setSaving(true);
     try {
@@ -40,7 +52,7 @@ function SettingsPage() {
         .from("profiles")
         .update({
           full_name: fullName.trim() || null,
-          whatsapp: whatsapp.trim() || null,
+          whatsapp: normalizedWhatsapp,
         })
         .eq("id", user.id);
       if (error) throw error;
@@ -108,11 +120,11 @@ function SettingsPage() {
                 dir="ltr"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
-                placeholder="+9665XXXXXXXX"
+                placeholder={SAUDI_PHONE_PLACEHOLDER}
                 maxLength={20}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                نستخدمه فقط للتواصل بخصوص اشتراكك
+                رقم جوال سعودي يبدأ بـ 5 — نستخدمه فقط للتواصل بخصوص اشتراكك
               </p>
             </div>
           </div>
