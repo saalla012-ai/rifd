@@ -5,8 +5,8 @@ import fontkit from "@pdf-lib/fontkit";
 // @ts-expect-error - no types
 import ArabicReshaper from "arabic-reshaper";
 import bidiFactory from "bidi-js";
-import notoRegularUrl from "@/assets/fonts/NotoNaskhArabic-Regular.ttf?url";
-import notoBoldUrl from "@/assets/fonts/NotoNaskhArabic-Bold.ttf?url";
+import amiriRegularUrl from "@/assets/fonts/Amiri-Regular.ttf?url";
+import amiriBoldUrl from "@/assets/fonts/Amiri-Bold.ttf?url";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Database } from "@/integrations/supabase/types";
@@ -206,8 +206,8 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           const pdfDoc = await PDFDocument.create();
           pdfDoc.registerFontkit(fontkit);
 
-          const regBytes = readFontBytes(notoRegularUrl);
-          const boldBytes = readFontBytes(notoBoldUrl);
+          const regBytes = readFontBytes(amiriRegularUrl);
+          const boldBytes = readFontBytes(amiriBoldUrl);
           const fontReg = await pdfDoc.embedFont(regBytes, { subset: false });
           const fontBold = await pdfDoc.embedFont(boldBytes, { subset: false });
 
