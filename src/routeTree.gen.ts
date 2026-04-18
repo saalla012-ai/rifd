@@ -23,6 +23,7 @@ import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalRefundRouteImport } from './routes/legal.refund'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
+import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templates'
 import { Route as DashboardStoreProfileRouteImport } from './routes/dashboard.store-profile'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library'
@@ -101,6 +102,11 @@ const DashboardUsageRoute = DashboardUsageRouteImport.update({
   path: '/usage',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardTemplatesRoute = DashboardTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStoreProfileRoute = DashboardStoreProfileRouteImport.update({
   id: '/store-profile',
   path: '/store-profile',
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
+  '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
+    | '/dashboard/templates'
     | '/dashboard/usage'
     | '/legal/privacy'
     | '/legal/refund'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
+    | '/dashboard/templates'
     | '/dashboard/usage'
     | '/legal/privacy'
     | '/legal/refund'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
+    | '/dashboard/templates'
     | '/dashboard/usage'
     | '/legal/privacy'
     | '/legal/refund'
@@ -396,6 +408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUsageRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/templates': {
+      id: '/dashboard/templates'
+      path: '/templates'
+      fullPath: '/dashboard/templates'
+      preLoaderRoute: typeof DashboardTemplatesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/store-profile': {
       id: '/dashboard/store-profile'
       path: '/store-profile'
@@ -455,6 +474,7 @@ interface DashboardRouteChildren {
   DashboardLibraryRoute: typeof DashboardLibraryRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStoreProfileRoute: typeof DashboardStoreProfileRoute
+  DashboardTemplatesRoute: typeof DashboardTemplatesRoute
   DashboardUsageRoute: typeof DashboardUsageRoute
 }
 
@@ -465,6 +485,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardLibraryRoute: DashboardLibraryRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStoreProfileRoute: DashboardStoreProfileRoute,
+  DashboardTemplatesRoute: DashboardTemplatesRoute,
   DashboardUsageRoute: DashboardUsageRoute,
 }
 
@@ -491,3 +512,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
