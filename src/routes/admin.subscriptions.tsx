@@ -55,9 +55,8 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function AdminSubscriptionsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [requests, setRequests] = useState<Req[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
@@ -69,23 +68,15 @@ function AdminSubscriptionsPage() {
       void navigate({ to: "/auth" });
       return;
     }
-    void checkAdminAndLoad();
+    // ننتظر تحديد دور الأدمن (يأتي من AuthContext، استعلام واحد فقط لكل جلسة)
+    if (isAdmin === null) return;
+    if (isAdmin) {
+      void loadRequests();
+    } else {
+      setLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, authLoading]);
-
-  async function checkAdminAndLoad() {
-    if (!user) return;
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    const admin = !!roleRow;
-    setIsAdmin(admin);
-    if (admin) await loadRequests();
-    else setLoading(false);
-  }
+  }, [user, authLoading, isAdmin]);
 
   async function loadRequests() {
     setLoading(true);
