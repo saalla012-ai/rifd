@@ -41,7 +41,7 @@ import {
   SAUDI_PHONE_PLACEHOLDER,
 } from "@/lib/phone";
 
-export const Route = createFileRoute("/dashboard/billing")({
+export const Route = createFileRoute("/dashboard/billing/")({
   head: () => ({ meta: [{ title: "الفواتير والاشتراك — رِفد" }] }),
   component: BillingPage,
 });
