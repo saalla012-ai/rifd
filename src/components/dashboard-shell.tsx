@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
