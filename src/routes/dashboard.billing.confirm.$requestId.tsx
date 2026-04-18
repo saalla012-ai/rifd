@@ -225,7 +225,8 @@ function ConfirmRequestPage() {
   // بيانات البنك
   const bankHolder = settings?.bank_account_holder ?? "محمود محمد علي";
   const bankIban = settings?.bank_iban ?? "SA0805000068204185025000";
-  const bankName = settings?.bank_name ?? "البنك الأهلي السعودي (SNB)";
+  const bankName = settings?.bank_name ?? "مصرف الإنماء";
+  const bankAccountNumber = "68204185025000";
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
 
   const waConfirmUrl = buildConfirmedWhatsappUrl({
