@@ -38,6 +38,7 @@ import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
+import { Route as ApiInvoiceRequestIdRouteImport } from './routes/api.invoice.$requestId'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
@@ -186,6 +187,11 @@ const DashboardBillingIndexRoute = DashboardBillingIndexRouteImport.update({
   path: '/billing/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const ApiInvoiceRequestIdRoute = ApiInvoiceRequestIdRouteImport.update({
+  id: '/api/invoice/$requestId',
+  path: '/api/invoice/$requestId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardBillingConfirmRequestIdRoute =
   DashboardBillingConfirmRequestIdRouteImport.update({
     id: '/billing/confirm/$requestId',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
 }
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
 }
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
 }
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard/'
+    | '/api/invoice/$requestId'
     | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
   fileRoutesByTo: FileRoutesByTo
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard'
+    | '/api/invoice/$requestId'
     | '/dashboard/billing'
     | '/dashboard/billing/confirm/$requestId'
   id:
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard/'
+    | '/api/invoice/$requestId'
     | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
   fileRoutesById: FileRoutesById
@@ -407,6 +419,7 @@ export interface RootRouteChildren {
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
+  ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -614,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/invoice/$requestId': {
+      id: '/api/invoice/$requestId'
+      path: '/api/invoice/$requestId'
+      fullPath: '/api/invoice/$requestId'
+      preLoaderRoute: typeof ApiInvoiceRequestIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/billing/confirm/$requestId': {
       id: '/dashboard/billing/confirm/$requestId'
       path: '/billing/confirm/$requestId'
@@ -676,6 +696,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
+  ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

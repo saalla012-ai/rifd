@@ -441,7 +441,7 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
 
           const pdfBytes = await pdfDoc.save();
 
-          return new Response(pdfBytes, {
+          return new Response(new Uint8Array(pdfBytes) as unknown as BodyInit, {
             status: 200,
             headers: {
               "Content-Type": "application/pdf",
