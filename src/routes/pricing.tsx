@@ -234,7 +234,7 @@ function PricingPage() {
                         : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     )}
                   >
-                    <Link to={plan.id === "business" ? "/about" : "/onboarding"}>
+                    <Link to={plan.id === "free" ? "/onboarding" : ctaTarget}>
                       {plan.cta}
                     </Link>
                   </Button>
