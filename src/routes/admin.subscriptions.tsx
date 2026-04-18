@@ -249,28 +249,29 @@ function NotificationsTools() {
   const [setupLoading, setSetupLoading] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
 
-  async function callApi(path: string, body: object) {
-    const secret = window.prompt(
-      "أدخل NOTIFY_WEBHOOK_SECRET للتأكيد (يُستخدم مرة واحدة فقط):"
-    );
-    if (!secret) return null;
-    return fetch(path, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-webhook-secret": secret,
-      },
-      body: JSON.stringify(body),
-    });
+  async function getAccessToken(): Promise<string | null> {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
   }
 
   async function handleSetup() {
     setSetupLoading(true);
     try {
-      const res = await callApi("/api/setup-notify-config", {});
-      if (!res) return;
+      const token = await getAccessToken();
+      if (!token) {
+        toast.error("الجلسة منتهية، أعد تسجيل الدخول");
+        return;
+      }
+      const res = await fetch("/api/setup-notify-config", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
       const data = await res.json();
-      if (res.ok) toast.success(`تم تخزين إعدادات الإشعار ✅`);
+      if (res.ok) toast.success("تم تخزين إعدادات الإشعار ✅");
       else toast.error(`فشل: ${data.error ?? res.status}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
@@ -282,8 +283,30 @@ function NotificationsTools() {
   async function handleTest() {
     setTestLoading(true);
     try {
-      const res = await callApi("/api/notify-telegram-admin", { test: true });
-      if (!res) return;
+      // الأدمن لديه صلاحية SELECT على internal_config — نقرأ السرّ المخزّن
+      const { data: rows, error } = await supabase
+        .from("internal_config")
+        .select("key,value")
+        .in("key", ["notify_webhook_secret"]);
+
+      if (error || !rows || rows.length === 0) {
+        toast.error("شغّل 'إعداد الإشعارات' أولاً");
+        return;
+      }
+      const secret = rows.find((r) => r.key === "notify_webhook_secret")?.value;
+      if (!secret) {
+        toast.error("السرّ غير مخزّن — شغّل 'إعداد الإشعارات' أولاً");
+        return;
+      }
+
+      const res = await fetch("/api/notify-telegram-admin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-webhook-secret": secret,
+        },
+        body: JSON.stringify({ test: true }),
+      });
       const data = await res.json();
       if (res.ok) toast.success("تم إرسال إشعار تجريبي ✅");
       else toast.error(`فشل: ${data.error ?? res.status}`);
