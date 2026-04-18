@@ -34,23 +34,15 @@ const MARGIN = 50;
 
 const bidi = bidiFactory();
 
-/** يحوّل النص العربي لشكل جاهز للرسم في PDF (تشكيل + اتجاه RTL). */
+/** يحوّل النص العربي لشكل جاهز للرسم في PDF (تشكيل + عكس visual للـRTL). */
 function shapeArabic(text: string): string {
   if (!text) return "";
-  // 1) تشكيل الحروف العربية (ربط الحروف)
-  const reshaped = ArabicReshaper.convertArabic(text);
-  // 2) ترتيب bidi
-  const embeddingLevels = bidi.getEmbeddingLevels(reshaped, "rtl");
-  const reorderSegments = bidi.getReorderSegments(
-    reshaped,
-    embeddingLevels
-  );
-  let chars = reshaped.split("");
-  for (const [start, end] of reorderSegments) {
-    const slice = chars.slice(start, end + 1).reverse();
-    chars = [...chars.slice(0, start), ...slice, ...chars.slice(end + 1)];
-  }
-  return chars.join("");
+  // 1) ربط الحروف العربية
+  const reshaped = ArabicReshaper.convertArabic(text) as string;
+  // 2) للـRTL في pdf-lib: نعكس النص بالكامل (الحروف أصبحت متصلة بشكل visual)
+  // لكن نحافظ على الأرقام والكلمات اللاتينية في اتجاهها الصحيح عبر bidi
+  const levels = bidi.getEmbeddingLevels(reshaped, "rtl");
+  return bidi.getReorderedString(reshaped, levels);
 }
 
 function fmtSAR(amount: number): string {
