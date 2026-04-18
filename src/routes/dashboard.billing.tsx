@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { TrustBadges } from "@/components/trust-badges";
 import { ActivationSteps } from "@/components/activation-steps";
+import { SubscribersCounter } from "@/components/subscribers-counter";
 import { FounderCard } from "@/components/founder-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,12 @@ const PLAN_PRICES = {
   business: { monthly: 199, yearly: 1990 },
 } as const;
 
+const FOUNDING_DISCOUNT_PCT = 30;
+
+function applyDiscount(price: number) {
+  return Math.round(price * (1 - FOUNDING_DISCOUNT_PCT / 100));
+}
+
 const STATUS_META: Record<
   string,
   { label: string; tone: "warning" | "info" | "success" | "danger" | "muted"; icon: typeof Clock }
@@ -64,6 +71,8 @@ type Settings = {
   whatsapp_number: string;
   founding_total_seats: number;
   founding_program_active: boolean;
+  founding_base_count?: number;
+  founding_discount_pct?: number;
 };
 
 type RequestRow = {
@@ -126,12 +135,14 @@ function BillingPage() {
     setLoading(false);
   }
 
-  const seatsTotal = settings?.founding_total_seats ?? 50;
+  const seatsTotal = settings?.founding_total_seats ?? 1000;
   const seatsLeft = Math.max(0, seatsTotal - seatsTaken);
   const seatsPct = (seatsTaken / seatsTotal) * 100;
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
+  const discountPct = settings?.founding_discount_pct ?? FOUNDING_DISCOUNT_PCT;
 
-  const price = PLAN_PRICES[plan][billingCycle];
+  const originalPrice = PLAN_PRICES[plan][billingCycle];
+  const price = Math.round(originalPrice * (1 - discountPct / 100));
   const planLabel = PLAN_LABELS[plan];
 
   const pendingRequest = useMemo(
