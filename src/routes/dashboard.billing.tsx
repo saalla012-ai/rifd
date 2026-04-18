@@ -158,6 +158,20 @@ function BillingPage() {
     [requests]
   );
 
+  const isPaidUser = Boolean(profile?.plan && profile.plan !== "free");
+
+  // Auto-redirect: لو في طلب pending → ننقله مباشرة لصفحة التأكيد
+  // (إلا لو مفعّل بالفعل — يبقى يشوف صفحة الفوترة)
+  useEffect(() => {
+    if (loading || !pendingRequest || isPaidUser) return;
+    void navigate({
+      to: "/dashboard/billing/confirm/$requestId",
+      params: { requestId: pendingRequest.id },
+      replace: true,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, pendingRequest?.id, isPaidUser]);
+
   function buildWhatsappUrl(reqId?: string) {
     const lines = [
       "السلام عليكم 👋",
@@ -221,7 +235,6 @@ function BillingPage() {
     });
   }
 
-  const isPaidUser = profile?.plan && profile.plan !== "free";
   const proFutureMonthly = priceAfterIncrease(PLAN_PRICES.pro.monthly);
   const businessFutureMonthly = priceAfterIncrease(PLAN_PRICES.business.monthly);
 
