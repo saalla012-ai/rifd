@@ -213,9 +213,21 @@ function AuthPage() {
                   className="pr-10"
                 />
               </div>
-              {mode === "signup" && (
-                <p className="mt-1 text-xs text-muted-foreground">8 أحرف على الأقل</p>
-              )}
+              <div className="mt-1 flex items-center justify-between">
+                {mode === "signup" ? (
+                  <p className="text-xs text-muted-foreground">8 أحرف على الأقل</p>
+                ) : (
+                  <span />
+                )}
+                {mode === "login" && (
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    نسيت كلمة السر؟
+                  </Link>
+                )}
+              </div>
             </div>
 
             <Button
