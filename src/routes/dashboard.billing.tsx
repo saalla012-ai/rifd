@@ -63,6 +63,9 @@ function priceAfterIncrease(price: number) {
   return Math.round(price * (1 + FUTURE_INCREASE_PCT / 100));
 }
 
+const PRO_FUTURE_MONTHLY = priceAfterIncrease(79);
+const BUSINESS_FUTURE_MONTHLY = priceAfterIncrease(199);
+
 const STATUS_META: Record<
   string,
   { label: string; tone: "warning" | "info" | "success" | "danger" | "muted"; icon: typeof Clock }
@@ -235,8 +238,8 @@ function BillingPage() {
     });
   }
 
-  const proFutureMonthly = priceAfterIncrease(PLAN_PRICES.pro.monthly);
-  const businessFutureMonthly = priceAfterIncrease(PLAN_PRICES.business.monthly);
+  const proFutureMonthly = PRO_FUTURE_MONTHLY;
+  const businessFutureMonthly = BUSINESS_FUTURE_MONTHLY;
 
   return (
     <DashboardShell>
