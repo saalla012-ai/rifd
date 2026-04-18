@@ -307,15 +307,20 @@ function NotificationsTools() {
       const { data: rows, error } = await supabase
         .from("internal_config")
         .select("key,value")
-        .in("key", ["notify_webhook_secret"]);
+        .in("key", ["notify_webhook_secret", "telegram_admin_chat_id"]);
 
       if (error || !rows || rows.length === 0) {
-        toast.error("شغّل 'إعداد الإشعارات' أولاً");
+        toast.error("شغّل 'إعداد الإشعارات' و 'اكتشاف Chat ID' أولاً");
         return;
       }
       const secret = rows.find((r) => r.key === "notify_webhook_secret")?.value;
+      const chatId = rows.find((r) => r.key === "telegram_admin_chat_id")?.value;
       if (!secret) {
         toast.error("السرّ غير مخزّن — شغّل 'إعداد الإشعارات' أولاً");
+        return;
+      }
+      if (!chatId) {
+        toast.error("Chat ID غير مخزّن — استخدم 'اكتشاف Chat ID' أولاً");
         return;
       }
 
@@ -325,7 +330,7 @@ function NotificationsTools() {
           "Content-Type": "application/json",
           "x-webhook-secret": secret,
         },
-        body: JSON.stringify({ test: true }),
+        body: JSON.stringify({ test: true, chat_id: chatId }),
       });
       const data = await res.json();
       if (res.ok) toast.success("تم إرسال إشعار تجريبي ✅");

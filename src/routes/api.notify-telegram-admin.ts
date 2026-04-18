@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/telegram";
 
@@ -27,7 +26,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function escapeHtml(text: string | null | undefined): string {
-  if (!text) return "—";
+  if (text === null || text === undefined || text === "") return "—";
   return String(text)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -65,37 +64,33 @@ async function sendTelegramMessage(chatId: string, html: string) {
   return data;
 }
 
+type NotifyBody = {
+  test?: boolean;
+  chat_id?: string;
+  admin_chat_id?: string;
+  request_id?: string;
+  request?: {
+    plan?: string;
+    billing_cycle?: string;
+    store_name?: string | null;
+    email?: string;
+    whatsapp?: string;
+    payment_method?: string | null;
+    status?: string;
+    notes?: string | null;
+  };
+};
+
 export const Route = createFileRoute("/api/notify-telegram-admin")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
           const expectedSecret = process.env.NOTIFY_WEBHOOK_SECRET;
-
-          // الأولوية لـ chat_id المخزّن في DB، ثم fallback لـ env
-          let adminChatId: string | null = null;
-          const { data: cfgRow } = await supabaseAdmin
-            .from("internal_config")
-            .select("value")
-            .eq("key", "telegram_admin_chat_id")
-            .maybeSingle();
-          if (cfgRow?.value) {
-            adminChatId = cfgRow.value;
-          } else if (process.env.TELEGRAM_ADMIN_CHAT_ID) {
-            adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-          }
-
           if (!expectedSecret) {
             console.error("NOTIFY_WEBHOOK_SECRET not configured");
             return new Response(
               JSON.stringify({ error: "server misconfigured" }),
-              { status: 500, headers: { "Content-Type": "application/json" } }
-            );
-          }
-          if (!adminChatId) {
-            console.error("TELEGRAM_ADMIN_CHAT_ID not configured");
-            return new Response(
-              JSON.stringify({ error: "admin chat id missing" }),
               { status: 500, headers: { "Content-Type": "application/json" } }
             );
           }
@@ -109,7 +104,7 @@ export const Route = createFileRoute("/api/notify-telegram-admin")({
             });
           }
 
-          let body: { request_id?: string; test?: boolean } = {};
+          let body: NotifyBody = {};
           try {
             body = await request.json();
           } catch {
@@ -119,10 +114,17 @@ export const Route = createFileRoute("/api/notify-telegram-admin")({
             );
           }
 
-          // اختبار يدوي
+          // وضع الاختبار
           if (body.test === true) {
+            const chatId = body.chat_id ?? body.admin_chat_id ?? process.env.TELEGRAM_ADMIN_CHAT_ID;
+            if (!chatId) {
+              return new Response(
+                JSON.stringify({ error: "chat_id required for test" }),
+                { status: 400, headers: { "Content-Type": "application/json" } }
+              );
+            }
             await sendTelegramMessage(
-              adminChatId,
+              chatId,
               "✅ <b>اختبار قناة الإشعارات</b>\n\nالاتصال يعمل بشكل صحيح."
             );
             return new Response(JSON.stringify({ ok: true, test: true }), {
@@ -131,34 +133,26 @@ export const Route = createFileRoute("/api/notify-telegram-admin")({
             });
           }
 
-          if (!body.request_id || typeof body.request_id !== "string") {
+          // وضع الإشعار الفعلي — البيانات تأتي من الـwebhook في الـbody
+          const adminChatId = body.admin_chat_id ?? process.env.TELEGRAM_ADMIN_CHAT_ID;
+          if (!adminChatId) {
             return new Response(
-              JSON.stringify({ error: "request_id required" }),
+              JSON.stringify({ error: "admin_chat_id missing" }),
               { status: 400, headers: { "Content-Type": "application/json" } }
             );
           }
 
-          const { data: req, error: reqErr } = await supabaseAdmin
-            .from("subscription_requests")
-            .select("*")
-            .eq("id", body.request_id)
-            .maybeSingle();
-
-          if (reqErr || !req) {
-            console.error("subscription_request not found", reqErr);
-            return new Response(
-              JSON.stringify({ error: "request not found" }),
-              { status: 404, headers: { "Content-Type": "application/json" } }
-            );
-          }
-
-          const planLabel = PLAN_LABELS[req.plan] ?? req.plan;
-          const cycleLabel =
-            CYCLE_LABELS[req.billing_cycle] ?? req.billing_cycle;
-          const paymentLabel = req.payment_method
-            ? PAYMENT_LABELS[req.payment_method] ?? req.payment_method
+          const req = body.request ?? {};
+          const planLabel = req.plan ? (PLAN_LABELS[req.plan] ?? req.plan) : "—";
+          const cycleLabel = req.billing_cycle
+            ? (CYCLE_LABELS[req.billing_cycle] ?? req.billing_cycle)
             : "—";
-          const statusLabel = STATUS_LABELS[req.status] ?? req.status;
+          const paymentLabel = req.payment_method
+            ? (PAYMENT_LABELS[req.payment_method] ?? req.payment_method)
+            : "—";
+          const statusLabel = req.status
+            ? (STATUS_LABELS[req.status] ?? req.status)
+            : "—";
 
           const waDigits = (req.whatsapp || "").replace(/\D/g, "");
           const waLink = waDigits ? `https://wa.me/${waDigits}` : null;
