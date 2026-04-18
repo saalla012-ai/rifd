@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { TrustBadges } from "@/components/trust-badges";
+import { ActivationSteps } from "@/components/activation-steps";
+import { FounderCard } from "@/components/founder-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
