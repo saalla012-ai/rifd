@@ -7,6 +7,8 @@ import ArabicReshaper from "arabic-reshaper";
 import bidiFactory from "bidi-js";
 import notoRegularUrl from "@/assets/fonts/NotoNaskhArabic-Regular.ttf?url";
 import notoBoldUrl from "@/assets/fonts/NotoNaskhArabic-Bold.ttf?url";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { Database } from "@/integrations/supabase/types";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -32,23 +34,15 @@ const MARGIN = 50;
 
 const bidi = bidiFactory();
 
-/** يحوّل النص العربي لشكل جاهز للرسم في PDF (تشكيل + اتجاه RTL). */
+/** يحوّل النص العربي لشكل جاهز للرسم في PDF (تشكيل + عكس visual للـRTL). */
 function shapeArabic(text: string): string {
   if (!text) return "";
-  // 1) تشكيل الحروف العربية (ربط الحروف)
-  const reshaped = ArabicReshaper.convertArabic(text);
-  // 2) ترتيب bidi
-  const embeddingLevels = bidi.getEmbeddingLevels(reshaped, "rtl");
-  const reorderSegments = bidi.getReorderSegments(
-    reshaped,
-    embeddingLevels
-  );
-  let chars = reshaped.split("");
-  for (const [start, end] of reorderSegments) {
-    const slice = chars.slice(start, end + 1).reverse();
-    chars = [...chars.slice(0, start), ...slice, ...chars.slice(end + 1)];
-  }
-  return chars.join("");
+  // 1) ربط الحروف العربية
+  const reshaped = ArabicReshaper.convertArabic(text) as string;
+  // 2) للـRTL في pdf-lib: نعكس النص بالكامل (الحروف أصبحت متصلة بشكل visual)
+  // لكن نحافظ على الأرقام والكلمات اللاتينية في اتجاهها الصحيح عبر bidi
+  const levels = bidi.getEmbeddingLevels(reshaped, "rtl");
+  return bidi.getReorderedString(reshaped, levels);
 }
 
 function fmtSAR(amount: number): string {
@@ -85,11 +79,18 @@ function invoiceNumber(requestId: string, activatedAt: string | null): string {
   return `INV-${year}-${short}`;
 }
 
-async function loadFontBytes(request: Request, fontUrl: string): Promise<ArrayBuffer> {
-  const url = new URL(fontUrl, request.url);
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`Failed to load font: ${url}`);
-  return await res.arrayBuffer();
+/** يقرأ ملف خط من الـbundle عبر Node fs. */
+function readFontBytes(urlOrPath: string): Uint8Array {
+  let fsPath: string;
+  if (urlOrPath.startsWith("file://")) {
+    fsPath = fileURLToPath(urlOrPath);
+  } else if (urlOrPath.startsWith("/")) {
+    const clean = urlOrPath.split("?")[0];
+    fsPath = process.cwd() + clean;
+  } else {
+    fsPath = urlOrPath;
+  }
+  return new Uint8Array(readFileSync(fsPath));
 }
 
 export const Route = createFileRoute("/api/invoice/$requestId")({
@@ -205,12 +206,10 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           const pdfDoc = await PDFDocument.create();
           pdfDoc.registerFontkit(fontkit);
 
-          const [regBytes, boldBytes] = await Promise.all([
-            loadFontBytes(request, notoRegularUrl),
-            loadFontBytes(request, notoBoldUrl),
-          ]);
-          const fontReg = await pdfDoc.embedFont(regBytes, { subset: true });
-          const fontBold = await pdfDoc.embedFont(boldBytes, { subset: true });
+          const regBytes = readFontBytes(notoRegularUrl);
+          const boldBytes = readFontBytes(notoBoldUrl);
+          const fontReg = await pdfDoc.embedFont(regBytes, { subset: false });
+          const fontBold = await pdfDoc.embedFont(boldBytes, { subset: false });
 
           const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
 
