@@ -115,6 +115,24 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               {item.label}
             </Link>
           ))}
+          {isAdmin && (
+            <>
+              <div className="mt-4 mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-gold/80">
+                الإدارة
+              </div>
+              {ADMIN_NAV.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gold hover:bg-gold/10"
+                  activeProps={{ className: "bg-gold/15 text-gold" }}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+            </>
+          )}
         </nav>
         <div className="border-t border-sidebar-border p-3">
           <button
