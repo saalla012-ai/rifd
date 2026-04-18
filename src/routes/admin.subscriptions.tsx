@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2, Crown, ShieldAlert, CheckCircle2, XCircle, MessageCircle } from "lucide-react";
+import {
+  Loader2,
+  Crown,
+  ShieldAlert,
+  CheckCircle2,
+  XCircle,
+  MessageCircle,
+  Receipt,
+  FileX,
+  Download,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -13,6 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -33,6 +51,8 @@ type Req = {
   notes: string | null;
   admin_notes: string | null;
   status: "pending" | "contacted" | "activated" | "rejected" | "expired";
+  receipt_path: string | null;
+  receipt_uploaded_at: string | null;
   created_at: string;
 };
 
@@ -251,18 +271,45 @@ function RequestCard({
   onUpdate: (r: Req, status: Req["status"], notes?: string) => Promise<void>;
 }) {
   const [adminNotes, setAdminNotes] = useState(request.admin_notes ?? "");
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
   const waUrl = `https://wa.me/${request.whatsapp.replace(/[^\d]/g, "")}`;
+  const hasReceipt = Boolean(request.receipt_path);
+  const isPdf = request.receipt_path?.toLowerCase().endsWith(".pdf");
+
+  async function loadReceipt() {
+    if (!request.receipt_path || receiptUrl) return;
+    setLoadingReceipt(true);
+    const { data, error } = await supabase.storage
+      .from("payment-receipts")
+      .createSignedUrl(request.receipt_path, 300);
+    setLoadingReceipt(false);
+    if (error || !data?.signedUrl) {
+      toast.error("فشل تحميل الإيصال");
+      return;
+    }
+    setReceiptUrl(data.signedUrl);
+  }
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant={STATUS_BADGE[request.status]}>{STATUS_LABEL[request.status]}</Badge>
             <span className="font-bold">{PLAN_LABELS[request.plan]}</span>
             <span className="text-xs text-muted-foreground">
               ({request.billing_cycle === "yearly" ? "سنوي" : "شهري"})
             </span>
+            {hasReceipt ? (
+              <Badge className="gap-1 bg-success/15 text-success hover:bg-success/15">
+                <Receipt className="h-3 w-3" /> إيصال جاهز
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="gap-1 border-warning/40 text-warning">
+                <FileX className="h-3 w-3" /> بدون إيصال
+              </Badge>
+            )}
           </div>
           <h3 className="mt-2 font-bold">{request.store_name || "بدون اسم متجر"}</h3>
           <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -270,17 +317,73 @@ function RequestCard({
             <span dir="ltr">📱 {request.whatsapp}</span>
             <span>💳 {request.payment_method === "bank_transfer_sa" ? "تحويل بنكي" : "أخرى"}</span>
             <span>🕐 {new Date(request.created_at).toLocaleString("ar-SA")}</span>
+            {request.receipt_uploaded_at && (
+              <span className="text-success">
+                🧾 رُفع: {new Date(request.receipt_uploaded_at).toLocaleString("ar-SA")}
+              </span>
+            )}
           </div>
           {request.notes && (
             <p className="mt-2 rounded-md bg-secondary/50 p-2 text-sm">📝 {request.notes}</p>
           )}
         </div>
 
-        <Button asChild variant="outline" size="sm">
-          <a href={waUrl} target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="ml-1 h-3 w-3" /> فتح واتساب
-          </a>
-        </Button>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {hasReceipt && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" onClick={loadReceipt}>
+                  <Receipt className="ml-1 h-3 w-3" /> عرض الإيصال
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>إيصال التحويل البنكي</DialogTitle>
+                </DialogHeader>
+                <div className="mt-2 max-h-[70vh] overflow-auto">
+                  {loadingReceipt && (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  {receiptUrl && !isPdf && (
+                    <img
+                      src={receiptUrl}
+                      alt="إيصال التحويل"
+                      className="mx-auto max-h-[60vh] rounded-lg border border-border object-contain"
+                    />
+                  )}
+                  {receiptUrl && isPdf && (
+                    <iframe
+                      src={receiptUrl}
+                      title="إيصال التحويل (PDF)"
+                      className="h-[60vh] w-full rounded-lg border border-border"
+                    />
+                  )}
+                </div>
+                {receiptUrl && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <a href={receiptUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="ml-1 h-3 w-3" /> فتح في تبويب جديد
+                      </a>
+                    </Button>
+                    <Button asChild variant="outline" size="sm">
+                      <a href={receiptUrl} download>
+                        <Download className="ml-1 h-3 w-3" /> تحميل
+                      </a>
+                    </Button>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+          )}
+          <Button asChild variant="outline" size="sm">
+            <a href={waUrl} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="ml-1 h-3 w-3" /> واتساب
+            </a>
+          </Button>
+        </div>
       </div>
 
       <Textarea

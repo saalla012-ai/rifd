@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Crown,
   ShieldCheck,
@@ -90,6 +90,7 @@ type RequestRow = {
 
 function BillingPage() {
   const { user, profile, refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [seatsTaken, setSeatsTaken] = useState<number>(0);
   const [requests, setRequests] = useState<RequestRow[]>([]);
@@ -199,10 +200,13 @@ function BillingPage() {
       return;
     }
 
-    toast.success("تم إرسال طلبك! جاري فتح واتساب لإكمال التفاصيل...");
-    window.open(buildWhatsappUrl(data.id), "_blank", "noopener,noreferrer");
-    await loadAll();
+    toast.success("✅ تم استلام طلبك! ننتقل لصفحة التأكيد...");
     await refreshProfile();
+    // ننتقل لصفحة التأكيد المخصصة بدل فتح واتساب مباشرة
+    void navigate({
+      to: "/dashboard/billing/confirm/$requestId",
+      params: { requestId: data.id },
+    });
   }
 
   const isPaidUser = profile?.plan && profile.plan !== "free";
@@ -378,9 +382,9 @@ function BillingPage() {
                 {submitting ? (
                   <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <MessageCircle className="ml-2 h-4 w-4" />
+                  <CheckCircle2 className="ml-2 h-4 w-4" />
                 )}
-                إرسال الطلب وفتح واتساب
+                إرسال الطلب وعرض بيانات التحويل
               </Button>
             </div>
 
@@ -521,7 +525,7 @@ function PendingBanner({
 }) {
   const meta = STATUS_META[request.status];
   return (
-    <div className="mt-6 rounded-2xl border border-warning/40 bg-warning/5 p-5">
+    <div className="mt-6 rounded-2xl border-2 border-warning/40 bg-gradient-to-br from-warning/10 to-transparent p-5 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
@@ -533,15 +537,22 @@ function PendingBanner({
               أُرسل في {new Date(request.created_at).toLocaleDateString("ar-SA")}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              لو ما تواصلنا معك خلال 15 دقيقة (في أوقات العمل 9ص-11م)، اضغط الزر للمتابعة عبر واتساب.
+              افتح صفحة التأكيد لرفع إيصال التحويل ومتابعة الحالة لحظياً.
             </p>
           </div>
         </div>
-        <Button asChild variant="outline" className="border-success text-success hover:bg-success/10">
-          <a href={waUrl} target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="ml-2 h-4 w-4" /> متابعة عبر واتساب
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild className="gradient-primary text-primary-foreground shadow-elegant">
+            <Link to="/dashboard/billing/confirm/$requestId" params={{ requestId: request.id }}>
+              <CheckCircle2 className="ml-2 h-4 w-4" /> فتح صفحة التأكيد
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="border-success text-success hover:bg-success/10">
+            <a href={waUrl} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="ml-2 h-4 w-4" /> واتساب
+            </a>
+          </Button>
+        </div>
       </div>
     </div>
   );
