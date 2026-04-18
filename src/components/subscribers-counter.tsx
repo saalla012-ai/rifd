@@ -74,6 +74,8 @@ export function SubscribersCounter({
     );
   }
 
+  const seatsLeft = count == null ? null : Math.max(0, 1000 - count);
+
   return (
     <div
       className={cn(
@@ -111,6 +113,15 @@ export function SubscribersCounter({
           </div>
         </div>
       </div>
+
+      {seatsLeft !== null && seatsLeft > 0 && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11px]">
+          <span className="font-bold text-warning">
+            ⚠️ تبقى {seatsLeft.toLocaleString("ar-SA")} مقعد قبل ارتفاع الأسعار
+          </span>
+          <span className="text-muted-foreground">كل عضو جديد يقرّبنا من +30%</span>
+        </div>
+      )}
     </div>
   );
 }
