@@ -283,11 +283,11 @@ function BillingPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pro">
-                      احترافي — {PLAN_PRICES.pro.monthly} ر.س/شهر
+                      احترافي — {PLAN_PRICES.pro.monthly} ر.س/شهر · 🔥 الأكثر اختياراً
                       <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {proFutureMonthly} لاحقاً)</span>
                     </SelectItem>
                     <SelectItem value="business">
-                      أعمال — {PLAN_PRICES.business.monthly} ر.س/شهر
+                      أعمال — {PLAN_PRICES.business.monthly} ر.س/شهر · 👑 الأفضل قيمة للوكالات
                       <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {businessFutureMonthly} لاحقاً)</span>
                     </SelectItem>
                   </SelectContent>
@@ -356,6 +356,11 @@ function BillingPage() {
                       ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}
                     </span>
                   </div>
+                </div>
+                <div className="mt-1 text-[11px] font-bold text-primary">
+                  {plan === "pro"
+                    ? "≈ 2.6 ر.س يومياً • أرخص من فنجان قهوة ☕"
+                    : "≈ 39.8 ر.س لكل متجر (5 ملفات) • يعادل موظف بـ4,000 ر.س"}
                 </div>
                 <div className="mt-1 text-[11px] font-medium text-warning">
                   ⚠️ سيرتفع لـ {futurePrice} ر.س بعد اكتمال 1000 عضو

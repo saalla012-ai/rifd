@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Sparkles, ShieldCheck, Star, Crown, Users } from "lucide-react";
+import {
+  Check,
+  ShieldCheck,
+  Star,
+  Crown,
+  Users,
+  Flame,
+  Rocket,
+  Palette,
+  Briefcase,
+  Gift,
+  ArrowLeft,
+  TrendingUp,
+  Sparkles,
+} from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { TrustBadges } from "@/components/trust-badges";
 import { SubscribersCounter } from "@/components/subscribers-counter";
@@ -26,13 +40,22 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
+type BonusGroup = {
+  title: string;
+  icon: typeof Rocket;
+  items: string[];
+};
+
 type Plan = {
   id: string;
   name: string;
+  tier: "free" | "popular" | "premium";
   price: { monthly: number; yearly: number };
   tagline: string;
-  highlight?: boolean;
-  features: string[];
+  badge?: { text: string; icon: typeof Flame };
+  valueLine?: string;
+  socialProof?: string;
+  bonusGroups: BonusGroup[];
   cta: string;
 };
 
@@ -40,51 +63,101 @@ const PLANS: Plan[] = [
   {
     id: "free",
     name: "مجاني",
+    tier: "free",
     price: { monthly: 0, yearly: 0 },
     tagline: "للتجربة والاستكشاف",
-    features: [
-      "5 توليدات نصية شهرياً",
-      "2 صورة شهرياً (Nano Banana سريع)",
-      "10 قوالب أساسية",
-      "ذاكرة متجر بسيطة",
-      "دعم بالعربي عبر البريد",
+    bonusGroups: [
+      {
+        title: "ابدأ بدون مخاطرة",
+        icon: Rocket,
+        items: [
+          "5 توليدات نصية شهرياً",
+          "2 صورة شهرياً (Nano Banana سريع)",
+          "10 قوالب أساسية",
+          "ذاكرة متجر بسيطة",
+          "دعم بالعربي عبر البريد",
+        ],
+      },
     ],
     cta: "ابدأ مجاناً",
   },
   {
     id: "pro",
     name: "احترافي",
+    tier: "popular",
     price: { monthly: 79, yearly: 790 },
-    tagline: "للمتاجر الناشئة والمتوسطة",
-    highlight: true,
-    features: [
-      "توليدات نصية غير محدودة",
-      "50 صورة سريعة + 10 صور Pro شهرياً",
-      "كل الـ40 قالب",
-      "ذاكرة متجر ذكية كاملة",
-      "تحسين صور المنتجات (تعديل بـAI)",
-      "تصدير لسلة وزد",
-      "فاتورة ضريبية رسمية",
-      "دعم عبر واتساب",
+    tagline: "الخيار الأذكى للمتاجر الناشئة",
+    badge: { text: "🔥 الأكثر اختياراً", icon: Flame },
+    valueLine: "≈ 2.6 ر.س يومياً • أرخص من فنجان قهوة ☕",
+    socialProof: "اختيار غالبية متاجرنا (78%)",
+    bonusGroups: [
+      {
+        title: "إنتاج بلا حدود",
+        icon: Rocket,
+        items: [
+          "توليدات نصية غير محدودة",
+          "50 صورة سريعة + 10 صور Pro شهرياً",
+          "تحسين صور المنتجات (تعديل بـAI)",
+        ],
+      },
+      {
+        title: "قوالب وذكاء",
+        icon: Palette,
+        items: [
+          "كل الـ40 قالب احترافي",
+          "ذاكرة متجر ذكية كاملة",
+        ],
+      },
+      {
+        title: "احترافية",
+        icon: Briefcase,
+        items: [
+          "تصدير لسلة وزد",
+          "فاتورة ضريبية رسمية",
+          "دعم مباشر عبر واتساب",
+        ],
+      },
     ],
     cta: "ابدأ تجربة 7 أيام",
   },
   {
     id: "business",
     name: "أعمال",
+    tier: "premium",
     price: { monthly: 199, yearly: 1990 },
-    tagline: "للمتاجر الكبرى والوكالات",
-    features: [
-      "كل مزايا احترافي",
-      "200 صورة سريعة + 50 صور Pro شهرياً",
-      "5 ملفات متاجر متعددة",
-      "أولوية في التوليد",
-      "API للوصول البرمجي",
-      "تكامل مع Meta و Google Ads",
-      "مدير حساب مخصص",
-      "دعم هاتفي وواتساب 24/7",
+    tagline: "الأفضل قيمة للوكالات والمتاجر الكبرى",
+    badge: { text: "👑 الأفضل قيمة", icon: Crown },
+    valueLine: "≈ 39.8 ر.س لكل متجر (5 ملفات) • يعادل موظف بـ4,000 ر.س",
+    socialProof: "اختيار الوكالات والمتاجر +50 منتج",
+    bonusGroups: [
+      {
+        title: "كل مزايا احترافي +",
+        icon: Rocket,
+        items: [
+          "200 صورة سريعة + 50 صور Pro شهرياً",
+          "5 ملفات متاجر متعددة",
+          "أولوية في طابور التوليد",
+        ],
+      },
+      {
+        title: "أدوات احترافية متقدمة",
+        icon: Briefcase,
+        items: [
+          "API للوصول البرمجي",
+          "تكامل مع Meta و Google Ads",
+        ],
+      },
+      {
+        title: "🎁 حصري للمؤسسين",
+        icon: Gift,
+        items: [
+          "مدير حساب مخصص",
+          "جلسة استشارية مجانية للإطلاق",
+          "دعم هاتفي وواتساب 24/7",
+        ],
+      },
     ],
-    cta: "تواصل معنا",
+    cta: "احجز مكانك في الأعمال 👑",
   },
 ];
 
@@ -156,12 +229,10 @@ function PricingPage() {
             تأكيد فوري • دعم 24/7 • ضمان استرجاع 7 أيام كامل
           </p>
 
-          {/* Live subscribers counter */}
           <div className="mx-auto mt-5 max-w-md">
             <SubscribersCounter />
           </div>
 
-          {/* Founding members seats counter */}
           {seatsLeft !== null && seatsLeft > 0 && (
             <div className="mx-auto mt-4 max-w-md rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
               <div className="flex items-center justify-between text-sm">
@@ -205,39 +276,74 @@ function PricingPage() {
         </div>
       </section>
 
-      <section className="bg-background py-12">
+      <section className="bg-background py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-6 md:grid-cols-3">
+          {/* Cards grid — extra vertical padding to accommodate scaled cards */}
+          <div className="grid items-stretch gap-6 pt-8 md:grid-cols-3 md:gap-4 md:pt-10">
             {PLANS.map((plan) => {
               const price = yearly ? plan.price.yearly : plan.price.monthly;
               const isPaid = price > 0;
               const futurePrice = Math.round(price * (1 + discountPct / 100));
+              const isPopular = plan.tier === "popular";
+              const isPremium = plan.tier === "premium";
+              const isFree = plan.tier === "free";
+
               return (
                 <div
                   key={plan.id}
                   className={cn(
                     "relative flex flex-col rounded-2xl border bg-card p-6 transition-all",
-                    plan.highlight
-                      ? "border-primary shadow-elegant ring-1 ring-primary"
-                      : "border-border shadow-soft"
+                    isFree && "border-border opacity-95",
+                    isPopular &&
+                      "z-20 border-2 border-primary bg-gradient-to-b from-primary/5 via-card to-card shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)] ring-2 ring-primary/20 md:scale-[1.05]",
+                    isPremium &&
+                      "z-10 border-2 border-gold/60 bg-gradient-to-br from-gold/5 via-card to-primary/5 shadow-[0_0_30px_-12px_hsl(var(--gold)/0.5)] md:scale-[1.02]"
                   )}
                 >
-                  {plan.highlight && (
-                    <span className="absolute -top-3 right-6 rounded-full gradient-gold px-3 py-1 text-xs font-bold text-gold-foreground shadow-gold">
-                      ⭐ الأكثر اختياراً
+                  {/* Top badge */}
+                  {plan.badge && (
+                    <span
+                      className={cn(
+                        "absolute -top-3.5 right-1/2 inline-flex translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1 text-xs font-bold shadow-elegant",
+                        isPopular && "gradient-primary text-primary-foreground",
+                        isPremium && "gradient-gold text-gold-foreground shadow-gold"
+                      )}
+                    >
+                      {plan.badge.text}
                     </span>
                   )}
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
 
+                  <div className="mt-1">
+                    <h3 className={cn("text-xl font-extrabold", isPremium && "text-gold")}>
+                      {plan.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
+                  </div>
+
+                  {/* Price */}
                   <div className="mt-5 flex items-baseline gap-2">
-                    <span className="text-4xl font-extrabold">{price}</span>
+                    <span className="text-5xl font-extrabold tracking-tight">{price}</span>
                     <span className="text-sm text-muted-foreground">
                       ر.س / {yearly ? "سنوياً" : "شهرياً"}
                     </span>
                   </div>
+
+                  {/* Value line */}
+                  {plan.valueLine && (
+                    <p
+                      className={cn(
+                        "mt-2 text-xs font-bold",
+                        isPopular && "text-primary",
+                        isPremium && "text-gold"
+                      )}
+                    >
+                      {plan.valueLine}
+                    </p>
+                  )}
+
+                  {/* Founding price tag */}
                   {isPaid && (
-                    <div className="mt-2 space-y-1.5">
+                    <div className="mt-3 space-y-1.5">
                       <div className="inline-flex w-fit items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-[11px] font-bold text-gold">
                         🔒 سعر المؤسسين — مجمّد مدى الحياة
                       </div>
@@ -252,31 +358,149 @@ function PricingPage() {
                     </p>
                   )}
 
+                  {/* Social proof */}
+                  {plan.socialProof && (
+                    <div
+                      className={cn(
+                        "mt-3 inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-semibold",
+                        isPopular && "bg-primary/10 text-primary",
+                        isPremium && "bg-gold/10 text-gold"
+                      )}
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      {plan.socialProof}
+                    </div>
+                  )}
+
+                  {/* CTA */}
                   <Button
                     asChild
+                    size="lg"
                     className={cn(
-                      "mt-5",
-                      plan.highlight
-                        ? "gradient-primary text-primary-foreground shadow-elegant"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      "mt-5 font-bold",
+                      isPopular && "gradient-primary text-primary-foreground shadow-elegant",
+                      isPremium && "gradient-gold text-gold-foreground shadow-gold",
+                      isFree && "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     )}
                   >
                     <Link to={plan.id === "free" ? "/onboarding" : ctaTarget}>
                       {plan.cta}
+                      <ArrowLeft className="mr-1 h-4 w-4" />
                     </Link>
                   </Button>
 
-                  <ul className="mt-6 space-y-2.5 text-sm">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Grouped features */}
+                  <div className="mt-6 space-y-4">
+                    {plan.bonusGroups.map((group) => {
+                      const Icon = group.icon;
+                      return (
+                        <div key={group.title}>
+                          <div
+                            className={cn(
+                              "mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide",
+                              isPopular && "text-primary",
+                              isPremium && "text-gold",
+                              isFree && "text-muted-foreground"
+                            )}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {group.title}
+                          </div>
+                          <ul className="space-y-2 text-sm">
+                            {group.items.map((f) => (
+                              <li key={f} className="flex items-start gap-2">
+                                <Check
+                                  className={cn(
+                                    "mt-0.5 h-4 w-4 shrink-0",
+                                    isPremium ? "text-gold" : "text-success"
+                                  )}
+                                />
+                                <span>{f}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* Pro → Business comparison bar */}
+          <div className="mt-12 rounded-2xl border border-gold/30 bg-gradient-to-l from-gold/10 via-primary/5 to-transparent p-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-gold/20 p-2.5">
+                  <TrendingUp className="h-5 w-5 text-gold" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold">
+                    الترقية من <span className="text-primary">احترافي</span> إلى{" "}
+                    <span className="text-gold">أعمال</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    +150 صورة • +4 ملفات متاجر • +API • +تكامل إعلانات • +مدير حساب
+                  </p>
+                </div>
+              </div>
+              <div className="text-left sm:text-right">
+                <div className="text-xs text-muted-foreground">فقط بـ</div>
+                <div className="text-lg font-extrabold text-gold">
+                  +120 ر.س/شهر <span className="text-xs font-normal text-muted-foreground">(≈4 ر.س يومياً)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Why Pro? / Why Business? */}
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-6">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-primary/15 p-2">
+                  <Flame className="h-4 w-4 text-primary" />
+                </div>
+                <h3 className="font-extrabold">لماذا "احترافي"؟</h3>
+              </div>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>متجر واحد ينمو بسرعة ويحتاج محتوى يومي بدون قيود</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>ميزانية ذكية — أرخص من ساعة عمل لكاتب محتوى</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>كل القوالب + ذاكرة متجر كاملة + دعم واتساب</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-6">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-gold/20 p-2">
+                  <Crown className="h-4 w-4 text-gold" />
+                </div>
+                <h3 className="font-extrabold">لماذا "أعمال"؟</h3>
+              </div>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                  <span>تدير +5 متاجر أو وكالة محتوى — كل ملف منفصل</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                  <span>تحتاج API وتكامل مباشر مع Meta و Google Ads</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                  <span>مدير حساب VIP + جلسة استشارية مجانية + دعم 24/7</span>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div className="mt-10">
