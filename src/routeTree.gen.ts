@@ -31,9 +31,9 @@ import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library
 import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
 import { Route as DashboardEditImageRouteImport } from './routes/dashboard.edit-image'
-import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
@@ -146,11 +146,6 @@ const DashboardEditImageRoute = DashboardEditImageRouteImport.update({
   path: '/edit-image',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardBillingRoute = DashboardBillingRouteImport.update({
-  id: '/billing',
-  path: '/billing',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const ApiDemoGenerateRoute = ApiDemoGenerateRouteImport.update({
   id: '/api/demo-generate',
   path: '/api/demo-generate',
@@ -161,11 +156,16 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/admin/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardBillingIndexRoute = DashboardBillingIndexRouteImport.update({
+  id: '/billing/',
+  path: '/billing/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardBillingConfirmRequestIdRoute =
   DashboardBillingConfirmRequestIdRouteImport.update({
-    id: '/confirm/$requestId',
-    path: '/confirm/$requestId',
-    getParentRoute: () => DashboardBillingRoute,
+    id: '/billing/confirm/$requestId',
+    path: '/billing/confirm/$requestId',
+    getParentRoute: () => DashboardRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -181,7 +181,6 @@ export interface FileRoutesByFullPath {
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
-  '/dashboard/billing': typeof DashboardBillingRouteWithChildren
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -194,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
 }
 export interface FileRoutesByTo {
@@ -208,7 +208,6 @@ export interface FileRoutesByTo {
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
-  '/dashboard/billing': typeof DashboardBillingRouteWithChildren
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -221,6 +220,7 @@ export interface FileRoutesByTo {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
 }
 export interface FileRoutesById {
@@ -237,7 +237,6 @@ export interface FileRoutesById {
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
-  '/dashboard/billing': typeof DashboardBillingRouteWithChildren
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
@@ -250,6 +249,7 @@ export interface FileRoutesById {
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
 }
 export interface FileRouteTypes {
@@ -267,7 +267,6 @@ export interface FileRouteTypes {
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
-    | '/dashboard/billing'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -280,6 +279,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard/'
+    | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -294,7 +294,6 @@ export interface FileRouteTypes {
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
-    | '/dashboard/billing'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -307,6 +306,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard'
+    | '/dashboard/billing'
     | '/dashboard/billing/confirm/$requestId'
   id:
     | '__root__'
@@ -322,7 +322,6 @@ export interface FileRouteTypes {
     | '/vs-chatgpt'
     | '/admin/subscriptions'
     | '/api/demo-generate'
-    | '/dashboard/billing'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
@@ -335,6 +334,7 @@ export interface FileRouteTypes {
     | '/legal/refund'
     | '/legal/terms'
     | '/dashboard/'
+    | '/dashboard/billing/'
     | '/dashboard/billing/confirm/$requestId'
   fileRoutesById: FileRoutesById
 }
@@ -512,13 +512,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEditImageRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/billing': {
-      id: '/dashboard/billing'
-      path: '/billing'
-      fullPath: '/dashboard/billing'
-      preLoaderRoute: typeof DashboardBillingRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/api/demo-generate': {
       id: '/api/demo-generate'
       path: '/api/demo-generate'
@@ -533,29 +526,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/billing/': {
+      id: '/dashboard/billing/'
+      path: '/billing'
+      fullPath: '/dashboard/billing/'
+      preLoaderRoute: typeof DashboardBillingIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/billing/confirm/$requestId': {
       id: '/dashboard/billing/confirm/$requestId'
-      path: '/confirm/$requestId'
+      path: '/billing/confirm/$requestId'
       fullPath: '/dashboard/billing/confirm/$requestId'
       preLoaderRoute: typeof DashboardBillingConfirmRequestIdRouteImport
-      parentRoute: typeof DashboardBillingRoute
+      parentRoute: typeof DashboardRoute
     }
   }
 }
 
-interface DashboardBillingRouteChildren {
-  DashboardBillingConfirmRequestIdRoute: typeof DashboardBillingConfirmRequestIdRoute
-}
-
-const DashboardBillingRouteChildren: DashboardBillingRouteChildren = {
-  DashboardBillingConfirmRequestIdRoute: DashboardBillingConfirmRequestIdRoute,
-}
-
-const DashboardBillingRouteWithChildren =
-  DashboardBillingRoute._addFileChildren(DashboardBillingRouteChildren)
-
 interface DashboardRouteChildren {
-  DashboardBillingRoute: typeof DashboardBillingRouteWithChildren
   DashboardEditImageRoute: typeof DashboardEditImageRoute
   DashboardGenerateImageRoute: typeof DashboardGenerateImageRoute
   DashboardGenerateTextRoute: typeof DashboardGenerateTextRoute
@@ -565,10 +553,11 @@ interface DashboardRouteChildren {
   DashboardTemplatesRoute: typeof DashboardTemplatesRoute
   DashboardUsageRoute: typeof DashboardUsageRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardBillingIndexRoute: typeof DashboardBillingIndexRoute
+  DashboardBillingConfirmRequestIdRoute: typeof DashboardBillingConfirmRequestIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardBillingRoute: DashboardBillingRouteWithChildren,
   DashboardEditImageRoute: DashboardEditImageRoute,
   DashboardGenerateImageRoute: DashboardGenerateImageRoute,
   DashboardGenerateTextRoute: DashboardGenerateTextRoute,
@@ -578,6 +567,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTemplatesRoute: DashboardTemplatesRoute,
   DashboardUsageRoute: DashboardUsageRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardBillingIndexRoute: DashboardBillingIndexRoute,
+  DashboardBillingConfirmRequestIdRoute: DashboardBillingConfirmRequestIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -604,12 +595,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
