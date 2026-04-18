@@ -159,6 +159,13 @@ function GenerateTextPage() {
           </div>
         </div>
       </div>
+
+      <QuotaExceededDialog
+        open={quotaDialog.open}
+        onOpenChange={(v) => setQuotaDialog((s) => ({ ...s, open: v }))}
+        kind="نص"
+        reason={quotaDialog.reason}
+      />
     </DashboardShell>
   );
 }
