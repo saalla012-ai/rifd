@@ -34,7 +34,6 @@ import { Route as DashboardEditImageRouteImport } from './routes/dashboard.edit-
 import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
-import { Route as ApiDebugEnvRouteImport } from './routes/api.debug-env'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
@@ -164,11 +163,6 @@ const ApiDemoGenerateRoute = ApiDemoGenerateRouteImport.update({
   path: '/api/demo-generate',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiDebugEnvRoute = ApiDebugEnvRouteImport.update({
-  id: '/api/debug-env',
-  path: '/api/debug-env',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   id: '/admin/subscriptions',
   path: '/admin/subscriptions',
@@ -198,7 +192,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/api/debug-env': typeof ApiDebugEnvRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -228,7 +221,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/api/debug-env': typeof ApiDebugEnvRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -260,7 +252,6 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/api/debug-env': typeof ApiDebugEnvRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -293,7 +284,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
-    | '/api/debug-env'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -323,7 +313,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
-    | '/api/debug-env'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -354,7 +343,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/vs-chatgpt'
     | '/admin/subscriptions'
-    | '/api/debug-env'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -386,7 +374,6 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   VsChatgptRoute: typeof VsChatgptRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
-  ApiDebugEnvRoute: typeof ApiDebugEnvRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
   ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
@@ -572,13 +559,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDemoGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/debug-env': {
-      id: '/api/debug-env'
-      path: '/api/debug-env'
-      fullPath: '/api/debug-env'
-      preLoaderRoute: typeof ApiDebugEnvRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
       path: '/admin/subscriptions'
@@ -647,7 +627,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   VsChatgptRoute: VsChatgptRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
-  ApiDebugEnvRoute: ApiDebugEnvRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,
   ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,
