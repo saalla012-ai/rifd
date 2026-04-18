@@ -147,7 +147,7 @@ function PricingPage() {
         <div className="mx-auto max-w-3xl px-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
             <Crown className="h-3.5 w-3.5" />
-            خصم {discountPct}% لأول 1000 عضو — ساري الآن
+            احجز سعرك قبل الزيادة — أول 1000 عضو فقط
           </div>
           <h1 className="mt-4 text-3xl font-extrabold sm:text-5xl">
             ابدأ مجاناً، <span className="text-gradient-primary">ادفع لما تكبر</span>
@@ -166,7 +166,7 @@ function PricingPage() {
             <div className="mx-auto mt-4 max-w-md rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1.5 font-bold text-gold">
-                  <Users className="h-4 w-4" /> المقاعد المتبقية بخصم {discountPct}%
+                  <Users className="h-4 w-4" /> المقاعد المتبقية بسعر المؤسسين
                 </span>
                 <span className="font-extrabold text-gold">
                   {seatsLeft.toLocaleString("ar-SA")} / {seatsTotal.toLocaleString("ar-SA")}
@@ -174,7 +174,7 @@ function PricingPage() {
               </div>
               <Progress value={((seatsTotal - seatsLeft) / seatsTotal) * 100} className="mt-2 h-2" />
               <p className="mt-2 text-xs text-muted-foreground">
-                السعر بخصم {discountPct}% ثابت مدى الحياة لكل من ينضم في هذه المرحلة 🔒
+                سعرك مجمّد مدى الحياة 🔒 — سترتفع الأسعار {discountPct}% بعد اكتمال {seatsTotal.toLocaleString("ar-SA")} عضو
               </p>
             </div>
           )}
@@ -209,11 +209,9 @@ function PricingPage() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-6 md:grid-cols-3">
             {PLANS.map((plan) => {
-              const originalPrice = yearly ? plan.price.yearly : plan.price.monthly;
-              const isPaid = originalPrice > 0;
-              const price = isPaid
-                ? Math.round(originalPrice * (1 - discountPct / 100))
-                : 0;
+              const price = yearly ? plan.price.yearly : plan.price.monthly;
+              const isPaid = price > 0;
+              const futurePrice = Math.round(price * (1 + discountPct / 100));
               return (
                 <div
                   key={plan.id}
@@ -237,19 +235,19 @@ function PricingPage() {
                     <span className="text-sm text-muted-foreground">
                       ر.س / {yearly ? "سنوياً" : "شهرياً"}
                     </span>
-                    {isPaid && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {originalPrice}
-                      </span>
-                    )}
                   </div>
                   {isPaid && (
-                    <div className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-bold text-success">
-                      ⚡ خصم {discountPct}% للمؤسسين
+                    <div className="mt-2 space-y-1.5">
+                      <div className="inline-flex w-fit items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-[11px] font-bold text-gold">
+                        🔒 سعر المؤسسين — مجمّد مدى الحياة
+                      </div>
+                      <div className="text-[11px] font-medium text-warning">
+                        ⚠️ سيرتفع لـ {futurePrice} ر.س بعد اكتمال 1000 عضو
+                      </div>
                     </div>
                   )}
                   {yearly && plan.price.monthly > 0 && (
-                    <p className="text-xs text-success">
+                    <p className="mt-1 text-xs text-success">
                       توفر {plan.price.monthly * 12 - plan.price.yearly} ر.س سنوياً
                     </p>
                   )}
