@@ -235,7 +235,6 @@ function BillingPage() {
     });
   }
 
-  const isPaidUser = profile?.plan && profile.plan !== "free";
   const proFutureMonthly = priceAfterIncrease(PLAN_PRICES.pro.monthly);
   const businessFutureMonthly = priceAfterIncrease(PLAN_PRICES.business.monthly);
 
