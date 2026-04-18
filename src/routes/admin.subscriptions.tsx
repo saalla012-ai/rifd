@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Bell,
   Settings2,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
