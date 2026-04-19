@@ -40,6 +40,12 @@ export type AdminAnalytics = {
     cost_usd_this_month: number;
     avg_cost_per_active_user: number;
   };
+  data_quality: {
+    users_with_whatsapp: number;
+    whatsapp_pct: number;
+    users_with_full_profile: number;
+    full_profile_pct: number;
+  };
   top_users: Array<{
     user_id: string;
     email: string | null;
@@ -81,7 +87,7 @@ export const getAdminAnalytics = createServerFn({ method: "POST" })
       thirtyDayGens,
       firstGenUsers,
     ] = await Promise.all([
-      adb.from("profiles").select("id, email, store_name, plan, onboarded, created_at"),
+      adb.from("profiles").select("id, email, store_name, plan, onboarded, created_at, whatsapp, product_type, audience, tone"),
       adb
         .from("subscription_requests")
         .select("user_id")
@@ -194,9 +200,21 @@ export const getAdminAnalytics = createServerFn({ method: "POST" })
       paid: activeSubSet.size,
     };
 
+    const usersWithWhatsapp = profiles.filter((p) => !!p.whatsapp && p.whatsapp.trim().length > 0).length;
+    const usersWithFullProfile = profiles.filter(
+      (p) => !!p.store_name && !!p.whatsapp && !!p.product_type && !!p.audience && !!p.tone
+    ).length;
+    const data_quality = {
+      users_with_whatsapp: usersWithWhatsapp,
+      whatsapp_pct: profiles.length > 0 ? Math.round((usersWithWhatsapp / profiles.length) * 1000) / 10 : 0,
+      users_with_full_profile: usersWithFullProfile,
+      full_profile_pct: profiles.length > 0 ? Math.round((usersWithFullProfile / profiles.length) * 1000) / 10 : 0,
+    };
+
     return {
       month,
       totals,
+      data_quality,
       top_users,
       daily_generations,
       by_model,
