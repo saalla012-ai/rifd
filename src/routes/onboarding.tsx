@@ -63,12 +63,14 @@ function OnboardingPage() {
       void navigate({ to: "/auth" });
       return;
     }
-    // إذا أكمل onboarding من قبل → dashboard مباشرة
-    if (profile?.onboarded) {
+    // إذا أكمل onboarding من قبل وعنده رقم واتساب → dashboard مباشرة
+    // (المستخدمون القدامى بدون رقم يكملون الاستمارة لإضافته)
+    if (profile?.onboarded && profile?.whatsapp) {
       void navigate({ to: "/dashboard" });
     }
     // عبّي القيم لو فيه profile جزئي
     if (profile?.store_name) setStoreName(profile.store_name);
+    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
     if (profile?.product_type) setProductType(profile.product_type);
     if (profile?.audience) setAudience(profile.audience);
     if (profile?.tone) setTone(profile.tone);
