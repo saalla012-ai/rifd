@@ -1,13 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Quote, Star } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { UrgencyBar } from "@/components/urgency-bar";
-import { TrustBar } from "@/components/trust-bar";
 import { HomeHero } from "@/components/home-hero";
+import { BrandStrip } from "@/components/brand-strip";
+import { LiveAiDemo } from "@/components/live-ai-demo";
 import { SavingsCounter } from "@/components/savings-counter";
 import { BeforeAfter } from "@/components/before-after";
-import { HomeFeatures } from "@/components/home-features";
+import { HowItWorks } from "@/components/how-it-works";
 import { ComparisonTable } from "@/components/comparison-table";
+import { VisionSection } from "@/components/vision-section";
+import { HomeFeatures } from "@/components/home-features";
 import { Button } from "@/components/ui/button";
 import { CATEGORIES, PROMPTS } from "@/lib/prompts-data";
 
@@ -33,14 +36,40 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <MarketingLayout>
+      {/* 1. شريط ندرة رفيع */}
       <UrgencyBar />
-      <TrustBar />
-      <HomeHero />
-      <SavingsCounter />
-      <BeforeAfter />
-      <HomeFeatures />
 
-      {/* مقارنة مختصرة */}
+      {/* 2. Hero فوق الـfold (شارة حية + Hook + Mini Demo + CTA) */}
+      <HomeHero />
+
+      {/* 3. شريط متوافق مع — قانوني آمن */}
+      <BrandStrip />
+
+      {/* 4. Demo كامل (التجربة العميقة) */}
+      <section className="border-t border-border bg-secondary/30 py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4">
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-extrabold sm:text-3xl">
+              التجربة الكاملة — <span className="text-gradient-primary">3 حقول فقط</span>
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              خصّص أكثر، شاهد النتيجة الكاملة، وانسخها مباشرة
+            </p>
+          </div>
+          <LiveAiDemo />
+        </div>
+      </section>
+
+      {/* 5. أرقام حية حقيقية */}
+      <SavingsCounter />
+
+      {/* 6. قبل وبعد */}
+      <BeforeAfter />
+
+      {/* 7. كيف يعمل رِفد في 3 خطوات (بديل الشهادات المزيفة) */}
+      <HowItWorks />
+
+      {/* 8. مقارنة مختصرة (مع إصلاح الموبايل) */}
       <section className="border-t border-border bg-secondary/30 py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl text-center">
@@ -57,7 +86,13 @@ function HomePage() {
         </div>
       </section>
 
-      {/* لمحة عن المكتبة */}
+      {/* 9. الروية */}
+      <VisionSection />
+
+      {/* 10. الميزات (4 + accordion على الموبايل، 8 على الديسكتوب) */}
+      <HomeFeatures />
+
+      {/* 11. لمحة عن المكتبة */}
       <section className="border-t border-border bg-background py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -78,6 +113,7 @@ function HomePage() {
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {CATEGORIES.map((c) => {
               const count = PROMPTS.filter((p) => p.category === c.id).length;
+              if (count === 0) return null; // لا نعرض فئات فارغة (ثقة)
               return (
                 <Link
                   key={c.id}
@@ -94,54 +130,7 @@ function HomePage() {
         </div>
       </section>
 
-      {/* شهادات (مبدئية بإطار "ما هي حقيقية بعد") */}
-      <section className="border-t border-border bg-secondary/30 py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-extrabold">آراء المختبرين الأوائل</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              بعض الانطباعات من جلسات تجربة المنتج الأخيرة
-            </p>
-          </div>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {[
-              {
-                quote: "كنت أستخدم ChatGPT وكان يعطيني فصحى مكسّرة. مع رِفد، النصوص جايّة بنبرتي العامية مباشرة.",
-                author: "أم عبدالعزيز",
-                role: "متجر عبايات",
-              },
-              {
-                quote: "وفّرت 800 ر.س شهرياً كنت أدفعها لمصمم. البوسترات بالعربي طلعت أحلى من اللي كنت أطلبها.",
-                author: "محمد ال.",
-                role: "متجر عطور",
-              },
-              {
-                quote: "الذاكرة الذكية للمتجر غيّرت اللعبة — كل توليدة تجي مخصصة بدون ما أعيد كتابة التفاصيل.",
-                author: "نورة س.",
-                role: "متجر إكسسوارات",
-              },
-            ].map((t) => (
-              <figure key={t.author} className="rounded-xl border border-border bg-card p-5 shadow-soft">
-                <Quote className="h-6 w-6 text-primary/40" />
-                <blockquote className="mt-3 text-sm leading-relaxed">{t.quote}</blockquote>
-                <figcaption className="mt-4 flex items-center justify-between border-t border-border pt-3">
-                  <div>
-                    <div className="text-sm font-bold">{t.author}</div>
-                    <div className="text-xs text-muted-foreground">{t.role}</div>
-                  </div>
-                  <div className="flex gap-0.5 text-gold">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                    ))}
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA الختامي */}
+      {/* 12. CTA الختامي */}
       <section className="border-t border-border bg-background py-16">
         <div className="mx-auto max-w-4xl rounded-3xl gradient-primary p-8 text-center text-primary-foreground shadow-elegant sm:p-12">
           <h2 className="text-3xl font-extrabold sm:text-4xl">
