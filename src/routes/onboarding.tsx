@@ -48,6 +48,7 @@ function OnboardingPage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [storeName, setStoreName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [productType, setProductType] = useState("dropshipping");
   const [audience, setAudience] = useState("young");
   const [tone, setTone] = useState("fun");
