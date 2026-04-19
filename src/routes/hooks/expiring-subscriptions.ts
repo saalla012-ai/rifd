@@ -4,6 +4,10 @@ import * as React from "react";
 import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
+const SITE_NAME = "رِفد";
+const SENDER_DOMAIN = "notify.rifd.club";
+const FROM_DOMAIN = "notify.rifd.club";
+
 const PLAN_LABELS: Record<string, string> = {
   pro: "احترافي",
   business: "أعمال",
@@ -151,6 +155,10 @@ export const Route = createFileRoute("/hooks/expiring-subscriptions")({
                     message_id: messageId,
                     label: "subscription-expiring",
                     to: row.email,
+                    from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+                    sender_domain: SENDER_DOMAIN,
+                    purpose: "transactional",
+                    idempotency_key: idempotencyKey,
                     subject,
                     html,
                     text: plainText,
