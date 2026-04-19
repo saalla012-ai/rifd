@@ -10,6 +10,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { TEXT_PROMPTS } from "@/lib/prompts-data";
+import { getSuggestionsFor } from "@/lib/prompt-suggestions";
 import { generateText } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
@@ -126,6 +127,21 @@ function GenerateTextPage() {
                 maxLength={2000}
               />
               <p className="mt-1 text-xs text-muted-foreground">{topic.length}/2000</p>
+              <div className="mt-3">
+                <p className="mb-1.5 text-xs font-medium text-muted-foreground">اقتراحات سريعة:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {getSuggestionsFor(templateId).map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setTopic(s)}
+                      className="rounded-full border border-border bg-secondary/50 px-2.5 py-1 text-[11px] text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <Button onClick={generate} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري التوليد...</> : <><Wand2 className="h-4 w-4" /> ولّد النص</>}
