@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles, Star, Wand2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Star, Wand2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubscribersCounter } from "./subscribers-counter";
 import { PRODUCT_TYPES } from "@/lib/demo-results";
@@ -69,18 +69,24 @@ export function HomeHero() {
           <SubscribersCounter variant="inline" />
         </div>
 
-        {/* H1 — سطرين فقط، قوي وممتد */}
+        {/* H1 — منشورات + صور، إيقاع متوازن، highlight ذهبي على وقت قهوتك */}
         <h1
-          className="mt-6 text-center text-[2.5rem] font-black leading-[1.05] tracking-tight sm:text-[3.25rem] lg:text-[3.75rem] animate-fade-in"
+          className="mt-6 text-center text-[2.25rem] font-black leading-[1.08] tracking-tight sm:text-[3rem] lg:text-[3.5rem] animate-fade-in"
           style={{ animationDelay: "60ms" }}
         >
           <span className="block">
             اكتب{" "}
             <span className="font-black tabular-nums text-gradient-primary">30</span>{" "}
-            منشور لمتجرك
+            منشور
+            <span className="mx-2 inline-block align-middle text-muted-foreground/60 font-light">+</span>
+            <span className="font-black tabular-nums text-gradient-gold">30</span>{" "}
+            <span className="relative inline-flex items-center gap-1.5">
+              صورة
+              <ImageIcon className="h-[0.7em] w-[0.7em] text-gold" aria-hidden />
+            </span>
           </span>
-          <span className="mt-1 block">
-            في{" "}
+          <span className="mt-1 block text-[0.85em] sm:text-[0.9em]">
+            لمتجرك في{" "}
             <span className="relative inline-block whitespace-nowrap">
               <span
                 className="absolute inset-x-[-8px] bottom-[8%] -z-10 h-[44%] -rotate-1 rounded-md bg-gold/60"
