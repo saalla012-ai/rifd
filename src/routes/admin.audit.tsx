@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Loader2, RefreshCw, ArrowLeft, Filter, X } from "lucide-react";
+import { Loader2, RefreshCw, ArrowLeft, Filter, X, Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -20,6 +28,53 @@ import {
   type AuditEntry,
   type AuditFacets,
 } from "@/server/admin-audit";
+
+function JsonBlock({ label, value }: { label: string; value: unknown }) {
+  const [copied, setCopied] = useState(false);
+  const text = useMemo(() => {
+    if (value === null || value === undefined) return "—";
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  }, [value]);
+  const isEmpty = text === "—";
+  const onCopy = async () => {
+    if (isEmpty) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success(`تم نسخ ${label}`);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("تعذّر النسخ");
+    }
+  };
+  return (
+    <div className="rounded-lg border border-border bg-muted/30">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <span className="text-xs font-bold">{label}</span>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2 text-xs"
+          onClick={onCopy}
+          disabled={isEmpty}
+        >
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          {copied ? "تم" : "نسخ"}
+        </Button>
+      </div>
+      <pre
+        dir="ltr"
+        className="max-h-[40vh] overflow-auto px-3 py-2 text-left text-[11px] leading-relaxed font-mono whitespace-pre-wrap break-words"
+      >
+        {text}
+      </pre>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/admin/audit")({
   head: () => ({ meta: [{ title: "سجل تعديلات الأدمن — رِفد" }] }),
