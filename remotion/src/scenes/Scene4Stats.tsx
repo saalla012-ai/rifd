@@ -1,22 +1,26 @@
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Sequence } from "remotion";
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { loadFont } from "@remotion/google-fonts/Tajawal";
 import { COLORS } from "../theme";
 
 const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subsets: ["arabic"] });
 
 const STATS = [
-  { num: "30", unit: "منشور", caption: "لمتجرك في 5 دقائق", color: COLORS.green },
-  { num: "800", unit: "ر.س", caption: "وفّرها شهرياً", color: COLORS.gold },
-  { num: "40", unit: "قالب", caption: "بالعامية السعودية", color: COLORS.greenDeep },
+  { num: 30, unit: "منشور", caption: "لمتجرك في 5 دقائق", color: COLORS.green },
+  { num: 800, unit: "ر.س", caption: "وفّرها شهرياً", color: COLORS.gold },
+  { num: 40, unit: "قالب", caption: "بالعامية السعودية", color: COLORS.greenDeep },
 ];
 
-const StatCard: React.FC<{ index: number }> = ({ index }) => {
+const StatCard: React.FC<{ index: number; delay: number }> = ({ index, delay }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const stat = STATS[index];
 
-  const cardIn = spring({ frame, fps, config: { damping: 14, stiffness: 130 } });
-  const numCount = interpolate(frame, [10, 50], [0, parseInt(stat.num)], { extrapolateRight: "clamp" });
+  const localFrame = frame - delay;
+  const cardIn = spring({ frame: localFrame, fps, config: { damping: 14, stiffness: 130 } });
+  const numCount = interpolate(localFrame, [10, 50], [0, stat.num], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
   const displayNum = Math.round(numCount).toString();
 
   return (
@@ -26,16 +30,15 @@ const StatCard: React.FC<{ index: number }> = ({ index }) => {
         transform: `translateY(${interpolate(cardIn, [0, 1], [50, 0])}px) scale(${interpolate(cardIn, [0, 1], [0.85, 1])})`,
         background: COLORS.white,
         borderRadius: 32,
-        padding: "50px 40px",
+        padding: "44px 36px",
         textAlign: "center",
         boxShadow: "0 20px 50px rgba(15,31,24,0.15)",
         border: `3px solid ${stat.color}25`,
-        minWidth: 280,
       }}
     >
       <div
         style={{
-          fontSize: 140,
+          fontSize: 130,
           fontWeight: 900,
           color: stat.color,
           lineHeight: 1,
@@ -47,7 +50,7 @@ const StatCard: React.FC<{ index: number }> = ({ index }) => {
       <div style={{ fontSize: 36, fontWeight: 700, color: COLORS.ink, marginTop: 8 }}>
         {stat.unit}
       </div>
-      <div style={{ fontSize: 26, fontWeight: 400, color: COLORS.ink + "99", marginTop: 14 }}>
+      <div style={{ fontSize: 26, fontWeight: 400, color: COLORS.ink + "99", marginTop: 12 }}>
         {stat.caption}
       </div>
     </div>
@@ -68,44 +71,25 @@ export const Scene4Stats: React.FC = () => {
         padding: 60,
       }}
     >
-      <div
-        style={{
-          fontSize: 56,
-          fontWeight: 900,
-          color: COLORS.ink,
-          marginBottom: 60,
-          textAlign: "center",
-          opacity: titleIn,
-          transform: `translateY(${interpolate(titleIn, [0, 1], [-30, 0])}px)`,
-        }}
-      >
-        الأرقام تتكلم 📊
-      </div>
+      <div style={{ width: "100%", maxWidth: 720 }}>
+        <div
+          style={{
+            fontSize: 56,
+            fontWeight: 900,
+            color: COLORS.ink,
+            marginBottom: 40,
+            textAlign: "center",
+            opacity: titleIn,
+            transform: `translateY(${interpolate(titleIn, [0, 1], [-30, 0])}px)`,
+          }}
+        >
+          الأرقام تتكلم 📊
+        </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 24,
-          width: "100%",
-          maxWidth: 720,
-          alignItems: "stretch",
-        }}
-      >
-        <div style={{ position: "relative", height: 280 }}>
-          <Sequence from={15} durationInFrames={125}>
-            <StatCard index={0} />
-          </Sequence>
-        </div>
-        <div style={{ position: "relative", height: 280 }}>
-          <Sequence from={35} durationInFrames={105}>
-            <StatCard index={1} />
-          </Sequence>
-        </div>
-        <div style={{ position: "relative", height: 280 }}>
-          <Sequence from={55} durationInFrames={85}>
-            <StatCard index={2} />
-          </Sequence>
+        <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+          <StatCard index={0} delay={15} />
+          <StatCard index={1} delay={35} />
+          <StatCard index={2} delay={55} />
         </div>
       </div>
     </AbsoluteFill>
