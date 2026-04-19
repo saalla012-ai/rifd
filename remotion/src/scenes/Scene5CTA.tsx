@@ -44,10 +44,10 @@ export const Scene5CTA: React.FC = () => {
 
         <div
           style={{
-            fontSize: 220,
+            fontSize: 200,
             fontWeight: 900,
             color: COLORS.greenDeep,
-            margin: "30px 0 20px",
+            margin: "20px 0 70px",
             opacity: logoIn,
             transform: `scale(${interpolate(logoIn, [0, 1], [0.5, 1])})`,
             letterSpacing: "-6px",
@@ -62,14 +62,13 @@ export const Scene5CTA: React.FC = () => {
             display: "inline-block",
             background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.goldGlow})`,
             color: COLORS.greenDeep,
-            padding: "28px 60px",
+            padding: "26px 56px",
             borderRadius: 100,
             fontSize: 56,
             fontWeight: 900,
             opacity: urlIn,
             transform: `scale(${pulse * interpolate(urlIn, [0, 1], [0.7, 1])})`,
             boxShadow: `0 20px 50px ${COLORS.gold}70, 0 0 60px ${COLORS.goldGlow}40`,
-            marginTop: 20,
             direction: "ltr",
           }}
         >
