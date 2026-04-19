@@ -109,6 +109,9 @@ function AdminAnalyticsPage() {
             <Link to="/admin/plan-limits">حدود الباقات</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
+            <Link to="/admin/audit">سجل المراجعة</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link to="/admin/subscriptions">الاشتراكات <ArrowLeft className="h-3.5 w-3.5" /></Link>
           </Button>
         </div>
