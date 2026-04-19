@@ -18,6 +18,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateText } from "@/server/ai-functions";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import {
+  formatSaudiPhoneDisplay,
+  normalizeSaudiPhone,
+  validateSaudiPhone,
+  SAUDI_PHONE_ERROR,
+  SAUDI_PHONE_PLACEHOLDER,
+} from "@/lib/phone";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
