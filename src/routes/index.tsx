@@ -5,7 +5,6 @@ import { MarketingLayout } from "@/components/marketing-layout";
 import { HomeHero } from "@/components/home-hero";
 import { StickyMobileCta } from "@/components/sticky-mobile-cta";
 import { BrandStrip } from "@/components/brand-strip";
-import { SocialProof } from "@/components/social-proof";
 import { LiveAiDemo } from "@/components/live-ai-demo";
 import { SavingsCounter } from "@/components/savings-counter";
 import { BeforeAfter } from "@/components/before-after";
@@ -43,9 +42,6 @@ function HomePage() {
 
       {/* 3. شريط متوافق مع — قانوني آمن */}
       <BrandStrip />
-
-      {/* 3.5 شهادة موثقة + شارات أمان */}
-      <SocialProof />
 
       {/* 4. Demo كامل (التجربة العميقة) */}
       <section className="border-t border-border bg-secondary/30 py-12 sm:py-16">
