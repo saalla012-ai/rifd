@@ -38,14 +38,12 @@ function SettingsPage() {
 
   const save = async () => {
     if (!user) return;
-    let normalizedWhatsapp: string | null = null;
-    if (whatsapp.trim()) {
-      if (!validateSaudiPhone(whatsapp)) {
-        toast.error(SAUDI_PHONE_ERROR);
-        return;
-      }
-      normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
+    // رقم الواتساب مطلوب دائماً (لا يمكن مسحه)
+    if (!whatsapp.trim() || !validateSaudiPhone(whatsapp)) {
+      toast.error(SAUDI_PHONE_ERROR);
+      return;
     }
+    const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setSaving(true);
     try {
       const { error } = await supabase
