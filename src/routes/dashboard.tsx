@@ -1,8 +1,10 @@
-import { createFileRoute, Outlet, Link, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, Outlet, Link, useRouter, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardLayout,
@@ -12,6 +14,21 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardLayout() {
+  const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Guard: any authenticated user without completed onboarding OR without
+  // a WhatsApp number on file is redirected to /onboarding to complete it.
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return; // /auth handles unauthenticated separately
+    if (!profile) return;
+    const needsOnboarding = !profile.onboarded || !profile.whatsapp;
+    if (needsOnboarding) {
+      void navigate({ to: "/onboarding" });
+    }
+  }, [loading, user, profile, navigate]);
+
   return <Outlet />;
 }
 
