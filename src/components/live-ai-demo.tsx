@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Sparkles, Copy, Check, Loader2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +20,16 @@ export function LiveAiDemo() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // استقبال الـprefill من Mini Demo في Hero
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { productType?: string };
+      if (detail?.productType) setProductType(detail.productType);
+    };
+    window.addEventListener("rifd:prefill-demo", handler);
+    return () => window.removeEventListener("rifd:prefill-demo", handler);
+  }, []);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -52,14 +62,14 @@ export function LiveAiDemo() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
+    <div id="live-demo" className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
             <Wand2 className="h-4 w-4" />
           </span>
           <div>
-            <h3 className="text-sm font-bold">جرّب الآن — بدون تسجيل</h3>
+            <h3 className="text-sm font-bold">جرّب التوليد الكامل — بدون تسجيل</h3>
             <p className="text-xs text-muted-foreground">AI حقيقي • نتيجة في 5-10 ثواني</p>
           </div>
         </div>

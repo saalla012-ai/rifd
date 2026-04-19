@@ -11,6 +11,11 @@ import {
 
 const FEATURES = [
   {
+    icon: Languages,
+    title: "عامية سعودية أصيلة",
+    desc: "لا فصحى مكسّرة ولا ترجمة آلية — نصوص بنبرة سعودية حقيقية تكسب ثقة عملائك.",
+  },
+  {
     icon: Brain,
     title: "ذاكرة متجرك الدائمة",
     desc: "نحفظ اسم متجرك، جمهورك، نبرتك وألوانك — كل توليدة تجي مخصصة بدون ما تكتب التفاصيل من جديد.",
@@ -19,11 +24,6 @@ const FEATURES = [
     icon: Library,
     title: "40 قالب جاهز",
     desc: "30 قالب نصي + 10 قوالب صور، كلها مصممة لأصحاب المتاجر السعوديين، بنقرة واحدة فقط.",
-  },
-  {
-    icon: Languages,
-    title: "عامية سعودية أصيلة",
-    desc: "لا فصحى مكسّرة ولا ترجمة آلية — نصوص بنبرة سعودية حقيقية تكسب ثقة عملائك.",
   },
   {
     icon: ImageIcon,
@@ -52,7 +52,22 @@ const FEATURES = [
   },
 ];
 
+function FeatureCard({ f }: { f: (typeof FEATURES)[number] }) {
+  return (
+    <div className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-elegant">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:gradient-primary group-hover:text-primary-foreground">
+        <f.icon className="h-5 w-5" />
+      </div>
+      <h3 className="text-base font-bold">{f.title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+    </div>
+  );
+}
+
 export function HomeFeatures() {
+  const primary = FEATURES.slice(0, 4);
+  const extra = FEATURES.slice(4);
+
   return (
     <section className="border-t border-border bg-background py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4">
@@ -65,19 +80,24 @@ export function HomeFeatures() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-elegant"
-            >
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:gradient-primary group-hover:text-primary-foreground">
-                <f.icon className="h-5 w-5" />
-              </div>
-              <h3 className="text-base font-bold">{f.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
-            </div>
-          ))}
+        {/* الموبايل: 4 ميزات + accordion للباقي. الديسكتوب: 8 كاملة */}
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:hidden">
+          {primary.map((f) => <FeatureCard key={f.title} f={f} />)}
+        </div>
+
+        <details className="group mt-5 lg:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-bold text-primary hover:bg-primary/10">
+            <span>+{extra.length} ميزات إضافية</span>
+            <span className="text-xs transition-transform group-open:rotate-180">▼</span>
+          </summary>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            {extra.map((f) => <FeatureCard key={f.title} f={f} />)}
+          </div>
+        </details>
+
+        {/* الديسكتوب: 8 ميزات */}
+        <div className="mt-10 hidden gap-5 lg:grid lg:grid-cols-4">
+          {FEATURES.map((f) => <FeatureCard key={f.title} f={f} />)}
         </div>
       </div>
     </section>
