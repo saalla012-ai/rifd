@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, ShieldCheck, Zap, Clock, ChevronDown, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/select";
 import { SubscribersCounter } from "./subscribers-counter";
 import { PRODUCT_TYPES } from "@/lib/demo-results";
+import { getVariant, trackEvent, type Variant } from "@/lib/ab-test";
+
+const EXPERIMENT = "hero_hook";
 
 /**
  * Hero محكم على الموبايل (موبايل-أولاً).
@@ -20,9 +23,17 @@ import { PRODUCT_TYPES } from "@/lib/demo-results";
  */
 export function HomeHero() {
   const [productType, setProductType] = useState<string>("");
+  const [variant, setVariant] = useState<Variant>("A");
+
+  // تعيين variant + تسجيل view مرة واحدة
+  useEffect(() => {
+    const v = getVariant(EXPERIMENT);
+    setVariant(v);
+    void trackEvent(EXPERIMENT, v, "view");
+  }, []);
 
   const handleTryNow = () => {
-    // مرّر النوع المختار للـDemo الكامل عبر event مخصص + smooth scroll
+    void trackEvent(EXPERIMENT, variant, "demo_try");
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("rifd:prefill-demo", { detail: { productType: productType || "dropshipping" } })
@@ -32,6 +43,10 @@ export function HomeHero() {
         target.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
+  };
+
+  const handleCtaClick = () => {
+    void trackEvent(EXPERIMENT, variant, "cta_click");
   };
 
   return (
