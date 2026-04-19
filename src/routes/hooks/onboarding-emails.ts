@@ -3,10 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 import * as React from "react";
 import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
+import { sendResendEmail } from "@/server/resend";
 
 const SITE_NAME = "رِفد";
-const SENDER_DOMAIN = "notify.rifd.club";
-const FROM_DOMAIN = "notify.rifd.club";
+const FROM_ADDRESS = `${SITE_NAME} <onboarding@resend.dev>`;
 
 /**
  * Cron-triggered route — يُرسل رسائل onboarding للمستخدمين الجدد.
