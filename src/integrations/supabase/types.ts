@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      ab_test_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          experiment: string
+          id: string
+          session_id: string
+          user_agent: string | null
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          experiment: string
+          id?: string
+          session_id: string
+          user_agent?: string | null
+          variant: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          experiment?: string
+          id?: string
+          session_id?: string
+          user_agent?: string | null
+          variant?: string
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
