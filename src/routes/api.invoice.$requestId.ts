@@ -181,15 +181,22 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
             );
           }
 
-          // جلب إعدادات التطبيق (اسم الشركة الافتراضي)
-          const { data: settings } = await supabase
-            .from("app_settings")
-            .select("bank_account_holder, whatsapp_number")
-            .eq("id", 1)
-            .maybeSingle();
+          // جلب إعدادات التطبيق (whatsapp) + بيانات البنك (اسم الحساب البائع)
+          const [appRes, payRes] = await Promise.all([
+            supabase
+              .from("app_settings")
+              .select("whatsapp_number")
+              .eq("id", 1)
+              .maybeSingle(),
+            supabase
+              .from("payment_settings")
+              .select("bank_account_holder")
+              .eq("id", 1)
+              .maybeSingle(),
+          ]);
 
-          const sellerName = settings?.bank_account_holder || "رِفد للتقنية";
-          const sellerWhatsapp = settings?.whatsapp_number || "";
+          const sellerName = payRes.data?.bank_account_holder || "رِفد للتقنية";
+          const sellerWhatsapp = appRes.data?.whatsapp_number || "";
 
           // الأسعار
           const planKey = req.plan as "pro" | "business";
