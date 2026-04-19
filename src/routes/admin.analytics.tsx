@@ -15,7 +15,7 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
-import { Loader2, Users, Sparkles, DollarSign, TrendingUp, RefreshCw, ArrowLeft, Database as DatabaseIcon, CheckCircle2 } from "lucide-react";
+import { Loader2, Users, Sparkles, DollarSign, TrendingUp, RefreshCw, ArrowLeft, Database as DatabaseIcon, CheckCircle2, Phone, UserCheck } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -201,6 +201,18 @@ function AdminAnalyticsPage() {
           { label: "توليدات هذا الشهر", value: data.totals.generations_this_month.toLocaleString("ar-SA"), icon: Sparkles, color: "text-primary" },
           { label: "كلفة هذا الشهر", value: fmtUSD(data.totals.cost_usd_this_month), icon: DollarSign, color: "text-warning" },
           { label: "متوسط كلفة/مستخدم نشط", value: fmtUSD(data.totals.avg_cost_per_active_user), icon: DollarSign, color: "text-muted-foreground" },
+          {
+            label: "لديه واتساب",
+            value: `${data.data_quality.users_with_whatsapp.toLocaleString("ar-SA")} (${data.data_quality.whatsapp_pct}%)`,
+            icon: Phone,
+            color: data.data_quality.whatsapp_pct >= 90 ? "text-success" : data.data_quality.whatsapp_pct >= 60 ? "text-warning" : "text-destructive",
+          },
+          {
+            label: "ملف مكتمل بالكامل",
+            value: `${data.data_quality.users_with_full_profile.toLocaleString("ar-SA")} (${data.data_quality.full_profile_pct}%)`,
+            icon: UserCheck,
+            color: data.data_quality.full_profile_pct >= 80 ? "text-success" : data.data_quality.full_profile_pct >= 50 ? "text-warning" : "text-destructive",
+          },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-border bg-card p-4 shadow-soft">
             <div className="flex items-center justify-between">
