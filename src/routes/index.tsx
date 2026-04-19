@@ -36,10 +36,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <MarketingLayout>
-      {/* 1. شريط ندرة رفيع */}
-      <UrgencyBar />
-
-      {/* 2. Hero فوق الـfold (شارة حية + Hook + Mini Demo + CTA) */}
+      {/* Hero فوق الـfold (شارة حية + Hook + Mini Demo + CTA) */}
       <HomeHero />
 
       {/* 3. شريط متوافق مع — قانوني آمن */}
