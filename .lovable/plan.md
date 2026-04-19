@@ -1,27 +1,31 @@
 
 
-## الخطة: إرسال إشعار تيليجرام تلقائياً عند تقديم طلب اشتراك
+## السياق الحالي
+- النطاق `notify.rifd.club` لا يزال **Pending** (DNS propagation).
+- البنية التحتية للبريد جاهزة، التطبيق منشور على `rifd.lovable.app`.
+- إشعارات تيليجرام تعمل تلقائياً (الـtrigger يستدعي webhook على الدومين الإنتاج).
+- بقي مكوّن واحد لم يُختبر فعلياً: **منطق التذكيرات اليومي** (`/hooks/expiring-subscriptions`).
 
-### المشكلة
-- الكود الحالي يُنشئ الطلب في DB ثم ينتقل للتأكيد فوراً، **دون** استدعاء `/api/notify-telegram-admin`.
-- الإشعار يصل فقط حين يضغط الأدمن "إرسال إشعار" يدوياً من `admin.subscriptions.tsx`.
-- بالتالي طلب `elbhery878@gmail.com` (06:23) لم يولّد أي إشعار.
+## الخطوة المنطقية التالية
 
-### الحل (خطوتان)
+اختبار `/hooks/expiring-subscriptions` على البيئة المنشورة. هذا الفحص لا يعتمد على النطاق (لأنه يُدرج رسائل في الطابور فقط — الإرسال الفعلي يحدث لاحقاً حين يصبح النطاق Active)، فيمكن إنجازه الآن وكشف أي خلل في:
+- استعلام صفوف `subscription_requests` ضمن نوافذ 7 و 1 يوم.
+- إدراج الرسائل في `transactional_emails` queue.
+- تسجيل صفوف `pending` في `email_send_log`.
+- منع التكرار (idempotency) عند إعادة الاستدعاء.
 
-**1. استدعاء تلقائي من واجهة المستخدم** — في `src/routes/dashboard.billing.index.tsx` بعد `insert` الناجح وقبل التنقل، أضف `fetch("/api/notify-telegram-admin")` يحمل بيانات الطلب (نفس الشكل المستخدم في `admin.subscriptions.tsx`). يستخدم `notify_webhook_secret` و `telegram_admin_chat_id` من جدول `internal_config` (نقرأهما عبر `supabase.from("internal_config")`).
+### خطة الاختبار
 
-**ملاحظة**: لا نمرر `webhook secret` من المتصفح (تسريب أمني). الحل: نستدعي `/api/notify-telegram-admin` بدون secret من العميل، ونعدّل الـ endpoint ليقبل **مساراً ثانياً**: عند استدعائه من نفس الموقع بطلب POST يحمل `request_id` فقط، يقرأ بيانات الطلب من DB بنفسه عبر `supabaseAdmin` ويتحقق أن `created_at` خلال آخر دقيقتين (حماية بسيطة من الإساءة).
+1. **استدعاء أول** للـ `POST https://rifd.lovable.app/hooks/expiring-subscriptions` بـ `Authorization: Bearer <anon>` والتحقق من الاستجابة (`processed`, `results[]`).
+2. **فحص قاعدة البيانات**: قراءة آخر صفوف `email_send_log` ذات `template_name = 'subscription-expiring'` للتأكد من وجود صفّين (للاشتراكين التجريبيين 7d و 1d) بحالة `pending`.
+3. **فحص الطابور**: التحقق من `transactional_emails` يحتوي رسائل بـ `message_id` متطابقة.
+4. **استدعاء ثانٍ فوري** للتأكد من عدم التكرار — يجب أن تظهر النتائج بحالة `duplicate` بدلاً من `enqueued`.
+5. **في حال أي فشل**: قراءة `stack_modern--server-function-logs` لاستخراج رسالة الخطأ وتشخيصها.
 
-**2. تحديث `notify_webhook_url`** في `internal_config` من preview إلى `https://rifd.lovable.app/api/notify-telegram-admin` (ميجريشن صغير).
+### ما لن يحدث الآن
+- لن يصل أي بريد فعلي للمستلمين قبل أن يصبح النطاق Active — هذا متوقع وسليم.
+- لن نُعدّل أي ملفات (الكود الحالي للـ hook صحيح ومراجَع).
 
-### تفاصيل تقنية
-- الملف الجديد للتعديل: `src/routes/api.notify-telegram-admin.ts` — إضافة فرع جديد `if (body.request_id && !body.test)` يجلب الطلب عبر `supabaseAdmin` ويُرسل بنفس قالب HTML الموجود.
-- `src/routes/dashboard.billing.index.tsx` — بعد السطر 232، استدعاء `fetch("/api/notify-telegram-admin", { method:"POST", body: JSON.stringify({ request_id: data.id }) })` داخل `try/catch` صامت (فشل الإشعار لا يكسر تجربة المستخدم).
-- ميجريشن SQL لتحديث الـ URL إلى الدومين المنشور.
-- إرسال إشعار يدوي **فوراً** للطلب الحالي (`elbhery878@gmail.com`) عبر `curl` بعد التنفيذ للتعويض.
-
-### النتيجة المتوقعة
-- كل طلب اشتراك جديد يُولّد إشعار تيليجرام للأدمن خلال ثوانٍ.
-- زر الإرسال اليدوي في لوحة الأدمن يبقى كما هو (للحالات الاستثنائية).
+### بعد نجاح الاختبار
+- المنظومة جاهزة. الانتظار الوحيد المتبقي هو DNS propagation للنطاق، وبعد ذلك سيبدأ كل شيء بالعمل تلقائياً.
 
