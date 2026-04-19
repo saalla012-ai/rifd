@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { sendWelcomeEmail } from "@/server/send-welcome";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,18 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("تم إنشاء حسابك! جاري التحويل...");
+        // أرسل welcome مباشرة عبر Resend (لا ننتظر الردّ، fire-and-forget)
+        const { data: sess } = await supabase.auth.getUser();
+        const newUser = sess?.user;
+        if (newUser?.email) {
+          void sendWelcomeEmail({
+            data: {
+              userId: newUser.id,
+              email: newUser.email,
+              fullName: name.trim() || undefined,
+            },
+          }).catch((e) => console.error("welcome trigger failed", e));
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
