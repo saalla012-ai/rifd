@@ -147,6 +147,7 @@ function AdminAuditPage() {
   const [tableFilter, setTableFilter] = useState<string>("__all__");
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
+  const [selected, setSelected] = useState<AuditEntry | null>(null);
 
   const load = async () => {
     setLoading(true);
