@@ -12,9 +12,9 @@ export const Scene3LogoStamp: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Stamp slam
-  const slam = spring({ frame, fps, config: { damping: 10, stiffness: 220, mass: 1.2 } });
-  const scale = interpolate(slam, [0, 1], [3.5, 1]);
+  // Stamp slam — gentler so it stays in frame
+  const slam = spring({ frame, fps, config: { damping: 11, stiffness: 180, mass: 1 } });
+  const scale = interpolate(slam, [0, 1], [1.8, 1]);
   const opacity = interpolate(slam, [0, 0.3], [0, 1], { extrapolateRight: "clamp" });
   const blur = interpolate(slam, [0, 0.5], [12, 0], { extrapolateRight: "clamp" });
 
@@ -50,11 +50,12 @@ export const Scene3LogoStamp: React.FC = () => {
       <div style={{ position: "relative", textAlign: "center" }}>
         <div
           style={{
-            fontSize: 360,
+            fontSize: 320,
             fontWeight: 900,
             color: COLORS.greenDeep,
-            lineHeight: 1,
-            letterSpacing: "-12px",
+            lineHeight: 1.4,
+            paddingTop: 40,
+            letterSpacing: "-10px",
             transform: `scale(${scale})`,
             opacity,
             filter: `blur(${blur}px)`,
