@@ -28,6 +28,8 @@ export type PlanLimitRow = {
   updated_at: string;
 };
 
+type JsonVal = string | number | boolean | null | JsonVal[] | { [k: string]: JsonVal };
+
 export type AuditLogRow = {
   id: string;
   admin_user_id: string;
@@ -35,8 +37,8 @@ export type AuditLogRow = {
   action: string;
   target_table: string;
   target_id: string | null;
-  before_value: Record<string, unknown> | null;
-  after_value: Record<string, unknown> | null;
+  before_value: JsonVal | null;
+  after_value: JsonVal | null;
   created_at: string;
 };
 
