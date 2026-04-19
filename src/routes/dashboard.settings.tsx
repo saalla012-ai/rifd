@@ -111,7 +111,9 @@ function SettingsPage() {
               />
             </div>
             <div>
-              <Label htmlFor="whatsapp">رقم واتساب (اختياري)</Label>
+              <Label htmlFor="whatsapp">
+                رقم واتساب <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="whatsapp"
                 className="mt-1 ltr"
@@ -120,9 +122,11 @@ function SettingsPage() {
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder={SAUDI_PHONE_PLACEHOLDER}
                 maxLength={20}
+                inputMode="tel"
+                required
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                رقم جوال سعودي يبدأ بـ 5 — نستخدمه فقط للتواصل بخصوص اشتراكك
+                رقم جوال سعودي يبدأ بـ 5 — مطلوب لتفعيل الاشتراك والتنبيهات المهمة
               </p>
             </div>
           </div>
