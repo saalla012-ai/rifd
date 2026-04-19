@@ -25,10 +25,6 @@ type Generation = {
 };
 
 function LibraryPage() {
-  // اختبار error boundary: زر ?boom=1 على الرابط لرمي خطأ متعمّد
-  if (typeof window !== "undefined" && window.location.search.includes("boom=1")) {
-    throw new Error("اختبار error boundary — هذا خطأ متعمّد");
-  }
   const { user } = useAuth();
   const [items, setItems] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
