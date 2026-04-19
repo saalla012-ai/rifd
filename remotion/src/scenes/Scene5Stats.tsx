@@ -5,9 +5,9 @@ import { COLORS } from "../theme";
 const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subsets: ["arabic"] });
 
 const STATS = [
-  { num: 30, suffix: "", label: "منشور جاهز", icon: "📝", color: COLORS.green },
-  { num: 5, suffix: "د", label: "بدل 5 ساعات", icon: "⚡", color: COLORS.gold },
-  { num: 800, suffix: " ر.س", label: "وفّرها شهرياً", icon: "💰", color: COLORS.greenDeep },
+  { num: 30, suffix: "", label: "منشور جاهز", glyph: "30+", color: COLORS.green },
+  { num: 5, suffix: "د", label: "بدل 5 ساعات", glyph: "⏱", color: COLORS.gold },
+  { num: 800, suffix: " ر.س", label: "وفّرها شهرياً", glyph: "ر.س", color: COLORS.greenDeep },
 ];
 
 const StatBlock: React.FC<{ index: number; delay: number }> = ({ index, delay }) => {
