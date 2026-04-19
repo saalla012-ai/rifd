@@ -150,7 +150,6 @@ function OnboardingPage() {
           <>
             <div className="mb-6 flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">الخطوة {step} من 4</span>
-              <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">تخطّي</Link>
             </div>
             <div className="mb-8 flex gap-1.5">
               {[1, 2, 3, 4].map((i) => (
