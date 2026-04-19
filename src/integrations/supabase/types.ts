@@ -544,6 +544,19 @@ export type Database = {
           read_ct: number
         }[]
       }
+      reconcile_usage_logs: {
+        Args: { _month?: string }
+        Returns: {
+          image_diff: number
+          month: string
+          new_image_count: number
+          new_text_count: number
+          old_image_count: number
+          old_text_count: number
+          text_diff: number
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
