@@ -17,6 +17,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { chatComplete, AIError } from "./lovable-ai";
+import { estimateTextCost, estimateImageCost } from "./cost";
 import { buildTextSystemPrompt, buildImagePrompt, type StoreContext } from "./prompts";
 import { currentRiyadhMonth } from "@/lib/usage-month";
 
