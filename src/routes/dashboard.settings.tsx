@@ -38,14 +38,12 @@ function SettingsPage() {
 
   const save = async () => {
     if (!user) return;
-    let normalizedWhatsapp: string | null = null;
-    if (whatsapp.trim()) {
-      if (!validateSaudiPhone(whatsapp)) {
-        toast.error(SAUDI_PHONE_ERROR);
-        return;
-      }
-      normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
+    // رقم الواتساب مطلوب دائماً (لا يمكن مسحه)
+    if (!whatsapp.trim() || !validateSaudiPhone(whatsapp)) {
+      toast.error(SAUDI_PHONE_ERROR);
+      return;
     }
+    const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setSaving(true);
     try {
       const { error } = await supabase
@@ -113,7 +111,9 @@ function SettingsPage() {
               />
             </div>
             <div>
-              <Label htmlFor="whatsapp">رقم واتساب (اختياري)</Label>
+              <Label htmlFor="whatsapp">
+                رقم واتساب <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="whatsapp"
                 className="mt-1 ltr"
@@ -122,9 +122,11 @@ function SettingsPage() {
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder={SAUDI_PHONE_PLACEHOLDER}
                 maxLength={20}
+                inputMode="tel"
+                required
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                رقم جوال سعودي يبدأ بـ 5 — نستخدمه فقط للتواصل بخصوص اشتراكك
+                رقم جوال سعودي يبدأ بـ 5 — مطلوب لتفعيل الاشتراك والتنبيهات المهمة
               </p>
             </div>
           </div>

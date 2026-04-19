@@ -18,6 +18,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateText } from "@/server/ai-functions";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import {
+  formatSaudiPhoneDisplay,
+  normalizeSaudiPhone,
+  validateSaudiPhone,
+  SAUDI_PHONE_ERROR,
+  SAUDI_PHONE_PLACEHOLDER,
+} from "@/lib/phone";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -41,6 +48,7 @@ function OnboardingPage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [storeName, setStoreName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [productType, setProductType] = useState("dropshipping");
   const [audience, setAudience] = useState("young");
   const [tone, setTone] = useState("fun");
@@ -55,12 +63,14 @@ function OnboardingPage() {
       void navigate({ to: "/auth" });
       return;
     }
-    // إذا أكمل onboarding من قبل → dashboard مباشرة
-    if (profile?.onboarded) {
+    // إذا أكمل onboarding من قبل وعنده رقم واتساب → dashboard مباشرة
+    // (المستخدمون القدامى بدون رقم يكملون الاستمارة لإضافته)
+    if (profile?.onboarded && profile?.whatsapp) {
       void navigate({ to: "/dashboard" });
     }
     // عبّي القيم لو فيه profile جزئي
     if (profile?.store_name) setStoreName(profile.store_name);
+    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
     if (profile?.product_type) setProductType(profile.product_type);
     if (profile?.audience) setAudience(profile.audience);
     if (profile?.tone) setTone(profile.tone);
@@ -72,6 +82,13 @@ function OnboardingPage() {
 
   const finish = async () => {
     if (!user) return;
+    // تحقق نهائي قبل الحفظ (في حال تم تجاوز الزر بأي طريقة)
+    if (!validateSaudiPhone(whatsapp)) {
+      toast.error(SAUDI_PHONE_ERROR);
+      setStep(1);
+      return;
+    }
+    const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setGenerating(true);
 
     try {
@@ -80,6 +97,7 @@ function OnboardingPage() {
         .from("profiles")
         .update({
           store_name: storeName.trim(),
+          whatsapp: normalizedWhatsapp,
           product_type: productType,
           audience,
           tone,
@@ -132,7 +150,6 @@ function OnboardingPage() {
           <>
             <div className="mb-6 flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">الخطوة {step} من 4</span>
-              <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">تخطّي</Link>
             </div>
             <div className="mb-8 flex gap-1.5">
               {[1, 2, 3, 4].map((i) => (
@@ -155,21 +172,46 @@ function OnboardingPage() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold">وش اسم متجرك؟</h2>
-                <p className="mt-1 text-sm text-muted-foreground">نستخدمه في كل محتوى نولّده لك</p>
+                <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على متجرك</h2>
+                <p className="mt-1 text-sm text-muted-foreground">معلومتان سريعتان نستخدمهما في كل محتوى نولّده لك</p>
               </div>
               <div>
-                <Label htmlFor="store">اسم المتجر</Label>
+                <Label htmlFor="store">
+                  اسم المتجر <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="store"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
                   placeholder="مثلاً: متجر النور"
                   className="mt-1"
+                  maxLength={80}
                   autoFocus
                 />
               </div>
-              <Button onClick={next} disabled={!storeName.trim()} className="w-full gradient-primary text-primary-foreground">
+              <div>
+                <Label htmlFor="whatsapp">
+                  رقم واتساب <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="whatsapp"
+                  className="mt-1 ltr"
+                  dir="ltr"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  placeholder={SAUDI_PHONE_PLACEHOLDER}
+                  maxLength={20}
+                  inputMode="tel"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  للتنبيهات المهمة وتفعيل اشتراكك — لن نتصل بك مطلقاً، واتساب فقط ✅
+                </p>
+              </div>
+              <Button
+                onClick={next}
+                disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
+                className="w-full gradient-primary text-primary-foreground"
+              >
                 التالي
               </Button>
             </div>
