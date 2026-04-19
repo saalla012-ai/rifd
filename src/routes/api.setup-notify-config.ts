@@ -36,7 +36,19 @@ export const Route = createFileRoute("/api/setup-notify-config")({
             }
           );
 
-          // RLS على internal_config تسمح للأدمن فقط — أي محاولة من غيره ترجع 0 صفوف
+          // admin gate صريح — قبل أي عملية كتابة
+          const { data: userData, error: userErr } = await userClient.auth.getUser();
+          if (userErr || !userData.user) return jsonError("unauthorized", 401);
+
+          const { data: roleRow } = await userClient
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", userData.user.id)
+            .eq("role", "admin")
+            .maybeSingle();
+          if (!roleRow) return jsonError("forbidden: admin only", 403);
+
+          // RLS على internal_config تسمح للأدمن فقط — هذا تأكيد إضافي
           const origin = new URL(request.url).origin;
           const webhookUrl = `${origin}/api/notify-telegram-admin`;
 
