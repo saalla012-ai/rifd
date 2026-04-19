@@ -41,6 +41,7 @@ import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-not
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -212,6 +213,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/admin/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPlanLimitsRoute = AdminPlanLimitsRouteImport.update({
+  id: '/admin/plan-limits',
+  path: '/admin/plan-limits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   id: '/admin/analytics',
   path: '/admin/analytics',
@@ -270,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
@@ -311,6 +318,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
@@ -354,6 +362,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
@@ -398,6 +407,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/analytics'
+    | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/analytics'
+    | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
@@ -481,6 +492,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/analytics'
+    | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
@@ -524,6 +536,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   VsChatgptRoute: typeof VsChatgptRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
@@ -769,6 +782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/plan-limits': {
+      id: '/admin/plan-limits'
+      path: '/admin/plan-limits'
+      fullPath: '/admin/plan-limits'
+      preLoaderRoute: typeof AdminPlanLimitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/analytics': {
       id: '/admin/analytics'
       path: '/admin/analytics'
@@ -873,6 +893,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   VsChatgptRoute: VsChatgptRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminPlanLimitsRoute: AdminPlanLimitsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,

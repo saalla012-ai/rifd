@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          after_value: Json | null
+          before_value: Json | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          target_id: string | null
+          target_table: string
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          after_value?: Json | null
+          before_value?: Json | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_table: string
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          after_value?: Json | null
+          before_value?: Json | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_table?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           founding_base_count: number
