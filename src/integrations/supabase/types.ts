@@ -44,6 +44,27 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_rate_limits: {
+        Row: {
+          count: number
+          hour_bucket: string
+          ip: string
+          updated_at: string
+        }
+        Insert: {
+          count?: number
+          hour_bucket: string
+          ip: string
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          hour_bucket?: string
+          ip?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -413,6 +434,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      consume_demo_token: {
+        Args: { _ip: string; _limit: number }
+        Returns: {
+          allowed: boolean
+          remaining: number
+          reset_at: string
+        }[]
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }
