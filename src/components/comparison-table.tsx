@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Check, X } from "lucide-react";
+import { Check, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const ROWS = [
@@ -23,8 +23,14 @@ function Cell({ value }: { value: string | boolean }) {
 export function ComparisonTable({ compact = false }: { compact?: boolean }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+      {/* تلميح للموبايل */}
+      <div className="flex items-center justify-center gap-1.5 border-b border-border bg-secondary/50 px-3 py-1.5 text-[11px] font-medium text-muted-foreground sm:hidden">
+        <ArrowLeft className="h-3 w-3 animate-pulse" />
+        اسحب لرؤية المقارنة الكاملة
+      </div>
+
       <div className="overflow-x-auto">
-        <table className="w-full text-right">
+        <table className="w-full min-w-[640px] text-right">
           <thead className="bg-secondary/60 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-4 py-3 text-right font-medium">الميزة</th>

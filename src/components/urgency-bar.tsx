@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Flame, Clock } from "lucide-react";
 
 /**
- * شريط ندرة + إلحاح أعلى الموقع.
- * يحسب الوقت المتبقي حتى نهاية الأسبوع — يعزز "العرض الافتتاحي".
+ * شريط ندرة + إلحاح أعلى الموقع — رفيع (24px) ليفسح المجال للـHero.
  */
 export function UrgencyBar() {
   const [timeLeft, setTimeLeft] = useState<string>("");
@@ -30,14 +29,14 @@ export function UrgencyBar() {
 
   return (
     <div className="bg-gradient-to-l from-gold via-gold/95 to-gold text-gold-foreground">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-4 py-1.5 text-center text-xs font-bold sm:text-sm">
-        <Flame className="h-4 w-4 animate-pulse" />
-        <span>العرض الافتتاحي — خصم 50% على أول شهرين</span>
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-4 py-1 text-center text-[11px] font-bold sm:text-xs">
+        <Flame className="h-3.5 w-3.5 animate-pulse" />
+        <span>عرض افتتاحي — خصم 50% على أول شهرين</span>
         <span
-          className="inline-flex items-center gap-1 rounded-full bg-foreground/15 px-2 py-0.5 text-[11px]"
+          className="inline-flex items-center gap-1 rounded-full bg-foreground/15 px-1.5 py-0.5 text-[10px]"
           suppressHydrationWarning
         >
-          <Clock className="h-3 w-3" />
+          <Clock className="h-2.5 w-2.5" />
           ينتهي خلال {mounted && timeLeft ? timeLeft : "قريباً"}
         </span>
       </div>
