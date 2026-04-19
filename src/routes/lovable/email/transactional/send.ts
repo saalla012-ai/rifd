@@ -3,15 +3,13 @@ import { render } from '@react-email/components'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 import { TEMPLATES } from '@/lib/email-templates/registry'
+import { sendResendEmail } from '@/server/resend'
 
-// Configuration baked in at scaffold time
+// Configuration
 const SITE_NAME = "رِفد"
-// SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
-// It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.rifd.club"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// Can be the root domain when display_from_root is enabled — this is cosmetic only.
-const FROM_DOMAIN = "notify.rifd.club"
+// Resend's shared sender — works without domain verification.
+// Once a domain is verified in Resend, switch this to e.g. "noreply@rifd.club".
+const FROM_ADDRESS = `${SITE_NAME} <onboarding@resend.dev>`
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'
@@ -262,10 +260,19 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
             ? template.subject(templateData)
             : template.subject
 
-        // 5. Enqueue the pre-rendered email for async processing by the dispatcher.
-        // The dispatcher (process-email-queue) handles sending, retries, and rate-limit backoff.
+        // 5. Build unsubscribe URL + List-Unsubscribe headers
+        const siteUrl =
+          process.env.SITE_URL || `https://${request.headers.get('host') || 'rifd.lovable.app'}`
+        const unsubscribeUrl = `${siteUrl}/unsubscribe?token=${unsubscribeToken}`
 
-        // Log pending BEFORE enqueue so we have a record even if enqueue crashes
+        // Append a minimal RTL-friendly unsubscribe footer to the rendered HTML
+        const htmlWithFooter = html.replace(
+          /<\/body>/i,
+          `<div style="margin-top:24px;padding:16px;border-top:1px solid #eee;font-family:Arial,sans-serif;font-size:12px;color:#888;text-align:center;direction:rtl"><a href="${unsubscribeUrl}" style="color:#888;text-decoration:underline">إلغاء الاشتراك</a></div></body>`,
+        )
+        const textWithFooter = `${plainText}\n\n— لإلغاء الاشتراك: ${unsubscribeUrl}`
+
+        // Log pending BEFORE send so we have a record even if send crashes
         await supabase.from('email_send_log').insert({
           message_id: messageId,
           template_name: templateName,
@@ -273,27 +280,39 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           status: 'pending',
         })
 
-        const { error: enqueueError } = await supabase.rpc('enqueue_email', {
-          queue_name: 'transactional_emails',
-          payload: {
-            message_id: messageId,
+        try {
+          const result = await sendResendEmail({
+            from: FROM_ADDRESS,
             to: effectiveRecipient,
-            from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-            sender_domain: SENDER_DOMAIN,
             subject: resolvedSubject,
-            html,
-            text: plainText,
-            purpose: 'transactional',
-            label: templateName,
-            idempotency_key: idempotencyKey,
-            unsubscribe_token: unsubscribeToken,
-            queued_at: new Date().toISOString(),
-          },
-        })
+            html: htmlWithFooter,
+            text: textWithFooter,
+            headers: {
+              'List-Unsubscribe': `<${unsubscribeUrl}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+              'X-Idempotency-Key': idempotencyKey,
+            },
+            tags: [{ name: 'template', value: templateName }],
+          })
 
-        if (enqueueError) {
-          console.error('Failed to enqueue email', {
-            error: enqueueError,
+          await supabase.from('email_send_log').insert({
+            message_id: messageId,
+            template_name: templateName,
+            recipient_email: effectiveRecipient,
+            status: 'sent',
+            metadata: { provider: 'resend', provider_id: result.id },
+          })
+
+          console.log('Transactional email sent via Resend', {
+            templateName,
+            recipient_redacted: redactEmail(effectiveRecipient),
+            provider_id: result.id,
+          })
+
+          return Response.json({ success: true, id: result.id })
+        } catch (sendErr: any) {
+          console.error('Resend send failed', {
+            error: sendErr?.message,
             templateName,
             recipient_redacted: redactEmail(effectiveRecipient),
           })
@@ -303,21 +322,14 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
             template_name: templateName,
             recipient_email: effectiveRecipient,
             status: 'failed',
-            error_message: 'Failed to enqueue email',
+            error_message: String(sendErr?.message ?? sendErr).slice(0, 1000),
           })
 
           return Response.json(
-            { error: 'Failed to enqueue email' },
-            { status: 500 }
+            { error: 'Failed to send email' },
+            { status: 502 },
           )
         }
-
-        console.log('Transactional email enqueued', {
-          templateName,
-          recipient_redacted: redactEmail(effectiveRecipient),
-        })
-
-        return Response.json({ success: true, queued: true })
       },
     },
   },
