@@ -72,16 +72,19 @@ export function HomeHero() {
 
         {/* H1 — منشورات + صور، إيقاع متوازن، highlight ذهبي على وقت قهوتك */}
         <h1
-          className="mt-6 text-center text-[2.25rem] font-black leading-[1.08] tracking-tight sm:text-[3rem] lg:text-[3.5rem] animate-fade-in"
+          className="mt-6 text-center text-[1.75rem] font-black leading-[1.15] tracking-tight sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
           style={{ animationDelay: "60ms" }}
         >
+          {/* السطر 1: اكتب 30 منشور + 30 صورة 🌸 — كل المجموعة nowrap لمنع الكسر القبيح */}
           <span className="block">
-            اكتب{" "}
-            <span className="font-black tabular-nums text-gradient-primary">30</span>{" "}
-            منشور
-            <span className="mx-2 inline-block align-middle text-muted-foreground/60 font-light">+</span>
-            <span className="font-black tabular-nums text-gradient-gold">30</span>{" "}
             <span className="whitespace-nowrap">
+              اكتب{" "}
+              <span className="font-black tabular-nums text-gradient-primary">30</span>{" "}
+              منشور
+            </span>
+            <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
+            <span className="whitespace-nowrap">
+              <span className="font-black tabular-nums text-gradient-gold">30</span>{" "}
               صورة
               <img
                 src={heroPhotoThumb}
@@ -89,11 +92,12 @@ export function HomeHero() {
                 aria-hidden
                 width={96}
                 height={96}
-                className="ms-2 inline-block h-[0.85em] w-[0.85em] -translate-y-[0.08em] object-contain align-baseline drop-shadow-[0_3px_8px_rgba(212,175,55,0.55)]"
+                className="ms-1.5 inline-block h-[0.8em] w-[0.8em] -translate-y-[0.06em] object-contain align-baseline drop-shadow-[0_3px_8px_rgba(212,175,55,0.55)] sm:ms-2 sm:h-[0.85em] sm:w-[0.85em]"
               />
             </span>
           </span>
-          <span className="mt-1 block text-[0.85em] sm:text-[0.9em]">
+          {/* السطر 2: لمتجرك في وقت قهوتك ☕ */}
+          <span className="mt-1 block text-[0.92em] sm:text-[0.9em]">
             لمتجرك في{" "}
             <span className="relative inline-block whitespace-nowrap">
               <span
