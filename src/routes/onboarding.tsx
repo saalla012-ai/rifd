@@ -82,6 +82,13 @@ function OnboardingPage() {
 
   const finish = async () => {
     if (!user) return;
+    // تحقق نهائي قبل الحفظ (في حال تم تجاوز الزر بأي طريقة)
+    if (!validateSaudiPhone(whatsapp)) {
+      toast.error(SAUDI_PHONE_ERROR);
+      setStep(1);
+      return;
+    }
+    const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setGenerating(true);
 
     try {
@@ -90,6 +97,7 @@ function OnboardingPage() {
         .from("profiles")
         .update({
           store_name: storeName.trim(),
+          whatsapp: normalizedWhatsapp,
           product_type: productType,
           audience,
           tone,
