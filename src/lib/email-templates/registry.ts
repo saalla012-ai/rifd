@@ -11,6 +11,8 @@ export interface TemplateEntry {
 
 import { template as subscriptionActivated } from './subscription-activated'
 import { template as subscriptionExpiring } from './subscription-expiring'
+import { template as welcome } from './welcome'
+import { template as onboardingTipDay3 } from './onboarding-tip-day3'
 
 /**
  * Template registry — maps template names to their React Email components.
@@ -19,4 +21,6 @@ import { template as subscriptionExpiring } from './subscription-expiring'
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'subscription-activated': subscriptionActivated,
   'subscription-expiring': subscriptionExpiring,
+  'welcome': welcome,
+  'onboarding-tip-day3': onboardingTipDay3,
 }

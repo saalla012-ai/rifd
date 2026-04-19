@@ -17,6 +17,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { chatComplete, AIError } from "./lovable-ai";
+import { estimateTextCost, estimateImageCost } from "./cost";
 import { buildTextSystemPrompt, buildImagePrompt, type StoreContext } from "./prompts";
 import { currentRiyadhMonth } from "@/lib/usage-month";
 
@@ -87,9 +88,11 @@ export const generateText = createServerFn({ method: "POST" })
     const system = buildTextSystemPrompt(ctx, data.templateTitle);
 
     let result: string;
+    let aiUsage = { prompt_tokens: null as number | null, completion_tokens: null as number | null, total_tokens: null as number | null };
+    const modelName = "google/gemini-2.5-flash";
     try {
       const out = await chatComplete({
-        model: "google/gemini-2.5-flash",
+        model: modelName,
         messages: [
           { role: "system", content: system },
           { role: "user", content: data.prompt },
@@ -97,11 +100,14 @@ export const generateText = createServerFn({ method: "POST" })
         temperature: 0.85,
       });
       result = out.text.trim();
+      aiUsage = out.usage;
       if (!result) throw new Error("لم يتم توليد محتوى");
     } catch (e) {
       if (e instanceof AIError) throw new Error(e.message);
       throw e;
     }
+
+    const cost = estimateTextCost(modelName, aiUsage);
 
     await Promise.all([
       supabase.from("generations").insert({
@@ -110,7 +116,11 @@ export const generateText = createServerFn({ method: "POST" })
         prompt: data.prompt,
         result,
         template: data.templateId,
-        model_used: "google/gemini-2.5-flash",
+        model_used: modelName,
+        prompt_tokens: aiUsage.prompt_tokens,
+        completion_tokens: aiUsage.completion_tokens,
+        total_tokens: aiUsage.total_tokens,
+        estimated_cost_usd: cost,
         metadata: { template_title: data.templateTitle },
       }),
       bumpUsage(supabase, userId, month, "text"),
@@ -193,6 +203,8 @@ export const generateImage = createServerFn({ method: "POST" })
       .getPublicUrl(filename);
     const publicUrl = pub.publicUrl;
 
+    const cost = estimateImageCost(model);
+
     await Promise.all([
       supabase.from("generations").insert({
         user_id: userId,
@@ -201,6 +213,7 @@ export const generateImage = createServerFn({ method: "POST" })
         result: publicUrl,
         template: data.templateId,
         model_used: model,
+        estimated_cost_usd: cost,
         metadata: { template_title: data.templateTitle, quality: data.quality, storage_path: filename },
       }),
       bumpUsage(supabase, userId, month, "image"),
@@ -298,6 +311,8 @@ export const editImage = createServerFn({ method: "POST" })
       .getPublicUrl(filename);
     const publicUrl = pub.publicUrl;
 
+    const editCost = estimateImageCost(model);
+
     await Promise.all([
       supabase.from("generations").insert({
         user_id: userId,
@@ -306,6 +321,7 @@ export const editImage = createServerFn({ method: "POST" })
         result: publicUrl,
         template: data.templateId,
         model_used: model,
+        estimated_cost_usd: editCost,
         metadata: {
           template_title: data.templateTitle,
           storage_path: filename,
@@ -318,4 +334,49 @@ export const editImage = createServerFn({ method: "POST" })
       url: publicUrl,
       remaining: limits.image - used - 1,
     };
+  });
+
+// ============================================================
+// getUserMonthlyCost — يجمّع تكلفة وتوكنز المستخدم خلال شهر معيّن
+// (افتراضياً الشهر الحالي بتوقيت الرياض). يُستخدم لتقارير لاحقة.
+// ============================================================
+export const getUserMonthlyCost = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { month?: string }) => input ?? {})
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    const month = data.month ?? currentMonth();
+    const [year, mon] = month.split("-").map((n) => parseInt(n, 10));
+    if (!year || !mon) throw new Error("صيغة الشهر غير صحيحة (YYYY-MM)");
+    // حدود الشهر بتوقيت الرياض ⇒ تحويل لـUTC بطرح 3 ساعات
+    const startUtc = new Date(Date.UTC(year, mon - 1, 1, -3, 0, 0));
+    const endUtc = new Date(Date.UTC(year, mon, 1, -3, 0, 0));
+
+    const { data: rows, error } = await supabase
+      .from("generations")
+      .select("type, total_tokens, estimated_cost_usd")
+      .eq("user_id", userId)
+      .gte("created_at", startUtc.toISOString())
+      .lt("created_at", endUtc.toISOString());
+
+    if (error) throw new Error(`تعذّر جلب تقرير الكلفة: ${error.message}`);
+
+    const acc = {
+      month,
+      total_tokens: 0,
+      total_cost_usd: 0,
+      by_type: {} as Record<string, { count: number; tokens: number; cost: number }>,
+    };
+    for (const r of rows ?? []) {
+      acc.total_tokens += r.total_tokens ?? 0;
+      acc.total_cost_usd += Number(r.estimated_cost_usd ?? 0);
+      const t = r.type as string;
+      acc.by_type[t] ??= { count: 0, tokens: 0, cost: 0 };
+      acc.by_type[t].count += 1;
+      acc.by_type[t].tokens += r.total_tokens ?? 0;
+      acc.by_type[t].cost += Number(r.estimated_cost_usd ?? 0);
+    }
+    // تقريب الكلفة لـ6 منازل
+    acc.total_cost_usd = Math.round(acc.total_cost_usd * 1_000_000) / 1_000_000;
+    return acc;
   });

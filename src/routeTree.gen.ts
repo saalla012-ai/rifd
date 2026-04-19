@@ -24,6 +24,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalRefundRouteImport } from './routes/legal.refund'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as HooksOnboardingEmailsRouteImport } from './routes/hooks/onboarding-emails'
 import { Route as HooksExpiringSubscriptionsRouteImport } from './routes/hooks/expiring-subscriptions'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
@@ -121,6 +122,11 @@ const LegalRefundRoute = LegalRefundRouteImport.update({
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HooksOnboardingEmailsRoute = HooksOnboardingEmailsRouteImport.update({
+  id: '/hooks/onboarding-emails',
+  path: '/hooks/onboarding-emails',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HooksExpiringSubscriptionsRoute =
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
+  '/hooks/onboarding-emails': typeof HooksOnboardingEmailsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -312,6 +319,7 @@ export interface FileRoutesByTo {
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
+  '/hooks/onboarding-emails': typeof HooksOnboardingEmailsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -353,6 +361,7 @@ export interface FileRoutesById {
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
+  '/hooks/onboarding-emails': typeof HooksOnboardingEmailsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -395,6 +404,7 @@ export interface FileRouteTypes {
     | '/dashboard/usage'
     | '/email/unsubscribe'
     | '/hooks/expiring-subscriptions'
+    | '/hooks/onboarding-emails'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
@@ -434,6 +444,7 @@ export interface FileRouteTypes {
     | '/dashboard/usage'
     | '/email/unsubscribe'
     | '/hooks/expiring-subscriptions'
+    | '/hooks/onboarding-emails'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
@@ -474,6 +485,7 @@ export interface FileRouteTypes {
     | '/dashboard/usage'
     | '/email/unsubscribe'
     | '/hooks/expiring-subscriptions'
+    | '/hooks/onboarding-emails'
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
@@ -507,6 +519,7 @@ export interface RootRouteChildren {
   ApiTelegramSetChatIdRoute: typeof ApiTelegramSetChatIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   HooksExpiringSubscriptionsRoute: typeof HooksExpiringSubscriptionsRoute
+  HooksOnboardingEmailsRoute: typeof HooksOnboardingEmailsRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -622,6 +635,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/privacy'
       fullPath: '/legal/privacy'
       preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hooks/onboarding-emails': {
+      id: '/hooks/onboarding-emails'
+      path: '/hooks/onboarding-emails'
+      fullPath: '/hooks/onboarding-emails'
+      preLoaderRoute: typeof HooksOnboardingEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hooks/expiring-subscriptions': {
@@ -840,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTelegramSetChatIdRoute: ApiTelegramSetChatIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   HooksExpiringSubscriptionsRoute: HooksExpiringSubscriptionsRoute,
+  HooksOnboardingEmailsRoute: HooksOnboardingEmailsRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,

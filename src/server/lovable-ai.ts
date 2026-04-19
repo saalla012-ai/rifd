@@ -21,12 +21,18 @@ export class AIError extends Error {
   }
 }
 
+export type AIUsage = {
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  total_tokens: number | null;
+};
+
 export async function chatComplete(opts: {
   model: string;
   messages: ChatMessage[];
   temperature?: number;
   modalities?: ("text" | "image")[];
-}): Promise<{ text: string; images: string[]; raw: any }> {
+}): Promise<{ text: string; images: string[]; usage: AIUsage; raw: any }> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) {
     throw new AIError("LOVABLE_API_KEY is not configured", 500, "unknown");
@@ -79,5 +85,12 @@ export async function chatComplete(opts: {
       .map((img: any) => img?.image_url?.url ?? null)
       .filter((u: string | null): u is string => !!u) ?? [];
 
-  return { text, images, raw: json };
+  const u = json?.usage ?? {};
+  const usage: AIUsage = {
+    prompt_tokens: typeof u.prompt_tokens === "number" ? u.prompt_tokens : null,
+    completion_tokens: typeof u.completion_tokens === "number" ? u.completion_tokens : null,
+    total_tokens: typeof u.total_tokens === "number" ? u.total_tokens : null,
+  };
+
+  return { text, images, usage, raw: json };
 }
