@@ -81,17 +81,15 @@ export function HomeHero() {
             منشور
             <span className="mx-2 inline-block align-middle text-muted-foreground/60 font-light">+</span>
             <span className="font-black tabular-nums text-gradient-gold">30</span>{" "}
-            <span className="relative inline-flex items-baseline gap-1.5 align-baseline">
-              صورة
-              <img
-                src={heroPhotoThumb}
-                alt=""
-                aria-hidden
-                width={64}
-                height={64}
-                className="inline-block h-[0.55em] w-[0.55em] translate-y-[-0.05em] object-contain drop-shadow-[0_2px_6px_rgba(212,175,55,0.45)]"
-              />
-            </span>
+            صورة
+            <img
+              src={heroPhotoThumb}
+              alt=""
+              aria-hidden
+              width={96}
+              height={96}
+              className="ms-2 inline-block h-[0.85em] w-[0.85em] -translate-y-[0.08em] object-contain align-baseline drop-shadow-[0_3px_8px_rgba(212,175,55,0.55)]"
+            />
           </span>
           <span className="mt-1 block text-[0.85em] sm:text-[0.9em]">
             لمتجرك في{" "}
