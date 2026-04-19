@@ -82,16 +82,31 @@ export const Scene4Stats: React.FC = () => {
         الأرقام تتكلم 📊
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 30, width: "100%", maxWidth: 600 }}>
-        <Sequence from={15} durationInFrames={120}>
-          <StatCard index={0} />
-        </Sequence>
-        <Sequence from={35} durationInFrames={100}>
-          <StatCard index={1} />
-        </Sequence>
-        <Sequence from={55} durationInFrames={80}>
-          <StatCard index={2} />
-        </Sequence>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 24,
+          width: "100%",
+          maxWidth: 720,
+          alignItems: "stretch",
+        }}
+      >
+        <div style={{ position: "relative", height: 280 }}>
+          <Sequence from={15} durationInFrames={125}>
+            <StatCard index={0} />
+          </Sequence>
+        </div>
+        <div style={{ position: "relative", height: 280 }}>
+          <Sequence from={35} durationInFrames={105}>
+            <StatCard index={1} />
+          </Sequence>
+        </div>
+        <div style={{ position: "relative", height: 280 }}>
+          <Sequence from={55} durationInFrames={85}>
+            <StatCard index={2} />
+          </Sequence>
+        </div>
       </div>
     </AbsoluteFill>
   );
