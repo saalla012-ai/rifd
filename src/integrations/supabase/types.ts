@@ -16,9 +16,6 @@ export type Database = {
     Tables: {
       app_settings: {
         Row: {
-          bank_account_holder: string | null
-          bank_iban: string | null
-          bank_name: string | null
           founding_base_count: number
           founding_discount_pct: number
           founding_program_active: boolean
@@ -28,9 +25,6 @@ export type Database = {
           whatsapp_number: string
         }
         Insert: {
-          bank_account_holder?: string | null
-          bank_iban?: string | null
-          bank_name?: string | null
           founding_base_count?: number
           founding_discount_pct?: number
           founding_program_active?: boolean
@@ -40,9 +34,6 @@ export type Database = {
           whatsapp_number?: string
         }
         Update: {
-          bank_account_holder?: string | null
-          bank_iban?: string | null
-          bank_name?: string | null
           founding_base_count?: number
           founding_discount_pct?: number
           founding_program_active?: boolean
@@ -194,6 +185,30 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      payment_settings: {
+        Row: {
+          bank_account_holder: string | null
+          bank_iban: string | null
+          bank_name: string | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          bank_account_holder?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          bank_account_holder?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
+          id?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -382,6 +397,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bump_usage: {
+        Args: { _kind: string; _month: string }
+        Returns: {
+          id: string
+          image_count: number
+          month: string
+          text_count: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "usage_logs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
