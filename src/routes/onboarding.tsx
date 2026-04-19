@@ -173,21 +173,46 @@ function OnboardingPage() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold">وش اسم متجرك؟</h2>
-                <p className="mt-1 text-sm text-muted-foreground">نستخدمه في كل محتوى نولّده لك</p>
+                <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على متجرك</h2>
+                <p className="mt-1 text-sm text-muted-foreground">معلومتان سريعتان نستخدمهما في كل محتوى نولّده لك</p>
               </div>
               <div>
-                <Label htmlFor="store">اسم المتجر</Label>
+                <Label htmlFor="store">
+                  اسم المتجر <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="store"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
                   placeholder="مثلاً: متجر النور"
                   className="mt-1"
+                  maxLength={80}
                   autoFocus
                 />
               </div>
-              <Button onClick={next} disabled={!storeName.trim()} className="w-full gradient-primary text-primary-foreground">
+              <div>
+                <Label htmlFor="whatsapp">
+                  رقم واتساب <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="whatsapp"
+                  className="mt-1 ltr"
+                  dir="ltr"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  placeholder={SAUDI_PHONE_PLACEHOLDER}
+                  maxLength={20}
+                  inputMode="tel"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  للتنبيهات المهمة وتفعيل اشتراكك — لن نتصل بك مطلقاً، واتساب فقط ✅
+                </p>
+              </div>
+              <Button
+                onClick={next}
+                disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
+                className="w-full gradient-primary text-primary-foreground"
+              >
                 التالي
               </Button>
             </div>
