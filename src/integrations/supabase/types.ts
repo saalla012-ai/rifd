@@ -245,6 +245,27 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_limits: {
+        Row: {
+          kind: string
+          monthly_limit: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          updated_at: string
+        }
+        Insert: {
+          kind: string
+          monthly_limit: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          updated_at?: string
+        }
+        Update: {
+          kind?: string
+          monthly_limit?: number
+          plan?: Database["public"]["Enums"]["user_plan"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           audience: string | null

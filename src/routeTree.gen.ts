@@ -41,6 +41,7 @@ import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-not
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiInvoiceRequestIdRouteImport } from './routes/api.invoice.$requestId'
@@ -211,6 +212,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/admin/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardBillingIndexRoute = DashboardBillingIndexRouteImport.update({
   id: '/billing/',
   path: '/billing/',
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
@@ -303,6 +310,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
@@ -345,6 +353,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
@@ -388,6 +397,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
+    | '/admin/analytics'
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
+    | '/admin/analytics'
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
+    | '/admin/analytics'
     | '/admin/subscriptions'
     | '/api/demo-generate'
     | '/api/notify-telegram-admin'
@@ -511,6 +523,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VsChatgptRoute: typeof VsChatgptRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
@@ -756,6 +769,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/billing/': {
       id: '/dashboard/billing/'
       path: '/billing'
@@ -852,6 +872,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VsChatgptRoute: VsChatgptRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,

@@ -23,7 +23,7 @@ import { currentRiyadhMonth } from "@/lib/usage-month";
 
 type DbClient = SupabaseClient<Database>;
 
-const PLAN_LIMITS: Record<string, { text: number; image: number }> = {
+const FALLBACK_LIMITS: Record<string, { text: number; image: number }> = {
   free: { text: 5, image: 2 },
   pro: { text: 1000, image: 60 },
   business: { text: 5000, image: 300 },
@@ -32,6 +32,23 @@ const PLAN_LIMITS: Record<string, { text: number; image: number }> = {
 // مفتاح شهر الاستخدام بتوقيت الرياض (UTC+3) لتفادي فارق 3 ساعات في حدود الشهر.
 function currentMonth(): string {
   return currentRiyadhMonth();
+}
+
+async function loadPlanLimits(
+  db: DbClient,
+  plan: string
+): Promise<{ text: number; image: number }> {
+  const { data } = await db
+    .from("plan_limits")
+    .select("kind, monthly_limit")
+    .eq("plan", plan as "free" | "pro" | "business");
+  if (!data || data.length === 0) return FALLBACK_LIMITS[plan] ?? FALLBACK_LIMITS.free;
+  const out = { text: 0, image: 0 };
+  for (const row of data) {
+    if (row.kind === "text") out.text = row.monthly_limit;
+    else if (row.kind === "image") out.image = row.monthly_limit;
+  }
+  return out;
 }
 
 async function loadProfileAndUsage(db: DbClient, userId: string) {
@@ -75,8 +92,8 @@ export const generateText = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     const { profile, usage, month } = await loadProfileAndUsage(supabase, userId);
 
-    const plan = (profile?.plan ?? "free") as keyof typeof PLAN_LIMITS;
-    const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+    const plan = (profile?.plan ?? "free") as string;
+    const limits = await loadPlanLimits(supabase, plan);
     const used = usage?.text_count ?? 0;
     if (used >= limits.text) {
       throw new Error(
@@ -154,8 +171,8 @@ export const generateImage = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     const { profile, usage, month } = await loadProfileAndUsage(supabase, userId);
 
-    const plan = (profile?.plan ?? "free") as keyof typeof PLAN_LIMITS;
-    const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+    const plan = (profile?.plan ?? "free") as string;
+    const limits = await loadPlanLimits(supabase, plan);
     const used = usage?.image_count ?? 0;
     if (used >= limits.image) {
       throw new Error(
@@ -254,8 +271,8 @@ export const editImage = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     const { profile, usage, month } = await loadProfileAndUsage(supabase, userId);
 
-    const plan = (profile?.plan ?? "free") as keyof typeof PLAN_LIMITS;
-    const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+    const plan = (profile?.plan ?? "free") as string;
+    const limits = await loadPlanLimits(supabase, plan);
     const used = usage?.image_count ?? 0;
     if (used >= limits.image) {
       throw new Error(
