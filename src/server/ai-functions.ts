@@ -49,34 +49,13 @@ async function loadProfileAndUsage(db: DbClient, userId: string) {
 
 async function bumpUsage(
   db: DbClient,
-  userId: string,
+  _userId: string,
   month: string,
   kind: "text" | "image"
 ) {
-  const { data: existing } = await db
-    .from("usage_logs")
-    .select("id, text_count, image_count")
-    .eq("user_id", userId)
-    .eq("month", month)
-    .maybeSingle();
-
-  if (!existing) {
-    await db.from("usage_logs").insert({
-      user_id: userId,
-      month,
-      text_count: kind === "text" ? 1 : 0,
-      image_count: kind === "image" ? 1 : 0,
-    });
-    return;
-  }
-  await db
-    .from("usage_logs")
-    .update({
-      text_count: kind === "text" ? existing.text_count + 1 : existing.text_count,
-      image_count: kind === "image" ? existing.image_count + 1 : existing.image_count,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", existing.id);
+  // Atomic UPSERT via SECURITY DEFINER RPC — race-condition safe.
+  const { error } = await db.rpc("bump_usage", { _month: month, _kind: kind });
+  if (error) throw new Error(`فشل تحديث العداد: ${error.message}`);
 }
 
 // ============================================================

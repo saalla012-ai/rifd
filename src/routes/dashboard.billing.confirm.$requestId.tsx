@@ -114,13 +114,18 @@ function ConfirmRequestPage() {
 
   async function loadAll() {
     setLoading(true);
-    const [reqRes, settingsRes] = await Promise.all([
+    const [reqRes, appRes, payRes] = await Promise.all([
       supabase
         .from("subscription_requests")
         .select("*")
         .eq("id", requestId)
         .maybeSingle(),
-      supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
+      supabase.from("app_settings").select("whatsapp_number").eq("id", 1).maybeSingle(),
+      supabase
+        .from("payment_settings")
+        .select("bank_name, bank_account_holder, bank_iban")
+        .eq("id", 1)
+        .maybeSingle(),
     ]);
 
     if (!reqRes.data) {
@@ -129,7 +134,12 @@ function ConfirmRequestPage() {
       return;
     }
     setRequest(reqRes.data as RequestRow);
-    setSettings(settingsRes.data as Settings | null);
+    setSettings({
+      whatsapp_number: appRes.data?.whatsapp_number ?? "966582286215",
+      bank_name: payRes.data?.bank_name ?? null,
+      bank_account_holder: payRes.data?.bank_account_holder ?? null,
+      bank_iban: payRes.data?.bank_iban ?? null,
+    });
     setLoading(false);
 
     if ((reqRes.data as RequestRow).receipt_path) {
