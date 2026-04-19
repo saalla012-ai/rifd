@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles, Star, Wand2, ImageIcon } from "lucide-react";
+import { ArrowLeft, Sparkles, Star, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubscribersCounter } from "./subscribers-counter";
 import { PRODUCT_TYPES } from "@/lib/demo-results";
 import { trackEvent } from "@/lib/ab-test";
+import heroPhotoThumb from "@/assets/hero-photo-thumb.png";
 
 const EXPERIMENT = "hero_hook";
 
@@ -80,9 +81,18 @@ export function HomeHero() {
             منشور
             <span className="mx-2 inline-block align-middle text-muted-foreground/60 font-light">+</span>
             <span className="font-black tabular-nums text-gradient-gold">30</span>{" "}
-            <span className="relative inline-flex items-center gap-1.5">
+            <span className="relative inline-flex items-center gap-1.5 align-middle">
               صورة
-              <ImageIcon className="h-[0.7em] w-[0.7em] text-gold" aria-hidden />
+              <span className="relative inline-flex h-[1em] w-[1em] items-center justify-center rounded-md bg-gold/15 ring-1 ring-gold/30 shadow-gold/30 shadow-sm overflow-hidden">
+                <img
+                  src={heroPhotoThumb}
+                  alt=""
+                  aria-hidden
+                  width={48}
+                  height={48}
+                  className="h-[0.85em] w-[0.85em] object-contain drop-shadow-sm"
+                />
+              </span>
             </span>
           </span>
           <span className="mt-1 block text-[0.85em] sm:text-[0.9em]">
