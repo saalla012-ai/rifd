@@ -1,31 +1,51 @@
 
 
-## السياق الحالي
-- النطاق `notify.rifd.club` لا يزال **Pending** (DNS propagation).
-- البنية التحتية للبريد جاهزة، التطبيق منشور على `rifd.lovable.app`.
-- إشعارات تيليجرام تعمل تلقائياً (الـtrigger يستدعي webhook على الدومين الإنتاج).
-- بقي مكوّن واحد لم يُختبر فعلياً: **منطق التذكيرات اليومي** (`/hooks/expiring-subscriptions`).
+## الخطوة المنطقية التالية: إصلاح خللين يمنعان كل البريد من الوصول
 
-## الخطوة المنطقية التالية
+عند فحص حالة المنظومة بعد آخر اختبار، اكتشفت أن المشروع فيه **مشكلتان حقيقيتان** يجب إصلاحهما قبل اعتبار البريد جاهزاً — وليس فقط انتظار الـDNS.
 
-اختبار `/hooks/expiring-subscriptions` على البيئة المنشورة. هذا الفحص لا يعتمد على النطاق (لأنه يُدرج رسائل في الطابور فقط — الإرسال الفعلي يحدث لاحقاً حين يصبح النطاق Active)، فيمكن إنجازه الآن وكشف أي خلل في:
-- استعلام صفوف `subscription_requests` ضمن نوافذ 7 و 1 يوم.
-- إدراج الرسائل في `transactional_emails` queue.
-- تسجيل صفوف `pending` في `email_send_log`.
-- منع التكرار (idempotency) عند إعادة الاستدعاء.
+### المشكلة 1: hook التذكيرات يُدرج payload ناقص → فشل دائم 400
 
-### خطة الاختبار
+سجل `email_send_log` يُظهر أن `subscription-expiring` يفشل بشكل متكرر بهذه الرسالة:
+```
+Email API error: 400 missing_parameter — Missing run_id or idempotency_key
+```
 
-1. **استدعاء أول** للـ `POST https://rifd.lovable.app/hooks/expiring-subscriptions` بـ `Authorization: Bearer <anon>` والتحقق من الاستجابة (`processed`, `results[]`).
-2. **فحص قاعدة البيانات**: قراءة آخر صفوف `email_send_log` ذات `template_name = 'subscription-expiring'` للتأكد من وجود صفّين (للاشتراكين التجريبيين 7d و 1d) بحالة `pending`.
-3. **فحص الطابور**: التحقق من `transactional_emails` يحتوي رسائل بـ `message_id` متطابقة.
-4. **استدعاء ثانٍ فوري** للتأكد من عدم التكرار — يجب أن تظهر النتائج بحالة `duplicate` بدلاً من `enqueued`.
-5. **في حال أي فشل**: قراءة `stack_modern--server-function-logs` لاستخراج رسالة الخطأ وتشخيصها.
+السبب: الـpayload المُدرج في الطابور من `/hooks/expiring-subscriptions` يحوي فقط `{message_id, label, to, subject, html, text, queued_at}`، بينما الـdispatcher (`process.ts`) يتطلب أيضاً `idempotency_key` و `purpose` و `from` و `sender_domain` و `unsubscribe_token`. قارن مع `send-transactional-email` الذي يبني payload كاملاً (سطور 276-292) — هذا هو القالب الصحيح.
+
+### المشكلة 2: `SENDER_DOMAIN` مكرر `notify.notify.rifd.club`
+
+في `src/routes/lovable/email/transactional/send.ts` السطر 11:
+```ts
+const SENDER_DOMAIN = "notify.notify.rifd.club"  // ❌ خطأ
+```
+الصحيح حسب قاعدة الذاكرة `mem://constraints/email-domain-name`:
+```ts
+const SENDER_DOMAIN = "notify.rifd.club"
+```
+هذا يعني أن كل بريد معاملاتي (تفعيل + انتهاء) سيفشل بـ "No email domain record found" حتى بعد أن يصبح النطاق Active. هذه قنبلة موقوتة.
+
+### الإصلاح
+
+**ملف 1: `src/routes/hooks/expiring-subscriptions.ts`**
+- استيراد ثوابت `SITE_NAME` / `SENDER_DOMAIN` / `FROM_DOMAIN` (أو إعلانها محلياً بنفس القيم الصحيحة).
+- تعديل بناء الـpayload ليطابق `send-transactional-email`: إضافة `from`, `sender_domain`, `purpose: 'transactional'`, `idempotency_key: idempotencyKey`.
+- (اختياري لكنه أفضل) جلب أو إنشاء `unsubscribe_token` للمستلم — أو حذف الحقل تماماً (الـSDK يقبل غيابه).
+
+**ملف 2: `src/routes/lovable/email/transactional/send.ts`**
+- تصحيح السطر 11: `SENDER_DOMAIN = "notify.rifd.club"`.
+
+**تنظيف بعد الإصلاح**:
+- حذف صفوف `failed` المتراكمة لـ`sub-expiring-1d-c52ad8c3-...` من `email_send_log` (اختياري — لتفادي تجاوز عداد الـ MAX_RETRIES = 5 الذي قد ينقل الرسالة إلى DLQ بدلاً من إعادة المحاولة).
+
+### اختبار التحقق
+
+1. بعد التعديل والنشر، استدعاء `/hooks/expiring-subscriptions` ثانية.
+2. انتظار دورة dispatcher واحدة (~5 ثوانٍ).
+3. قراءة `email_send_log` للتأكد أن الصف الجديد لـ`subscription-expiring` صار `sent` (أو لا يزال `pending` بانتظار النطاق — لكن **ليس** `failed`).
+4. إذا كان النطاق لا يزال Pending: السلوك المتوقع هو رسالة فشل مختلفة من نوع "domain not verified" — وهذا مقبول حتى تكتمل الـDNS.
 
 ### ما لن يحدث الآن
-- لن يصل أي بريد فعلي للمستلمين قبل أن يصبح النطاق Active — هذا متوقع وسليم.
-- لن نُعدّل أي ملفات (الكود الحالي للـ hook صحيح ومراجَع).
-
-### بعد نجاح الاختبار
-- المنظومة جاهزة. الانتظار الوحيد المتبقي هو DNS propagation للنطاق، وبعد ذلك سيبدأ كل شيء بالعمل تلقائياً.
+- لن يصل بريد فعلي للمستلمين قبل أن يصبح النطاق Active.
+- لكن بعد هذا الإصلاح + Active النطاق → كل شيء سيعمل تلقائياً دون أي تدخل آخر.
 
