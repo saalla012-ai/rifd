@@ -128,7 +128,7 @@ function HomePage() {
       </section>
 
       {/* 12. CTA الختامي */}
-      <section className="border-t border-border bg-background py-16">
+      <section id="final-cta" className="border-t border-border bg-background py-16 pb-24 sm:pb-16">
         <div className="mx-auto max-w-4xl rounded-3xl gradient-primary p-8 text-center text-primary-foreground shadow-elegant sm:p-12">
           <h2 className="text-3xl font-extrabold sm:text-4xl">
             جاهز تحوّل متجرك إلى آلة محتوى؟
@@ -146,6 +146,8 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      <StickyMobileCta />
     </MarketingLayout>
   );
 }
