@@ -183,13 +183,17 @@ function AdminAnalyticsPage() {
                   dataKey="cost_usd"
                   nameKey="model"
                   outerRadius={90}
-                  label={(e: { model: string; cost_usd: number }) => `${e.model.split("/").pop()}: ${fmtUSD(e.cost_usd)}`}
+                  label={(p) => {
+                    const name = String((p as { name?: unknown }).name ?? "");
+                    const value = Number((p as { value?: unknown }).value ?? 0);
+                    return `${name.split("/").pop()}: $${value.toFixed(4)}`;
+                  }}
                 >
                   {data.by_model.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: number) => fmtUSD(Number(v))} />
+                <Tooltip formatter={(v) => fmtUSD(Number(v))} />
               </PieChart>
             </ResponsiveContainer>
           </div>
