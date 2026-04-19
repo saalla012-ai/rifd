@@ -88,11 +88,18 @@ export function HomeHero() {
           </span>
         </h1>
 
-        {/* Sub قصير */}
-        <p className="mx-auto mt-4 max-w-xl text-center text-base font-medium text-foreground/85 sm:text-lg">
-          بدل ما تدفع <strong className="text-destructive">800 ر.س لكاتب</strong> أو تقعد{" "}
-          <strong className="text-destructive">5 ساعات تكتب</strong> — رِفد يسوّيها لك بنقرة.
-        </p>
+        {/* Sub — Variant A: مقارنة تكلفة | Variant B: استعارة وقت قهوة */}
+        {variant === "A" ? (
+          <p className="mx-auto mt-4 max-w-xl text-center text-base font-medium text-foreground/85 sm:text-lg">
+            بدل ما تدفع <strong className="text-destructive">800 ر.س لكاتب</strong> أو تقعد{" "}
+            <strong className="text-destructive">5 ساعات تكتب</strong> — رِفد يسوّيها لك بنقرة.
+          </p>
+        ) : (
+          <p className="mx-auto mt-4 max-w-xl text-center text-base font-medium text-foreground/85 sm:text-lg">
+            في <strong className="text-gradient-gold">وقت قهوتك ☕</strong> — متجرك جاهز بـ
+            <strong className="text-primary"> 30 منشور </strong>للنشر مباشرة.
+          </p>
+        )}
 
         {/* Mini Demo Teaser */}
         <div className="mx-auto mt-7 max-w-xl rounded-2xl border-2 border-primary/30 bg-card p-4 shadow-elegant sm:p-5">
@@ -137,7 +144,7 @@ export function HomeHero() {
             size="lg"
             className="w-full max-w-xs gradient-primary text-primary-foreground shadow-elegant transition-transform hover:scale-[1.02] sm:w-auto sm:max-w-none"
           >
-            <Link to="/onboarding">
+            <Link to="/onboarding" onClick={handleCtaClick}>
               <Sparkles className="h-4 w-4" />
               ابدأ مجاناً — 5 توليدات
               <ArrowLeft className="h-4 w-4" />
