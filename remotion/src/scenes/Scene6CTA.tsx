@@ -48,12 +48,13 @@ export const Scene6CTA: React.FC = () => {
 
         <div
           style={{
-            fontSize: 240,
+            fontSize: 200,
             fontWeight: 900,
             color: COLORS.greenDeep,
-            margin: "8px 0 50px",
-            letterSpacing: "-10px",
-            lineHeight: 1.1,
+            margin: "20px 0 60px",
+            letterSpacing: "-8px",
+            lineHeight: 1.4,
+            paddingTop: 30,
             opacity: brandIn,
             transform: `scale(${interpolate(brandIn, [0, 1], [0.6, 1])})`,
             textShadow: `0 16px 50px ${COLORS.greenDeep}40`,
