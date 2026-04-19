@@ -140,6 +140,9 @@ function AdminPlanLimitsPage() {
             <RefreshCw className="h-3.5 w-3.5" /> تحديث
           </Button>
           <Button asChild variant="outline" size="sm">
+            <Link to="/admin/audit">سجل المراجعة</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link to="/admin/analytics">التحليلات <ArrowLeft className="h-3.5 w-3.5" /></Link>
           </Button>
         </div>

@@ -59,6 +59,8 @@ type Req = {
   status: "pending" | "contacted" | "activated" | "rejected" | "expired";
   receipt_path: string | null;
   receipt_uploaded_at: string | null;
+  activated_at: string | null;
+  activated_until: string | null;
   created_at: string;
 };
 
@@ -133,6 +135,14 @@ function AdminSubscriptionsPage() {
       updates.activated_until = until.toISOString();
     }
 
+    // التقاط القيمة قبل التحديث للـaudit
+    const beforeSnapshot = {
+      status: req.status,
+      admin_notes: req.admin_notes,
+      activated_at: req.activated_at,
+      activated_until: req.activated_until,
+    };
+
     const { error: reqErr } = await supabase
       .from("subscription_requests")
       .update(updates)
@@ -142,6 +152,31 @@ function AdminSubscriptionsPage() {
       toast.error("فشل تحديث الطلب");
       setSavingId(null);
       return;
+    }
+
+    // تسجيل audit log
+    if (user) {
+      const action =
+        newStatus === "activated"
+          ? "activate_subscription"
+          : newStatus === "rejected"
+            ? "reject_subscription"
+            : newStatus === "contacted"
+              ? "contact_subscription"
+              : "update_subscription_status";
+      await supabase.from("admin_audit_log").insert({
+        admin_user_id: user.id,
+        action,
+        target_table: "subscription_requests",
+        target_id: req.id,
+        before_value: beforeSnapshot,
+        after_value: { ...beforeSnapshot, ...updates },
+        metadata: {
+          email: req.email,
+          plan: req.plan,
+          billing_cycle: req.billing_cycle,
+        },
+      });
     }
 
     if (newStatus === "activated") {
