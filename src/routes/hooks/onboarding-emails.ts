@@ -178,39 +178,42 @@ async function enqueueIfNew(
         ? template.subject(templateData)
         : template.subject;
 
-    const { error: enqueueError } = await supabase.rpc(
-      "enqueue_email" as any,
-      {
-        queue_name: "transactional_emails",
-        payload: {
-          message_id: messageId,
-          label: templateName,
-          to: email,
-          from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-          sender_domain: SENDER_DOMAIN,
-          purpose: "transactional",
-          idempotency_key: messageId,
-          subject,
-          html,
-          text: plainText,
-          queued_at: new Date().toISOString(),
-        },
-      } as any,
-    );
-    if (enqueueError) {
-      console.error("enqueue failed", { templateName, messageId, enqueueError });
-      return "enqueue_failed";
-    }
+    try {
+      const result = await sendResendEmail({
+        from: FROM_ADDRESS,
+        to: email,
+        subject,
+        html,
+        text: plainText,
+        headers: { "X-Idempotency-Key": messageId },
+        tags: [{ name: "template", value: templateName }],
+      });
 
-    await supabase.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: templateName,
-      recipient_email: email,
-      status: "pending",
-    });
-    return "enqueued";
+      await supabase.from("email_send_log").insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: email,
+        status: "sent",
+        metadata: { provider: "resend", provider_id: result.id },
+      });
+      return "sent";
+    } catch (sendErr: any) {
+      console.error("resend send failed", {
+        templateName,
+        messageId,
+        error: sendErr?.message,
+      });
+      await supabase.from("email_send_log").insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: email,
+        status: "failed",
+        error_message: String(sendErr?.message ?? sendErr).slice(0, 1000),
+      });
+      return "send_failed";
+    }
   } catch (e) {
-    console.error("render/enqueue exception", { templateName, messageId, e });
+    console.error("render exception", { templateName, messageId, e });
     return "render_failed";
   }
 }
