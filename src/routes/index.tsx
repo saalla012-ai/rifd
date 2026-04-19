@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
-import { UrgencyBar } from "@/components/urgency-bar";
+
 import { HomeHero } from "@/components/home-hero";
 import { BrandStrip } from "@/components/brand-strip";
 import { LiveAiDemo } from "@/components/live-ai-demo";
@@ -36,10 +36,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <MarketingLayout>
-      {/* 1. شريط ندرة رفيع */}
-      <UrgencyBar />
-
-      {/* 2. Hero فوق الـfold (شارة حية + Hook + Mini Demo + CTA) */}
+      {/* Hero فوق الـfold (شارة حية + Hook + Mini Demo + CTA) */}
       <HomeHero />
 
       {/* 3. شريط متوافق مع — قانوني آمن */}
