@@ -153,7 +153,7 @@ export const Scene4Magic: React.FC = () => {
             boxShadow: `0 10px 30px ${COLORS.gold}70`,
           }}
         >
-          ✨ ولّد 30 منشور
+          ولّد 30 منشور ←
         </div>
       </div>
 
