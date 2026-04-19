@@ -44,6 +44,7 @@ import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscript
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as AdminAbTestsRouteImport } from './routes/admin.ab-tests'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiInvoiceRequestIdRouteImport } from './routes/api.invoice.$requestId'
@@ -229,6 +230,11 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/admin/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAbTestsRoute = AdminAbTestsRouteImport.update({
+  id: '/admin/ab-tests',
+  path: '/admin/ab-tests',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardBillingIndexRoute = DashboardBillingIndexRouteImport.update({
   id: '/billing/',
   path: '/billing/',
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -369,6 +377,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
+  '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -415,6 +424,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
+    | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/plan-limits'
@@ -458,6 +468,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
+    | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/plan-limits'
@@ -502,6 +513,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
+    | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/plan-limits'
@@ -547,6 +559,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VsChatgptRoute: typeof VsChatgptRoute
+  AdminAbTestsRoute: typeof AdminAbTestsRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
@@ -816,6 +829,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/ab-tests': {
+      id: '/admin/ab-tests'
+      path: '/admin/ab-tests'
+      fullPath: '/admin/ab-tests'
+      preLoaderRoute: typeof AdminAbTestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/billing/': {
       id: '/dashboard/billing/'
       path: '/billing'
@@ -912,6 +932,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VsChatgptRoute: VsChatgptRoute,
+  AdminAbTestsRoute: AdminAbTestsRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
