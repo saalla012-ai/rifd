@@ -47,6 +47,18 @@ export const Route = createFileRoute("/api/telegram-set-chat-id")({
             }
           );
 
+          // admin gate صريح
+          const { data: userData, error: userErr } = await userClient.auth.getUser();
+          if (userErr || !userData.user) return jsonError("unauthorized", 401);
+
+          const { data: roleRow } = await userClient
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", userData.user.id)
+            .eq("role", "admin")
+            .maybeSingle();
+          if (!roleRow) return jsonError("forbidden: admin only", 403);
+
           const { error } = await userClient
             .from("internal_config")
             .upsert(

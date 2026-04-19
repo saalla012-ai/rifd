@@ -1,29 +1,13 @@
 /**
- * Public demo endpoint — rate-limited by IP, no auth required.
- * Powers the home page "جرّب الآن" widget. Caps at 3 requests per IP per hour
- * (in-memory, resets on Worker restart) to keep Lovable AI credits safe.
+ * Public demo endpoint — rate-limited by IP via DB (persists across Worker restarts).
+ * Powers the home page "جرّب الآن" widget. Caps at 3 requests per IP per hour.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
 import { chatComplete, AIError } from "@/server/lovable-ai";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const HOURLY_LIMIT = 3;
-const buckets = new Map<string, { count: number; resetAt: number }>();
-
-function takeToken(ip: string): { ok: boolean; remaining: number; resetAt: number } {
-  const now = Date.now();
-  const hour = 60 * 60 * 1000;
-  const b = buckets.get(ip);
-  if (!b || b.resetAt < now) {
-    buckets.set(ip, { count: 1, resetAt: now + hour });
-    return { ok: true, remaining: HOURLY_LIMIT - 1, resetAt: now + hour };
-  }
-  if (b.count >= HOURLY_LIMIT) {
-    return { ok: false, remaining: 0, resetAt: b.resetAt };
-  }
-  b.count += 1;
-  return { ok: true, remaining: HOURLY_LIMIT - b.count, resetAt: b.resetAt };
-}
 
 const PRODUCT_LABEL: Record<string, string> = {
   dropshipping: "متجر دروبشيبنق",
@@ -48,12 +32,24 @@ export const Route = createFileRoute("/api/demo-generate")({
           request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
           "anon";
 
-        const gate = takeToken(ip);
-        if (!gate.ok) {
+        // Rate limit ذرّي عبر قاعدة البيانات (مقاوم لإعادة تشغيل Worker)
+        const { data: gateData, error: gateErr } = await supabaseAdmin.rpc(
+          "consume_demo_token",
+          { _ip: ip, _limit: HOURLY_LIMIT }
+        );
+
+        if (gateErr) {
+          console.error("rate-limit rpc error:", gateErr);
+          return Response.json({ error: "خطأ مؤقت، حاول مرة ثانية" }, { status: 500 });
+        }
+
+        const gate = Array.isArray(gateData) ? gateData[0] : gateData;
+        if (!gate?.allowed) {
           return Response.json(
             {
-              error: "وصلت حدّ المعاينة المجانية (3 توليدات/ساعة). سجّل واحصل على 5 توليدات مجانية فوراً.",
-              resetAt: gate.resetAt,
+              error:
+                "وصلت حدّ المعاينة المجانية (3 توليدات/ساعة). سجّل واحصل على 5 توليدات مجانية فوراً.",
+              resetAt: gate?.reset_at ?? null,
             },
             { status: 429 }
           );
