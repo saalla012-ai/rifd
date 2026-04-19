@@ -1,75 +1,84 @@
 
 
-# الأسبوع 2 — الموثوقية والقياس
+## مراجعة الخطة من كل الزوايا
 
-## الهدف
-رفع نضج المنصة من **48/70 → 56/70** عبر إضافة قياس فعلي للتكلفة، رسائل onboarding آلية، وحماية الـdashboard من الانهيار الصامت.
+### الزاوية 1: التحويل (Conversion) ✅ سليمة
+- صفحة `/auth` تبقى 3 حقول → أعلى معدل تحويل ممكن.
+- مستخدم Google لا يتأثر إطلاقاً (ما نقدر نطلب منه شي قبل OAuth أصلاً).
 
-## المهام (4 محاور)
+### الزاوية 2: الحماية التقنية ⚠️ تحتاج تدعيم
+بعد فحص الكود:
+- `src/routes/dashboard.tsx` (الـ layout) → **لا يتحقق** من `profile.onboarded` حالياً. فقط `auth.tsx` يحوّل بعد تسجيل الدخول مباشرة. يعني لو مستخدم قديم (سجّل قبل فرض الحقل) يدخل `/dashboard` مباشرة → يتجاوز onboarding.
+- **الحل:** إضافة `beforeLoad` أو `useEffect` في `dashboard.tsx` يحوّل أي مستخدم بـ`onboarded=false` إلى `/onboarding`.
 
-### 1. تتبّع التوكنز والكلفة الفعلية
-**المشكلة:** `generations` لا تحفظ `prompt_tokens / completion_tokens / total_tokens / estimated_cost_usd`. لا نعرف كم يكلّفنا كل مستخدم فعلياً.
+### الزاوية 3: المستخدمون الحاليون 🔍 نقطة مهمة
+- المستخدمون الذين أكملوا onboarding **قبل** هذا التغيير ليس عندهم رقم (`whatsapp = null`) لكن `onboarded = true`.
+- **خياران:**
+  - **A) تساهل:** نتركهم، ونطلب الرقم فقط من الجدد + من يدخل الإعدادات.
+  - **B) إجبار رجعي:** نضيف فحص في `dashboard.tsx`: لو `onboarded=true` لكن `whatsapp=null` → نحوّل لصفحة استكمال (`/dashboard/settings` أو modal).
+- **التوصية:** **B** — استمارة استكمال خفيفة (modal أو بانر) لا تكسر تجربتهم لكن تجمع الرقم.
 
-**التنفيذ:**
-- migration: إضافة 4 أعمدة على `generations`:
-  - `prompt_tokens int`, `completion_tokens int`, `total_tokens int`, `estimated_cost_usd numeric(10,6)`
-  - فهرس على `(created_at)` لـreports.
-- تعديل `src/server/lovable-ai.ts` → استخراج `usage` من `json` (OpenAI compatible response يحوي `usage.prompt_tokens` و `completion_tokens`) وإرجاعها.
-- تعديل `src/server/ai-functions.ts` (3 functions: generateText, generateImage, editImage) لتمرير الـusage في `metadata` + الأعمدة الجديدة، مع حساب تقديري للكلفة:
-  - text models: ~$0.075/1M input + $0.30/1M output (Gemini Flash)
-  - image models: تقدير ثابت لكل صورة ($0.04 flash, $0.10 pro)
+### الزاوية 4: الإعدادات 🔒
+- `dashboard.settings.tsx` حالياً يقبل مسح الرقم (`whatsapp.trim() === ""` يحفظ `null`).
+- **الحل:** جعل الحقل required في الـ validation، رفض الحفظ إذا فاضي.
 
-### 2. سلسلة Onboarding Email
-**المشكلة:** المستخدم يسجّل ولا يستلم welcome ولا توجيه. فقدان صامت.
+### الزاوية 5: subscription_requests 💳
+- جدول `subscription_requests.whatsapp` already `NOT NULL` — جيد، يضمن أن أي طلب اشتراك فيه رقم. لكن نموذج إنشاء الطلب يجب أن يستخدم `profile.whatsapp` كقيمة افتراضية.
 
-**التنفيذ:**
-- إضافة قالبين جديدين في `src/lib/email-templates/`:
-  - `welcome.tsx` — يُرسل فور تسجيل المستخدم (signup trigger).
-  - `onboarding-tip-day3.tsx` — تذكير بإكمال الـonboarding واستخدام أول قالب.
-- تسجيلهما في `registry.ts`.
-- مسار cron جديد: `src/routes/hooks/onboarding-emails.ts` — يفحص يومياً:
-  - مستخدمون سجّلوا قبل 0-12h ولم يستلموا welcome → enqueue welcome.
-  - مستخدمون سجّلوا قبل 3 أيام (±12h) ولم يكملوا onboarding → enqueue tip.
-- إضافة pg_cron job يومياً 09:00 الرياض (06:00 UTC).
+### الزاوية 6: تجربة المستخدم في /onboarding 🎨
+- الخطوات الحالية: 1=اسم متجر، 2=نوع، 3=جمهور، 4=نبرة+لون، 5=نتيجة.
+- **أين نضع الرقم؟** أفضل مكان: **الخطوة 1** (مع اسم المتجر) → سياق "بيانات الاتصال + الهوية".
+- بدلاً من إضافة خطوة سادسة (يضيف احتكاك)، ندمجه مع الخطوة 1.
 
-### 3. Dashboard Error Boundary + Empty States
-**المشكلة:** `src/routes/dashboard.tsx` فارغ تماماً (`<Outlet />` فقط). أي خطأ في صفحة فرعية يكسر التطبيق بدون رسالة.
+---
 
-**التنفيذ:**
-- إضافة `errorComponent` و `notFoundComponent` على `dashboard.tsx`.
-- إضافة `pendingComponent` (skeleton لطيف) لتجارب الـloading.
-- لا تغيير في الـlayout البصري (الـ`dashboard-shell` موجود في الصفحات الفرعية).
+## الخطة النهائية المعتمدة
 
-### 4. تحديث `usage-month` للاستخدام في تقارير الكلفة
-**المشكلة:** لا يوجد server function يجمّع كلفة المستخدم الشهرية.
+### 1. `/onboarding` (الخطوة 1) — `src/routes/onboarding.tsx`
+- إضافة حقل **رقم واتساب إجباري** بجانب اسم المتجر.
+- استخدام `validateSaudiPhone` + `SAUDI_PHONE_PLACEHOLDER` + `SAUDI_PHONE_ERROR` (موجودة في `src/lib/phone.ts`).
+- زر "التالي" معطّل حتى يصحّ الاسم **و** الرقم.
+- نص توضيحي مُحفِّز: *"للتنبيهات المهمة وتفعيل اشتراكك — لن نتصل بك مطلقاً، واتساب فقط"*.
+- في `finish()`: حفظ `whatsapp = normalizeSaudiPhone(...)` ضمن `UPDATE profiles`.
 
-**التنفيذ:**
-- إضافة server function `getUserMonthlyCost` في `src/server/ai-functions.ts` ترجع:
-  - `total_tokens`, `total_cost_usd`, breakdown by type.
-- (لا UI الآن — البيانات تتراكم للأسبوع 5 حين نبني الـdashboard analytics).
+### 2. حماية لوحة التحكم — `src/routes/dashboard.tsx`
+- إضافة فحص داخل الـ layout: لو `profile && !profile.onboarded` → `navigate({ to: "/onboarding" })`.
+- لو `onboarded=true` لكن `whatsapp=null` (مستخدم قديم) → `navigate({ to: "/onboarding" })` أيضاً (نعيد استخدام نفس الصفحة، تعرض الخطوة 1 فقط ويكمل).
 
-## ملفات ستُعدّل/تُنشأ
-**Create:**
-- `supabase/migrations/<ts>_generations_cost_tracking.sql`
-- `src/lib/email-templates/welcome.tsx`
-- `src/lib/email-templates/onboarding-tip-day3.tsx`
-- `src/routes/hooks/onboarding-emails.ts`
+### 3. الإعدادات — `src/routes/dashboard.settings.tsx`
+- حذف شرط `if (whatsapp.trim())` — الرقم **مطلوب دائماً**.
+- إذا فاضي → `toast.error(SAUDI_PHONE_ERROR)` ورفض الحفظ.
+- إضافة علامة `*` بجانب Label.
+- تحديث النص التوضيحي ليعكس الإلزام.
 
-**Modify:**
-- `src/server/lovable-ai.ts` (استخراج usage)
-- `src/server/ai-functions.ts` (حفظ tokens + cost + إضافة getUserMonthlyCost)
-- `src/lib/email-templates/registry.ts` (تسجيل القالبين)
-- `src/routes/dashboard.tsx` (error/notFound/pending)
+### 4. نموذج طلب الاشتراك — `src/routes/dashboard.billing.index.tsx`
+- التأكد من تعبئة `whatsapp` من `profile.whatsapp` كقيمة افتراضية (نتحقق ونعدّل إن لزم).
 
-## ما لن يُنجز هذا الأسبوع (مؤجَّل عن قصد)
-- **Moyasar** → الأسبوع 3.
-- **dashboard analytics UI** → الأسبوع 5 (نحتاج بيانات تتراكم أولاً).
-- **referral system** → الأسبوع 6.
-- **حذف UrgencyBar/SubscribersCounter** — قرار تجاري ينتظر موقفك (لم تطلبه صراحة).
+### 5. لا تغيير في:
+- `src/routes/auth.tsx` (يبقى 3 حقول).
+- قاعدة البيانات (الحقل موجود).
+- `handle_new_user()` trigger.
+- نظام الصلاحيات/RLS.
 
-## معايير القبول
-1. أي توليد جديد يخزّن `prompt_tokens`, `completion_tokens`, `estimated_cost_usd` في `generations`.
-2. مستخدم جديد يستلم welcome email خلال 12 ساعة من التسجيل (بعد تشغيل cron).
-3. خطأ مفتعل في `/dashboard/library` يُعرض كرسالة واضحة بزر "حاول مجدداً" بدل شاشة بيضاء.
-4. استعلام `SELECT sum(estimated_cost_usd) FROM generations WHERE user_id=…` يعمل.
+---
+
+## الملفات المتأثرة
+
+| ملف | التغيير |
+|---|---|
+| `src/routes/onboarding.tsx` | حقل واتساب إجباري في الخطوة 1 |
+| `src/routes/dashboard.tsx` | فحص `onboarded` + `whatsapp` وإعادة توجيه |
+| `src/routes/dashboard.settings.tsx` | جعل الرقم مطلوب (لا يمكن مسحه) |
+| `src/routes/dashboard.billing.index.tsx` | تأكيد القيمة الافتراضية من profile |
+
+## ما لن نفعله
+- ❌ تغيير صفحة التسجيل (`/auth`).
+- ❌ OTP (مؤجّل بقرارك).
+- ❌ migration لقاعدة البيانات (الحقل موجود).
+- ❌ لمس مستخدمي Google قبل onboarding.
+
+## النتيجة
+- 100% من المستخدمين الجدد سيدخلون رقمهم.
+- المستخدمون القدامى يكملون عند أول دخول.
+- صفر تأثير على معدل التسجيل.
 
