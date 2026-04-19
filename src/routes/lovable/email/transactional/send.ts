@@ -3,15 +3,13 @@ import { render } from '@react-email/components'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 import { TEMPLATES } from '@/lib/email-templates/registry'
+import { sendResendEmail } from '@/server/resend'
 
-// Configuration baked in at scaffold time
+// Configuration
 const SITE_NAME = "رِفد"
-// SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
-// It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.rifd.club"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// Can be the root domain when display_from_root is enabled — this is cosmetic only.
-const FROM_DOMAIN = "notify.rifd.club"
+// Resend's shared sender — works without domain verification.
+// Once a domain is verified in Resend, switch this to e.g. "noreply@rifd.club".
+const FROM_ADDRESS = `${SITE_NAME} <onboarding@resend.dev>`
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'
