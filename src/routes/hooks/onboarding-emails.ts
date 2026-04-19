@@ -70,32 +70,60 @@ export const Route = createFileRoute("/hooks/onboarding-emails")({
           }
         }
 
-        // ============== Bucket 2: tip day-3 (±12h حول 3 أيام) ==============
-        const target = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-        const lower = new Date(target.getTime() - 12 * 60 * 60 * 1000);
-        const upper = new Date(target.getTime() + 12 * 60 * 60 * 1000);
-        const { data: tipRows, error: tipErr } = await supabase
-          .from("profiles")
-          .select("id, email, full_name, onboarded, created_at")
-          .gte("created_at", lower.toISOString())
-          .lt("created_at", upper.toISOString())
-          .eq("onboarded", false)
-          .not("email", "is", null);
+        // ============== Buckets 2-5: day-1, day-3, day-5, day-7 ==============
+        // كل bucket يستهدف نافذة 24h حول اليوم المحدد منذ التسجيل.
+        const dayBuckets: Array<{
+          day: number;
+          template: string;
+          prefix: string;
+          requireNotOnboarded?: boolean;
+        }> = [
+          { day: 1, template: "onboarding-day1", prefix: "day1" },
+          {
+            day: 3,
+            template: "onboarding-tip-day3",
+            prefix: "tip-day3",
+            requireNotOnboarded: true,
+          },
+          { day: 5, template: "onboarding-day5", prefix: "day5" },
+          { day: 7, template: "onboarding-day7", prefix: "day7" },
+        ];
 
-        if (tipErr) {
-          console.error("tip query failed", { tipErr });
-        } else {
-          for (const row of tipRows ?? []) {
+        for (const bucket of dayBuckets) {
+          const target = new Date(
+            now.getTime() - bucket.day * 24 * 60 * 60 * 1000,
+          );
+          const lower = new Date(target.getTime() - 12 * 60 * 60 * 1000);
+          const upper = new Date(target.getTime() + 12 * 60 * 60 * 1000);
+
+          let query = supabase
+            .from("profiles")
+            .select("id, email, full_name, onboarded, created_at")
+            .gte("created_at", lower.toISOString())
+            .lt("created_at", upper.toISOString())
+            .not("email", "is", null);
+
+          if (bucket.requireNotOnboarded) {
+            query = query.eq("onboarded", false);
+          }
+
+          const { data: rows, error: rowsErr } = await query;
+          if (rowsErr) {
+            console.error(`${bucket.prefix} query failed`, { rowsErr });
+            continue;
+          }
+
+          for (const row of rows ?? []) {
             const res = await enqueueIfNew(supabase, {
-              templateName: "onboarding-tip-day3",
-              messageId: `tip-day3-${row.id}`,
+              templateName: bucket.template,
+              messageId: `${bucket.prefix}-${row.id}`,
               email: row.email!,
               templateData: { fullName: row.full_name ?? undefined },
             });
             results.push({
               userId: row.id,
               email: row.email!,
-              bucket: "tip-day3",
+              bucket: bucket.prefix,
               status: res,
             });
           }
