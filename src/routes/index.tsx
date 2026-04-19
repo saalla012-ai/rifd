@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
-import { UrgencyBar } from "@/components/urgency-bar";
+
 import { HomeHero } from "@/components/home-hero";
 import { BrandStrip } from "@/components/brand-strip";
 import { LiveAiDemo } from "@/components/live-ai-demo";
