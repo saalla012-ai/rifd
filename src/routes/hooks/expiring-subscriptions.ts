@@ -147,7 +147,7 @@ export const Route = createFileRoute("/hooks/expiring-subscriptions")({
                 "enqueue_email" as any,
                 {
                   queue_name: "transactional_emails",
-                  message: {
+                  payload: {
                     message_id: messageId,
                     label: "subscription-expiring",
                     to: row.email,
