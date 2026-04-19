@@ -59,6 +59,8 @@ type Req = {
   status: "pending" | "contacted" | "activated" | "rejected" | "expired";
   receipt_path: string | null;
   receipt_uploaded_at: string | null;
+  activated_at: string | null;
+  activated_until: string | null;
   created_at: string;
 };
 
