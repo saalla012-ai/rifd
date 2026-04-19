@@ -60,8 +60,24 @@ const PostCard: React.FC<{ index: number; col: number; row: number }> = ({ index
     >
       {isImage ? (
         <>
-          <div style={{ fontSize: 60 }}>🛍️</div>
-          <div style={{ fontSize: 16, color: COLORS.cream, marginTop: 8, fontWeight: 700 }}>
+          <div
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 16,
+              background: COLORS.cream,
+              border: `3px solid ${COLORS.gold}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 44,
+              color: COLORS.greenDeep,
+              fontWeight: 900,
+            }}
+          >
+            ▣
+          </div>
+          <div style={{ fontSize: 18, color: COLORS.cream, marginTop: 12, fontWeight: 700 }}>
             صورة منتج
           </div>
         </>
