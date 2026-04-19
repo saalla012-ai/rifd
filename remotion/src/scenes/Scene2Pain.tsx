@@ -103,7 +103,7 @@ export const Scene2Pain: React.FC = () => {
           transform: `translateY(${interpolate(titleIn, [0, 1], [-30, 0])}px)`,
         }}
       >
-        وتطلع كذا؟ 👇
+        وتطلع كذا؟
       </div>
 
       <div style={{ position: "relative" }}>

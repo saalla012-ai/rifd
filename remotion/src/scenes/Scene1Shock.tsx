@@ -126,7 +126,7 @@ export const Scene1Shock: React.FC = () => {
             transform: `translateY(${interpolate(subIn, [0, 1], [20, 0])}px)`,
           }}
         >
-          تكتب محتوى متجرك كل أسبوع؟ 😤
+          تكتب محتوى متجرك كل أسبوع؟
         </div>
       </div>
     </AbsoluteFill>
