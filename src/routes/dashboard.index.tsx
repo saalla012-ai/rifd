@@ -106,6 +106,37 @@ function DashboardPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           هذي نظرة سريعة على نشاطك في رِفد
         </p>
+        {(profile?.store_name || profile?.whatsapp) && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {profile?.store_name && (
+              <Badge variant="secondary" className="gap-1.5 px-2.5 py-1 text-xs font-bold">
+                <Sparkles className="h-3 w-3 text-primary" />
+                {profile.store_name}
+              </Badge>
+            )}
+            {profile?.whatsapp ? (
+              <Badge variant="outline" className="gap-1.5 px-2.5 py-1 text-xs">
+                <Phone className="h-3 w-3 text-success" />
+                <span dir="ltr" className="font-mono">{profile.whatsapp}</span>
+                <Link
+                  to="/dashboard/settings"
+                  aria-label="تعديل رقم الواتساب"
+                  className="ms-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Pencil className="h-3 w-3" />
+                </Link>
+              </Badge>
+            ) : (
+              <Link
+                to="/dashboard/settings"
+                className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 px-2.5 py-1 text-xs font-bold text-warning transition-colors hover:bg-warning/20"
+              >
+                <Phone className="h-3 w-3" />
+                أضف رقم واتساب
+              </Link>
+            )}
+          </div>
+        )}
       </div>
 
       {/* بطاقات الأدوات الرئيسية */}
