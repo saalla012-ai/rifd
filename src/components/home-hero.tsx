@@ -96,8 +96,7 @@ export function HomeHero() {
           </p>
         ) : (
           <p className="mx-auto mt-4 max-w-xl text-center text-base font-medium text-foreground/85 sm:text-lg">
-            في <strong className="text-gradient-gold">وقت قهوتك ☕</strong> — متجرك جاهز بـ
-            <strong className="text-primary"> 30 منشور </strong>للنشر مباشرة.
+            في <strong className="text-gradient-gold">وقت قهوتك ☕</strong> — متجرك جاهز بـ<strong className="text-primary">&nbsp;30 منشور&nbsp;</strong>للنشر مباشرة.
           </p>
         )}
 
