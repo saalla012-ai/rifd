@@ -154,38 +154,50 @@ export type Database = {
       }
       generations: {
         Row: {
+          completion_tokens: number | null
           created_at: string
+          estimated_cost_usd: number | null
           id: string
           is_favorite: boolean
           metadata: Json | null
           model_used: string | null
           prompt: string
+          prompt_tokens: number | null
           result: string | null
           template: string | null
+          total_tokens: number | null
           type: Database["public"]["Enums"]["generation_type"]
           user_id: string
         }
         Insert: {
+          completion_tokens?: number | null
           created_at?: string
+          estimated_cost_usd?: number | null
           id?: string
           is_favorite?: boolean
           metadata?: Json | null
           model_used?: string | null
           prompt: string
+          prompt_tokens?: number | null
           result?: string | null
           template?: string | null
+          total_tokens?: number | null
           type: Database["public"]["Enums"]["generation_type"]
           user_id: string
         }
         Update: {
+          completion_tokens?: number | null
           created_at?: string
+          estimated_cost_usd?: number | null
           id?: string
           is_favorite?: boolean
           metadata?: Json | null
           model_used?: string | null
           prompt?: string
+          prompt_tokens?: number | null
           result?: string | null
           template?: string | null
+          total_tokens?: number | null
           type?: Database["public"]["Enums"]["generation_type"]
           user_id?: string
         }
