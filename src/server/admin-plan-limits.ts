@@ -35,8 +35,8 @@ export type AuditLogRow = {
   action: string;
   target_table: string;
   target_id: string | null;
-  before_value: unknown;
-  after_value: unknown;
+  before_value: Record<string, unknown> | null;
+  after_value: Record<string, unknown> | null;
   created_at: string;
 };
 
