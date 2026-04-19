@@ -126,22 +126,28 @@ export const generateText = createServerFn({ method: "POST" })
 
     const cost = estimateTextCost(modelName, aiUsage);
 
-    await Promise.all([
-      supabase.from("generations").insert({
-        user_id: userId,
-        type: "text",
-        prompt: data.prompt,
-        result,
-        template: data.templateId,
-        model_used: modelName,
-        prompt_tokens: aiUsage.prompt_tokens,
-        completion_tokens: aiUsage.completion_tokens,
-        total_tokens: aiUsage.total_tokens,
-        estimated_cost_usd: cost,
-        metadata: { template_title: data.templateTitle },
-      }),
-      bumpUsage(supabase, userId, month, "text"),
-    ]);
+    // Sequential to avoid race: insert first (DB trigger enforces quota again),
+    // then bump usage_logs only if insert succeeded.
+    const { error: insErr } = await supabase.from("generations").insert({
+      user_id: userId,
+      type: "text",
+      prompt: data.prompt,
+      result,
+      template: data.templateId,
+      model_used: modelName,
+      prompt_tokens: aiUsage.prompt_tokens,
+      completion_tokens: aiUsage.completion_tokens,
+      total_tokens: aiUsage.total_tokens,
+      estimated_cost_usd: cost,
+      metadata: { template_title: data.templateTitle },
+    });
+    if (insErr) {
+      if (/quota_exceeded/i.test(insErr.message)) {
+        throw new Error(`وصلت حدّ الباقة (${limits.text} توليدة شهرياً). رقّ باقتك للاستمرار.`);
+      }
+      throw new Error(`فشل حفظ التوليدة: ${insErr.message}`);
+    }
+    await bumpUsage(supabase, userId, month, "text");
 
     return {
       result,
@@ -222,19 +228,25 @@ export const generateImage = createServerFn({ method: "POST" })
 
     const cost = estimateImageCost(model);
 
-    await Promise.all([
-      supabase.from("generations").insert({
-        user_id: userId,
-        type: "image",
-        prompt: data.prompt,
-        result: publicUrl,
-        template: data.templateId,
-        model_used: model,
-        estimated_cost_usd: cost,
-        metadata: { template_title: data.templateTitle, quality: data.quality, storage_path: filename },
-      }),
-      bumpUsage(supabase, userId, month, "image"),
-    ]);
+    const { error: insErr } = await supabase.from("generations").insert({
+      user_id: userId,
+      type: "image",
+      prompt: data.prompt,
+      result: publicUrl,
+      template: data.templateId,
+      model_used: model,
+      estimated_cost_usd: cost,
+      metadata: { template_title: data.templateTitle, quality: data.quality, storage_path: filename },
+    });
+    if (insErr) {
+      // Cleanup: remove the uploaded image to avoid orphan storage object
+      await supabase.storage.from("generated-images").remove([filename]).catch(() => {});
+      if (/quota_exceeded/i.test(insErr.message)) {
+        throw new Error(`وصلت حدّ صور باقتك (${limits.image} صورة شهرياً). رقّ باقتك للاستمرار.`);
+      }
+      throw new Error(`فشل حفظ الصورة: ${insErr.message}`);
+    }
+    await bumpUsage(supabase, userId, month, "image");
 
     return {
       url: publicUrl,
@@ -330,22 +342,27 @@ export const editImage = createServerFn({ method: "POST" })
 
     const editCost = estimateImageCost(model);
 
-    await Promise.all([
-      supabase.from("generations").insert({
-        user_id: userId,
-        type: "image_enhance",
-        prompt: data.prompt,
-        result: publicUrl,
-        template: data.templateId,
-        model_used: model,
-        estimated_cost_usd: editCost,
-        metadata: {
-          template_title: data.templateTitle,
-          storage_path: filename,
-        },
-      }),
-      bumpUsage(supabase, userId, month, "image"),
-    ]);
+    const { error: insErr } = await supabase.from("generations").insert({
+      user_id: userId,
+      type: "image_enhance",
+      prompt: data.prompt,
+      result: publicUrl,
+      template: data.templateId,
+      model_used: model,
+      estimated_cost_usd: editCost,
+      metadata: {
+        template_title: data.templateTitle,
+        storage_path: filename,
+      },
+    });
+    if (insErr) {
+      await supabase.storage.from("generated-images").remove([filename]).catch(() => {});
+      if (/quota_exceeded/i.test(insErr.message)) {
+        throw new Error(`وصلت حدّ صور باقتك (${limits.image} صورة شهرياً). رقّ باقتك للاستمرار.`);
+      }
+      throw new Error(`فشل حفظ الصورة: ${insErr.message}`);
+    }
+    await bumpUsage(supabase, userId, month, "image");
 
     return {
       url: publicUrl,
