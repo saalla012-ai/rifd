@@ -94,7 +94,7 @@ export const Scene6CTA: React.FC = () => {
             transform: `translateY(${interpolate(ctaIn, [0, 1], [20, 0])}px)`,
           }}
         >
-          5 توليدات مجانية 🚀
+          5 توليدات مجانية — جرّب الآن
         </div>
 
         {/* Trust chips */}
