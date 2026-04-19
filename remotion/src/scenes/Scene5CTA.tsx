@@ -44,14 +44,14 @@ export const Scene5CTA: React.FC = () => {
 
         <div
           style={{
-            fontSize: 200,
+            fontSize: 180,
             fontWeight: 900,
             color: COLORS.greenDeep,
-            margin: "20px 0 70px",
+            margin: "10px 0 110px",
             opacity: logoIn,
             transform: `scale(${interpolate(logoIn, [0, 1], [0.5, 1])})`,
             letterSpacing: "-6px",
-            lineHeight: 1,
+            lineHeight: 1.2,
           }}
         >
           رِفد
