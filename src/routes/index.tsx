@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 
 import { HomeHero } from "@/components/home-hero";
+import { StickyMobileCta } from "@/components/sticky-mobile-cta";
 import { BrandStrip } from "@/components/brand-strip";
 import { LiveAiDemo } from "@/components/live-ai-demo";
 import { SavingsCounter } from "@/components/savings-counter";
