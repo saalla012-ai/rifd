@@ -40,6 +40,12 @@ export type AdminAnalytics = {
     cost_usd_this_month: number;
     avg_cost_per_active_user: number;
   };
+  data_quality: {
+    users_with_whatsapp: number;
+    whatsapp_pct: number;
+    users_with_full_profile: number;
+    full_profile_pct: number;
+  };
   top_users: Array<{
     user_id: string;
     email: string | null;
