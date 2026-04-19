@@ -15,11 +15,14 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
-import { Loader2, Users, Sparkles, DollarSign, TrendingUp, RefreshCw, ArrowLeft } from "lucide-react";
+import { Loader2, Users, Sparkles, DollarSign, TrendingUp, RefreshCw, ArrowLeft, Database as DatabaseIcon, CheckCircle2 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 import { getAdminAnalytics, type AdminAnalytics } from "@/server/admin-analytics";
+import { reconcileUsageLogs, type ReconcileResult } from "@/server/admin-reconcile";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/analytics")({
@@ -39,6 +42,32 @@ function AdminAnalyticsPage() {
   const [data, setData] = useState<AdminAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reconciling, setReconciling] = useState(false);
+  const [reconcileResult, setReconcileResult] = useState<ReconcileResult | null>(null);
+
+  const handleReconcile = async () => {
+    setReconciling(true);
+    setReconcileResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("سجّل الدخول أولاً");
+      const result = await reconcileUsageLogs({
+        data: {},
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      setReconcileResult(result);
+      if (result.users_corrected === 0) {
+        toast.success("العدّادات متطابقة — لا توجد فروقات");
+      } else {
+        toast.success(`تم تصحيح ${result.users_corrected} مستخدم (نص: ${result.total_text_diff >= 0 ? "+" : ""}${result.total_text_diff}، صور: ${result.total_image_diff >= 0 ? "+" : ""}${result.total_image_diff})`);
+      }
+      void load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "تعذّرت المزامنة");
+    } finally {
+      setReconciling(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -101,9 +130,13 @@ function AdminAnalyticsPage() {
             نظرة عامة على المنصة لشهر <span className="font-mono">{data.month}</span>
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={load}>
             <RefreshCw className="h-3.5 w-3.5" /> تحديث
+          </Button>
+          <Button variant="default" size="sm" onClick={handleReconcile} disabled={reconciling}>
+            {reconciling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <DatabaseIcon className="h-3.5 w-3.5" />}
+            إعادة مزامنة العدّادات
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link to="/admin/plan-limits">حدود الباقات</Link>
@@ -116,6 +149,48 @@ function AdminAnalyticsPage() {
           </Button>
         </div>
       </div>
+
+      {reconcileResult && (
+        <div className="mb-6 rounded-xl border border-border bg-card p-4 shadow-soft">
+          <div className="mb-3 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-success" />
+            <h3 className="text-sm font-bold">نتيجة المزامنة لشهر {reconcileResult.month}</h3>
+            <Badge variant="secondary" className="ms-auto text-[10px]">
+              {reconcileResult.users_corrected} مستخدم تم تصحيحه
+            </Badge>
+          </div>
+          {reconcileResult.rows.length === 0 ? (
+            <p className="text-xs text-muted-foreground">العدّادات متطابقة مع generations — لا فروقات.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-right text-xs">
+                <thead className="border-b border-border text-muted-foreground">
+                  <tr>
+                    <th className="py-2 font-medium">المستخدم</th>
+                    <th className="py-2 font-medium">نص (قبل → بعد)</th>
+                    <th className="py-2 font-medium">صور (قبل → بعد)</th>
+                    <th className="py-2 font-medium">الفرق</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {reconcileResult.rows.map((r) => (
+                    <tr key={r.user_id}>
+                      <td className="py-2 font-mono">{r.user_id.slice(0, 8)}…</td>
+                      <td className="py-2">{r.old_text_count} → <span className="font-bold">{r.new_text_count}</span></td>
+                      <td className="py-2">{r.old_image_count} → <span className="font-bold">{r.new_image_count}</span></td>
+                      <td className="py-2">
+                        <span className={r.text_diff !== 0 ? "text-warning" : ""}>نص {r.text_diff >= 0 ? "+" : ""}{r.text_diff}</span>
+                        {" / "}
+                        <span className={r.image_diff !== 0 ? "text-warning" : ""}>صور {r.image_diff >= 0 ? "+" : ""}{r.image_diff}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -33,6 +33,7 @@ const ACTION_LABEL: Record<string, string> = {
   reject_subscription: "رفض اشتراك",
   contact_subscription: "تواصل مع طلب",
   update_subscription_status: "تحديث حالة اشتراك",
+  reconcile_usage_logs: "مزامنة عدّادات الاستخدام",
 };
 
 const ACTION_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -42,6 +43,7 @@ const ACTION_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
   update_plan_limit: "outline",
   create_plan_limit: "outline",
   update_subscription_status: "secondary",
+  reconcile_usage_logs: "default",
 };
 
 function fmtDate(iso: string): string {
@@ -70,6 +72,10 @@ function summarize(entry: AuditEntry): string {
     const bs = (before?.status as string | undefined) ?? "—";
     const as_ = (after?.status as string | undefined) ?? "—";
     return `${email} (${plan}): ${bs} → ${as_}`;
+  }
+  if (entry.action === "reconcile_usage_logs") {
+    const corrected = (after?.users_corrected as number | undefined) ?? 0;
+    return `شهر ${entry.target_id} — صُحِّح ${corrected} مستخدم`;
   }
   return entry.target_id ?? "—";
 }
