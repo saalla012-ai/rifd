@@ -41,11 +41,22 @@ const StatBlock: React.FC<{ index: number; delay: number }> = ({ index, delay })
     >
       <div
         style={{
-          fontSize: 80,
-          transform: `scale(${iconBounce}) rotate(${interpolate(iconBounce, [0, 1], [-30, 0])}deg)`,
+          width: 110,
+          height: 110,
+          borderRadius: 24,
+          background: `linear-gradient(135deg, ${stat.color}, ${stat.color}cc)`,
+          color: COLORS.cream,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: stat.glyph.length > 2 ? 28 : 50,
+          fontWeight: 900,
+          flexShrink: 0,
+          transform: `scale(${iconBounce}) rotate(${interpolate(iconBounce, [0, 1], [-15, 0])}deg)`,
+          boxShadow: `0 10px 24px ${stat.color}50`,
         }}
       >
-        {stat.icon}
+        {stat.glyph}
       </div>
       <div style={{ flex: 1 }}>
         <div
@@ -96,7 +107,7 @@ export const Scene5Stats: React.FC = () => {
           transform: `translateY(${interpolate(titleIn, [0, 1], [-30, 0])}px)`,
         }}
       >
-        الفرق بأرقام 📊
+        الفرق بأرقام
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
