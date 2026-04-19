@@ -24,10 +24,10 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2 font-bold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary text-primary-foreground shadow-elegant">
-            <Sparkles className="h-5 w-5" />
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-elegant sm:h-11 sm:w-11">
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
           </span>
-          <span className="text-lg">
+          <span className="text-lg font-extrabold sm:text-xl">
             رِفد <span className="text-xs font-medium text-muted-foreground">للتقنية</span>
           </span>
         </Link>
