@@ -36,6 +36,20 @@ function AuthPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user) {
+      // أرسل welcome مرة واحدة لكل user (idempotent عبر message_id في الخادم)
+      // يغطي Google OAuth + email/password + أي تدفق مستقبلي
+      if (user.email) {
+        void sendWelcomeEmail({
+          data: {
+            userId: user.id,
+            email: user.email,
+            fullName:
+              (user.user_metadata?.full_name as string | undefined) ||
+              (user.user_metadata?.name as string | undefined) ||
+              undefined,
+          },
+        }).catch((e) => console.error("welcome trigger failed", e));
+      }
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else {
@@ -60,18 +74,7 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("تم إنشاء حسابك! جاري التحويل...");
-        // أرسل welcome مباشرة عبر Resend (لا ننتظر الردّ، fire-and-forget)
-        const { data: sess } = await supabase.auth.getUser();
-        const newUser = sess?.user;
-        if (newUser?.email) {
-          void sendWelcomeEmail({
-            data: {
-              userId: newUser.id,
-              email: newUser.email,
-              fullName: name.trim() || undefined,
-            },
-          }).catch((e) => console.error("welcome trigger failed", e));
-        }
+        // welcome سيُرسل تلقائياً من useEffect عند تحديث user
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
