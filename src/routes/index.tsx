@@ -14,6 +14,7 @@ import { VisionSection } from "@/components/vision-section";
 import { HomeFeatures } from "@/components/home-features";
 import { Button } from "@/components/ui/button";
 import { CATEGORIES, PROMPTS } from "@/lib/prompts-data";
+import ogHomeImage from "@/assets/og-home.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,6 +30,12 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "30 منشور + 30 صورة احترافية في 5 دقائق بالعامية السعودية — بدل ما تقعد 5 ساعات. وفّر 800+ ر.س شهرياً.",
       },
+      { property: "og:image", content: ogHomeImage },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "رِفد — 30 منشور + 30 صورة لمتجرك السعودي في 5 دقائق" },
+      { name: "twitter:image", content: ogHomeImage },
+      { name: "twitter:image:alt", content: "رِفد — 30 منشور + 30 صورة لمتجرك السعودي في 5 دقائق" },
     ],
   }),
   component: HomePage,
