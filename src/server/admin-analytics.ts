@@ -13,7 +13,6 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { currentRiyadhMonth } from "@/lib/usage-month";
@@ -71,8 +70,9 @@ export const getAdminAnalytics = createServerFn({ method: "POST" })
     const startUtc = new Date(Date.UTC(year, mon - 1, 1, -3, 0, 0));
     const endUtc = new Date(Date.UTC(year, mon, 1, -3, 0, 0));
 
-    // نستخدم admin client (service role) — تجاوزنا التحقق من الدور أعلاه
-    const adb = supabaseAdmin as unknown as DbClient;
+    // نستخدم الـauthenticated client — يعمل بفضل سياسات admin RLS على
+    // profiles/subscription_requests/generations/usage_logs.
+    const adb = supabase;
 
     const [
       profilesAll,
