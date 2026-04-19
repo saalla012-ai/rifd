@@ -311,7 +311,18 @@ function AdminAuditPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {entries.map((e) => (
-                  <tr key={e.id}>
+                  <tr
+                    key={e.id}
+                    onClick={() => setSelected(e)}
+                    className="cursor-pointer transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+                    tabIndex={0}
+                    onKeyDown={(ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        ev.preventDefault();
+                        setSelected(e);
+                      }
+                    }}
+                  >
                     <td className="py-2 font-mono text-xs">{fmtDate(e.created_at)}</td>
                     <td className="py-2 text-xs">
                       {e.admin_email ?? <span className="font-mono">{e.admin_user_id.slice(0, 8)}</span>}
@@ -330,6 +341,49 @@ function AdminAuditPage() {
           </div>
         </div>
       )}
+
+      <Sheet open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
+        <SheetContent side="left" className="w-full sm:max-w-lg overflow-y-auto">
+          {selected && (
+            <>
+              <SheetHeader className="text-right">
+                <SheetTitle className="flex flex-wrap items-center gap-2">
+                  <Badge variant={ACTION_VARIANT[selected.action] ?? "outline"} className="text-[10px]">
+                    {ACTION_LABEL[selected.action] ?? selected.action}
+                  </Badge>
+                  <span className="font-mono text-xs text-muted-foreground">{selected.target_table}</span>
+                </SheetTitle>
+                <SheetDescription className="text-xs">
+                  {fmtDate(selected.created_at)}
+                  {" · "}
+                  {selected.admin_email ?? selected.admin_user_id.slice(0, 8)}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-4 space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-lg border border-border bg-muted/30 p-2">
+                    <div className="text-muted-foreground">target_id</div>
+                    <div dir="ltr" className="mt-0.5 break-all text-left font-mono">
+                      {selected.target_id ?? "—"}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 p-2">
+                    <div className="text-muted-foreground">id</div>
+                    <div dir="ltr" className="mt-0.5 break-all text-left font-mono">
+                      {selected.id}
+                    </div>
+                  </div>
+                </div>
+
+                <JsonBlock label="before_value" value={selected.before_value} />
+                <JsonBlock label="after_value" value={selected.after_value} />
+                <JsonBlock label="metadata" value={selected.metadata} />
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </DashboardShell>
   );
 }
