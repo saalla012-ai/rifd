@@ -1,42 +1,35 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles, ShieldCheck, Zap, Clock, ChevronDown, Wand2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Star, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SubscribersCounter } from "./subscribers-counter";
 import { PRODUCT_TYPES } from "@/lib/demo-results";
-import { getVariant, trackEvent, type Variant } from "@/lib/ab-test";
+import { trackEvent } from "@/lib/ab-test";
 
 const EXPERIMENT = "hero_hook";
 
 /**
- * Hero محكم على الموبايل (موبايل-أولاً).
- * - Hook رقمي قوي
- * - Mini Demo Teaser بحقل واحد + smooth scroll لـLiveAiDemo الكامل
- * - Bullets داخل <details> لتقليل الطول
+ * Hero v2 — موبايل-أولاً، بيعي 10/10
+ * - Proof bar موحّد (نجوم + رقم مشتركين)
+ * - H1 سطرين قويّين + highlight ذهبي خلف "وقت قهوتك"
+ * - مقارنة بصرية ✕/✓ بدل النص الطويل
+ * - 4 chips benefits ظاهرة (لا details)
+ * - CTA الأساسي ذهبي primary، Demo Teaser outline ثانوي
+ * - 3 chips سريعة لأنواع المتاجر (one-tap demo)
  */
 export function HomeHero() {
-  const [productType, setProductType] = useState<string>("");
-  const [variant, setVariant] = useState<Variant>("A");
+  const [selectedType, setSelectedType] = useState<string>("");
 
-  // تعيين variant + تسجيل view مرة واحدة
   useEffect(() => {
-    const v = getVariant(EXPERIMENT);
-    setVariant(v);
-    void trackEvent(EXPERIMENT, v, "view");
+    void trackEvent(EXPERIMENT, "B", "view");
   }, []);
 
-  const handleTryNow = () => {
-    void trackEvent(EXPERIMENT, variant, "demo_try");
+  const triggerDemo = (typeId: string) => {
+    setSelectedType(typeId);
+    void trackEvent(EXPERIMENT, "B", "demo_try");
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent("rifd:prefill-demo", { detail: { productType: productType || "dropshipping" } })
+        new CustomEvent("rifd:prefill-demo", { detail: { productType: typeId } })
       );
       const target = document.getElementById("live-demo");
       if (target) {
@@ -46,147 +39,158 @@ export function HomeHero() {
   };
 
   const handleCtaClick = () => {
-    void trackEvent(EXPERIMENT, variant, "cta_click");
+    void trackEvent(EXPERIMENT, "B", "cta_click");
   };
+
+  // 3 أكثر أنواع المتاجر شيوعًا للـone-tap demo
+  const QUICK_TYPES = [
+    { id: "perfumes", label: "🌸 عطور" },
+    { id: "fashion", label: "👗 أزياء" },
+    { id: "food", label: "🍫 شوكولاتة" },
+  ];
 
   return (
     <section className="relative overflow-hidden gradient-hero">
-      {/* تأثيرات بصرية */}
-      <div className="pointer-events-none absolute -top-40 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-gold/20 blur-3xl" />
+      {/* تأثيرات بصرية أعمق */}
+      <div className="pointer-events-none absolute -top-40 -left-32 h-[28rem] w-[28rem] rounded-full bg-primary/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-gold/30 blur-3xl" />
 
-      <div className="relative mx-auto max-w-4xl px-4 py-8 sm:py-12 lg:py-16">
-        {/* شارة حية حقيقية */}
-        <div className="flex justify-center">
+      <div className="relative mx-auto max-w-4xl px-4 py-8 sm:py-14 lg:py-16">
+        {/* Proof bar موحّد: نجوم + مشتركين */}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold-foreground">
+            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
+            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
+            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
+            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
+            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
+            <span className="ms-1 font-extrabold">4.9</span>
+          </span>
           <SubscribersCounter variant="inline" />
         </div>
 
-        {/* H1 ضخم */}
-        <h1 className="mt-5 text-center text-[2.4rem] font-extrabold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]">
-          <span className="block">30 منشور لمتجرك</span>
-          <span className="block">
+        {/* H1 — سطرين فقط، قوي وممتد */}
+        <h1
+          className="mt-5 text-center text-[2.4rem] font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.6rem] animate-fade-in"
+          style={{ animationDelay: "60ms" }}
+        >
+          <span className="block">اكتب 30 منشور لمتجرك</span>
+          <span className="mt-1 block">
             في{" "}
-            <span className="relative whitespace-nowrap text-gradient-gold">
-              5 دقائق
-              <svg
-                className="absolute -bottom-2 left-0 w-full"
-                viewBox="0 0 200 8"
-                fill="none"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M2 5 Q 50 1, 100 4 T 198 3"
-                  stroke="oklch(0.78 0.16 85)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
+            <span className="relative inline-block whitespace-nowrap">
+              <span
+                className="absolute inset-x-[-6px] bottom-[6%] -z-10 h-[42%] rounded-md bg-gold/55"
+                aria-hidden
+              />
+              <span className="relative">وقت قهوتك ☕</span>
             </span>
-          </span>
-          <span className="mt-1 block text-2xl font-bold text-foreground/80 sm:text-3xl lg:text-4xl">
-            بالعامية السعودية ✨
           </span>
         </h1>
 
-        {/* Sub — Variant A: مقارنة تكلفة | Variant B: استعارة وقت قهوة */}
-        {variant === "A" ? (
-          <p className="mx-auto mt-4 max-w-xl text-center text-base font-medium text-foreground/85 sm:text-lg">
-            بدل ما تدفع <strong className="text-destructive">800 ر.س لكاتب</strong> أو تقعد{" "}
-            <strong className="text-destructive">5 ساعات تكتب</strong> — رِفد يسوّيها لك بنقرة.
-          </p>
-        ) : (
-          <p className="mx-auto mt-4 max-w-xl text-center text-base font-medium text-foreground/85 sm:text-lg">
-            في <strong className="text-gradient-gold">وقت قهوتك ☕</strong> — متجرك جاهز بـ<strong className="text-primary">&nbsp;30 منشور&nbsp;</strong>للنشر مباشرة.
-          </p>
-        )}
-
-        {/* Mini Demo Teaser */}
-        <div className="mx-auto mt-7 max-w-xl rounded-2xl border-2 border-primary/30 bg-card p-4 shadow-elegant sm:p-5">
-          <div className="mb-3 flex items-center justify-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
-              <Wand2 className="h-4 w-4" />
-            </span>
-            <span className="text-sm font-bold">جرّب الآن — بدون تسجيل</span>
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="flex-1">
-              <Select value={productType} onValueChange={setProductType}>
-                <SelectTrigger className="h-11 bg-background">
-                  <SelectValue placeholder="🎯 اختر نوع متجرك..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRODUCT_TYPES.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={handleTryNow}
-              size="lg"
-              className="h-11 gradient-gold text-gold-foreground shadow-gold transition-transform hover:scale-[1.02]"
-            >
-              <Sparkles className="h-4 w-4" />
-              ولّد منشور تجريبي
-            </Button>
-          </div>
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            ⚡ نتيجة بالعامية السعودية في أقل من 10 ثواني
-          </p>
+        {/* مقارنة بصرية ✕/✓ */}
+        <div
+          className="mx-auto mt-5 flex max-w-md items-center justify-center gap-3 text-base font-bold sm:text-lg animate-fade-in"
+          style={{ animationDelay: "180ms" }}
+        >
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1.5 text-destructive line-through decoration-2">
+            5 ساعات
+          </span>
+          <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1.5 text-success">
+            ✓ 5 دقائق
+          </span>
         </div>
 
-        {/* CTA رئيسي */}
-        <div className="mt-6 flex flex-col items-center gap-3">
+        {/* CTA الأساسي — ذهبي primary action */}
+        <div
+          className="mt-7 flex flex-col items-center gap-3 animate-fade-in"
+          style={{ animationDelay: "260ms" }}
+        >
           <Button
             asChild
             size="lg"
-            className="w-full max-w-xs gradient-primary text-primary-foreground shadow-elegant transition-transform hover:scale-[1.02] sm:w-auto sm:max-w-none"
+            className="h-14 w-full max-w-sm gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold transition-transform hover:scale-[1.02] sm:w-auto sm:px-10"
           >
             <Link to="/onboarding" onClick={handleCtaClick}>
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-5 w-5" />
               ابدأ مجاناً — 5 توليدات
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-
-          {/* trust mini */}
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-success" />
-              بدون بطاقة
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Zap className="h-3.5 w-3.5 text-gold" />
-              تجربة فورية
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5 text-primary" />
-              إلغاء بنقرة
-            </span>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] font-medium text-muted-foreground">
+            <span>✓ بدون بطاقة ائتمان</span>
+            <span className="opacity-50">·</span>
+            <span>✓ نتيجة في 10 ثواني</span>
+            <span className="opacity-50">·</span>
+            <span>✓ إلغاء بنقرة</span>
           </div>
         </div>
 
-        {/* Bullets داخل details للموبايل */}
-        <details className="group mx-auto mt-6 max-w-xl">
-          <summary className="flex cursor-pointer list-none items-center justify-center gap-2 text-sm font-medium text-primary hover:underline">
-            <span>ليش رِفد بالذات؟</span>
-            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-          </summary>
-          <ul className="mt-4 grid gap-2 text-sm">
-            {[
-              { icon: "🇸🇦", text: "بالعامية السعودية الأصيلة — ما تحس إنه مترجم" },
-              { icon: "💰", text: "وفّر 800+ ر.س شهرياً تدفعها لمصمم/كاتب" },
-              { icon: "⚡", text: "نتيجة جاهزة للنشر في أقل من 10 ثواني" },
-              { icon: "🧠", text: "ذاكرة متجر دائمة — يحفظ تفاصيلك ولا تعيد كتابتها" },
-            ].map((b) => (
-              <li key={b.text} className="flex items-start gap-2 rounded-lg border border-border bg-card/50 p-3 text-foreground/90">
-                <span className="text-base">{b.icon}</span>
-                <span>{b.text}</span>
-              </li>
+        {/* Mini Demo — secondary outline + 3 chips للوصول الأسرع */}
+        <div
+          className="mx-auto mt-8 max-w-xl rounded-2xl border-2 border-dashed border-primary/30 bg-card/60 p-4 backdrop-blur-sm sm:p-5 animate-fade-in"
+          style={{ animationDelay: "340ms" }}
+        >
+          <div className="mb-3 flex items-center justify-center gap-2 text-sm font-bold text-primary">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
+              <Wand2 className="h-3.5 w-3.5" />
+            </span>
+            أو جرّب بدون تسجيل — اختر متجرك:
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2">
+            {QUICK_TYPES.map((q) => (
+              <button
+                key={q.id}
+                onClick={() => triggerDemo(q.id)}
+                className="rounded-full border-2 border-primary/30 bg-background px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground hover:scale-105"
+              >
+                {q.label}
+              </button>
             ))}
-          </ul>
-        </details>
+            <select
+              value={selectedType}
+              onChange={(e) => e.target.value && triggerDemo(e.target.value)}
+              className="rounded-full border-2 border-primary/30 bg-background px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary cursor-pointer"
+              aria-label="غير ذلك"
+            >
+              <option value="">غير ذلك ←</option>
+              {PRODUCT_TYPES.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* 4 benefits chips — أفقية scroll على الموبايل، grid على الديسكتوب */}
+        <div
+          className="mx-auto mt-8 max-w-3xl animate-fade-in"
+          style={{ animationDelay: "420ms" }}
+        >
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+            {[
+              { icon: "🇸🇦", title: "عامية أصيلة", sub: "ما تحس إنه مترجم" },
+              { icon: "💰", title: "وفّر 800 ر.س", sub: "بدل كاتب/مصمم" },
+              { icon: "⚡", title: "10 ثواني", sub: "نتيجة جاهزة للنشر" },
+              { icon: "🧠", title: "ذاكرة متجر", sub: "يحفظ تفاصيلك" },
+            ].map((b) => (
+              <div
+                key={b.title}
+                className="flex min-w-[160px] shrink-0 items-center gap-3 rounded-xl border border-border bg-card/80 p-3 backdrop-blur-sm sm:min-w-0"
+              >
+                <span className="text-2xl">{b.icon}</span>
+                <div>
+                  <div className="text-sm font-extrabold leading-tight">{b.title}</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">
+                    {b.sub}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
