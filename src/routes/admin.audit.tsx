@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Loader2, RefreshCw, ArrowLeft, Filter, X } from "lucide-react";
+import { Loader2, RefreshCw, ArrowLeft, Filter, X, Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -20,6 +28,53 @@ import {
   type AuditEntry,
   type AuditFacets,
 } from "@/server/admin-audit";
+
+function JsonBlock({ label, value }: { label: string; value: unknown }) {
+  const [copied, setCopied] = useState(false);
+  const text = useMemo(() => {
+    if (value === null || value === undefined) return "—";
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  }, [value]);
+  const isEmpty = text === "—";
+  const onCopy = async () => {
+    if (isEmpty) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success(`تم نسخ ${label}`);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("تعذّر النسخ");
+    }
+  };
+  return (
+    <div className="rounded-lg border border-border bg-muted/30">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <span className="text-xs font-bold">{label}</span>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2 text-xs"
+          onClick={onCopy}
+          disabled={isEmpty}
+        >
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          {copied ? "تم" : "نسخ"}
+        </Button>
+      </div>
+      <pre
+        dir="ltr"
+        className="max-h-[40vh] overflow-auto px-3 py-2 text-left text-[11px] leading-relaxed font-mono whitespace-pre-wrap break-words"
+      >
+        {text}
+      </pre>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/admin/audit")({
   head: () => ({ meta: [{ title: "سجل تعديلات الأدمن — رِفد" }] }),
@@ -92,6 +147,7 @@ function AdminAuditPage() {
   const [tableFilter, setTableFilter] = useState<string>("__all__");
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
+  const [selected, setSelected] = useState<AuditEntry | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -255,7 +311,18 @@ function AdminAuditPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {entries.map((e) => (
-                  <tr key={e.id}>
+                  <tr
+                    key={e.id}
+                    onClick={() => setSelected(e)}
+                    className="cursor-pointer transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+                    tabIndex={0}
+                    onKeyDown={(ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        ev.preventDefault();
+                        setSelected(e);
+                      }
+                    }}
+                  >
                     <td className="py-2 font-mono text-xs">{fmtDate(e.created_at)}</td>
                     <td className="py-2 text-xs">
                       {e.admin_email ?? <span className="font-mono">{e.admin_user_id.slice(0, 8)}</span>}
@@ -274,6 +341,49 @@ function AdminAuditPage() {
           </div>
         </div>
       )}
+
+      <Sheet open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
+        <SheetContent side="left" className="w-full sm:max-w-lg overflow-y-auto">
+          {selected && (
+            <>
+              <SheetHeader className="text-right">
+                <SheetTitle className="flex flex-wrap items-center gap-2">
+                  <Badge variant={ACTION_VARIANT[selected.action] ?? "outline"} className="text-[10px]">
+                    {ACTION_LABEL[selected.action] ?? selected.action}
+                  </Badge>
+                  <span className="font-mono text-xs text-muted-foreground">{selected.target_table}</span>
+                </SheetTitle>
+                <SheetDescription className="text-xs">
+                  {fmtDate(selected.created_at)}
+                  {" · "}
+                  {selected.admin_email ?? selected.admin_user_id.slice(0, 8)}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-4 space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-lg border border-border bg-muted/30 p-2">
+                    <div className="text-muted-foreground">target_id</div>
+                    <div dir="ltr" className="mt-0.5 break-all text-left font-mono">
+                      {selected.target_id ?? "—"}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 p-2">
+                    <div className="text-muted-foreground">id</div>
+                    <div dir="ltr" className="mt-0.5 break-all text-left font-mono">
+                      {selected.id}
+                    </div>
+                  </div>
+                </div>
+
+                <JsonBlock label="before_value" value={selected.before_value} />
+                <JsonBlock label="after_value" value={selected.after_value} />
+                <JsonBlock label="metadata" value={selected.metadata} />
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </DashboardShell>
   );
 }
