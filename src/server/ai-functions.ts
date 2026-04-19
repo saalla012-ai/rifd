@@ -88,7 +88,7 @@ export const generateText = createServerFn({ method: "POST" })
     const system = buildTextSystemPrompt(ctx, data.templateTitle);
 
     let result: string;
-    let usage = { prompt_tokens: null as number | null, completion_tokens: null as number | null, total_tokens: null as number | null };
+    let aiUsage = { prompt_tokens: null as number | null, completion_tokens: null as number | null, total_tokens: null as number | null };
     const modelName = "google/gemini-2.5-flash";
     try {
       const out = await chatComplete({
@@ -100,14 +100,14 @@ export const generateText = createServerFn({ method: "POST" })
         temperature: 0.85,
       });
       result = out.text.trim();
-      usage = out.usage;
+      aiUsage = out.usage;
       if (!result) throw new Error("لم يتم توليد محتوى");
     } catch (e) {
       if (e instanceof AIError) throw new Error(e.message);
       throw e;
     }
 
-    const cost = estimateTextCost(modelName, usage);
+    const cost = estimateTextCost(modelName, aiUsage);
 
     await Promise.all([
       supabase.from("generations").insert({
@@ -117,9 +117,9 @@ export const generateText = createServerFn({ method: "POST" })
         result,
         template: data.templateId,
         model_used: modelName,
-        prompt_tokens: usage.prompt_tokens,
-        completion_tokens: usage.completion_tokens,
-        total_tokens: usage.total_tokens,
+        prompt_tokens: aiUsage.prompt_tokens,
+        completion_tokens: aiUsage.completion_tokens,
+        total_tokens: aiUsage.total_tokens,
         estimated_cost_usd: cost,
         metadata: { template_title: data.templateTitle },
       }),
