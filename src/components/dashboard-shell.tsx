@@ -15,6 +15,7 @@ import {
   LogOut,
   Loader2,
   ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -33,6 +34,7 @@ const NAV = [
 ] as const;
 
 const ADMIN_NAV = [
+  { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
   { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
 ] as const;
 
