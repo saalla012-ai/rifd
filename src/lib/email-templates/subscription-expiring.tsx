@@ -26,7 +26,7 @@ const SubscriptionExpiringEmail = ({
   planLabel = "احترافي",
   daysRemaining = 7,
   expiresAt,
-  renewUrl = "https://rifd.club/dashboard/billing",
+  renewUrl = "https://rifd.site/dashboard/billing",
 }: SubscriptionExpiringProps) => {
   const isUrgent = daysRemaining <= 1;
   const headline = isUrgent
