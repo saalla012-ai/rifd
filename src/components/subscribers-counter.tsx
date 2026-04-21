@@ -23,13 +23,19 @@ export function SubscribersCounter({
     let mounted = true;
 
     void (async () => {
-      // RPC آمن — يعمل للزوار غير المسجلين دون كشف رقم الواتساب أو طلبات الاشتراك
-      const { data } = await supabase.rpc("get_founding_status");
-      if (!mounted) return;
-      const row = Array.isArray(data) ? data[0] : data;
-      const total = row?.current_subscribers ?? 564;
-      baseRef.current = total;
-      setCount(total);
+      try {
+        // RPC آمن — يعمل للزوار غير المسجلين دون كشف رقم الواتساب أو طلبات الاشتراك
+        const { data, error } = await supabase.rpc("get_founding_status");
+        if (!mounted) return;
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
+        const total = row?.current_subscribers ?? 564;
+        baseRef.current = total;
+        setCount(total);
+      } catch {
+        // Fallback نهائي — لا نترك "…" أبداً
+        if (mounted) setCount(baseRef.current);
+      }
     })();
 
     // Realtime: bump on each new subscription request
@@ -65,7 +71,15 @@ export function SubscribersCounter({
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
         </span>
-        {count == null ? "…" : count.toLocaleString("ar-SA")} مشترك انضموا الآن
+        {count == null ? (
+          <span
+            aria-label="جارٍ تحميل عدد المشتركين"
+            className="inline-block h-3 w-10 animate-pulse rounded-sm bg-success/30"
+          />
+        ) : (
+          count.toLocaleString("ar-SA")
+        )}{" "}
+        مشترك انضموا الآن
       </span>
     );
   }
@@ -101,8 +115,16 @@ export function SubscribersCounter({
               "text-2xl font-extrabold tabular-nums text-success transition-all duration-500",
               bumped && "scale-110"
             )}
+            aria-live="polite"
           >
-            {count == null ? "…" : count.toLocaleString("ar-SA")}
+            {count == null ? (
+              <span
+                aria-label="جارٍ تحميل عدد المشتركين"
+                className="inline-block h-7 w-16 animate-pulse rounded-md bg-success/20"
+              />
+            ) : (
+              count.toLocaleString("ar-SA")
+            )}
           </div>
           <div className="flex items-center justify-end gap-1 text-[10px] font-medium text-success">
             <TrendingUp className="h-3 w-3" /> مشترك
