@@ -1,12 +1,37 @@
 import { useEffect } from "react";
-import { createFileRoute, Outlet, Link, useRouter, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  Link,
+  useRouter,
+  useNavigate,
+  redirect,
+} from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
+  /**
+   * Auth guard مُحسَّن — يعمل قبل أي render.
+   * يمنع flash of protected content للزوّار غير المسجّلين.
+   *
+   * - يعمل في المتصفح (TanStack يستدعي beforeLoad على الـ client أيضاً)
+   * - SSR-safe: لا يفحص الجلسة على السيرفر (Supabase session في localStorage)
+   * - لا يفحص onboarding هنا — يبقى client-side لأنه يعتمد على بيانات profile
+   */
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      throw redirect({ to: "/auth" });
+    }
+  },
   component: DashboardLayout,
   errorComponent: DashboardError,
   notFoundComponent: DashboardNotFound,
@@ -17,11 +42,12 @@ function DashboardLayout() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Guard: redirect unauthenticated users to /auth, and authenticated users
-  // without completed onboarding (or missing WhatsApp) to /onboarding.
+  // Onboarding redirect — client-side فقط (يعتمد على بيانات profile).
+  // الجلسة نفسها مفحوصة في beforeLoad أعلاه.
   useEffect(() => {
     if (loading) return;
     if (!user) {
+      // حماية إضافية لو فات beforeLoad (مثلاً جلسة انتهت بعد التحميل)
       void navigate({ to: "/auth" });
       return;
     }
