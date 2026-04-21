@@ -131,6 +131,36 @@ export type Database = {
         }
         Relationships: []
       }
+      domain_scan_log: {
+        Row: {
+          details: Json
+          error_message: string | null
+          id: string
+          scan_type: string
+          scanned_at: string
+          status: string
+          total_matches: number
+        }
+        Insert: {
+          details?: Json
+          error_message?: string | null
+          id?: string
+          scan_type: string
+          scanned_at?: string
+          status: string
+          total_matches?: number
+        }
+        Update: {
+          details?: Json
+          error_message?: string | null
+          id?: string
+          scan_type?: string
+          scanned_at?: string
+          status?: string
+          total_matches?: number
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
