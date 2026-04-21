@@ -56,6 +56,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
+import { Route as ApiPublicHooksCheckEmailDlqRouteImport } from './routes/api.public.hooks.check-email-dlq'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
@@ -298,6 +299,12 @@ const DashboardBillingConfirmRequestIdRoute =
     path: '/billing/confirm/$requestId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const ApiPublicHooksCheckEmailDlqRoute =
+  ApiPublicHooksCheckEmailDlqRouteImport.update({
+    id: '/api/public/hooks/check-email-dlq',
+    path: '/api/public/hooks/check-email-dlq',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -341,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -389,6 +397,7 @@ export interface FileRoutesByTo {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -439,6 +448,7 @@ export interface FileRoutesById {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -490,6 +500,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
+    | '/api/public/hooks/check-email-dlq'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -538,6 +549,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/lovable/email/suppression'
     | '/dashboard/billing'
+    | '/api/public/hooks/check-email-dlq'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -587,6 +599,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
+    | '/api/public/hooks/check-email-dlq'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -627,6 +640,7 @@ export interface RootRouteChildren {
   LegalTermsRoute: typeof LegalTermsRoute
   ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -965,6 +979,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingConfirmRequestIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/public/hooks/check-email-dlq': {
+      id: '/api/public/hooks/check-email-dlq'
+      path: '/api/public/hooks/check-email-dlq'
+      fullPath: '/api/public/hooks/check-email-dlq'
+      preLoaderRoute: typeof ApiPublicHooksCheckEmailDlqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1032,6 +1053,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalTermsRoute: LegalTermsRoute,
   ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksCheckEmailDlqRoute: ApiPublicHooksCheckEmailDlqRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
