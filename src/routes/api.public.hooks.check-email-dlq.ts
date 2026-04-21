@@ -101,13 +101,22 @@ export const Route = createFileRoute("/api/public/hooks/check-email-dlq")({
           }
 
           // 2. Rate-limit check
-          const { data: state } = await supabaseAdmin
-            .from("dlq_alert_state" as never)
+          const stateAny = supabaseAdmin as unknown as {
+            from: (t: string) => {
+              select: (cols: string) => {
+                eq: (col: string, val: number) => {
+                  maybeSingle: () => Promise<{ data: { last_alert_at?: string } | null }>;
+                };
+              };
+            };
+          };
+          const { data: state } = await stateAny
+            .from("dlq_alert_state")
             .select("last_alert_at, last_alert_count")
             .eq("id", 1)
             .maybeSingle();
 
-          const lastAlertAt = (state as { last_alert_at?: string } | null)?.last_alert_at;
+          const lastAlertAt = state?.last_alert_at;
           const now = Date.now();
           if (lastAlertAt) {
             const elapsed = now - new Date(lastAlertAt).getTime();
