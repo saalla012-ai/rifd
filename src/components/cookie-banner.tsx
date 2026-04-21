@@ -1,0 +1,89 @@
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+
+const STORAGE_KEY = "rifd-cookie-consent-v1";
+
+type Consent = "accepted" | "rejected";
+
+function readConsent(): Consent | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = window.localStorage.getItem(STORAGE_KEY);
+    return v === "accepted" || v === "rejected" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeConsent(value: Consent) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, value);
+  } catch {
+    /* ignore quota errors */
+  }
+}
+
+/**
+ * شريط موافقة الكوكيز — متوافق مع PDPL السعودية و GDPR.
+ * - لا يظهر بعد اتخاذ القرار.
+ * - مبني SSR-safe (يبدأ مخفياً ويُكشف بعد الـ hydration).
+ */
+export function CookieBanner() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (readConsent() === null) {
+      // تأخير صغير حتى لا يومض على الـ FCP
+      const t = window.setTimeout(() => setVisible(true), 600);
+      return () => window.clearTimeout(t);
+    }
+  }, []);
+
+  if (!visible) return null;
+
+  const accept = () => {
+    writeConsent("accepted");
+    setVisible(false);
+  };
+  const reject = () => {
+    writeConsent("rejected");
+    setVisible(false);
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-live="polite"
+      aria-label="إشعار ملفات تعريف الارتباط"
+      className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-3 sm:px-6 sm:pb-6"
+    >
+      <div className="mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-border bg-background/95 p-4 shadow-2xl backdrop-blur-md sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+        <button
+          type="button"
+          onClick={reject}
+          aria-label="إغلاق ورفض"
+          className="absolute end-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
+          نستخدم ملفات تعريف الارتباط الأساسية لتشغيل الموقع، وملفات اختيارية لتحسين التجربة وتحليل الأداء. اطّلع على{" "}
+          <Link to="/legal/privacy" className="font-medium text-primary underline-offset-4 hover:underline">
+            سياسة الخصوصية
+          </Link>
+          .
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={reject} className="text-muted-foreground">
+            رفض
+          </Button>
+          <Button size="sm" onClick={accept}>
+            موافق
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
