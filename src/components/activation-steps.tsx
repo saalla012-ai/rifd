@@ -10,20 +10,20 @@ const STEPS = [
   {
     icon: MessageCircle,
     title: "نتواصل معك واتساب",
-    desc: "رد مباشر من المؤسس خلال دقائق",
-    duration: "خلال دقائق",
+    desc: "رد سريع من المؤسس خلال ساعات العمل",
+    duration: "خلال ساعات",
   },
   {
     icon: CreditCard,
     title: "تحوّل المبلغ",
-    desc: "تحويل بنكي سعودي + إيصال",
+    desc: "تحويل بنكي سعودي + رفع الإيصال",
     duration: "5 دقائق",
   },
   {
     icon: Sparkles,
     title: "حسابك يصبح Pro",
-    desc: "تستلم تأكيد + فاتورة ضريبية",
-    duration: "فوراً",
+    desc: "تفعيل خلال 24 ساعة + فاتورة ضريبية",
+    duration: "≤ 24 ساعة",
   },
 ] as const;
 
@@ -32,15 +32,15 @@ export function ActivationSteps() {
     <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
       <div className="mb-1 flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-[11px] font-bold text-success">
-          تأكيد فوري
+          تأكيد فوري للطلب
         </span>
         <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-          دعم سريع عبر واتساب
+          تفعيل ≤ 24 ساعة
         </span>
       </div>
       <h2 className="mt-2 text-lg font-bold">كيف يتم التفعيل؟</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        لا توجد قوائم انتظار — رد مباشر من المؤسس على واتساب لتأكيد طلبك
+        تأكيد طلبك فوري، ويتم تفعيل الحساب خلال 24 ساعة كحدّ أقصى من رفع الإيصال
       </p>
 
       <ol className="mt-5 space-y-3">

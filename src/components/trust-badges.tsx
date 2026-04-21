@@ -4,14 +4,14 @@ import { cn } from "@/lib/utils";
 const BADGES = [
   {
     icon: Clock,
-    title: "تأكيد فوري للطلب",
-    desc: "ردّ سريع من المؤسس",
+    title: "تأكيد طلب فوري",
+    desc: "تفعيل خلال 24 ساعة",
     color: "text-success",
   },
   {
     icon: ShieldCheck,
     title: "ضمان استرجاع 7 أيام",
-    desc: "بدون أسئلة، بدون شروط",
+    desc: "وفق سياسة الاسترجاع",
     color: "text-primary",
   },
   {
@@ -34,8 +34,8 @@ const BADGES = [
   },
   {
     icon: Award,
-    title: "سجل تجاري سعودي",
-    desc: "جهة موثوقة",
+    title: "متوافق مع PDPL",
+    desc: "نظام حماية البيانات السعودي",
     color: "text-gold",
   },
 ] as const;
