@@ -20,7 +20,7 @@ interface TipProps {
 
 const OnboardingTipEmail = ({
   fullName,
-  onboardingUrl = "https://rifd.club/onboarding",
+  onboardingUrl = "https://rifd.site/onboarding",
 }: TipProps) => (
   <Html lang="ar" dir="rtl">
     <Head />

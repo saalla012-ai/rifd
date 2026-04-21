@@ -28,7 +28,7 @@ const SubscriptionActivatedEmail = ({
   billingCycleLabel = "شهري",
   activatedUntil,
   invoiceUrl,
-  dashboardUrl = "https://rifd.club/dashboard/billing",
+  dashboardUrl = "https://rifd.site/dashboard/billing",
 }: SubscriptionActivatedProps) => (
   <Html lang="ar" dir="rtl">
     <Head />
@@ -92,7 +92,7 @@ export const template = {
     planLabel: "احترافي",
     billingCycleLabel: "شهري",
     activatedUntil: "18 مايو 2026",
-    invoiceUrl: "https://rifd.club/dashboard/billing",
+    invoiceUrl: "https://rifd.site/dashboard/billing",
   },
 } satisfies TemplateEntry;
 

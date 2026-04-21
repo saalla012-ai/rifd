@@ -8,7 +8,7 @@ import { sendResendEmail } from '@/server/resend'
 // Configuration
 const SITE_NAME = "رِفد"
 // Resend's shared sender — works without domain verification.
-// Once a domain is verified in Resend, switch this to e.g. "noreply@rifd.club".
+// Once a domain is verified in Resend, switch this to e.g. "noreply@rifd.site".
 const FROM_ADDRESS = `${SITE_NAME} <onboarding@resend.dev>`
 
 function redactEmail(email: string | null | undefined): string {

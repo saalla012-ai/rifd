@@ -80,7 +80,7 @@ export const Scene6CTA: React.FC = () => {
             letterSpacing: "-2px",
           }}
         >
-          rifd.club
+          rifd.site
         </div>
 
         {/* Tagline */}

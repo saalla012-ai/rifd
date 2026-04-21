@@ -20,7 +20,7 @@ interface Day1Props {
 
 const OnboardingDay1Email = ({
   fullName,
-  generateUrl = "https://rifd.club/dashboard/generate-text",
+  generateUrl = "https://rifd.site/dashboard/generate-text",
 }: Day1Props) => (
   <Html lang="ar" dir="rtl">
     <Head />

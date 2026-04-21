@@ -16,7 +16,7 @@ export const Route = createFileRoute("/legal/refund")({
           <p>إذا ما عجبتك تجربة رِفد خلال أول 7 أيام من اشتراكك، نرجع لك المبلغ كامل بدون أسئلة.</p>
           <h2 className="text-lg font-bold text-foreground">كيف تطلب استرجاع؟</h2>
           <ol className="list-decimal pr-5 space-y-1">
-            <li>أرسل بريد إلى refund@rifd.tech من نفس البريد المسجّل</li>
+            <li>أرسل بريد إلى refund@rifd.site من نفس البريد المسجّل</li>
             <li>اذكر سبب الاسترجاع (لتحسين الخدمة فقط)</li>
             <li>نعالج الطلب خلال 3 أيام عمل ويعود المبلغ خلال 5-10 أيام عمل</li>
           </ol>

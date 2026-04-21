@@ -17,7 +17,7 @@ export const Route = createFileRoute("/legal/privacy")({
             <li>المحتوى المُولَّد: لتحسين الخدمة فقط، ولا نشاركه مع أي طرف</li>
           </ul>
           <h2 className="text-lg font-bold text-foreground">حقوقك</h2>
-          <p>لك الحق في الوصول لبياناتك وتعديلها وحذفها في أي وقت. للتواصل: privacy@rifd.tech</p>
+          <p>لك الحق في الوصول لبياناتك وتعديلها وحذفها في أي وقت. للتواصل: privacy@rifd.site</p>
         </div>
       </article>
     </MarketingLayout>

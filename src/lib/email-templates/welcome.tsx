@@ -20,7 +20,7 @@ interface WelcomeProps {
 
 const WelcomeEmail = ({
   fullName,
-  dashboardUrl = "https://rifd.club/dashboard",
+  dashboardUrl = "https://rifd.site/dashboard",
 }: WelcomeProps) => (
   <Html lang="ar" dir="rtl">
     <Head />

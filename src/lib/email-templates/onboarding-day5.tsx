@@ -20,7 +20,7 @@ interface Day5Props {
 
 const OnboardingDay5Email = ({
   fullName,
-  dashboardUrl = "https://rifd.club/dashboard",
+  dashboardUrl = "https://rifd.site/dashboard",
 }: Day5Props) => (
   <Html lang="ar" dir="rtl">
     <Head />
