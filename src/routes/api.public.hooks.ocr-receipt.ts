@@ -1,0 +1,155 @@
+/**
+ * OCR Receipt Hook (Public, fire-and-forget)
+ *
+ * يُستدعى من واجهة العميل بعد رفع الإيصال — لكنه آمن لأنه:
+ * 1. يعمل فقط على طلبات لها `receipt_path` (تم رفعه فعلاً)
+ * 2. يستخدم service-role لتحديث `admin_notes` فقط
+ * 3. لا يكشف أي PII في الاستجابة
+ * 4. يحدّ من حجم الإدخال (request_id فقط)
+ *
+ * النتيجة تُكتب في `subscription_requests.admin_notes` لمراجعة الأدمن.
+ */
+import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
+import { extractReceiptInsights, buildOcrAdminNote } from "@/server/receipt-ocr";
+
+const PLAN_PRICES: Record<string, Record<string, number>> = {
+  pro: { monthly: 79, yearly: 790 },
+  business: { monthly: 199, yearly: 1990 },
+};
+
+const RECEIPT_BUCKET = "payment-receipts";
+const SIGNED_URL_TTL_SECONDS = 300; // 5 دقائق فقط — كافٍ لاستدعاء AI
+
+export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        try {
+          const body = (await request.json().catch(() => ({}))) as {
+            request_id?: string;
+          };
+          const requestId = body.request_id;
+          if (!requestId || typeof requestId !== "string" || requestId.length > 64) {
+            return new Response(JSON.stringify({ error: "invalid request_id" }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          const supabaseUrl = process.env.SUPABASE_URL;
+          const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          if (!supabaseUrl || !serviceKey) {
+            return new Response(
+              JSON.stringify({ error: "server misconfigured" }),
+              {
+                status: 500,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+          }
+          const admin = createClient(supabaseUrl, serviceKey, {
+            auth: { autoRefreshToken: false, persistSession: false },
+          });
+
+          // 1. اقرأ الطلب
+          const { data: req, error: reqErr } = await admin
+            .from("subscription_requests")
+            .select(
+              "id, plan, billing_cycle, receipt_path, admin_notes, status"
+            )
+            .eq("id", requestId)
+            .maybeSingle();
+
+          if (reqErr || !req || !req.receipt_path) {
+            return new Response(
+              JSON.stringify({ ok: false, reason: "no_receipt" }),
+              {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+          }
+
+          // 2. لا تكرّر OCR إن كانت النتيجة موجودة
+          if (req.admin_notes && req.admin_notes.includes("[OCR ")) {
+            return new Response(
+              JSON.stringify({ ok: true, reason: "already_processed" }),
+              {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+          }
+
+          // 3. وقّع رابطاً قصير العمر للملف
+          const { data: signed, error: signErr } = await admin.storage
+            .from(RECEIPT_BUCKET)
+            .createSignedUrl(req.receipt_path, SIGNED_URL_TTL_SECONDS);
+
+          if (signErr || !signed?.signedUrl) {
+            return new Response(
+              JSON.stringify({ ok: false, reason: "sign_failed" }),
+              {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+          }
+
+          // 4. استنتج نوع الملف من الامتداد
+          const ext = (req.receipt_path.split(".").pop() ?? "").toLowerCase();
+          const mimeType =
+            ext === "pdf"
+              ? "application/pdf"
+              : ext === "png"
+                ? "image/png"
+                : ext === "webp"
+                  ? "image/webp"
+                  : "image/jpeg";
+
+          // 5. شغّل OCR
+          const insights = await extractReceiptInsights(
+            signed.signedUrl,
+            mimeType
+          );
+
+          // 6. احسب السعر المتوقّع
+          const expected =
+            PLAN_PRICES[req.plan]?.[req.billing_cycle] ?? 0;
+
+          // 7. اكتب الملاحظة (Append إن وُجدت ملاحظة سابقة)
+          const newNote = buildOcrAdminNote(insights, expected);
+          const finalNotes = req.admin_notes
+            ? `${req.admin_notes}\n\n${newNote}`
+            : newNote;
+
+          await admin
+            .from("subscription_requests")
+            .update({ admin_notes: finalNotes })
+            .eq("id", requestId);
+
+          return new Response(
+            JSON.stringify({ ok: true, processed: insights.ok }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        } catch (error) {
+          console.error("ocr-receipt error:", error);
+          return new Response(
+            JSON.stringify({
+              ok: false,
+              error: error instanceof Error ? error.message : "unknown",
+            }),
+            {
+              status: 200, // fire-and-forget — لا نُرجع 500
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
+      },
+    },
+  },
+});
