@@ -23,17 +23,13 @@ export function SubscribersCounter({
     let mounted = true;
 
     void (async () => {
-      const [settingsRes, takenRes] = await Promise.all([
-        supabase.from("app_settings").select("founding_base_count").eq("id", 1).maybeSingle(),
-        supabase
-          .from("subscription_requests")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["activated", "contacted", "pending"]),
-      ]);
+      // RPC آمن — يعمل للزوار غير المسجلين دون كشف رقم الواتساب أو طلبات الاشتراك
+      const { data } = await supabase.rpc("get_founding_status");
       if (!mounted) return;
-      const base = (settingsRes.data?.founding_base_count as number | undefined) ?? 564;
-      baseRef.current = base;
-      setCount(base + (takenRes.count ?? 0));
+      const row = Array.isArray(data) ? data[0] : data;
+      const total = row?.current_subscribers ?? 564;
+      baseRef.current = total;
+      setCount(total);
     })();
 
     // Realtime: bump on each new subscription request

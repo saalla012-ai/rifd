@@ -193,22 +193,12 @@ function PricingPage() {
 
   useEffect(() => {
     void (async () => {
-      const [settingsRes, takenRes] = await Promise.all([
-        supabase
-          .from("app_settings")
-          .select("founding_total_seats, founding_discount_pct")
-          .eq("id", 1)
-          .maybeSingle(),
-        supabase
-          .from("subscription_requests")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["activated", "contacted"]),
-      ]);
-      const total = settingsRes.data?.founding_total_seats ?? 1000;
-      const taken = takenRes.count ?? 0;
-      setSeatsTotal(total);
-      setSeatsLeft(Math.max(0, total - taken));
-      setDiscountPct((settingsRes.data?.founding_discount_pct as number | undefined) ?? 30);
+      // RPC عام آمن — يعمل للزوار وللمسجلين بنفس الكفاءة
+      const { data } = await supabase.rpc("get_founding_status");
+      const row = Array.isArray(data) ? data[0] : data;
+      setSeatsTotal(row?.seats_total ?? 1000);
+      setSeatsLeft(row?.seats_left ?? 1000);
+      setDiscountPct(row?.discount_pct ?? 30);
     })();
   }, []);
 

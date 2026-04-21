@@ -18,9 +18,6 @@ export function SiteFooter() {
               منصة سعودية ذكية تحوّل متجرك إلى آلة محتوى — نصوص وصور بالعامية السعودية،
               مدعومة بـChatGPT و Gemini، بدون هندسة برومبتات.
             </p>
-            <p className="mt-4 text-xs text-muted-foreground">
-              سجل تجاري: 1010XXXXXX • الرقم الضريبي: 3XXXXXXXXXXXX003
-            </p>
           </div>
 
           <div>
