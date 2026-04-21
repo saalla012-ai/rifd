@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, Mail } from "lucide-react";
+import { Sparkles, Mail, MessageCircle, ShieldCheck } from "lucide-react";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -18,6 +18,11 @@ export function SiteFooter() {
               منصة سعودية ذكية تحوّل متجرك إلى آلة محتوى — نصوص وصور بالعامية السعودية،
               مدعومة بـChatGPT و Gemini، بدون هندسة برومبتات.
             </p>
+
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/5 px-3 py-1.5 text-[11px] font-bold text-success">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              متوافق مع نظام حماية البيانات الشخصية السعودي (PDPL)
+            </div>
           </div>
 
           <div>
@@ -31,16 +36,28 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h4 className="mb-3 text-sm font-bold text-foreground">الشركة</h4>
+            <h4 className="mb-3 text-sm font-bold text-foreground">الشركة والتواصل</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to="/about" className="text-muted-foreground hover:text-foreground">من نحن</Link></li>
+              <li><Link to="/contact" className="text-muted-foreground hover:text-foreground">تواصل معنا</Link></li>
               <li><Link to="/legal/privacy" className="text-muted-foreground hover:text-foreground">سياسة الخصوصية</Link></li>
               <li><Link to="/legal/terms" className="text-muted-foreground hover:text-foreground">الشروط والأحكام</Link></li>
               <li><Link to="/legal/refund" className="text-muted-foreground hover:text-foreground">سياسة الاسترجاع</Link></li>
               <li>
-                <a href="mailto:hello@rifd.site" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
+                <a href="mailto:hello@rifd.site" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
                   <Mail className="h-3.5 w-3.5" />
                   <span>hello@rifd.site</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/966582286215"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  <span>واتساب الدعم</span>
                 </a>
               </li>
             </ul>
@@ -48,7 +65,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
-          <span>© {year} رِفد للتقنية. جميع الحقوق محفوظة.</span>
+          <span>© {year} رِفد للتقنية — السجل التجاري قيد الإصدار. جميع الحقوق محفوظة.</span>
           <span className="flex items-center gap-2">
             صُنع بحب 🇸🇦 في الرياض
           </span>

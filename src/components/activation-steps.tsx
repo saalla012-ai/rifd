@@ -10,7 +10,7 @@ const STEPS = [
   {
     icon: MessageCircle,
     title: "نتواصل معك واتساب",
-    desc: "رد مباشر من المؤسس على مدار الساعة",
+    desc: "رد مباشر من المؤسس خلال دقائق",
     duration: "خلال دقائق",
   },
   {
@@ -35,12 +35,12 @@ export function ActivationSteps() {
           تأكيد فوري
         </span>
         <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-          دعم 24/7
+          دعم سريع عبر واتساب
         </span>
       </div>
       <h2 className="mt-2 text-lg font-bold">كيف يتم التفعيل؟</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        لا توجد قوائم انتظار — فريق الدعم متاح على مدار الساعة لتأكيد طلبك
+        لا توجد قوائم انتظار — رد مباشر من المؤسس على واتساب لتأكيد طلبك
       </p>
 
       <ol className="mt-5 space-y-3">

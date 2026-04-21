@@ -153,7 +153,7 @@ const PLANS: Plan[] = [
         items: [
           "مدير حساب مخصص",
           "جلسة استشارية مجانية للإطلاق",
-          "دعم هاتفي وواتساب 24/7",
+          "دعم مباشر عبر واتساب من المؤسس",
         ],
       },
     ],
@@ -216,7 +216,7 @@ function PricingPage() {
             ابدأ مجاناً، <span className="text-gradient-primary">ادفع لما تكبر</span>
           </h1>
           <p className="mt-3 text-muted-foreground">
-            تأكيد فوري • دعم 24/7 • ضمان استرجاع 7 أيام كامل
+            تأكيد فوري • دعم سريع عبر واتساب • ضمان استرجاع 7 أيام كامل
           </p>
 
           <div className="mx-auto mt-5 max-w-md">
@@ -487,7 +487,7 @@ function PricingPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <span>مدير حساب VIP + جلسة استشارية مجانية + دعم 24/7</span>
+                  <span>مدير حساب VIP + جلسة استشارية مجانية + دعم مخصص ذو أولوية</span>
                 </li>
               </ul>
             </div>
