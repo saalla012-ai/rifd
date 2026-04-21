@@ -87,9 +87,8 @@ const PLANS: Plan[] = [
     tier: "popular",
     price: { monthly: 79, yearly: 790 },
     tagline: "الخيار الأذكى للمتاجر الناشئة",
-    badge: { text: "🔥 الأكثر اختياراً", icon: Flame },
+    badge: { text: "🔥 الأنسب للمتاجر الناشئة", icon: Flame },
     valueLine: "≈ 2.6 ر.س يومياً • أرخص من فنجان قهوة ☕",
-    socialProof: "اختيار غالبية متاجرنا (78%)",
     bonusGroups: [
       {
         title: "إنتاج بلا حدود",
@@ -104,7 +103,7 @@ const PLANS: Plan[] = [
         title: "قوالب وذكاء",
         icon: Palette,
         items: [
-          "كل الـ40 قالب احترافي",
+          "كل القوالب الاحترافية",
           "ذاكرة متجر ذكية كاملة",
         ],
       },
@@ -112,7 +111,7 @@ const PLANS: Plan[] = [
         title: "احترافية",
         icon: Briefcase,
         items: [
-          "تصدير لسلة وزد",
+          "تجهيز المحتوى للنشر في سلة وزد",
           "فاتورة ضريبية رسمية",
           "دعم مباشر عبر واتساب",
         ],
@@ -125,10 +124,9 @@ const PLANS: Plan[] = [
     name: "أعمال",
     tier: "premium",
     price: { monthly: 199, yearly: 1990 },
-    tagline: "الأفضل قيمة للوكالات والمتاجر الكبرى",
-    badge: { text: "👑 الأفضل قيمة", icon: Crown },
+    tagline: "الأنسب قيمة للوكالات والمتاجر الكبرى",
+    badge: { text: "👑 الأنسب للوكالات", icon: Crown },
     valueLine: "≈ 39.8 ر.س لكل متجر (5 ملفات) • يعادل موظف بـ4,000 ر.س",
-    socialProof: "اختيار الوكالات والمتاجر +50 منتج",
     bonusGroups: [
       {
         title: "كل مزايا احترافي +",
@@ -143,8 +141,8 @@ const PLANS: Plan[] = [
         title: "أدوات احترافية متقدمة",
         icon: Briefcase,
         items: [
-          "API للوصول البرمجي",
-          "تكامل مع Meta و Google Ads",
+          "API للوصول البرمجي (قريباً)",
+          "تكامل مع Meta و Google Ads (قريباً)",
         ],
       },
       {
@@ -168,7 +166,7 @@ const FAQS = [
   },
   {
     q: "كيف يشتغل ضمان الاسترجاع؟",
-    a: "خلال 7 أيام من اشتراكك في أي باقة مدفوعة، إذا ما عجبتك التجربة، تواصل معنا ونرجع لك المبلغ كاملاً بدون أسئلة.",
+    a: "خلال 7 أيام من اشتراكك في أي باقة مدفوعة، إذا ما عجبتك التجربة، تواصل معنا ونرجع لك المبلغ كاملاً. ينطبق على المدة الأولى للاشتراك، وضمن الحدود المنصوص عليها في سياسة الاسترجاع.",
   },
   {
     q: "هل الأسعار شاملة الضريبة؟",
@@ -210,13 +208,13 @@ function PricingPage() {
         <div className="mx-auto max-w-3xl px-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
             <Crown className="h-3.5 w-3.5" />
-            احجز سعرك قبل الزيادة — أول 1000 عضو فقط
+            احجز سعرك قبل الزيادة — برنامج المؤسسين محدود
           </div>
           <h1 className="mt-4 text-3xl font-extrabold sm:text-5xl">
             ابدأ مجاناً، <span className="text-gradient-primary">ادفع لما تكبر</span>
           </h1>
           <p className="mt-3 text-muted-foreground">
-            تأكيد فوري • دعم سريع عبر واتساب • ضمان استرجاع 7 أيام كامل
+            تفعيل خلال 24 ساعة من رفع الإيصال • دعم سريع عبر واتساب • ضمان استرجاع 7 أيام
           </p>
 
           <div className="mx-auto mt-5 max-w-md">
@@ -235,7 +233,7 @@ function PricingPage() {
               </div>
               <Progress value={((seatsTotal - seatsLeft) / seatsTotal) * 100} className="mt-2 h-2" />
               <p className="mt-2 text-xs text-muted-foreground">
-                سعرك مجمّد مدى الحياة 🔒 — سترتفع الأسعار {discountPct}% بعد اكتمال {seatsTotal.toLocaleString("ar-SA")} عضو
+                سعرك مجمّد مدى الحياة 🔒 — سترتفع الأسعار {discountPct}% بعد اكتمال برنامج المؤسسين
               </p>
             </div>
           )}
@@ -338,7 +336,7 @@ function PricingPage() {
                         🔒 سعر المؤسسين — مجمّد مدى الحياة
                       </div>
                       <div className="text-[11px] font-medium text-warning">
-                        ⚠️ سيرتفع لـ {futurePrice} ر.س بعد اكتمال 1000 عضو
+                        ⚠️ سيرتفع لـ {futurePrice} ر.س بعد انتهاء برنامج المؤسسين
                       </div>
                     </div>
                   )}
@@ -431,7 +429,7 @@ function PricingPage() {
                     <span className="text-gold">أعمال</span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    +150 صورة • +4 ملفات متاجر • +API • +تكامل إعلانات • +مدير حساب
+                    +150 صورة • +4 ملفات متاجر • +مدير حساب مخصص • API و تكامل إعلانات (قريباً)
                   </p>
                 </div>
               </div>
@@ -483,7 +481,7 @@ function PricingPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <span>تحتاج API وتكامل مباشر مع Meta و Google Ads</span>
+                  <span>تحتاج مدير حساب وأولوية في طابور التوليد</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
