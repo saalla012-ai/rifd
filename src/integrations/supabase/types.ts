@@ -602,6 +602,15 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_public_app_settings: {
+        Args: never
+        Returns: {
+          founding_base_count: number
+          founding_discount_pct: number
+          founding_program_active: boolean
+          founding_total_seats: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
