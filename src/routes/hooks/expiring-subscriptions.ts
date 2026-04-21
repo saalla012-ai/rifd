@@ -5,8 +5,8 @@ import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
 const SITE_NAME = "رِفد";
-const SENDER_DOMAIN = "notify.rifd.club";
-const FROM_DOMAIN = "notify.rifd.club";
+const SENDER_DOMAIN = "notify.rifd.site";
+const FROM_DOMAIN = "notify.rifd.site";
 
 const PLAN_LABELS: Record<string, string> = {
   pro: "احترافي",
@@ -131,7 +131,7 @@ export const Route = createFileRoute("/hooks/expiring-subscriptions")({
               planLabel: PLAN_LABELS[row.plan] ?? row.plan,
               daysRemaining: days,
               expiresAt,
-              renewUrl: "https://rifd.club/dashboard/billing",
+              renewUrl: "https://rifd.site/dashboard/billing",
             };
 
             try {

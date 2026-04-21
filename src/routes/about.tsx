@@ -79,7 +79,7 @@ function AboutPage() {
             <p className="mt-2 text-sm text-muted-foreground">نحن نسمعك دائماً</p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <Button asChild>
-                <a href="mailto:hello@rifd.tech">راسلنا على البريد</a>
+                <a href="mailto:hello@rifd.site">راسلنا على البريد</a>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/onboarding">جرّب رِفد الآن</Link>
