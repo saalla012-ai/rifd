@@ -1,102 +1,31 @@
-# قائمة الإطلاق الرسمية — رِفد
-**آخر تحديث:** 2026-04-21
-**الجاهزية:** 99% — جاهز للإطلاق التسويقي
+# Launch Checklist — رِفد للتقنية
 
----
+آخر تحديث: 21 أبريل 2026 — الجاهزية: **96/100** (جاهز للإطلاق التسويقي)
 
-## ✅ الإصلاحات الحرجة (C1–C3)
+## ✅ الموجة 1 — الإصلاحات الحرجة
+- [x] توسعة `legal/privacy` لتغطي PDPL (هوية المتحكم، البيانات، الأساس النظامي، المعالجون الفرعيون، الاحتفاظ، الحقوق الستة، الشكاوى عبر سدايا).
+- [x] توسعة `legal/terms` (التعريف، التسجيل، الفوترة، الملكية الفكرية، الاستخدام المقبول، التعليق، إخلاء المسؤولية، حلّ النزاعات في الرياض).
+- [x] توسعة `legal/refund` بتفاصيل الاستثناءات.
+- [x] PDPL badge في الفوتر.
+- [x] `SubscribersCounter`: skeleton ثابت + fallback عند فشل RPC.
 
-| # | البند | الحالة | الدليل |
-|---|---|---|---|
-| C1 | Auth Guard في Dashboard (no flash) | ✅ | `src/routes/dashboard.tsx` يستخدم `beforeLoad` |
-| C2 | Idempotency على طلبات الاشتراك | ✅ | `idx_subscription_requests_unique_pending` + UI handling لخطأ 23505 |
-| C3 | OCR للإيصالات | ✅ | `/api/public/hooks/ocr-receipt` يكتب في `admin_notes` |
+## ✅ الموجة 2 — توحيد الهوية
+- [x] og:image + canonical + twitter:image على `rifd.site`.
+- [x] `sitemap.xml` و `robots.txt` على `rifd.site`.
+- [x] إخفاء Lovable badge.
+- [x] استبدال جميع ادعاءات "24/7" بصياغات صادقة.
 
-## ✅ Quick Wins
+## ✅ الموجة 3 — قنوات الدعم
+- [x] صفحة `/contact` (واتساب + بريد + ساعات عمل + قنوات متخصصة).
+- [x] `site-footer`: واتساب + /contact.
+- [x] `about.tsx`: 3 قنوات تواصل.
 
-| # | البند | الحالة |
-|---|---|---|
-| Q1 | Email Monitor `/admin/email-monitor` | ✅ deduped، admin-only |
-| Q2 | DLQ Telegram alerts كل 10 دقائق | ✅ `check_email_dlq_health()` + cron |
-| Q3 | Rate-limit للتنبيهات (تنبيه/ساعة) | ✅ `dlq_alert_state` |
-| Q4 | تنظيف الطلبات المعلّقة المكرّرة | ✅ تم تحويلها إلى `expired` |
-| Q5 | رابط Email Monitor في sidebar الأدمن | ✅ `dashboard-shell.tsx` |
+## ✅ الموجة 4 — التحقق
+- [x] عدد القوالب الفعلي = 49 (يتجاوز 40 المُعلَن).
+- [x] `tsc --noEmit` يمر بدون أخطاء.
 
----
+## 📋 SOP لما بعد الإطلاق
+- `/admin/email-monitor` يومياً • Telegram DLQ alerts • subscription_requests كل 12س • refund requests أسبوعياً.
 
-## 🛡 معمارية الأمان
-
-- ✅ RLS مفعّل على كل الجداول الحسّاسة
-- ✅ `has_role(uid, 'admin')` يحرس كل المسارات الإدارية + الاستعلامات
-- ✅ Webhooks تستخدم `timingSafeEqual` للتحقق من HMAC
-- ✅ `service_role` محصور في server routes فقط (`client.server.ts`)
-- ✅ Storage `payment-receipts` خاص — يُوقَّع رابط قصير العمر فقط لـ OCR (5 دقائق)
-- ✅ Storage `generated-images` خاص — لا يمكن لمستخدم آخر الوصول لصور غيره
-
-## 📊 المراقبة بعد الإطلاق
-
-### يومياً (دقيقتان)
-1. زيارة **`/admin/email-monitor`** — تأكد أن DLQ = 0
-2. زيارة **`/admin/subscriptions`** — راجع طلبات `pending` + ملاحظات OCR
-3. مراجعة Telegram للتنبيهات
-
-### أسبوعياً (10 دقائق)
-1. تشغيل `reconcile_usage_logs()` للتأكد من تطابق usage مع generations
-2. مراجعة `/admin/audit` — أي عمليات admin غير عادية
-3. مراجعة `/admin/analytics` — معدّل التحويل، الإيرادات
-
----
-
-## 🚨 SOP — التعامل مع تنبيه DLQ
-
-عند وصول تنبيه Telegram يفيد بأن `total_dlq > 5`:
-
-1. **افتح `/admin/email-monitor`** — راجع الجدول السفلي لمعرفة:
-   - ما القالب المتأثر؟ (`auth_emails` أم قالب معاملاتي؟)
-   - ما رسالة الخطأ المتكررة؟
-2. **شخّص السبب الجذري** (أكثر الأسباب شيوعاً):
-   - **Rate limit (429)**: الحلّ ذاتي — انتظر 10 دقائق ولاحظ هل ينخفض
-   - **Bad domain DNS**: راجع **Cloud → Emails** — قد تكون السجلات تغيّرت
-   - **Suppressed emails**: طبيعي إن كانت من bounce سابق — لا حاجة لإجراء
-   - **Template render error**: راجع آخر تغيير على قوالب `src/lib/email-templates/*`
-3. **معالجة DLQ يدوياً** (إن لزم):
-   - استعلم: `SELECT * FROM pgmq.q_transactional_emails_dlq LIMIT 10;`
-   - إن كانت الأخطاء عابرة، أعد إدراجها بإرسال نفس payload للطابور الأصلي
-   - إن كانت بنيوية (قالب مكسور)، احذفها بعد إصلاح الكود
-
----
-
-## 📅 Rollback / تنظيف بعد الإطلاق
-
-### بعد أسبوع من نجاح Lovable Emails (DLQ ≤ 5 أسبوعياً)
-- [ ] حذف `RESEND_API_KEY` من Connectors (لم يعد مستخدماً)
-- [ ] حذف نطاق `notify.rifd.club` من DNS (تم استبداله بـ `notify.rifd.site`)
-
-### إن احتجنا rollback لأي migration
-- كل migrations تمت في 2026-04-21 **additive فقط**:
-  - `idx_subscription_requests_unique_pending` → `DROP INDEX`
-  - `dlq_alert_state` → `DROP TABLE`
-  - `check_email_dlq_health()` → `DROP FUNCTION`
-  - `cron.unschedule('check-email-dlq')`
-
----
-
-## 🎯 KPIs المستهدفة (أول 30 يوماً)
-
-| المؤشّر | الهدف | مكان المتابعة |
-|---|---|---|
-| معدّل التحويل من `/pricing` إلى `request` | ≥ 8% | `/admin/analytics` |
-| معدّل التفعيل (request → activated) | ≥ 70% | `/admin/subscriptions` |
-| Email delivery rate | ≥ 98% | `/admin/email-monitor` |
-| متوسّط زمن التفعيل | ≤ 6 ساعات | `activated_at - created_at` |
-| Quota exceeded events | < 5% من المستخدمين | `quota_exceeded` toast logs |
-
----
-
-## ✍️ ملاحظات أخيرة
-
-- **النطاق الرسمي:** `rifd.site` — أي رابط جديد يجب أن يكون تحته فقط
-- **نطاق البريد:** `notify.rifd.site` — مُدار من Lovable Cloud
-- **المالك:** `saalla012@gmail.com` (له دور `admin` تلقائياً عبر `handle_new_user()`)
-
-🚀 **بالتوفيق في الإطلاق!**
+## 🚀 ما تأجَّل عمداً
+- نموذج contact_submissions + بريد معاملاتي • E2E tests • Lighthouse CI • مراجعة محامٍ سعودي.
