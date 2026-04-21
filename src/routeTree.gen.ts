@@ -26,6 +26,7 @@ import { Route as LegalRefundRouteImport } from './routes/legal.refund'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as HooksOnboardingEmailsRouteImport } from './routes/hooks/onboarding-emails'
 import { Route as HooksExpiringSubscriptionsRouteImport } from './routes/hooks/expiring-subscriptions'
+import { Route as HooksDomainScanRouteImport } from './routes/hooks/domain-scan'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
 import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templates'
@@ -42,6 +43,7 @@ import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
+import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminAbTestsRouteImport } from './routes/admin.ab-tests'
@@ -139,6 +141,11 @@ const HooksExpiringSubscriptionsRoute =
     path: '/hooks/expiring-subscriptions',
     getParentRoute: () => rootRouteImport,
   } as any)
+const HooksDomainScanRoute = HooksDomainScanRouteImport.update({
+  id: '/hooks/domain-scan',
+  path: '/hooks/domain-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -220,6 +227,11 @@ const AdminPlanLimitsRoute = AdminPlanLimitsRouteImport.update({
   path: '/admin/plan-limits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDomainScanRoute = AdminDomainScanRouteImport.update({
+  id: '/admin/domain-scan',
+  path: '/admin/domain-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/admin/audit',
   path: '/admin/audit',
@@ -290,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -306,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/domain-scan': typeof HooksDomainScanRoute
   '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/hooks/onboarding-emails': typeof HooksOnboardingEmailsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -334,6 +348,7 @@ export interface FileRoutesByTo {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -350,6 +365,7 @@ export interface FileRoutesByTo {
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/domain-scan': typeof HooksDomainScanRoute
   '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/hooks/onboarding-emails': typeof HooksOnboardingEmailsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -380,6 +396,7 @@ export interface FileRoutesById {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -396,6 +413,7 @@ export interface FileRoutesById {
   '/dashboard/templates': typeof DashboardTemplatesRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/hooks/domain-scan': typeof HooksDomainScanRoute
   '/hooks/expiring-subscriptions': typeof HooksExpiringSubscriptionsRoute
   '/hooks/onboarding-emails': typeof HooksOnboardingEmailsRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -427,6 +445,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/domain-scan'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -443,6 +462,7 @@ export interface FileRouteTypes {
     | '/dashboard/templates'
     | '/dashboard/usage'
     | '/email/unsubscribe'
+    | '/hooks/domain-scan'
     | '/hooks/expiring-subscriptions'
     | '/hooks/onboarding-emails'
     | '/legal/privacy'
@@ -471,6 +491,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/domain-scan'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -487,6 +508,7 @@ export interface FileRouteTypes {
     | '/dashboard/templates'
     | '/dashboard/usage'
     | '/email/unsubscribe'
+    | '/hooks/domain-scan'
     | '/hooks/expiring-subscriptions'
     | '/hooks/onboarding-emails'
     | '/legal/privacy'
@@ -516,6 +538,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/domain-scan'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -532,6 +555,7 @@ export interface FileRouteTypes {
     | '/dashboard/templates'
     | '/dashboard/usage'
     | '/email/unsubscribe'
+    | '/hooks/domain-scan'
     | '/hooks/expiring-subscriptions'
     | '/hooks/onboarding-emails'
     | '/legal/privacy'
@@ -562,6 +586,7 @@ export interface RootRouteChildren {
   AdminAbTestsRoute: typeof AdminAbTestsRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminDomainScanRoute: typeof AdminDomainScanRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
@@ -570,6 +595,7 @@ export interface RootRouteChildren {
   ApiTelegramDiscoverChatsRoute: typeof ApiTelegramDiscoverChatsRoute
   ApiTelegramSetChatIdRoute: typeof ApiTelegramSetChatIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  HooksDomainScanRoute: typeof HooksDomainScanRoute
   HooksExpiringSubscriptionsRoute: typeof HooksExpiringSubscriptionsRoute
   HooksOnboardingEmailsRoute: typeof HooksOnboardingEmailsRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
@@ -703,6 +729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HooksExpiringSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hooks/domain-scan': {
+      id: '/hooks/domain-scan'
+      path: '/hooks/domain-scan'
+      fullPath: '/hooks/domain-scan'
+      preLoaderRoute: typeof HooksDomainScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -813,6 +846,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/plan-limits'
       fullPath: '/admin/plan-limits'
       preLoaderRoute: typeof AdminPlanLimitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/domain-scan': {
+      id: '/admin/domain-scan'
+      path: '/admin/domain-scan'
+      fullPath: '/admin/domain-scan'
+      preLoaderRoute: typeof AdminDomainScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/audit': {
@@ -935,6 +975,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAbTestsRoute: AdminAbTestsRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
+  AdminDomainScanRoute: AdminDomainScanRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
@@ -943,6 +984,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTelegramDiscoverChatsRoute: ApiTelegramDiscoverChatsRoute,
   ApiTelegramSetChatIdRoute: ApiTelegramSetChatIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  HooksDomainScanRoute: HooksDomainScanRoute,
   HooksExpiringSubscriptionsRoute: HooksExpiringSubscriptionsRoute,
   HooksOnboardingEmailsRoute: HooksOnboardingEmailsRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
