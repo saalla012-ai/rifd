@@ -131,6 +131,27 @@ export type Database = {
         }
         Relationships: []
       }
+      dlq_alert_state: {
+        Row: {
+          id: number
+          last_alert_at: string | null
+          last_alert_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          last_alert_at?: string | null
+          last_alert_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          last_alert_at?: string | null
+          last_alert_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       domain_scan_log: {
         Row: {
           details: Json
@@ -564,6 +585,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      check_email_dlq_health: { Args: never; Returns: Json }
       consume_demo_token: {
         Args: { _ip: string; _limit: number }
         Returns: {
