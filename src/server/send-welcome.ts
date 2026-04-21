@@ -3,15 +3,16 @@ import { createClient } from "@supabase/supabase-js";
 import * as React from "react";
 import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
-import { sendResendEmail } from "@/server/resend";
 
 const SITE_NAME = "رِفد";
-const FROM_ADDRESS = `${SITE_NAME} <onboarding@resend.dev>`;
+const SENDER_DOMAIN = "notify.rifd.site";
+const FROM_ADDRESS = `${SITE_NAME} <noreply@notify.rifd.site>`;
+const QUEUE_NAME = "transactional_emails";
 
 /**
- * Server function — sends the welcome email immediately after signup.
- * Bypasses pgmq queue (which uses the disabled internal Lovable email system)
- * and goes straight to Resend.
+ * Server function — enqueues the welcome email immediately after signup
+ * via the Lovable Email queue (pgmq). The process-email-queue dispatcher
+ * picks it up within 5 seconds and sends via Lovable Email API.
  *
  * Idempotent: uses message_id `welcome-{userId}` and skips if already logged.
  */
@@ -39,7 +40,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
       .maybeSingle();
     if (suppressed) return { status: "suppressed" as const };
 
-    // idempotency check (already sent or queued)
+    // idempotency check
     const { data: existing } = await supabase
       .from("email_send_log")
       .select("id, status")
@@ -65,36 +66,51 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
           ? template.subject({ fullName: data.fullName })
           : template.subject;
 
-      const result = await sendResendEmail({
-        from: FROM_ADDRESS,
-        to: data.email,
-        subject,
-        html,
-        text,
-        headers: { "X-Idempotency-Key": messageId },
-        tags: [{ name: "template", value: "welcome" }],
-      });
-
+      // Log pending
       await supabase.from("email_send_log").insert({
         message_id: messageId,
         template_name: "welcome",
         recipient_email: data.email,
-        status: "sent",
-        metadata: { provider: "resend", provider_id: result.id, source: "signup_trigger" },
+        status: "pending",
+        metadata: { source: "signup_trigger" },
       });
-      console.log("send-welcome: sent", { messageId, providerId: result.id });
-      return { status: "sent" as const, providerId: result.id };
+
+      const { error: enqueueError } = await supabase.rpc("enqueue_email", {
+        queue_name: QUEUE_NAME,
+        payload: {
+          to: data.email,
+          from: FROM_ADDRESS,
+          sender_domain: SENDER_DOMAIN,
+          subject,
+          html,
+          text,
+          purpose: "transactional",
+          label: "welcome",
+          idempotency_key: messageId,
+          message_id: messageId,
+          queued_at: new Date().toISOString(),
+        },
+      });
+
+      if (enqueueError) {
+        const errMsg = String(enqueueError.message ?? enqueueError).slice(0, 1000);
+        console.error("send-welcome: enqueue failed", { messageId, errMsg });
+        await supabase.from("email_send_log").insert({
+          message_id: messageId,
+          template_name: "welcome",
+          recipient_email: data.email,
+          status: "failed",
+          error_message: errMsg,
+          metadata: { source: "signup_trigger" },
+        });
+        return { status: "enqueue_failed" as const, error: errMsg };
+      }
+
+      console.log("send-welcome: enqueued", { messageId });
+      return { status: "queued" as const, messageId };
     } catch (err: any) {
       const errMsg = String(err?.message ?? err).slice(0, 1000);
       console.error("send-welcome: failed", { messageId, errMsg });
-      await supabase.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "welcome",
-        recipient_email: data.email,
-        status: "failed",
-        error_message: errMsg,
-        metadata: { source: "signup_trigger" },
-      });
       return { status: "send_failed" as const, error: errMsg };
     }
   });

@@ -1,17 +1,8 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components";
+import * as React from "react";
+import { Heading, Text } from "@react-email/components";
 import type { TemplateEntry } from "./registry";
-
-const SITE_NAME = "رِفد";
+import { EmailLayout, brand, fontFamily, spacing, SITE_NAME } from "./_shared/layout";
+import { PrimaryButton, InfoCard } from "./_shared/components";
 
 interface Day1Props {
   fullName?: string;
@@ -22,52 +13,37 @@ const OnboardingDay1Email = ({
   fullName,
   generateUrl = "https://rifd.site/dashboard/generate-text",
 }: Day1Props) => (
-  <Html lang="ar" dir="rtl">
-    <Head />
-    <Preview>أول منشور احترافي في 60 ثانية — جرّبه الآن</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>
-          {fullName ? `${fullName}، خلّينا نبدأ 🚀` : "خلّينا نبدأ 🚀"}
-        </Heading>
-
-        <Text style={text}>
-          أمس انضممت لـ <strong>{SITE_NAME}</strong>. اليوم نبسّط لك الخطوة
-          الأولى: <strong>أول منشور احترافي لمتجرك في أقل من دقيقة.</strong>
-        </Text>
-
-        <Section style={highlightBox}>
-          <Text style={highlightTitle}>📝 جرّب هذا القالب الجاهز:</Text>
-          <Text style={quote}>
-            "اكتب لي منشور إنستقرام لإطلاق منتج جديد بأسلوب جذّاب، مع 3
-            هاشتاقات سعودية."
-          </Text>
-        </Section>
-
-        <Text style={text}>
-          انسخه، الصقه في رِفد، واضغط "توليد" — وستحصل على منشور كامل بنبرة
-          متجرك خلال ثوانٍ.
-        </Text>
-
-        <Section style={{ textAlign: "center", margin: "32px 0" }}>
-          <Button href={generateUrl} style={button}>
-            ولّد أول منشور الآن
-          </Button>
-        </Section>
-
-        <Text style={tip}>
-          💡 <strong>نصيحة:</strong> كلما كان وصف منتجك دقيقاً، كانت النتيجة
-          أفضل. أضف الفئة، السعر، والجمهور المستهدف.
-        </Text>
-
-        <Text style={footer}>
-          أي سؤال؟ ردّ على هذه الرسالة وسنساعدك.
-          <br />
-          فريق {SITE_NAME}
-        </Text>
-      </Container>
-    </Body>
-  </Html>
+  <EmailLayout preview="أول منشور احترافي في 60 ثانية — جرّبه الآن">
+    <Heading style={h1}>
+      {fullName ? `${fullName}، خلّينا نبدأ 🚀` : "خلّينا نبدأ 🚀"}
+    </Heading>
+    <Text style={text}>
+      أمس انضممت لـ <strong>{SITE_NAME}</strong>. اليوم نبسّط لك الخطوة
+      الأولى: <strong>أول منشور احترافي لمتجرك في أقل من دقيقة.</strong>
+    </Text>
+    <InfoCard variant="highlight">
+      <Text style={cardTitle}>📝 جرّب هذا القالب الجاهز:</Text>
+      <Text style={quote}>
+        "اكتب لي منشور إنستقرام لإطلاق منتج جديد بأسلوب جذّاب، مع 3 هاشتاقات سعودية."
+      </Text>
+    </InfoCard>
+    <Text style={text}>
+      انسخه، الصقه في رِفد، واضغط "توليد" — وستحصل على منشور كامل بنبرة متجرك خلال ثوانٍ.
+    </Text>
+    <div style={{ textAlign: "center", margin: `${spacing.lg} 0` }}>
+      <PrimaryButton href={generateUrl}>ولّد أول منشور الآن</PrimaryButton>
+    </div>
+    <InfoCard variant="warning">
+      <Text style={tip}>
+        💡 <strong>نصيحة:</strong> كلما كان وصف منتجك دقيقاً، كانت النتيجة أفضل. أضف الفئة، السعر، والجمهور المستهدف.
+      </Text>
+    </InfoCard>
+    <Text style={muted}>
+      أي سؤال؟ ردّ على هذه الرسالة وسنساعدك.
+      <br />
+      فريق {SITE_NAME}
+    </Text>
+  </EmailLayout>
 );
 
 export const template = {
@@ -77,66 +53,9 @@ export const template = {
   previewData: { fullName: "محمد" },
 } satisfies TemplateEntry;
 
-const main = {
-  backgroundColor: "#ffffff",
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif',
-};
-const container = { padding: "30px 25px", maxWidth: "560px", margin: "0 auto" };
-const h1 = {
-  fontSize: "22px",
-  fontWeight: "bold",
-  color: "#1a5d3e",
-  margin: "0 0 20px",
-};
-const text = {
-  fontSize: "15px",
-  color: "#374151",
-  lineHeight: "1.7",
-  margin: "0 0 16px",
-};
-const highlightBox = {
-  backgroundColor: "#f0f9f4",
-  borderRadius: "10px",
-  padding: "18px 20px",
-  margin: "22px 0",
-  border: "1px solid #d1e7dd",
-};
-const highlightTitle = {
-  fontSize: "14px",
-  color: "#1a5d3e",
-  fontWeight: "bold",
-  margin: "0 0 10px",
-};
-const quote = {
-  fontSize: "15px",
-  color: "#1f2937",
-  fontStyle: "italic",
-  lineHeight: "1.6",
-  margin: 0,
-};
-const button = {
-  backgroundColor: "#1a5d3e",
-  color: "#ffffff",
-  padding: "12px 28px",
-  borderRadius: "8px",
-  textDecoration: "none",
-  fontSize: "15px",
-  fontWeight: "bold",
-  display: "inline-block",
-};
-const tip = {
-  fontSize: "14px",
-  color: "#6b7280",
-  backgroundColor: "#fffbeb",
-  padding: "12px 16px",
-  borderRadius: "8px",
-  borderRight: "3px solid #f59e0b",
-  margin: "20px 0",
-};
-const footer = {
-  fontSize: "13px",
-  color: "#6b7280",
-  margin: "30px 0 0",
-  lineHeight: "1.6",
-};
+const h1 = { fontSize: "24px", fontWeight: 700, color: brand.primary, margin: `0 0 ${spacing.md}`, fontFamily };
+const text = { fontSize: "15px", color: brand.textBody, lineHeight: "1.8", margin: `0 0 ${spacing.md}`, fontFamily };
+const cardTitle = { fontSize: "14px", color: brand.primary, fontWeight: 700, margin: `0 0 8px`, fontFamily };
+const quote = { fontSize: "15px", color: brand.textPrimary, fontStyle: "italic", lineHeight: "1.7", margin: 0, fontFamily };
+const tip = { fontSize: "14px", color: brand.textBody, margin: 0, lineHeight: "1.7", fontFamily };
+const muted = { fontSize: "13px", color: brand.textMuted, margin: `${spacing.lg} 0 0`, lineHeight: "1.7", fontFamily };

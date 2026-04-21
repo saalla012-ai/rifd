@@ -3,13 +3,13 @@ import { render } from '@react-email/components'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 import { TEMPLATES } from '@/lib/email-templates/registry'
-import { sendResendEmail } from '@/server/resend'
 
 // Configuration
-const SITE_NAME = "رِفد"
-// Resend's shared sender — works without domain verification.
-// Once a domain is verified in Resend, switch this to e.g. "noreply@rifd.site".
-const FROM_ADDRESS = `${SITE_NAME} <onboarding@resend.dev>`
+const SITE_NAME = 'رِفد'
+const SENDER_DOMAIN = 'notify.rifd.site'
+const FROM_ADDRESS = `${SITE_NAME} <noreply@notify.rifd.site>`
+const PURPOSE = 'transactional'
+const QUEUE_NAME = 'transactional_emails'
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'
@@ -18,7 +18,6 @@ function redactEmail(email: string | null | undefined): string {
   return `${localPart[0]}***@${domain}`
 }
 
-// Generate a cryptographically random 32-byte hex token
 function generateToken(): string {
   const bytes = new Uint8Array(32)
   crypto.getRandomValues(bytes)
@@ -27,7 +26,7 @@ function generateToken(): string {
     .join('')
 }
 
-export const Route = createFileRoute("/lovable/email/transactional/send")({
+export const Route = createFileRoute('/lovable/email/transactional/send')({
   server: {
     handlers: {
       POST: async ({ request }) => {
@@ -36,28 +35,22 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
 
         if (!supabaseUrl || !supabaseServiceKey) {
           console.error('Missing required environment variables')
-          return Response.json(
-            { error: 'Server configuration error' },
-            { status: 500 }
-          )
+          return Response.json({ error: 'Server configuration error' }, { status: 500 })
         }
 
-        // Verify the caller has a valid Supabase auth token.
-        // In TanStack, there is no Supabase gateway — we validate the JWT ourselves.
         const authHeader = request.headers.get('Authorization')
         if (!authHeader?.startsWith('Bearer ')) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
         const token = authHeader.slice('Bearer '.length).trim()
-        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        const supabase = createClient<any>(supabaseUrl, supabaseServiceKey)
         const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
         if (authError || !user) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Parse request body
         let templateName: string
         let recipientEmail: string
         let idempotencyKey: string
@@ -73,47 +66,41 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
             templateData = body.templateData
           }
         } catch {
-          return Response.json(
-            { error: 'Invalid JSON in request body' },
-            { status: 400 }
-          )
+          return Response.json({ error: 'Invalid JSON in request body' }, { status: 400 })
         }
 
         if (!templateName) {
-          return Response.json(
-            { error: 'templateName is required' },
-            { status: 400 }
-          )
+          return Response.json({ error: 'templateName is required' }, { status: 400 })
         }
 
-        // 1. Look up template from registry (early — needed to resolve recipient)
         const template = TEMPLATES[templateName]
-
         if (!template) {
-          console.error('Template not found in registry', { templateName })
           return Response.json(
-            {
-              error: `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}`,
-            },
-            { status: 404 }
+            { error: `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}` },
+            { status: 404 },
           )
         }
 
-        // Resolve effective recipient: template-level `to` takes precedence over
-        // the caller-provided recipientEmail. This allows notification templates
-        // to always send to a fixed address (e.g., site owner from env var).
         const effectiveRecipient = template.to || recipientEmail
-
         if (!effectiveRecipient) {
           return Response.json(
-            {
-              error: 'recipientEmail is required (unless the template defines a fixed recipient)',
-            },
-            { status: 400 }
+            { error: 'recipientEmail is required (unless the template defines a fixed recipient)' },
+            { status: 400 },
           )
         }
 
-        // 2. Check suppression list (fail-closed: if we can't verify, don't send)
+        // Idempotency: skip if already enqueued or sent
+        const { data: existingLog } = await supabase
+          .from('email_send_log')
+          .select('id')
+          .eq('message_id', idempotencyKey)
+          .in('status', ['pending', 'sent'])
+          .maybeSingle()
+        if (existingLog) {
+          return Response.json({ success: true, reason: 'duplicate', message_id: idempotencyKey })
+        }
+
+        // Suppression check
         const { data: suppressed, error: suppressionError } = await supabase
           .from('suppressed_emails')
           .select('id')
@@ -121,215 +108,113 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           .maybeSingle()
 
         if (suppressionError) {
-          console.error('Suppression check failed — refusing to send', {
-            error: suppressionError,
-            recipient_redacted: redactEmail(effectiveRecipient),
-          })
-          return Response.json(
-            { error: 'Failed to verify suppression status' },
-            { status: 500 }
-          )
+          console.error('Suppression check failed', { error: suppressionError })
+          return Response.json({ error: 'Failed to verify suppression status' }, { status: 500 })
         }
 
         if (suppressed) {
-          // Log the suppressed attempt
           await supabase.from('email_send_log').insert({
-            message_id: messageId,
+            message_id: idempotencyKey,
             template_name: templateName,
             recipient_email: effectiveRecipient,
             status: 'suppressed',
           })
-
-          console.log('Email suppressed', {
-            templateName,
-            recipient_redacted: redactEmail(effectiveRecipient),
-          })
           return Response.json({ success: false, reason: 'email_suppressed' })
         }
 
-        // 3. Get or create unsubscribe token (one token per email address)
+        // Get/create unsubscribe token
         const normalizedEmail = effectiveRecipient.toLowerCase()
         let unsubscribeToken: string
 
-        // Check for existing token for this email
-        const { data: existingToken, error: tokenLookupError } = await supabase
+        const { data: existingToken } = await supabase
           .from('email_unsubscribe_tokens')
           .select('token, used_at')
           .eq('email', normalizedEmail)
           .maybeSingle()
 
-        if (tokenLookupError) {
-          console.error('Token lookup failed', {
-            error: tokenLookupError,
-            email_redacted: redactEmail(normalizedEmail),
-          })
-          await supabase.from('email_send_log').insert({
-            message_id: messageId,
-            template_name: templateName,
-            recipient_email: effectiveRecipient,
-            status: 'failed',
-            error_message: 'Failed to look up unsubscribe token',
-          })
-          return Response.json(
-            { error: 'Failed to prepare email' },
-            { status: 500 }
-          )
-        }
-
         if (existingToken && !existingToken.used_at) {
-          // Reuse existing unused token
           unsubscribeToken = existingToken.token
         } else if (!existingToken) {
-          // Create new token — upsert handles concurrent inserts gracefully
           unsubscribeToken = generateToken()
-          const { error: tokenError } = await supabase
+          await supabase
             .from('email_unsubscribe_tokens')
             .upsert(
               { token: unsubscribeToken, email: normalizedEmail },
-              { onConflict: 'email', ignoreDuplicates: true }
+              { onConflict: 'email', ignoreDuplicates: true },
             )
-
-          if (tokenError) {
-            console.error('Failed to create unsubscribe token', {
-              error: tokenError,
-            })
-            await supabase.from('email_send_log').insert({
-              message_id: messageId,
-              template_name: templateName,
-              recipient_email: effectiveRecipient,
-              status: 'failed',
-              error_message: 'Failed to create unsubscribe token',
-            })
-            return Response.json(
-              { error: 'Failed to prepare email' },
-              { status: 500 }
-            )
-          }
-
-          // If another request raced us, our upsert was silently ignored.
-          // Re-read to get the actual stored token.
-          const { data: storedToken, error: reReadError } = await supabase
+          const { data: storedToken } = await supabase
             .from('email_unsubscribe_tokens')
             .select('token')
             .eq('email', normalizedEmail)
             .maybeSingle()
-
-          if (reReadError || !storedToken) {
-            console.error('Failed to read back unsubscribe token after upsert', {
-              error: reReadError,
-              email_redacted: redactEmail(normalizedEmail),
-            })
-            await supabase.from('email_send_log').insert({
-              message_id: messageId,
-              template_name: templateName,
-              recipient_email: effectiveRecipient,
-              status: 'failed',
-              error_message: 'Failed to confirm unsubscribe token storage',
-            })
-            return Response.json(
-              { error: 'Failed to prepare email' },
-              { status: 500 }
-            )
+          if (!storedToken) {
+            return Response.json({ error: 'Failed to prepare email' }, { status: 500 })
           }
           unsubscribeToken = storedToken.token
         } else {
-          // Token exists but is already used — email should have been caught by suppression check above.
-          // This is a safety fallback; log and skip sending.
-          console.warn('Unsubscribe token already used but email not suppressed', {
-            email_redacted: redactEmail(normalizedEmail),
-          })
+          // token already used → treat as suppressed
           await supabase.from('email_send_log').insert({
-            message_id: messageId,
+            message_id: idempotencyKey,
             template_name: templateName,
             recipient_email: effectiveRecipient,
             status: 'suppressed',
-            error_message:
-              'Unsubscribe token used but email missing from suppressed list',
           })
           return Response.json({ success: false, reason: 'email_suppressed' })
         }
 
-        // 4. Render React Email template to HTML and plain text
+        // Render template
         const element = React.createElement(template.component, templateData)
         const html = await render(element)
         const plainText = await render(element, { plainText: true })
-
-        // Resolve subject — supports static string or dynamic function
         const resolvedSubject =
-          typeof template.subject === 'function'
-            ? template.subject(templateData)
-            : template.subject
+          typeof template.subject === 'function' ? template.subject(templateData) : template.subject
 
-        // 5. Build unsubscribe URL + List-Unsubscribe headers
-        const siteUrl =
-          process.env.SITE_URL || `https://${request.headers.get('host') || 'rifd.lovable.app'}`
-        const unsubscribeUrl = `${siteUrl}/unsubscribe?token=${unsubscribeToken}`
-
-        // Append a minimal RTL-friendly unsubscribe footer to the rendered HTML
-        const htmlWithFooter = html.replace(
-          /<\/body>/i,
-          `<div style="margin-top:24px;padding:16px;border-top:1px solid #eee;font-family:Arial,sans-serif;font-size:12px;color:#888;text-align:center;direction:rtl"><a href="${unsubscribeUrl}" style="color:#888;text-decoration:underline">إلغاء الاشتراك</a></div></body>`,
-        )
-        const textWithFooter = `${plainText}\n\n— لإلغاء الاشتراك: ${unsubscribeUrl}`
-
-        // Log pending BEFORE send so we have a record even if send crashes
+        // Log pending
         await supabase.from('email_send_log').insert({
-          message_id: messageId,
+          message_id: idempotencyKey,
           template_name: templateName,
           recipient_email: effectiveRecipient,
           status: 'pending',
         })
 
-        try {
-          const result = await sendResendEmail({
-            from: FROM_ADDRESS,
+        // Enqueue to pgmq via RPC
+        const { error: enqueueError } = await supabase.rpc('enqueue_email', {
+          queue_name: QUEUE_NAME,
+          payload: {
             to: effectiveRecipient,
+            from: FROM_ADDRESS,
+            sender_domain: SENDER_DOMAIN,
             subject: resolvedSubject,
-            html: htmlWithFooter,
-            text: textWithFooter,
-            headers: {
-              'List-Unsubscribe': `<${unsubscribeUrl}>`,
-              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-              'X-Idempotency-Key': idempotencyKey,
-            },
-            tags: [{ name: 'template', value: templateName }],
-          })
+            html,
+            text: plainText,
+            purpose: PURPOSE,
+            label: templateName,
+            idempotency_key: idempotencyKey,
+            unsubscribe_token: unsubscribeToken,
+            message_id: idempotencyKey,
+            queued_at: new Date().toISOString(),
+          },
+        })
 
+        if (enqueueError) {
+          console.error('Failed to enqueue email', { error: enqueueError, templateName })
           await supabase.from('email_send_log').insert({
-            message_id: messageId,
-            template_name: templateName,
-            recipient_email: effectiveRecipient,
-            status: 'sent',
-            metadata: { provider: 'resend', provider_id: result.id },
-          })
-
-          console.log('Transactional email sent via Resend', {
-            templateName,
-            recipient_redacted: redactEmail(effectiveRecipient),
-            provider_id: result.id,
-          })
-
-          return Response.json({ success: true, id: result.id })
-        } catch (sendErr: any) {
-          console.error('Resend send failed', {
-            error: sendErr?.message,
-            templateName,
-            recipient_redacted: redactEmail(effectiveRecipient),
-          })
-
-          await supabase.from('email_send_log').insert({
-            message_id: messageId,
+            message_id: idempotencyKey,
             template_name: templateName,
             recipient_email: effectiveRecipient,
             status: 'failed',
-            error_message: String(sendErr?.message ?? sendErr).slice(0, 1000),
+            error_message: `Enqueue failed: ${enqueueError.message}`.slice(0, 1000),
           })
-
-          return Response.json(
-            { error: 'Failed to send email' },
-            { status: 502 },
-          )
+          return Response.json({ error: 'Failed to enqueue email' }, { status: 500 })
         }
+
+        console.log('Transactional email enqueued', {
+          templateName,
+          recipient_redacted: redactEmail(effectiveRecipient),
+          message_id: idempotencyKey,
+        })
+
+        return Response.json({ success: true, message_id: idempotencyKey, status: 'queued' })
       },
     },
   },
