@@ -35,7 +35,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "حوّل متجرك السعودي إلى آلة محتوى ذكية. 40 قالب جاهز للنصوص والصور بالعامية السعودية، مدعوم بـChatGPT و Gemini.",
+          "حوّل متجرك السعودي إلى آلة محتوى ذكية. مكتبة قوالب جاهزة للنصوص والصور بالعامية السعودية، مدعوم بـChatGPT و Gemini.",
       },
       { name: "author", content: "رِفد للتقنية" },
       { name: "theme-color", content: "#1a5d3e" },
@@ -47,11 +47,11 @@ export const Route = createRootRoute({
       { name: "twitter:title", content: "رِفد للتقنية — منصة سعودية لتوليد محتوى المتاجر بالذكاء الاصطناعي" },
       {
         property: "og:description",
-        content: "حوّل متجرك السعودي إلى آلة محتوى ذكية. 40 قالب جاهز للنصوص والصور بالعامية السعودية.",
+        content: "حوّل متجرك السعودي إلى آلة محتوى ذكية. مكتبة قوالب للنصوص والصور بالعامية السعودية.",
       },
       {
         name: "twitter:description",
-        content: "حوّل متجرك السعودي إلى آلة محتوى ذكية. 40 قالب جاهز للنصوص والصور بالعامية السعودية.",
+        content: "حوّل متجرك السعودي إلى آلة محتوى ذكية. مكتبة قوالب للنصوص والصور بالعامية السعودية.",
       },
       { property: "og:image", content: "https://rifd.site/og-image.jpg" },
       { property: "og:image:width", content: "1200" },
