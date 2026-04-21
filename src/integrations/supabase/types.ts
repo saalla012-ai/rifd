@@ -431,6 +431,27 @@ export type Database = {
         }
         Relationships: []
       }
+      stale_subs_alert_state: {
+        Row: {
+          id: number
+          last_alert_at: string | null
+          last_alert_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          last_alert_at?: string | null
+          last_alert_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          last_alert_at?: string | null
+          last_alert_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscription_requests: {
         Row: {
           activated_at: string | null
@@ -619,6 +640,20 @@ export type Database = {
           founding_discount_pct: number
           founding_program_active: boolean
           founding_total_seats: number
+        }[]
+      }
+      get_stale_subscription_requests: {
+        Args: never
+        Returns: {
+          billing_cycle: string
+          created_at: string
+          email: string
+          hours_old: number
+          id: string
+          plan: Database["public"]["Enums"]["user_plan"]
+          status: Database["public"]["Enums"]["subscription_request_status"]
+          store_name: string
+          whatsapp: string
         }[]
       }
       has_role: {
