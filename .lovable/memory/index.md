@@ -1,14 +1,15 @@
 # Memory: index.md
-Updated: now
+Updated: today
 
 # Project Memory
 
 ## Core
-النطاق الرسمي الموحَّد: **`rifd.site`** (تم استبدال `rifd.club` و`rifd.tech` بالكامل في 2026-04-21). أي رابط/بريد جديد يجب أن يكون تحت `rifd.site` فقط.
-نطاق البريد الفرعي: `notify.rifd.site`. عند إعادة إضافة نطاق البريد في Lovable، اكتب الجذر `rifd.site` فقط — Lovable يضيف `notify` تلقائياً.
-مراقبة البريد: راجع `/admin/email-monitor` يومياً + تنبيهات Telegram تلقائية لأي `dlq_total > 5` (cron كل 10 دقائق، rate-limited بتنبيه/ساعة).
-لا تُكرّر طلبات subscription_requests pending لنفس (user_id, plan) — مفروض على DB بـ unique index؛ تعامل مع PG error 23505 في أي UI ينشئ طلباً.
+نطاق البريد: `notify.rifd.club` (الجذر `rifd.club`). عند أي إعادة إضافة، اكتب الجذر فقط — لا تكتب `notify` يدوياً.
+دومين الإنتاج: `https://rifd.lovable.app`. كل cron jobs و webhooks يجب أن تستخدمه — لا تستخدم `id-preview-*` أبداً.
+DLQ alerts تصل عبر تيليجرام. راجع `/admin/email-monitor` يومياً.
+لا تكشف `app_settings.whatsapp_number` للزوار — استخدم RPC `get_founding_status` للعدّاد العام و RPC للمسجلين فقط لرقم الواتساب.
+عند تفعيل اشتراك (status → activated) تُحدَّث `profiles.plan` تلقائياً عبر trigger — لا تُحدّثها يدوياً من الكود.
+Idempotency: unique partial index على `(user_id, plan) WHERE status='pending'` — عالج خطأ 23505 في UI.
 
 ## Memories
-- [Email domain naming](mem://constraints/email-domain-name) — قاعدة كتابة اسم النطاق عند الإعداد + سجلات NS الصحيحة
-- [Launch checklist](.lovable/launch-checklist.md) — قائمة الإطلاق الرسمية + SOP للتعامل مع DLQ alerts
+- [Email domain naming](mem://constraints/email-domain-name) — قاعدة كتابة اسم النطاق + سجلات NS
