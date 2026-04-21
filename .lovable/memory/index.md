@@ -10,7 +10,8 @@ Updated: now
 - `app_settings.whatsapp_number` و عدّاد المؤسسين يُقرَآن عبر RPC `get_founding_status()` / `get_public_app_settings()` فقط — لا تكشف الجدول مباشرة لـ `anon`.
 - ترقية خطة المشترك تتم تلقائياً عبر تريغر `sync_profile_plan_on_activation` عند تغيير `subscription_requests.status` إلى `activated`. لا تكتب كود ترقية يدوي في Frontend.
 - `ab_test_events.event_type` محصور في قائمة مغلقة (`view, cta_click, demo_try, click, convert, impression, exposure, signup, submit`) — أي حدث جديد يجب توسيع السياسة أولاً.
-- OG image في `public/og-image.jpg` (1200×630) و Favicon في `public/favicon.png` — كلاهما مرتبط في `__root.tsx`.
+- OG image في `public/og-image.jpg` (1200×630) و Favicon في `public/favicon.png` (≤1KB، PNG هندسي مولّد بـPython) — كلاهما مرتبط في `__root.tsx`. لا تستبدل favicon بصورة مولّدة بـAI (تعطي ملفات >800KB).
+- تنبيهات تشغيلية: cron `check-email-dlq` كل 10 دقائق + `check-stale-subscriptions` يومي 09:00 UTC — كلاهما يستخدم `internal_config` للـ secret + cooldown.
 
 ## Memories
 - [Email domain naming](mem://constraints/email-domain-name) — قاعدة كتابة اسم النطاق عند الإعداد + سجلات NS الصحيحة
