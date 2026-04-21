@@ -43,6 +43,7 @@ import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
+import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -230,6 +231,11 @@ const AdminPlanLimitsRoute = AdminPlanLimitsRouteImport.update({
   path: '/admin/plan-limits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEmailMonitorRoute = AdminEmailMonitorRouteImport.update({
+  id: '/admin/email-monitor',
+  path: '/admin/email-monitor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDomainScanRoute = AdminDomainScanRouteImport.update({
   id: '/admin/domain-scan',
   path: '/admin/domain-scan',
@@ -322,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
+  '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
+  '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -422,6 +430,7 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
+  '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -474,6 +483,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/domain-scan'
+    | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/domain-scan'
+    | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -573,6 +584,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/domain-scan'
+    | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -624,6 +636,7 @@ export interface RootRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminDomainScanRoute: typeof AdminDomainScanRoute
+  AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
@@ -888,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlanLimitsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/email-monitor': {
+      id: '/admin/email-monitor'
+      path: '/admin/email-monitor'
+      fullPath: '/admin/email-monitor'
+      preLoaderRoute: typeof AdminEmailMonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/domain-scan': {
       id: '/admin/domain-scan'
       path: '/admin/domain-scan'
@@ -1037,6 +1057,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminDomainScanRoute: AdminDomainScanRoute,
+  AdminEmailMonitorRoute: AdminEmailMonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,

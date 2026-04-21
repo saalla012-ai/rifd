@@ -150,9 +150,16 @@ export const Route = createFileRoute("/api/public/hooks/check-email-dlq")({
 
           await sendTelegramAlert(adminChatId, html);
 
-          // 4. Update alert state
-          await supabaseAdmin
-            .from("dlq_alert_state" as never)
+          // 4. Update alert state (table not yet in generated types — cast)
+          const adminAny = supabaseAdmin as unknown as {
+            from: (t: string) => {
+              update: (v: Record<string, unknown>) => {
+                eq: (col: string, val: number) => Promise<{ error: unknown }>;
+              };
+            };
+          };
+          await adminAny
+            .from("dlq_alert_state")
             .update({
               last_alert_at: new Date().toISOString(),
               last_alert_count: totalDlq,
