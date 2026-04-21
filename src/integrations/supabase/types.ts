@@ -602,6 +602,16 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_founding_status: {
+        Args: never
+        Returns: {
+          current_subscribers: number
+          discount_pct: number
+          program_active: boolean
+          seats_left: number
+          seats_total: number
+        }[]
+      }
       get_public_app_settings: {
         Args: never
         Returns: {
