@@ -20,7 +20,7 @@ type DbHit = { table: string; column: string; count: number };
 type HtmlHit = { url: string; matches: Record<string, number> };
 
 async function scanDatabase(
-  supabaseAdmin: ReturnType<typeof createClient>
+  supabaseAdmin: any
 ): Promise<{ hits: DbHit[]; total: number }> {
   const checks = [
     { table: "profiles", column: "email" },

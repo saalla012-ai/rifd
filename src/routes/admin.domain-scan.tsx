@@ -24,7 +24,7 @@ export const Route = createFileRoute("/admin/domain-scan")({
 });
 
 function DomainScanPage() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [rows, setRows] = useState<ScanRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +97,7 @@ function DomainScanPage() {
 
   if (authLoading || !isAdmin) {
     return (
-      <DashboardShell profile={profile}>
+      <DashboardShell>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
@@ -108,7 +108,7 @@ function DomainScanPage() {
   const lastScan = rows[0];
 
   return (
-    <DashboardShell profile={profile}>
+    <DashboardShell>
       <div className="mb-6 flex items-center justify-between gap-3">
         <div>
           <Link
@@ -142,12 +142,12 @@ function DomainScanPage() {
             <CardTitle className="flex items-center gap-2">
               {lastScan.status === "clean" ? (
                 <>
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
                   آخر فحص: نظيف
                 </>
               ) : lastScan.status === "dirty" ? (
                 <>
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
                   آخر فحص: {lastScan.total_matches} تطابق
                 </>
               ) : (
