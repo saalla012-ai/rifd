@@ -65,7 +65,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
-          <span>© {year} رِفد للتقنية — السجل التجاري قيد الإصدار. جميع الحقوق محفوظة.</span>
+          <span>© {year} رِفد للتقنية — مسجَّلة في المملكة العربية السعودية. جميع الحقوق محفوظة.</span>
           <span className="flex items-center gap-2">
             صُنع بحب 🇸🇦 في الرياض
           </span>

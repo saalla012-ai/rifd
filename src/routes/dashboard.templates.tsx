@@ -12,7 +12,7 @@ export const Route = createFileRoute("/dashboard/templates")({
   head: () => ({
     meta: [
       { title: "معرض القوالب — رِفد" },
-      { name: "description", content: "أكثر من 40 قالب جاهز للنصوص والصور — اختر قالباً وابدأ التوليد فوراً." },
+      { name: "description", content: "مكتبة قوالب جاهزة للنصوص والصور — اختر قالباً وابدأ التوليد فوراً." },
     ],
   }),
   component: TemplatesPage,

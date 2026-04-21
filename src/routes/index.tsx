@@ -19,16 +19,16 @@ import ogHomeImage from "@/assets/og-home.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "رِفد — اكتب 30 منشور + 30 صورة لمتجرك في 5 دقائق بالعامية السعودية" },
+      { title: "رِفد — محتوى وصور احترافية لمتجرك بالعامية السعودية" },
       {
         name: "description",
         content:
-          "تعبت تكتب وتصمّم لمتجرك؟ رِفد يولّد لك 30 منشور + 30 صورة احترافية بالعامية السعودية في 5 دقائق بدل 5 ساعات. 40 قالب جاهز + توليد صور وبوسترات. جرّب مجاناً بدون بطاقة.",
+          "تعبت تكتب وتصمّم لمتجرك؟ رِفد يولّد لك منشورات وصور احترافية بالعامية السعودية بسرعة، مع 45+ قالب جاهز للمتاجر السعودية. جرّب مجاناً بدون بطاقة.",
       },
-      { property: "og:title", content: "رِفد — 30 منشور + 30 صورة لمتجرك السعودي في وقت قهوتك ☕" },
+      { property: "og:title", content: "رِفد — محتوى وصور لمتجرك السعودي في وقت قهوتك ☕" },
       {
         property: "og:description",
-        content: "30 منشور + 30 صورة احترافية في 5 دقائق بالعامية السعودية — بدل ما تقعد 5 ساعات. وفّر 800+ ر.س شهرياً.",
+        content: "منشورات وصور احترافية بالعامية السعودية — وفّر ساعات من الكتابة والتصميم اليدوي.",
       },
       { property: "og:image", content: ogHomeImage },
       { property: "og:image:width", content: "1200" },
@@ -79,10 +79,10 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-extrabold sm:text-4xl">
-              ليش رِفد <span className="text-gradient-gold">أرخص وأذكى</span> من ChatGPT؟
+              ليش رِفد <span className="text-gradient-gold">أنسب وأذكى</span> من ChatGPT لمتجرك؟
             </h2>
             <p className="mt-3 text-muted-foreground">
-              نفس قوة الذكاء الاصطناعي العالمي + تخصيص كامل للسوق السعودي + أرخص بـ70%
+              نفس قوة الذكاء الاصطناعي العالمي + تخصيص كامل للسوق السعودي + سعر بالريال
             </p>
           </div>
           <div className="mt-8 mx-auto max-w-4xl">

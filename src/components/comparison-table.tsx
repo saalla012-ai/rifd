@@ -6,7 +6,7 @@ const ROWS = [
   { label: "السعر الشهري", chatgpt: "$20 (~75 ر.س)", gemini: "$20 (~75 ر.س)", rifd: "79 ر.س" },
   { label: "العامية السعودية", chatgpt: false, gemini: false, rifd: true },
   { label: "ذاكرة متجر دائمة", chatgpt: false, gemini: false, rifd: true },
-  { label: "40 قالب جاهز", chatgpt: false, gemini: false, rifd: true },
+  { label: "مكتبة قوالب سعودية جاهزة", chatgpt: false, gemini: false, rifd: true },
   { label: "توليد صور بنص عربي", chatgpt: "محدود", gemini: "محدود", rifd: true },
   { label: "تحسين صور منتجات", chatgpt: false, gemini: false, rifd: true },
   { label: "لا يحتاج هندسة برومبتات", chatgpt: false, gemini: false, rifd: true },

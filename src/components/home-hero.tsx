@@ -194,8 +194,8 @@ export function HomeHero() {
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
             {[
               { icon: "🇸🇦", title: "عامية أصيلة", sub: "ما تحس إنه مترجم" },
-              { icon: "💰", title: "وفّر 800 ر.س", sub: "بدل كاتب/مصمم" },
-              { icon: "⚡", title: "10 ثواني", sub: "نتيجة جاهزة للنشر" },
+              { icon: "💰", title: "وفّر ساعات", sub: "بدل كاتب/مصمم" },
+              { icon: "⚡", title: "ثوانٍ معدودة", sub: "نتيجة جاهزة للنشر" },
               { icon: "🧠", title: "ذاكرة متجر", sub: "يحفظ تفاصيلك" },
             ].map((b) => (
               <div

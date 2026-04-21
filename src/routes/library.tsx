@@ -10,16 +10,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/library")({
   head: () => ({
     meta: [
-      { title: "مكتبة الأوامر — 40 قالب AI بالعامية السعودية | رِفد" },
+      { title: "مكتبة الأوامر — 45+ قالب AI بالعامية السعودية | رِفد" },
       {
         name: "description",
         content:
-          "تصفّح 40 قالب جاهز: منشورات سوشيال، أوصاف منتجات، إعلانات، بوسترات وصور. مصممة خصيصاً للمتاجر السعودية.",
+          "تصفّح مكتبة قوالب جاهزة: منشورات سوشيال، أوصاف منتجات، إعلانات، بوسترات وصور. مصممة خصيصاً للمتاجر السعودية.",
       },
-      { property: "og:title", content: "مكتبة 40 قالب AI سعودية | رِفد" },
+      { property: "og:title", content: "مكتبة قوالب AI سعودية | رِفد" },
       {
         property: "og:description",
-        content: "30 قالب نصي + 10 قوالب صور بالعامية السعودية. اختر، خصّص، ولّد في 10 ثواني.",
+        content: "قوالب نصية وصور بالعامية السعودية. اختر، خصّص، ولّد بسرعة.",
       },
     ],
   }),
@@ -69,7 +69,7 @@ function LibraryPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="ابحث في 40 قالب... (مثلاً: منشور، عطر، بوستر)"
+              placeholder={`ابحث في ${PROMPTS.length} قالب... (مثلاً: منشور، عطر، بوستر)`}
               className="pr-10"
             />
           </div>
