@@ -3,18 +3,19 @@ import { createClient } from "@supabase/supabase-js";
 import * as React from "react";
 import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
-import { sendResendEmail } from "@/server/resend";
 
 const SITE_NAME = "رِفد";
-const FROM_ADDRESS = `${SITE_NAME} <onboarding@resend.dev>`;
+const SENDER_DOMAIN = "notify.rifd.site";
+const FROM_ADDRESS = `${SITE_NAME} <noreply@notify.rifd.site>`;
+const QUEUE_NAME = "transactional_emails";
 
 /**
- * Cron-triggered route — يُرسل رسائل onboarding للمستخدمين الجدد.
+ * Cron-triggered route — يضع رسائل onboarding/lifecycle في طابور Lovable Email.
  *   - welcome: لكل من سجّل خلال آخر 24 ساعة ولم يستلم welcome بعد.
- *   - onboarding-tip-day3: لمن سجّل قبل 3 أيام (±12h) ولم يكمل onboarded.
+ *   - day1/day3-tip/day5/day7: نوافذ ±12h حول كل علامة زمنية.
+ *   - discount-30: لمستخدم مجاني بعد 7 أيام بدون subscription_request — مرة واحدة فقط.
  *
- * فحص idempotency عبر email_send_log (message_id فريد) + suppression list.
- * يُستدعى يومياً عبر pg_cron — متجاوز لـmiddleware لأنه تحت /hooks/.
+ * idempotency عبر email_send_log (message_id فريد) + suppression list.
  */
 export const Route = createFileRoute("/hooks/onboarding-emails")({
   server: {
@@ -71,7 +72,6 @@ export const Route = createFileRoute("/hooks/onboarding-emails")({
         }
 
         // ============== Buckets 2-5: day-1, day-3, day-5, day-7 ==============
-        // كل bucket يستهدف نافذة 24h حول اليوم المحدد منذ التسجيل.
         const dayBuckets: Array<{
           day: number;
           template: string;
@@ -129,6 +129,55 @@ export const Route = createFileRoute("/hooks/onboarding-emails")({
           }
         }
 
+        // ============== Bucket 6: discount-30 (free users بعد 7 أيام بلا اشتراك) ==============
+        // مرة واحدة لكل مستخدم: مجاني + سجّل قبل 7 أيام (نافذة ±12h) + بدون subscription_request.
+        const target30 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const lower30 = new Date(target30.getTime() - 12 * 60 * 60 * 1000);
+        const upper30 = new Date(target30.getTime() + 12 * 60 * 60 * 1000);
+
+        const { data: freeRows, error: freeErr } = await supabase
+          .from("profiles")
+          .select("id, email, full_name, created_at, plan")
+          .eq("plan", "free")
+          .gte("created_at", lower30.toISOString())
+          .lt("created_at", upper30.toISOString())
+          .not("email", "is", null);
+
+        if (freeErr) {
+          console.error("discount-30 query failed", { freeErr });
+        } else {
+          for (const row of freeRows ?? []) {
+            // فحص: لم يقدّم طلب اشتراك سابقاً
+            const { data: hasReq } = await supabase
+              .from("subscription_requests")
+              .select("id")
+              .eq("user_id", row.id)
+              .limit(1)
+              .maybeSingle();
+            if (hasReq) {
+              results.push({
+                userId: row.id,
+                email: row.email!,
+                bucket: "discount-30",
+                status: "has_subscription_request",
+              });
+              continue;
+            }
+            const res = await enqueueIfNew(supabase, {
+              templateName: "free-trial-discount-30pct",
+              messageId: `discount-30-${row.id}`,
+              email: row.email!,
+              templateData: { fullName: row.full_name ?? undefined },
+            });
+            results.push({
+              userId: row.id,
+              email: row.email!,
+              bucket: "discount-30",
+              status: res,
+            });
+          }
+        }
+
         return Response.json({ processed: results.length, results });
       },
     },
@@ -178,40 +227,43 @@ async function enqueueIfNew(
         ? template.subject(templateData)
         : template.subject;
 
-    try {
-      const result = await sendResendEmail({
-        from: FROM_ADDRESS,
+    // Log pending
+    await supabase.from("email_send_log").insert({
+      message_id: messageId,
+      template_name: templateName,
+      recipient_email: email,
+      status: "pending",
+    });
+
+    const { error: enqueueError } = await supabase.rpc("enqueue_email", {
+      queue_name: QUEUE_NAME,
+      payload: {
         to: email,
+        from: FROM_ADDRESS,
+        sender_domain: SENDER_DOMAIN,
         subject,
         html,
         text: plainText,
-        headers: { "X-Idempotency-Key": messageId },
-        tags: [{ name: "template", value: templateName }],
-      });
-
-      await supabase.from("email_send_log").insert({
+        purpose: "transactional",
+        label: templateName,
+        idempotency_key: messageId,
         message_id: messageId,
-        template_name: templateName,
-        recipient_email: email,
-        status: "sent",
-        metadata: { provider: "resend", provider_id: result.id },
-      });
-      return "sent";
-    } catch (sendErr: any) {
-      console.error("resend send failed", {
-        templateName,
-        messageId,
-        error: sendErr?.message,
-      });
+        queued_at: new Date().toISOString(),
+      },
+    });
+
+    if (enqueueError) {
+      const errMsg = String(enqueueError.message ?? enqueueError).slice(0, 1000);
       await supabase.from("email_send_log").insert({
         message_id: messageId,
         template_name: templateName,
         recipient_email: email,
         status: "failed",
-        error_message: String(sendErr?.message ?? sendErr).slice(0, 1000),
+        error_message: `Enqueue failed: ${errMsg}`,
       });
-      return "send_failed";
+      return "enqueue_failed";
     }
+    return "queued";
   } catch (e) {
     console.error("render exception", { templateName, messageId, e });
     return "render_failed";
