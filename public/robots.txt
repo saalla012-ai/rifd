@@ -10,4 +10,4 @@ Disallow: /api/
 Disallow: /hooks/
 Disallow: /lovable/
 
-Sitemap: https://rifd.lovable.app/sitemap.xml
+Sitemap: https://rifd.site/sitemap.xml

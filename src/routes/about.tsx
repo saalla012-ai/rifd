@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, Target, Heart, Award } from "lucide-react";
+import { Sparkles, Target, Heart, Award, MessageCircle, Mail } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
 
@@ -48,7 +48,7 @@ function AboutPage() {
               فصحى مكسّرة أو ترجمة آلية.
             </p>
             <p>
-              فرحنا اشتغلنا. جمعنا فريق من المهندسين والكتّاب السعوديين، وبنينا 40 قالب
+              فرحنا اشتغلنا. جمعنا فريق من المهندسين والكتّاب السعوديين، وبنينا أكثر من 40 قالب
               مهندس بآلاف الأمثلة المحلية. ربطناها بأقوى نماذج AI في العالم (ChatGPT و Gemini)،
               وأضفنا "ذاكرة متجر" تخلّي كل توليدة مخصصة لمتجرك بدون ما تعيد التفاصيل.
             </p>
@@ -76,13 +76,22 @@ function AboutPage() {
 
           <div className="mt-12 rounded-2xl border border-primary/20 bg-secondary/40 p-6 text-center">
             <h3 className="text-lg font-bold">عندك سؤال أو اقتراح؟</h3>
-            <p className="mt-2 text-sm text-muted-foreground">نحن نسمعك دائماً</p>
+            <p className="mt-2 text-sm text-muted-foreground">نحن نسمعك دائماً — اختر القناة الأنسب</p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <Button asChild>
-                <a href="mailto:hello@rifd.site">راسلنا على البريد</a>
+                <a href="https://wa.me/966582286215" target="_blank" rel="noreferrer noopener">
+                  <MessageCircle className="ml-2 h-4 w-4" />
+                  واتساب الدعم
+                </a>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/onboarding">جرّب رِفد الآن</Link>
+                <a href="mailto:hello@rifd.site">
+                  <Mail className="ml-2 h-4 w-4" />
+                  hello@rifd.site
+                </a>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link to="/contact">صفحة التواصل الكاملة</Link>
               </Button>
             </div>
           </div>
