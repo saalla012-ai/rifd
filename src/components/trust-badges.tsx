@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 const BADGES = [
   {
     icon: Clock,
-    title: "تأكيد فوري 24/7",
-    desc: "دعم متاح على مدار الساعة",
+    title: "تأكيد فوري للطلب",
+    desc: "ردّ سريع من المؤسس",
     color: "text-success",
   },
   {
