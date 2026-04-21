@@ -53,7 +53,10 @@ export const Route = createRootRoute({
         content: "حوّل متجرك السعودي إلى آلة محتوى ذكية. 40 قالب جاهز للنصوص والصور بالعامية السعودية.",
       },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "canonical", href: "https://rifd.lovable.app/" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
