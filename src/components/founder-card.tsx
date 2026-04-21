@@ -28,7 +28,7 @@ export function FounderCard({ whatsappNumber }: { whatsappNumber: string }) {
             </span>
           </div>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            ما عندنا بوت ولا فريق دعم خارجي. كل رسالة تردّها أنت كصاحب المنصة — متاح على مدار الساعة 24/7.
+            ما عندنا بوت ولا فريق دعم خارجي. كل رسالة تردّها أنت كصاحب المنصة — رد سريع عبر واتساب خلال ساعات العمل.
           </p>
         </div>
       </div>
@@ -36,7 +36,7 @@ export function FounderCard({ whatsappNumber }: { whatsappNumber: string }) {
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3">
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
-          دعم 24/7 — متوسط الرد أقل من 5 دقائق
+          واتساب مباشر — متوسط الرد أقل من 5 دقائق
         </div>
         <Button asChild size="sm" variant="outline" className="h-8 text-xs">
           <a href={waUrl} target="_blank" rel="noopener noreferrer">
