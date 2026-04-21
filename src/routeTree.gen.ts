@@ -58,6 +58,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
 import { Route as ApiPublicHooksOcrReceiptRouteImport } from './routes/api.public.hooks.ocr-receipt'
+import { Route as ApiPublicHooksCheckStaleSubscriptionsRouteImport } from './routes/api.public.hooks.check-stale-subscriptions'
 import { Route as ApiPublicHooksCheckEmailDlqRouteImport } from './routes/api.public.hooks.check-email-dlq'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
@@ -312,6 +313,12 @@ const ApiPublicHooksOcrReceiptRoute =
     path: '/api/public/hooks/ocr-receipt',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksCheckStaleSubscriptionsRoute =
+  ApiPublicHooksCheckStaleSubscriptionsRouteImport.update({
+    id: '/api/public/hooks/check-stale-subscriptions',
+    path: '/api/public/hooks/check-stale-subscriptions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCheckEmailDlqRoute =
   ApiPublicHooksCheckEmailDlqRouteImport.update({
     id: '/api/public/hooks/check-email-dlq',
@@ -363,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
+  '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -414,6 +422,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
+  '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -467,6 +476,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
+  '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -521,6 +531,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/api/public/hooks/check-email-dlq'
+    | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
@@ -572,6 +583,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/dashboard/billing'
     | '/api/public/hooks/check-email-dlq'
+    | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
@@ -624,6 +636,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/api/public/hooks/check-email-dlq'
+    | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
@@ -667,6 +680,7 @@ export interface RootRouteChildren {
   ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
+  ApiPublicHooksCheckStaleSubscriptionsRoute: typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   ApiPublicHooksOcrReceiptRoute: typeof ApiPublicHooksOcrReceiptRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -1020,6 +1034,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksOcrReceiptRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/check-stale-subscriptions': {
+      id: '/api/public/hooks/check-stale-subscriptions'
+      path: '/api/public/hooks/check-stale-subscriptions'
+      fullPath: '/api/public/hooks/check-stale-subscriptions'
+      preLoaderRoute: typeof ApiPublicHooksCheckStaleSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/check-email-dlq': {
       id: '/api/public/hooks/check-email-dlq'
       path: '/api/public/hooks/check-email-dlq'
@@ -1096,6 +1117,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksCheckEmailDlqRoute: ApiPublicHooksCheckEmailDlqRoute,
+  ApiPublicHooksCheckStaleSubscriptionsRoute:
+    ApiPublicHooksCheckStaleSubscriptionsRoute,
   ApiPublicHooksOcrReceiptRoute: ApiPublicHooksOcrReceiptRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
