@@ -43,6 +43,7 @@ import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-
 import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
+import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -56,6 +57,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
+import { Route as ApiPublicHooksCheckEmailDlqRouteImport } from './routes/api.public.hooks.check-email-dlq'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
@@ -229,6 +231,11 @@ const AdminPlanLimitsRoute = AdminPlanLimitsRouteImport.update({
   path: '/admin/plan-limits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEmailMonitorRoute = AdminEmailMonitorRouteImport.update({
+  id: '/admin/email-monitor',
+  path: '/admin/email-monitor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDomainScanRoute = AdminDomainScanRouteImport.update({
   id: '/admin/domain-scan',
   path: '/admin/domain-scan',
@@ -298,6 +305,12 @@ const DashboardBillingConfirmRequestIdRoute =
     path: '/billing/confirm/$requestId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const ApiPublicHooksCheckEmailDlqRoute =
+  ApiPublicHooksCheckEmailDlqRouteImport.update({
+    id: '/api/public/hooks/check-email-dlq',
+    path: '/api/public/hooks/check-email-dlq',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -315,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
+  '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -341,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -363,6 +378,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
+  '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -389,6 +405,7 @@ export interface FileRoutesByTo {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -413,6 +430,7 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
+  '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/demo-generate': typeof ApiDemoGenerateRoute
@@ -439,6 +457,7 @@ export interface FileRoutesById {
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -464,6 +483,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/domain-scan'
+    | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -490,6 +510,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
+    | '/api/public/hooks/check-email-dlq'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -512,6 +533,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/domain-scan'
+    | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -538,6 +560,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/lovable/email/suppression'
     | '/dashboard/billing'
+    | '/api/public/hooks/check-email-dlq'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -561,6 +584,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/domain-scan'
+    | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
     | '/api/demo-generate'
@@ -587,6 +611,7 @@ export interface FileRouteTypes {
     | '/api/invoice/$requestId'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
+    | '/api/public/hooks/check-email-dlq'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -611,6 +636,7 @@ export interface RootRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminDomainScanRoute: typeof AdminDomainScanRoute
+  AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
@@ -627,6 +653,7 @@ export interface RootRouteChildren {
   LegalTermsRoute: typeof LegalTermsRoute
   ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -874,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlanLimitsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/email-monitor': {
+      id: '/admin/email-monitor'
+      path: '/admin/email-monitor'
+      fullPath: '/admin/email-monitor'
+      preLoaderRoute: typeof AdminEmailMonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/domain-scan': {
       id: '/admin/domain-scan'
       path: '/admin/domain-scan'
@@ -965,6 +999,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingConfirmRequestIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/public/hooks/check-email-dlq': {
+      id: '/api/public/hooks/check-email-dlq'
+      path: '/api/public/hooks/check-email-dlq'
+      fullPath: '/api/public/hooks/check-email-dlq'
+      preLoaderRoute: typeof ApiPublicHooksCheckEmailDlqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1016,6 +1057,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminDomainScanRoute: AdminDomainScanRoute,
+  AdminEmailMonitorRoute: AdminEmailMonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiDemoGenerateRoute: ApiDemoGenerateRoute,
@@ -1032,6 +1074,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalTermsRoute: LegalTermsRoute,
   ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksCheckEmailDlqRoute: ApiPublicHooksCheckEmailDlqRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,

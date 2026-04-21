@@ -199,6 +199,13 @@ function ConfirmRequestPage() {
         return;
       }
 
+      // Fire-and-forget OCR check (admin-side note only, never blocks user)
+      void fetch("/api/public/hooks/ocr-receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_id: request.id }),
+      }).catch(() => {});
+
       toast.success("✅ تم رفع الإيصال — رائع! سيُسرّع التفعيل");
       await loadAll();
     } finally {
