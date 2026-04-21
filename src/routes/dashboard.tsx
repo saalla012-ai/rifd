@@ -17,11 +17,14 @@ function DashboardLayout() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Guard: any authenticated user without completed onboarding OR without
-  // a WhatsApp number on file is redirected to /onboarding to complete it.
+  // Guard: redirect unauthenticated users to /auth, and authenticated users
+  // without completed onboarding (or missing WhatsApp) to /onboarding.
   useEffect(() => {
     if (loading) return;
-    if (!user) return; // /auth handles unauthenticated separately
+    if (!user) {
+      void navigate({ to: "/auth" });
+      return;
+    }
     if (!profile) return;
     const needsOnboarding = !profile.onboarded || !profile.whatsapp;
     if (needsOnboarding) {

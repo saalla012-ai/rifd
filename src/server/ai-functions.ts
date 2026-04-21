@@ -221,10 +221,15 @@ export const generateImage = createServerFn({ method: "POST" })
       .upload(filename, bytes, { contentType: mime, upsert: false });
     if (upErr) throw new Error(`فشل حفظ الصورة: ${upErr.message}`);
 
-    const { data: pub } = supabase.storage
+    // Bucket is private — generate a long-lived signed URL (1 year)
+    const { data: signed, error: signErr } = await supabase.storage
       .from("generated-images")
-      .getPublicUrl(filename);
-    const publicUrl = pub.publicUrl;
+      .createSignedUrl(filename, 60 * 60 * 24 * 365);
+    if (signErr || !signed?.signedUrl) {
+      await supabase.storage.from("generated-images").remove([filename]).catch(() => {});
+      throw new Error(`فشل إنشاء رابط الصورة: ${signErr?.message ?? "unknown"}`);
+    }
+    const publicUrl = signed.signedUrl;
 
     const cost = estimateImageCost(model);
 
@@ -335,10 +340,15 @@ export const editImage = createServerFn({ method: "POST" })
       .upload(filename, bytes, { contentType: mime, upsert: false });
     if (upErr) throw new Error(`فشل حفظ الصورة: ${upErr.message}`);
 
-    const { data: pub } = supabase.storage
+    // Bucket is private — generate a long-lived signed URL (1 year)
+    const { data: signed, error: signErr } = await supabase.storage
       .from("generated-images")
-      .getPublicUrl(filename);
-    const publicUrl = pub.publicUrl;
+      .createSignedUrl(filename, 60 * 60 * 24 * 365);
+    if (signErr || !signed?.signedUrl) {
+      await supabase.storage.from("generated-images").remove([filename]).catch(() => {});
+      throw new Error(`فشل إنشاء رابط الصورة: ${signErr?.message ?? "unknown"}`);
+    }
+    const publicUrl = signed.signedUrl;
 
     const editCost = estimateImageCost(model);
 

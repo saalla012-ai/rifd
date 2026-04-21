@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { timingSafeEqual } from "crypto";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/telegram";
+
+function safeEqualStrings(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
 
 const PLAN_LABELS: Record<string, string> = {
   pro: "احترافي (Pro)",
@@ -96,7 +104,7 @@ export const Route = createFileRoute("/api/notify-telegram-admin")({
           }
 
           const providedSecret = request.headers.get("x-webhook-secret");
-          if (providedSecret !== expectedSecret) {
+          if (!providedSecret || !safeEqualStrings(providedSecret, expectedSecret)) {
             console.warn("notify-telegram-admin: invalid secret");
             return new Response(JSON.stringify({ error: "unauthorized" }), {
               status: 401,
