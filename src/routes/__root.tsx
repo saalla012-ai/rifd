@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
+import { CookieBanner } from "@/components/cookie-banner";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -52,10 +53,18 @@ export const Route = createRootRoute({
         name: "twitter:description",
         content: "حوّل متجرك السعودي إلى آلة محتوى ذكية. 40 قالب جاهز للنصوص والصور بالعامية السعودية.",
       },
+      { property: "og:image", content: "https://rifd.lovable.app/og-image.jpg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "رِفد للتقنية — منصة المحتوى الذكي للمتاجر السعودية" },
+      { name: "twitter:image", content: "https://rifd.lovable.app/og-image.jpg" },
+      { name: "twitter:image:alt", content: "رِفد للتقنية — منصة المحتوى الذكي للمتاجر السعودية" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "canonical", href: "https://rifd.lovable.app/" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/favicon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -82,6 +91,7 @@ function RootComponent() {
     <AuthProvider>
       <Outlet />
       <Toaster richColors position="top-center" />
+      <CookieBanner />
     </AuthProvider>
   );
 }
