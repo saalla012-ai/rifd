@@ -225,7 +225,12 @@ function BillingPage() {
     setSubmitting(false);
 
     if (error || !data) {
-      toast.error("فشل إرسال الطلب، حاول مرة أخرى");
+      const code = (error as { code?: string } | null)?.code;
+      if (code === "23505") {
+        toast.error("لديك طلب معلّق بالفعل لهذه الخطة — راجعه من الأسفل أو ألغِه قبل إنشاء طلب جديد.");
+      } else {
+        toast.error("فشل إرسال الطلب، حاول مرة أخرى");
+      }
       return;
     }
 
