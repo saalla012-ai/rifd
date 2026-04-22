@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "الرئيسية" },
+  { to: "/proof-center", label: "مركز الإثبات" },
   { to: "/library", label: "المكتبة" },
+  { to: "/business-solutions", label: "رِفد للأعمال" },
   { to: "/vs-chatgpt", label: "vs ChatGPT" },
   { to: "/pricing", label: "الأسعار" },
   { to: "/about", label: "من نحن" },
@@ -28,7 +30,7 @@ export function SiteHeader() {
             <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
           </span>
           <span className="text-lg font-extrabold sm:text-xl">
-            رِفد <span className="text-xs font-medium text-muted-foreground">للتقنية</span>
+            رِفد <span className="text-xs font-medium text-muted-foreground">للأعمال</span>
           </span>
         </Link>
 
