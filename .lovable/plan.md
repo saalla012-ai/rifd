@@ -54,11 +54,11 @@
 ## 4) خريطة الحالة الحالية الدقيقة
 
 ### نسبة التقدم العامة — V8
-- **نسبة التقدم التنفيذية الحالية: 82%**
+- **نسبة التقدم التنفيذية الحالية: 86%**
 - **الأساس الحسابي:**
   - `BAS-00` = 100%
-  - `FND-10` = 92%
-  - `CVR-20` = 78%
+  - `FND-10` = 100%
+  - `CVR-20` = 86%
   - `ACT-30` = 72%
   - `VPS-40` = 58%
   - `PRF-50` = 74%
@@ -69,13 +69,13 @@
 ### الحكم التنفيذي على هذه النسبة
 - النسبة تعني أن المشروع متقدم وقوي بنيوياً، لكنه لم يُغلق بعد بمعيار V8 الصارم.
 - ما يخفض النسبة ليس غياب الأساس، بل بقاء مراحل مؤثرة في وضع `PARTIAL`.
-- المرحلة النشطة المعتمدة الآن تبقى `FND-10` حتى تغلق نهائياً، وبعدها فقط ينتقل التنفيذ رسمياً إلى `CVR-20`.
+- المرحلة النشطة المعتمدة الآن هي `CVR-20` بعد إغلاق `FND-10`، والانتقال التالي المسموح يكون إلى `ACT-30` فقط بعد إغلاقها.
 
 | الرمز | المرحلة | الحالة | الحكم التنفيذي |
 |---|---|---:|---|
 | `BAS-00` | إعادة تثبيت baseline التنفيذي | `PARTIAL` | الخطة قوية لكن تشخيصها القديم لا يعكس الواقع الحالي بالكامل |
-| `FND-10` | Foundation Closure | `PARTIAL` | توحيد الرسائل قوي لكنه غير مغلق نهائياً |
-| `CVR-20` | Conversion Closure | `PARTIAL` | الرئيسية متقدمة لكن لم تُغلق بالكامل عبر كل breakpoints |
+| `FND-10` | Foundation Closure | `DONE` | تم توحيد الرسائل الأساسية وإزالة بقايا claims غير المنضبطة في المسارات التسويقية الأساسية |
+| `CVR-20` | Conversion Closure | `PARTIAL` | الرئيسية أصبحت أوضح تحويلياً لكن ما زالت تحتاج الإغلاق النهائي لبقية الإيقاع المقنِع عبر الصفحة كاملة |
 | `ACT-30` | Activation Wow Closure | `PARTIAL` | يوجد Success Pack فعلي لكن التجربة لم تصل لسقف wow الكامل |
 | `VPS-40` | Visual Proof Asset | `PARTIAL` | يوجد proof narrative حي لكن ليس proof video system كاملاً |
 | `PRF-50` | Proof Center Deepening | `PARTIAL` | Proof Center موجود ويعمل لكنه يحتاج تعميق قرار الشراء |
@@ -269,7 +269,7 @@
 - قائمة claims التي تم تثبيتها أو تخفيفها
 
 ### الترميز الحالي
-`[PHASE:FND-10][STATE:PARTIAL][GATE:OPEN][NEXT:CLOSE_REMAINING_CLAIMS_AND_RECHECK_BREAKPOINTS]`
+`[PHASE:FND-10][STATE:DONE][GATE:PASS][NEXT:CVR-20]`
 
 ---
 
@@ -313,7 +313,7 @@
 - ملاحظات قبل/بعد على header/hero/cta density
 
 ### الترميز الحالي
-`[PHASE:CVR-20][STATE:PARTIAL][GATE:OPEN][NEXT:TABLET_CONVERSION_POLISH]`
+`[PHASE:CVR-20][STATE:PARTIAL][GATE:OPEN][NEXT:CLOSE_HOMEPAGE_SECTION_PACING_AND_PROOF_RHYTHM]`
 
 ---
 
