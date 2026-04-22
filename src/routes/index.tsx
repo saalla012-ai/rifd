@@ -97,26 +97,6 @@ function HomePage() {
               </article>
             ))}
           </div>
-
-          <div className="mt-8 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <article className="rounded-xl border border-primary/20 bg-primary/5 p-5 shadow-soft">
-              <p className="text-sm font-bold text-primary">لماذا هذا الترتيب يرفع التحويل؟</p>
-              <h3 className="mt-2 text-xl font-extrabold">الزائر يرى الإجابة قبل أن يضطر للسؤال</h3>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
-                الوعد أولاً، ثم إثبات قريب، ثم آلية مبسطة، ثم خطوة بدء واضحة. هذا يقلل التردد خصوصاً على
-                التابلت والموبايل حيث يقرر الزائر بسرعة إن كان المنتج مناسباً له أم لا.
-              </p>
-            </article>
-
-            <article className="rounded-xl border border-border bg-card p-5 shadow-soft">
-              <p className="text-sm font-bold text-primary">النتيجة المتوقعة</p>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
-                <li>• فهم أسرع لما يقدمه رِفد خلال أول شاشة.</li>
-                <li>• انتقال أنعم من الوعد إلى الإثبات ثم إلى التجرِبة.</li>
-                <li>• تقليل الإحساس بأن الصفحة مزدحمة أو تشرح أكثر من اللازم.</li>
-              </ul>
-            </article>
-          </div>
         </div>
       </section>
 
@@ -190,7 +170,7 @@ function HomePage() {
       </section>
 
       <section id="final-cta" className="border-t border-border bg-background py-16 pb-24 sm:pb-16">
-        <div className="mx-auto max-w-4xl rounded-2xl gradient-primary p-8 text-center text-primary-foreground shadow-elegant sm:p-12">
+        <div className="mx-auto max-w-4xl rounded-3xl gradient-primary p-8 text-center text-primary-foreground shadow-elegant sm:p-12">
           <p className="text-sm font-bold text-primary-foreground/80">ابدأ بخطوة واحدة</p>
           <h2 className="text-3xl font-extrabold sm:text-4xl">
             جاهز تحوّل متجرك إلى آلة محتوى؟

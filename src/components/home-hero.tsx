@@ -74,14 +74,6 @@ export function HomeHero() {
           </span>
         </h1>
 
-        <p
-          className="mx-auto mt-4 max-w-2xl text-center text-sm font-medium leading-7 text-foreground/80 sm:text-base animate-fade-in"
-          style={{ animationDelay: "120ms" }}
-        >
-          رِفد منصة تولّد لمتجرك السعودي حزمة تسويق أولية من نفس الوصف: منشور مقنع، صورة مناسبة، وزاوية
-          ريلز جاهزة للبداية بدل التشتت بين أدوات وطلبات منفصلة.
-        </p>
-
         <div
           className="mx-auto mt-5 flex max-w-[17rem] items-center justify-center gap-2 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg animate-fade-in"
           style={{ animationDelay: "180ms" }}
@@ -132,7 +124,7 @@ export function HomeHero() {
           className="mx-auto mt-9 max-w-3xl animate-fade-in"
           style={{ animationDelay: "420ms" }}
         >
-          <div className="grid gap-2.5 min-[460px]:grid-cols-2 sm:gap-3 md:gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-3 md:gap-4 lg:grid-cols-4">
             {HERO_BENEFITS.map((b) => (
               <div
                 key={b.title}
