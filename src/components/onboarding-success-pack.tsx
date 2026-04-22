@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, Tags, Wand2 } from "lucide-react";
+import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, Target, Tags, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SuccessPack } from "@/lib/onboarding-success";
 
@@ -76,6 +76,49 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
       <div className="rounded-xl border border-gold/30 bg-gold/10 p-4">
         <div className="text-sm font-bold text-gold-foreground">لماذا هذه النتيجة مناسبة لمتجرك؟</div>
         <p className="mt-2 text-sm leading-7 text-foreground">{pack.whyItFits}</p>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-primary">
+            <Target className="h-4 w-4" />
+            Snapshot الحملة الأولى
+          </div>
+          <div className="mt-3 space-y-3 text-sm">
+            <div className="rounded-lg border border-border bg-background/80 px-3 py-3">
+              <div className="text-xs font-bold text-muted-foreground">العنوان</div>
+              <p className="mt-1 font-semibold">{pack.campaignSnapshot.headline}</p>
+            </div>
+            <div className="rounded-lg border border-border bg-background/80 px-3 py-3">
+              <div className="text-xs font-bold text-muted-foreground">الهدف</div>
+              <p className="mt-1 text-muted-foreground">{pack.campaignSnapshot.objective}</p>
+            </div>
+            <div className="rounded-lg border border-border bg-background/80 px-3 py-3">
+              <div className="text-xs font-bold text-muted-foreground">أول خطوة تشغيل</div>
+              <p className="mt-1 text-muted-foreground">{pack.campaignSnapshot.firstMove}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <Wand2 className="h-4 w-4 text-primary" />
+            الخطوات الثلاث التالية داخل حسابك
+          </div>
+          <div className="mt-3 space-y-3">
+            {pack.nextActions.map((item, index) => (
+              <div
+                key={item}
+                className="flex items-start gap-3 rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground"
+              >
+                <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-extrabold text-primary">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
