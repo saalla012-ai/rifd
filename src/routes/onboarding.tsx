@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateText } from "@/server/ai-functions";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
+import { OnboardingSuccessPack } from "@/components/onboarding-success-pack";
 import {
   formatSaudiPhoneDisplay,
   normalizeSaudiPhone,
@@ -55,6 +57,7 @@ function OnboardingPage() {
   const [color, setColor] = useState("#1a5d3e");
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
 
   // المستخدم لازم يكون مسجل دخول للوصول
   useEffect(() => {
@@ -125,6 +128,15 @@ function OnboardingPage() {
       });
 
       setResult(out.result);
+      setSuccessPack(
+        buildSuccessPack({
+          storeName: storeName.trim(),
+          productTypeLabel: productLabel,
+          audienceLabel,
+          tone,
+          primaryPost: out.result,
+        })
+      );
       setStep(5);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "فشل إنشاء المحتوى");
@@ -302,27 +314,8 @@ function OnboardingPage() {
             </div>
           )}
 
-          {step === 5 && result && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/15">
-                  <Check className="h-5 w-5 text-success" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-extrabold">تم! 🎉</h2>
-                  <p className="text-sm text-muted-foreground">هذا أول محتوى مخصص لمتجرك</p>
-                </div>
-              </div>
-              <pre className="whitespace-pre-wrap rounded-xl border border-primary/20 bg-secondary/50 p-4 text-right font-sans text-sm leading-relaxed">
-                {result}
-              </pre>
-              <Button asChild className="w-full gradient-primary text-primary-foreground shadow-elegant">
-                <Link to="/dashboard">
-                  ادخل لوحة التحكم
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+          {step === 5 && result && successPack && (
+            <OnboardingSuccessPack pack={successPack} />
           )}
         </div>
       </div>

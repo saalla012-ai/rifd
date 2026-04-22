@@ -141,7 +141,7 @@ export function LiveAiDemo() {
           </pre>
           <div className="mt-4 rounded-lg bg-gradient-to-l from-gold/15 to-primary/10 p-3 text-center">
             <p className="text-sm font-medium">
-              ✨ هذا غيض من فيض — في رِفد عندك <strong>40 قالب جاهز</strong> + ذاكرة متجر دائمة
+              ✨ هذا غيض من فيض — في رِفد عندك <strong>50+ قالب جاهز</strong> + تحديثات شهرية + ذاكرة متجر دائمة
             </p>
             <Button asChild size="sm" className="mt-2 gradient-gold text-gold-foreground shadow-gold">
               <Link to="/onboarding">سجّل واحصل على 5 توليدات مجانية</Link>

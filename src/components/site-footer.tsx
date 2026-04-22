@@ -15,8 +15,7 @@ export function SiteFooter() {
               <span className="text-lg">رِفد للتقنية</span>
             </Link>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">
-              منصة سعودية ذكية تحوّل متجرك إلى آلة محتوى — نصوص وصور بالعامية السعودية،
-              مدعومة بـChatGPT و Gemini، بدون هندسة برومبتات.
+              رِفد للأعمال: حلول التحول التجاري بالذكاء الاصطناعي للمتاجر السعودية — محتوى، صور، حملات، ومسارات تشغيل تتطور شهرياً.
             </p>
 
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/5 px-3 py-1.5 text-[11px] font-bold text-success">
@@ -29,7 +28,9 @@ export function SiteFooter() {
             <h4 className="mb-3 text-sm font-bold text-foreground">المنتج</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to="/library" className="text-muted-foreground hover:text-foreground">المكتبة</Link></li>
+              <li><Link to="/proof-center" className="text-muted-foreground hover:text-foreground">مركز الإثبات</Link></li>
               <li><Link to="/pricing" className="text-muted-foreground hover:text-foreground">الأسعار</Link></li>
+              <li><Link to="/business-solutions" className="text-muted-foreground hover:text-foreground">رِفد للأعمال</Link></li>
               <li><Link to="/vs-chatgpt" className="text-muted-foreground hover:text-foreground">رِفد vs ChatGPT</Link></li>
               <li><Link to="/onboarding" className="text-muted-foreground hover:text-foreground">جرّب مجاناً</Link></li>
             </ul>
@@ -65,7 +66,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
-          <span>© {year} رِفد للتقنية — مسجَّلة في المملكة العربية السعودية. جميع الحقوق محفوظة.</span>
+          <span>© {year} رِفد للأعمال — مسجَّلة في المملكة العربية السعودية. جميع الحقوق محفوظة.</span>
           <span className="flex items-center gap-2">
             صُنع بحب 🇸🇦 في الرياض
           </span>

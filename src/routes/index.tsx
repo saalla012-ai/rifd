@@ -5,6 +5,7 @@ import { MarketingLayout } from "@/components/marketing-layout";
 import { HomeHero } from "@/components/home-hero";
 import { StickyMobileCta } from "@/components/sticky-mobile-cta";
 import { BrandStrip } from "@/components/brand-strip";
+import { BusinessSolutionsTeaser } from "@/components/business-solutions-teaser";
 import { LiveAiDemo } from "@/components/live-ai-demo";
 import { SavingsCounter } from "@/components/savings-counter";
 import { BeforeAfter } from "@/components/before-after";
@@ -12,6 +13,7 @@ import { HowItWorks } from "@/components/how-it-works";
 import { ComparisonTable } from "@/components/comparison-table";
 import { VisionSection } from "@/components/vision-section";
 import { HomeFeatures } from "@/components/home-features";
+import { ProofCenterPreview } from "@/components/proof-center-preview";
 import { Button } from "@/components/ui/button";
 import { CATEGORIES, PROMPTS } from "@/lib/prompts-data";
 import ogHomeImage from "@/assets/og-home.jpg";
@@ -23,7 +25,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "تعبت تكتب وتصمّم لمتجرك؟ رِفد يولّد لك منشورات وصور احترافية بالعامية السعودية بسرعة، مع 45+ قالب جاهز للمتاجر السعودية. جرّب مجاناً بدون بطاقة.",
+          "تعبت تكتب وتصمّم لمتجرك؟ رِفد يولّد لك منشورات وصور وحِزم حملات بالعامية السعودية بسرعة، مع 50+ قالب جاهز وتحديثات شهرية للمتاجر السعودية. جرّب مجاناً بدون بطاقة.",
       },
       { property: "og:title", content: "رِفد — محتوى وصور لمتجرك السعودي في وقت قهوتك ☕" },
       {
@@ -74,6 +76,8 @@ function HomePage() {
       {/* 7. كيف يعمل رِفد في 3 خطوات (بديل الشهادات المزيفة) */}
       <HowItWorks />
 
+      <ProofCenterPreview />
+
       {/* 8. مقارنة مختصرة (مع إصلاح الموبايل) */}
       <section className="border-t border-border bg-secondary/30 py-16">
         <div className="mx-auto max-w-7xl px-4">
@@ -94,6 +98,8 @@ function HomePage() {
       {/* 9. الروية */}
       <VisionSection />
 
+      <BusinessSolutionsTeaser />
+
       {/* 10. الميزات (4 + accordion على الموبايل، 8 على الديسكتوب) */}
       <HomeFeatures />
 
@@ -104,7 +110,7 @@ function HomePage() {
             <div>
               <h2 className="text-3xl font-extrabold">مكتبة الأوامر</h2>
               <p className="mt-2 text-muted-foreground">
-                {PROMPTS.length} قالب مهندس بالعامية — اختر، خصّص، ولّد.
+                50+ قالب مهندس بالعامية السعودية مع تطويرات وقوالب جديدة شهرياً.
               </p>
             </div>
             <Button asChild variant="outline">

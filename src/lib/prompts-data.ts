@@ -1,6 +1,6 @@
 /**
- * مكتبة الأوامر — رِفد للتقنية
- * 30 أمر نصي + 10 أوامر صور = 40 أمر مهندس بالعامية السعودية
+ * مكتبة الأوامر — رِفد
+ * 50+ قالب نصي وبصري للمتاجر السعودية مع تحديثات شهرية مستمرة
  */
 
 export type PromptType = "text" | "image";
@@ -463,6 +463,17 @@ export const PROMPTS: Prompt[] = [
     freeTier: false,
     estimatedTime: "25 ثانية",
     variables: ["الموضوع", "النقاط"],
+  },
+  {
+    id: "img-reel-cover",
+    title: "غلاف Reel عربي احترافي",
+    description: "غلاف عمودي قوي بعنوان عربي واضح ومهيأ لجذب المشاهد من أول ثانية",
+    type: "image",
+    category: "video",
+    badge: "جديد",
+    freeTier: false,
+    estimatedTime: "25 ثانية",
+    variables: ["عنوان الريل", "اسم المتجر", "لون الهوية"],
   },
 ];
 
