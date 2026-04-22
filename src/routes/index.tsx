@@ -138,6 +138,9 @@ function HomePage() {
               <Link to="/pricing">شوف الباقات</Link>
             </Button>
           </div>
+          <p className="mt-4 text-sm font-medium text-primary-foreground/85">
+            5 توليدات نص + 2 صورة بدون بطاقة ائتمان
+          </p>
         </div>
       </section>
 
