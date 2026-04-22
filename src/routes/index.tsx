@@ -15,6 +15,7 @@ import { VisionSection } from "@/components/vision-section";
 import { HomeFeatures } from "@/components/home-features";
 import { ProofCenterPreview } from "@/components/proof-center-preview";
 import { Button } from "@/components/ui/button";
+import { BadgeCheck, LayoutTemplate, ShieldCheck, WandSparkles } from "lucide-react";
 import { CATEGORIES, PROMPTS } from "@/lib/prompts-data";
 import ogHomeImage from "@/assets/og-home.jpg";
 
@@ -44,6 +45,24 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const conversionSteps = [
+    {
+      icon: WandSparkles,
+      title: "أدخل وصفاً سريعاً",
+      description: "فكرة المنتج أو العرض أو المناسبة — بدون هندسة أوامر معقدة.",
+    },
+    {
+      icon: LayoutTemplate,
+      title: "رِفد يبني الحزمة",
+      description: "منشور وصورة وزاوية ريلز ضمن منطق مناسب للمتجر السعودي.",
+    },
+    {
+      icon: ShieldCheck,
+      title: "راجع وابدأ النشر",
+      description: "تنتقل من الفكرة إلى مخرج أقرب للتنفيذ بدل البدء من صفحة فارغة.",
+    },
+  ];
+
   return (
     <MarketingLayout>
       <HomeHero />
@@ -51,6 +70,35 @@ function HomePage() {
       <BrandStrip />
 
       <HeroProofFilm />
+
+      <section className="border-t border-border bg-background py-14 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+              <BadgeCheck className="h-3.5 w-3.5" />
+              كيف تتحول الفكرة إلى مخرج جاهز أسرع؟
+            </p>
+            <h2 className="mt-4 text-3xl font-extrabold sm:text-4xl">
+              التسلسل المقصود: <span className="text-gradient-primary">وعد واضح ← إثبات ← آلية ← خطوة الآن</span>
+            </h2>
+            <p className="mt-3 text-base leading-7 text-muted-foreground">
+              رِفد لا يكتفي بإجابة عامة؛ بل يحوّل وصفك السريع إلى حزمة تسويقية أقرب للنشر لمتجرك.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {conversionSteps.map((step) => (
+              <article key={step.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <step.icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 text-lg font-extrabold">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <SavingsCounter />
 
