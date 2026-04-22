@@ -4,6 +4,12 @@
  * generation reflects the brand's voice without the user having to repeat it.
  */
 
+import {
+  hasMeaningfulValue,
+  joinMemoryList,
+  templateOutputRules,
+} from "./prompt-memory";
+
 export type StoreContext = {
   store_name?: string | null;
   product_type?: string | null;
@@ -39,12 +45,6 @@ const PRODUCT_LABEL: Record<string, string> = {
   handmade: "متجر منتجات يدوية",
   other: "متجر متنوع",
 };
-
-import {
-  hasMeaningfulValue,
-  joinMemoryList,
-  templateOutputRules,
-} from "./prompt-memory";
 
 export function buildTextSystemPrompt(ctx: StoreContext, template: string): string {
   const toneText = ctx.tone ? TONE_LABEL[ctx.tone] ?? "نبرة طبيعية" : "نبرة طبيعية";
