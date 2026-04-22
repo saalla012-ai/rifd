@@ -63,14 +63,15 @@ function HomePage() {
       <section className="border-t border-border bg-secondary/30 py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-bold text-primary">مقارنة مباشرة</p>
             <h2 className="text-3xl font-extrabold sm:text-4xl">
               ليش رِفد <span className="text-gradient-gold">أنسب وأذكى</span> من ChatGPT لمتجرك؟
             </h2>
-            <p className="mt-3 text-muted-foreground">
+            <p className="mt-3 text-base leading-7 text-muted-foreground">
               نفس قوة الذكاء الاصطناعي العالمي + تخصيص كامل للسوق السعودي + سعر بالريال
             </p>
           </div>
-          <div className="mt-8 mx-auto max-w-4xl">
+          <div className="mx-auto mt-8 max-w-4xl">
             <ComparisonTable compact />
           </div>
         </div>
@@ -85,9 +86,10 @@ function HomePage() {
       <section className="border-t border-border bg-background py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
+            <div className="max-w-2xl">
+              <p className="text-sm font-bold text-primary">جاهزة للاستخدام</p>
               <h2 className="text-3xl font-extrabold">مكتبة الأوامر</h2>
-              <p className="mt-2 text-muted-foreground">
+              <p className="mt-2 text-base leading-7 text-muted-foreground">
                 50+ قالب مهندس بالعامية السعودية مع تطويرات وقوالب جديدة شهرياً.
               </p>
             </div>
@@ -121,10 +123,11 @@ function HomePage() {
 
       <section id="final-cta" className="border-t border-border bg-background py-16 pb-24 sm:pb-16">
         <div className="mx-auto max-w-4xl rounded-3xl gradient-primary p-8 text-center text-primary-foreground shadow-elegant sm:p-12">
+          <p className="text-sm font-bold text-primary-foreground/80">ابدأ بخطوة واحدة</p>
           <h2 className="text-3xl font-extrabold sm:text-4xl">
             جاهز تحوّل متجرك إلى آلة محتوى؟
           </h2>
-          <p className="mt-3 text-primary-foreground/90">
+          <p className="mt-3 text-base leading-7 text-primary-foreground/90">
             ابدأ مجاناً اليوم — 5 توليدات نص + 2 صور بدون بطاقة ائتمان
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

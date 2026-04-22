@@ -30,8 +30,8 @@ export function HomeHero() {
       <div className="pointer-events-none absolute -top-40 -left-32 h-[28rem] w-[28rem] rounded-full bg-primary/25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-gold/30 blur-3xl" />
 
-      <div className="relative mx-auto max-w-4xl px-4 py-7 sm:py-14 lg:py-16">
-        <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:flex-wrap">
+      <div className="relative mx-auto max-w-4xl px-4 py-8 sm:py-14 lg:py-16">
+        <div className="flex flex-col items-center justify-center gap-2.5 sm:flex-row sm:flex-wrap">
           <SubscribersCounter variant="inline" />
           <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold-foreground">
             <Star className="h-3.5 w-3.5 fill-gold text-gold" />
@@ -44,13 +44,13 @@ export function HomeHero() {
         </div>
 
         <h1
-          className="mt-4 text-center text-[1.5rem] font-black leading-[1.12] tracking-tight sm:mt-6 sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
+          className="mt-4 text-center text-[1.48rem] font-black leading-[1.14] tracking-tight sm:mt-6 sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
           style={{ animationDelay: "60ms" }}
         >
           <span className="block text-[0.66em] font-bold text-muted-foreground sm:text-[0.42em]">
             {HERO_HOOKS[variant].eyebrow}
           </span>
-          <span className="mt-2 block space-y-1 sm:space-y-0">
+          <span className="mt-2 block space-y-1.5 sm:space-y-0">
             <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>
             <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
           </span>
@@ -61,7 +61,7 @@ export function HomeHero() {
             <span className="mx-1 inline-block align-middle font-light text-muted-foreground/60 sm:mx-2">+</span>
             <span>{HERO_HOOKS[variant].outputs[2]}</span>
           </span>
-          <span className="mt-1.5 block text-[0.8em] leading-[1.14] sm:text-[0.9em]">
+          <span className="mt-2 block text-[0.8em] leading-[1.16] sm:text-[0.9em]">
             لمتجرك في{" "}
             <span className="relative inline-block whitespace-nowrap">
               <span
@@ -74,7 +74,7 @@ export function HomeHero() {
         </h1>
 
         <div
-          className="mx-auto mt-4 flex max-w-[17rem] items-center justify-center gap-2 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg animate-fade-in"
+          className="mx-auto mt-5 flex max-w-[17rem] items-center justify-center gap-2 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg animate-fade-in"
           style={{ animationDelay: "180ms" }}
         >
           <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1.5 text-destructive line-through decoration-2">
@@ -87,7 +87,7 @@ export function HomeHero() {
         </div>
 
         <div
-          className="mt-5 flex flex-col items-center gap-2.5 animate-fade-in"
+          className="mt-6 flex flex-col items-center gap-3 animate-fade-in"
           style={{ animationDelay: "260ms" }}
         >
           <Button
@@ -101,7 +101,7 @@ export function HomeHero() {
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div className="grid max-w-[17rem] grid-cols-1 gap-0.5 text-center text-[10px] font-medium text-muted-foreground sm:max-w-none sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1 sm:text-[11px]">
+          <div className="grid max-w-[17rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-none sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
             <span>✓ بدون بطاقة ائتمان</span>
             <span>✓ بداية سريعة خلال ثوانٍ</span>
             <span>✓ إلغاء بنقرة</span>
@@ -109,14 +109,14 @@ export function HomeHero() {
         </div>
 
         <div
-          className="mx-auto mt-8 max-w-3xl animate-fade-in"
+          className="mx-auto mt-9 max-w-3xl animate-fade-in"
           style={{ animationDelay: "420ms" }}
         >
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
             {HERO_BENEFITS.map((b) => (
               <div
                 key={b.title}
-                className="flex min-h-[84px] items-center gap-2.5 rounded-xl border border-border bg-card/80 p-3 backdrop-blur-sm sm:min-h-[unset] sm:gap-3"
+                className="flex min-h-[84px] items-center gap-2 rounded-xl border border-border bg-card/80 p-3 backdrop-blur-sm sm:min-h-[unset] sm:gap-3"
               >
                 <span className="text-xl sm:text-2xl">{b.icon}</span>
                 <div className="min-w-0">
