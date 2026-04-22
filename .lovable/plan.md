@@ -623,14 +623,14 @@
 ## 13) الخطوة التنفيذية التالية المعتمدة
 **المرحلة النشطة التالية رسمياً:**
 
-`[PHASE:FND-10][STATE:PARTIAL][GATE:OPEN][NEXT:RUN_MESSAGE_AUDIT]`
+`[PHASE:ACT-30][STATE:PARTIAL][GATE:OPEN][NEXT:DEEPEN_SUCCESS_PACK]`
 
 ### معنى ذلك
 - لا نفتح توسعاً جديداً الآن
 - لا نبدأ wave 2 قطاعية الآن
 - لا نبدأ business expansion إضافية الآن
 - الأولوية الرسمية التالية هي:
-  **إغلاق الرسائل والوعود والأرقام بالكامل**
+  **تعميق لحظة النجاح الأولى ورفع نجاح onboarding إلى wow عملي واضح**
 
 ---
 
@@ -644,4 +644,4 @@
 
 والقرار التنفيذي الحالي هو:
 
-`[PHASE:FND-10][STATE:PARTIAL][GATE:OPEN][NEXT:RUN_MESSAGE_AUDIT]`
+`[PHASE:ACT-30][STATE:PARTIAL][GATE:OPEN][NEXT:DEEPEN_SUCCESS_PACK]`
