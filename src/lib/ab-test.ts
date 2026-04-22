@@ -12,7 +12,7 @@ const SESSION_KEY = "rifd_ab_session";
 const SENT_EVENTS_KEY = "rifd_ab_sent";
 
 export type Variant = "A" | "B";
-export type EventType = "view" | "cta_click" | "demo_try" | "sticky_cta_click";
+export type EventType = "view" | "cta_click" | "demo_try" | "sticky_cta_click" | "submit";
 
 /** يحصل على variant ثابت للزائر — يحفظه أول مرة بنسبة 50/50. */
 export function getVariant(experiment: string): Variant {
