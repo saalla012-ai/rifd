@@ -10,14 +10,14 @@ const EXPERIMENT = "hero_hook";
 const HERO_HOOKS = {
   A: {
     eyebrow: "بدل ما يضيع يومك على المحتوى",
-    promiseLead: "أعطنا Brief سريع",
+    promiseLead: "أعطنا وصفاً سريعاً",
     promiseEnd: "والباقي على رِفد",
-    outputs: ["منشور", "صورة", "زاوية Reel"],
+    outputs: ["منشور", "صورة", "زاوية ريلز"],
     support: "مخرجات جاهزة لمتجرك بالعامية السعودية خلال دقائق، لا أيام.",
   },
   B: {
     eyebrow: "خلّ عرضك يبان من أول نظرة",
-    promiseLead: "أعطنا Brief سريع",
+    promiseLead: "أعطنا وصفاً سريعاً",
     promiseEnd: "ونطلع لك عرضاً يبيع",
     outputs: ["محتوى", "صورة", "ريلز"],
     support: "",
@@ -163,7 +163,7 @@ export function HomeHero() {
           <div className="flex max-w-[19rem] flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-[11px] font-medium text-muted-foreground sm:max-w-none">
             <span>✓ بدون بطاقة ائتمان</span>
             <span className="opacity-50">·</span>
-            <span>✓ بداية Success Pack خلال ثوانٍ</span>
+            <span>✓ بداية الحزمة خلال ثوانٍ</span>
             <span className="opacity-50">·</span>
             <span>✓ إلغاء بنقرة</span>
           </div>
@@ -215,7 +215,7 @@ export function HomeHero() {
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
             {[
               { icon: "🇸🇦", title: "عامية أصيلة", sub: "ما تحس إنه مترجم" },
-              { icon: "📦", title: "حزمة أولية", sub: "منشور + صورة + Reel" },
+               { icon: "📦", title: "حزمة أولية", sub: "منشور + صورة + ريلز" },
               { icon: "⚡", title: "ثوانٍ معدودة", sub: "نتيجة أقرب للتنفيذ" },
               { icon: "🧠", title: "ذاكرة متجر", sub: "كل مرة أذكى من قبل" },
             ].map((b) => (

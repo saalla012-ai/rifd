@@ -4,23 +4,23 @@ import { Button } from "@/components/ui/button";
 
 const steps = [
   {
-    title: "1) Brief سريع",
+    title: "1) وصف سريع",
     body: "اسم المتجر + نوع المنتج + الجمهور = نقطة بداية واضحة بدون تعقيد.",
     icon: Wand2,
   },
   {
-    title: "2) Copy سعودي مقنع",
-    body: "منشور رئيسي، هوكات، CTA، وزوايا نشر تبدو كأنها مكتوبة لمتجرك تحديداً.",
+    title: "2) نص سعودي مقنع",
+    body: "منشور رئيسي، هوكات، ودعوة شراء واضحة تبدو كأنها مكتوبة لمتجرك تحديداً.",
     icon: MessageSquareText,
   },
   {
     title: "3) مخرج بصري جاهز للحملة",
-    body: "فكرة صورة Hero، بوستر، واتجاه بصري يترجم الهوية إلى مادة قابلة للتنفيذ.",
+    body: "فكرة صورة رئيسية، بوستر، واتجاه بصري يترجم الهوية إلى مادة قابلة للتنفيذ.",
     icon: Images,
   },
   {
-    title: "4) Reel concept",
-    body: "Hook بصري، تسلسل لقطات، وزاوية بيع مختصرة تختصر عليك بداية المحتوى المرئي.",
+    title: "4) فكرة ريلز",
+    body: "افتتاحية بصرية، تسلسل لقطات، وزاوية بيع مختصرة تختصر عليك بداية المحتوى المرئي.",
     icon: Clapperboard,
   },
 ];
@@ -38,7 +38,7 @@ export function HeroProofFilm() {
             لا يبهرك رِفد بالواجهة فقط — <span className="text-gradient-primary">يُريك كيف يخرج النص والصورة وفكرة الريل من نفس الطلب.</span>
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
-            هذه ليست معاينة شكلية. هذا هو منطق الإقناع الذي نثبّته في V8: Brief بسيط يدخل، ثم ترى أمامك Copy وصورة وفكرة فيديو ضمن حزمة واحدة قابلة للتشغيل.
+            هذه ليست معاينة شكلية. هذا هو منطق الإقناع في رِفد: وصف بسيط يدخل، ثم ترى أمامك نصاً وصورة وفكرة فيديو ضمن حزمة واحدة قابلة للتشغيل.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -72,11 +72,11 @@ export function HeroProofFilm() {
             <div className="mb-4 flex items-center justify-between rounded-2xl border border-border bg-secondary/50 px-4 py-3">
               <div>
                 <div className="text-xs font-bold text-primary">مشهد الإبهار المقترح</div>
-                <div className="mt-1 text-sm font-extrabold">Brief واحد يجهّز 4 مخرجات</div>
+                <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز 4 مخرجات</div>
               </div>
               <div className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-bold text-success">
                 <span className="h-2 w-2 rounded-full bg-success" />
-                Live flow
+                تدفّق مباشر
               </div>
             </div>
 
@@ -88,7 +88,7 @@ export function HeroProofFilm() {
                   <div className="mt-3 space-y-2 text-xs text-muted-foreground">
                     <div className="rounded-lg bg-secondary px-3 py-2">عرض جديد لثبات الرائحة</div>
                     <div className="rounded-lg bg-secondary px-3 py-2">التركيز على الفخامة لا الخصم</div>
-                    <div className="rounded-lg bg-secondary px-3 py-2">CTA منخفض الاحتكاك</div>
+                    <div className="rounded-lg bg-secondary px-3 py-2">دعوة شراء خفيفة</div>
                   </div>
                 </div>
 
@@ -100,7 +100,7 @@ export function HeroProofFilm() {
 
               <div className="space-y-3">
                 <article className="rounded-2xl border border-border bg-background p-4">
-                  <div className="text-xs font-bold text-primary">Copy Output</div>
+                  <div className="text-xs font-bold text-primary">النص المقترح</div>
                   <p className="mt-2 text-sm leading-7 text-foreground">
                     عطر يثبت من أول حضور… نفحات راقية تعيش معك من بداية اليوم إلى آخره، بإحساس فخم يلفت بدون مبالغة.
                   </p>
@@ -108,13 +108,13 @@ export function HeroProofFilm() {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <article className="rounded-2xl border border-border bg-background p-4">
-                    <div className="text-xs font-bold text-primary">Image Direction</div>
+                    <div className="text-xs font-bold text-primary">اتجاه الصورة</div>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">
                       زجاجة العطر بإضاءة ذهبية ناعمة، خلفية داكنة متوازنة، ومساحة عنوان واضحة للعرض.
                     </p>
                   </article>
                   <article className="rounded-2xl border border-border bg-background p-4">
-                    <div className="text-xs font-bold text-primary">Reel Idea</div>
+                    <div className="text-xs font-bold text-primary">فكرة الريلز</div>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">
                       لقطة أولى للعبوة، ثم رشّة قريبة، ثم جملة ختامية: الثبات الذي يترك انطباعاً من أول لحظة.
                     </p>
@@ -125,7 +125,7 @@ export function HeroProofFilm() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-xs font-bold text-gold-foreground">المحصلة النهائية</div>
-                       <div className="mt-1 text-sm font-extrabold">Brief واحد يجهّز لك منشور + صورة + فكرة Reel + CTA</div>
+                       <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز لك منشوراً + صورة + فكرة ريلز + دعوة شراء</div>
                     </div>
                     <div className="rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground">بدلاً من 5 ساعات</div>
                   </div>
