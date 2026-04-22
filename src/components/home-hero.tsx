@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles, Star, Wand2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubscribersCounter } from "./subscribers-counter";
-import { PRODUCT_TYPES } from "@/lib/demo-results";
 import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
-import { HERO_BENEFITS, HERO_EXPERIMENT, HERO_HOOKS, QUICK_TYPES } from "./home-hero-content";
+import { HERO_BENEFITS, HERO_EXPERIMENT, HERO_HOOKS } from "./home-hero-content";
 
 /**
  * Hero الصفحة الرئيسية — نسخة أنظف مع فصل المحتوى الثابت عن منطق العرض.
  */
 export function HomeHero() {
-  const [selectedType, setSelectedType] = useState<string>("");
   const [variant, setVariant] = useState<"A" | "B">("A");
 
   useEffect(() => {
@@ -20,20 +18,6 @@ export function HomeHero() {
     setVariant(resolvedVariant);
     void trackEvent(HERO_EXPERIMENT, resolvedVariant, "view");
   }, []);
-
-  const triggerDemo = (typeId: string) => {
-    setSelectedType(typeId);
-    void trackEvent(HERO_EXPERIMENT, variant, "demo_try");
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("rifd:prefill-demo", { detail: { productType: typeId } })
-      );
-      const target = document.getElementById("live-demo");
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  };
 
   const handleCtaClick = () => {
     rememberAttribution(HERO_EXPERIMENT, variant);
@@ -121,43 +105,6 @@ export function HomeHero() {
             <span>✓ بدون بطاقة ائتمان</span>
             <span>✓ بداية سريعة خلال ثوانٍ</span>
             <span>✓ إلغاء بنقرة</span>
-          </div>
-        </div>
-
-        <div
-          className="mx-auto mt-6 max-w-xl rounded-2xl border-2 border-dashed border-primary/30 bg-card/70 p-3 backdrop-blur-sm sm:mt-8 sm:p-5 animate-fade-in"
-          style={{ animationDelay: "340ms" }}
-        >
-          <div className="mb-2.5 flex items-center justify-center gap-2 text-center text-sm font-bold text-primary">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10">
-              <Wand2 className="h-3.5 w-3.5" />
-            </span>
-            أو جرّب بدون تسجيل — اختر متجرك:
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
-            {QUICK_TYPES.map((q) => (
-              <button
-                key={q.id}
-                onClick={() => triggerDemo(q.id)}
-                className="rounded-full border-2 border-primary/30 bg-background px-3 py-2 text-sm font-bold text-foreground transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground sm:hover:scale-105"
-              >
-                {q.label}
-              </button>
-            ))}
-            <select
-              value={selectedType}
-              onChange={(e) => e.target.value && triggerDemo(e.target.value)}
-              className="col-span-2 w-full rounded-full border-2 border-primary/30 bg-background px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary cursor-pointer sm:w-auto"
-              aria-label="غير ذلك"
-            >
-              <option value="">غير ذلك ←</option>
-              {PRODUCT_TYPES.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 
