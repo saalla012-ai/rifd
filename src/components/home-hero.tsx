@@ -87,13 +87,13 @@ export function HomeHero() {
         </div>
 
         <div
-          className="mt-6 flex flex-col items-center gap-3 animate-fade-in"
+          className="mt-7 flex flex-col items-center gap-4 animate-fade-in"
           style={{ animationDelay: "260ms" }}
         >
           <Button
             asChild
             size="lg"
-            className="h-14 w-full max-w-sm gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold transition-transform hover:scale-[1.02] sm:w-auto sm:px-10"
+            className="h-14 w-full max-w-[18rem] gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold transition-transform hover:scale-[1.02] sm:w-auto sm:px-8 lg:px-10"
           >
             <Link to="/onboarding" onClick={handleCtaClick}>
               <Sparkles className="h-5 w-5" />
