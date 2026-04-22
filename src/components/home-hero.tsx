@@ -8,6 +8,10 @@ import { trackEvent } from "@/lib/ab-test";
 import heroPhotoThumb from "@/assets/hero-photo-thumb.png";
 
 const EXPERIMENT = "hero_hook";
+const HERO_HOOKS = {
+  A: "Brief واحد يجهّز لك",
+  B: "اكتب Brief سريع وخلّ رِفد",
+} as const;
 
 /**
  * Hero v2 — موبايل-أولاً، بيعي 10/10
@@ -20,14 +24,18 @@ const EXPERIMENT = "hero_hook";
  */
 export function HomeHero() {
   const [selectedType, setSelectedType] = useState<string>("");
+  const [variant, setVariant] = useState<"A" | "B">("A");
 
   useEffect(() => {
-    void trackEvent(EXPERIMENT, "B", "view");
+    if (typeof window === "undefined") return;
+    const resolvedVariant = getVariant(EXPERIMENT);
+    setVariant(resolvedVariant);
+    void trackEvent(EXPERIMENT, resolvedVariant, "view");
   }, []);
 
   const triggerDemo = (typeId: string) => {
     setSelectedType(typeId);
-    void trackEvent(EXPERIMENT, "B", "demo_try");
+    void trackEvent(EXPERIMENT, variant, "demo_try");
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("rifd:prefill-demo", { detail: { productType: typeId } })
@@ -40,7 +48,7 @@ export function HomeHero() {
   };
 
   const handleCtaClick = () => {
-    void trackEvent(EXPERIMENT, "B", "cta_click");
+    void trackEvent(EXPERIMENT, variant, "cta_click");
   };
 
   // 3 أكثر أنواع المتاجر شيوعًا للـone-tap demo
@@ -77,7 +85,7 @@ export function HomeHero() {
         >
           <span className="block">
             <span className="whitespace-nowrap">
-              Brief واحد يجهّز لك
+              {HERO_HOOKS[variant]}
             </span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
             <span className="whitespace-nowrap">
@@ -96,7 +104,9 @@ export function HomeHero() {
               />
             </span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
-            <span className="whitespace-nowrap font-black text-gradient-primary">فكرة Reel</span>
+            <span className="whitespace-nowrap font-black text-gradient-primary">
+              {variant === "A" ? "فكرة Reel" : "حملة جاهزة"}
+            </span>
           </span>
           <span className="mt-1 block text-[0.92em] sm:text-[0.9em]">
             لمتجرك في{" "}
