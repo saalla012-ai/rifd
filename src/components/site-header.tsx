@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, X, Moon, Sun, Sparkles, LayoutDashboard } from "lucide-react";
+import { Menu, X, Moon, Sun, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
@@ -25,17 +25,22 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
-          <Link to="/" className="flex min-w-0 items-center gap-2 font-bold">
-            <RifdLogo size="md" showDescriptor />
+        <div className="mx-auto flex h-17 max-w-7xl items-center justify-between gap-3 px-4">
+          <Link to="/" className="flex min-w-0 items-center font-bold" aria-label="رِفد للتقنية">
+            <span className="sm:hidden">
+              <RifdLogo size="sm" showDescriptor={false} />
+            </span>
+            <span className="hidden sm:inline-flex">
+              <RifdLogo size="md" showDescriptor />
+            </span>
           </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-0.5 md:flex lg:gap-1">
           {NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="rounded-md px-2.5 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground lg:px-3 lg:text-sm"
               activeProps={{ className: "bg-secondary text-foreground" }}
               activeOptions={{ exact: item.to === "/" }}
             >
@@ -55,7 +60,7 @@ export function SiteHeader() {
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
           {isAuthed ? (
-            <Button asChild size="sm" className="hidden md:inline-flex shadow-elegant gap-2">
+            <Button asChild size="sm" className="hidden md:inline-flex gap-2 shadow-elegant">
               <Link to="/dashboard">
                 <LayoutDashboard className="h-4 w-4" />
                 لوحة التحكم
@@ -66,7 +71,7 @@ export function SiteHeader() {
               <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex">
                 <Link to="/auth">تسجيل دخول</Link>
               </Button>
-              <Button asChild size="sm" className="hidden sm:inline-flex shadow-elegant">
+              <Button asChild size="sm" className="hidden md:inline-flex shadow-elegant">
                 <Link to="/onboarding">ابدأ مجاناً</Link>
               </Button>
             </>
@@ -85,7 +90,7 @@ export function SiteHeader() {
 
       <div
         className={cn(
-          "border-t border-border md:hidden",
+          "border-t border-border bg-background/95 backdrop-blur-md md:hidden",
           open ? "block" : "hidden"
         )}
       >
