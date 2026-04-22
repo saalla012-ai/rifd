@@ -27,6 +27,7 @@ import {
   SAUDI_PHONE_ERROR,
   SAUDI_PHONE_PLACEHOLDER,
 } from "@/lib/phone";
+import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -93,6 +94,10 @@ function OnboardingPage() {
     }
     const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setGenerating(true);
+    const heroVariant = getRememberedAttribution("hero_hook");
+    if (heroVariant) {
+      void trackEvent("hero_hook", heroVariant, "submit");
+    }
 
     try {
       // 1) احفظ ملف المتجر

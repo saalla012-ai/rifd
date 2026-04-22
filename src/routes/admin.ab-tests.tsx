@@ -17,7 +17,7 @@ export const Route = createFileRoute("/admin/ab-tests")({
 type Row = {
   experiment: string;
   variant: "A" | "B";
-  event_type: "view" | "cta_click" | "demo_try";
+  event_type: "view" | "cta_click" | "demo_try" | "submit";
   session_id: string;
 };
 
@@ -25,8 +25,10 @@ type Stats = {
   views: number;
   cta_clicks: number;
   demo_tries: number;
+  brief_starts: number;
   unique_sessions: number;
   cta_rate: number;
+  brief_start_rate: number;
   demo_rate: number;
 };
 
@@ -35,12 +37,15 @@ function calcStats(rows: Row[]): Stats {
   const views = rows.filter((r) => r.event_type === "view").length;
   const cta_clicks = rows.filter((r) => r.event_type === "cta_click").length;
   const demo_tries = rows.filter((r) => r.event_type === "demo_try").length;
+  const brief_starts = rows.filter((r) => r.event_type === "submit").length;
   return {
     views,
     cta_clicks,
     demo_tries,
+    brief_starts,
     unique_sessions: sessions.size,
     cta_rate: views > 0 ? (cta_clicks / views) * 100 : 0,
+    brief_start_rate: views > 0 ? (brief_starts / views) * 100 : 0,
     demo_rate: views > 0 ? (demo_tries / views) * 100 : 0,
   };
 }
@@ -84,6 +89,15 @@ function AbTestsPage() {
           : null
       : null;
 
+  const briefWinner =
+    a && b
+      ? b.brief_start_rate > a.brief_start_rate
+        ? "B"
+        : a.brief_start_rate > b.brief_start_rate
+          ? "A"
+          : null
+      : null;
+
   return (
     <DashboardShell>
       <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
@@ -109,7 +123,7 @@ function AbTestsPage() {
                   <TrendingUp className="h-6 w-6 text-success" />
                   <div>
                     <p className="font-bold">
-                      الفائز حالياً: Variant {winner}
+                       الفائز حالياً في النقر: Variant {winner}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       نسبة نقرات أعلى على CTA الأساسي
@@ -119,18 +133,30 @@ function AbTestsPage() {
               </Card>
             )}
 
+             {briefWinner && (
+               <Card className="border-primary/40 bg-primary/5">
+                 <CardContent className="flex items-center gap-3 pt-6">
+                   <Wand2 className="h-6 w-6 text-primary" />
+                   <div>
+                     <p className="font-bold">الفائز في بدء إنشاء الـBrief: Variant {briefWinner}</p>
+                     <p className="text-sm text-muted-foreground">هذا هو المعيار الأهم لأنّه يقيس بداية الإنشاء الفعلية</p>
+                   </div>
+                 </CardContent>
+               </Card>
+             )}
+
             <div className="grid gap-4 md:grid-cols-2">
               <VariantCard
-                title="Variant A — مقارنة التكلفة"
-                hint="بدل ما تدفع 800 ر.س لكاتب..."
+                title="Variant A — عطنا Brief واحد، وخذ"
+                hint="يركّز على الوعد المباشر بالمخرجات"
                 stats={a}
-                isWinner={winner === "A"}
+                isWinner={briefWinner === "A"}
               />
               <VariantCard
-                title="Variant B — وقت القهوة"
-                hint="في وقت قهوتك ☕..."
+                title="Variant B — اكتب Brief سريع والباقي على رِفد"
+                hint="يركّز على تخفيف الجهد وتحميل التنفيذ على المنصة"
                 stats={b}
-                isWinner={winner === "B"}
+                isWinner={briefWinner === "B"}
               />
             </div>
 
@@ -139,7 +165,8 @@ function AbTestsPage() {
                 <CardTitle className="text-base">قراءة سريعة</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
-                <p>• <strong>cta_rate</strong> = نقرات "ابدأ مجاناً" ÷ المشاهدات</p>
+                 <p>• <strong>cta_rate</strong> = نقرات CTA الرئيسي ÷ المشاهدات</p>
+                 <p>• <strong>brief_start_rate</strong> = بدايات إنشاء الـBrief الفعلية ÷ المشاهدات</p>
                 <p>• <strong>demo_rate</strong> = تجارب الـDemo ÷ المشاهدات</p>
                 <p>• الحد الأدنى للثقة الإحصائية: <strong>~100 مشاهدة لكل variant</strong></p>
                 <p>• كل زائر يُعيَّن له variant ثابت (localStorage) — لا يرى الاثنين</p>
@@ -176,6 +203,7 @@ function VariantCard({
         <Metric icon={<Users className="h-4 w-4" />} label="جلسات فريدة" value={stats.unique_sessions} />
         <Metric icon={<Users className="h-4 w-4" />} label="مشاهدات" value={stats.views} />
         <Metric icon={<MousePointerClick className="h-4 w-4" />} label="نقرات CTA" value={stats.cta_clicks} suffix={` (${stats.cta_rate.toFixed(1)}%)`} highlight />
+        <Metric icon={<Wand2 className="h-4 w-4" />} label="بدء إنشاء Brief" value={stats.brief_starts} suffix={` (${stats.brief_start_rate.toFixed(1)}%)`} highlight />
         <Metric icon={<Wand2 className="h-4 w-4" />} label="تجارب Demo" value={stats.demo_tries} suffix={` (${stats.demo_rate.toFixed(1)}%)`} />
       </CardContent>
     </Card>
