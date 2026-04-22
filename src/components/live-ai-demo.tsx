@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Sparkles, Copy, Check, Loader2, Wand2 } from "lucide-react";
+import { Sparkles, Copy, Check, Loader2, Wand2, ImagePlus, Clapperboard, Tags } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PRODUCT_TYPES, AUDIENCES } from "@/lib/demo-results";
+import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
 
 export function LiveAiDemo() {
   const [storeName, setStoreName] = useState("");
@@ -19,6 +20,7 @@ export function LiveAiDemo() {
   const [audience, setAudience] = useState("young");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [pack, setPack] = useState<SuccessPack | null>(null);
   const [copied, setCopied] = useState(false);
 
   // استقبال الـprefill من Mini Demo في Hero
@@ -34,6 +36,7 @@ export function LiveAiDemo() {
   const handleGenerate = async () => {
     setLoading(true);
     setResult(null);
+    setPack(null);
     setCopied(false);
     try {
       const res = await fetch("/api/demo-generate", {
@@ -47,6 +50,17 @@ export function LiveAiDemo() {
         return;
       }
       setResult(json.result);
+      const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
+      const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
+      setPack(
+        buildSuccessPack({
+          storeName: storeName.trim() || "متجرك",
+          productTypeLabel: productLabel,
+          audienceLabel,
+          tone: "pro",
+          primaryPost: json.result,
+        })
+      );
     } catch {
       toast.error("حصل خطأ في الاتصال — حاول مرة ثانية");
     } finally {
@@ -125,7 +139,7 @@ export function LiveAiDemo() {
         )}
       </Button>
 
-      {result && (
+      {result && pack && (
         <div className="mt-4 rounded-xl border border-primary/20 bg-secondary/40 p-4">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-bold text-primary">✨ النتيجة</span>
@@ -139,6 +153,36 @@ export function LiveAiDemo() {
           <pre className="whitespace-pre-wrap text-right font-sans text-sm leading-relaxed text-foreground">
             {result}
           </pre>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-border bg-background/80 p-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary">
+                <Tags className="h-3.5 w-3.5" />
+                CTA + هاشتاقات
+              </div>
+              <p className="mt-2 text-sm leading-6 text-foreground">{pack.cta}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {pack.hashtags.slice(0, 3).map((tag) => (
+                  <span key={tag} className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-background/80 p-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary">
+                <ImagePlus className="h-3.5 w-3.5" />
+                فكرة الصورة
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{pack.imageIdea}</p>
+            </div>
+            <div className="rounded-lg border border-border bg-background/80 p-3 sm:col-span-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary">
+                <Clapperboard className="h-3.5 w-3.5" />
+                Reel concept
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{pack.reelIdea}</p>
+            </div>
+          </div>
           <div className="mt-4 rounded-lg bg-gradient-to-l from-gold/15 to-primary/10 p-3 text-center">
             <p className="text-sm font-medium">
               ✨ هذا غيض من فيض — في رِفد عندك <strong>50+ قالب جاهز</strong> + تحديثات شهرية + ذاكرة متجر دائمة
