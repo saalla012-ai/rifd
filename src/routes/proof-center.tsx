@@ -1,0 +1,140 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, BadgeCheck, Clapperboard, Clock3, Images, MessageSquareQuote, ShieldCheck, Sparkles } from "lucide-react";
+import { MarketingLayout } from "@/components/marketing-layout";
+import { Button } from "@/components/ui/button";
+
+const layers = [
+  {
+    title: "قبل / بعد",
+    description: "كيف يتحول طلب بسيط إلى محتوى بيع وصياغة أقرب لواقع المتجر السعودي.",
+  },
+  {
+    title: "أمثلة قطاعية",
+    description: "عطور، أزياء، هدايا، وإلكترونيات بأمثلة مخصصة بدل ادعاءات عامة.",
+  },
+  {
+    title: "حزم حملة كاملة",
+    description: "منشور + هوك + صورة + Reel concept + CTA ضمن منطق حملة واحد.",
+  },
+  {
+    title: "اعتراضات وردود",
+    description: "هل العامية مناسبة؟ هل يصلح للوكالات؟ هل الناتج جاهز للنشر؟ كلها تُجاب عملياً.",
+  },
+  {
+    title: "نتائج تشغيلية",
+    description: "وقت أقل، كثافة إنتاج أعلى، ووضوح أكبر في دورة المحتوى الأسبوعية.",
+  },
+];
+
+export const Route = createFileRoute("/proof-center")({
+  head: () => ({
+    meta: [
+      { title: "Proof Center — أمثلة وإثباتات رِفد للمتاجر السعودية" },
+      {
+        name: "description",
+        content:
+          "استكشف مركز الإثبات في رِفد: قبل/بعد، أمثلة قطاعية، وحزم حملات كاملة توضّح كيف يخدم المتاجر السعودية عملياً.",
+      },
+      { property: "og:title", content: "Proof Center — أمثلة حية من رِفد" },
+      {
+        property: "og:description",
+        content: "إثبات عملي يناسب قطاعك: محتوى، صور، وأفكار حملات جاهزة للتشغيل.",
+      },
+    ],
+  }),
+  component: ProofCenterPage,
+});
+
+function ProofCenterPage() {
+  return (
+    <MarketingLayout>
+      <section className="gradient-hero border-b border-border py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+            <BadgeCheck className="h-3.5 w-3.5" />
+            مركز الإثبات المعتمد في V8
+          </div>
+          <h1 className="mt-4 max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl">
+            لا نكتفي بقول إن رِفد مناسب للسوق السعودي — <span className="text-gradient-primary">نثبت ذلك بالأمثلة.</span>
+          </h1>
+          <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
+            هنا يرى الزائر كيف يتحول البرومبت البسيط إلى مخرجات صالحة للنشر، وكيف تختلف النتيجة بحسب القطاع والموسم والنبرة والهدف البيعي.
+          </p>
+        </div>
+      </section>
+
+      <section className="bg-background py-16">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            {layers.map((layer) => (
+              <article key={layer.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
+                <h2 className="text-base font-extrabold">{layer.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{layer.description}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            <article className="rounded-2xl border border-border bg-card p-6 shadow-elegant">
+              <div className="flex items-center gap-2 text-primary">
+                <MessageSquareQuote className="h-5 w-5" />
+                <h2 className="text-xl font-extrabold">مثال حملة عطور</h2>
+              </div>
+              <ul className="mt-5 space-y-3 text-sm leading-7 text-muted-foreground">
+                <li>• Hook بصري يركّز على الثبات والأثر الفاخر.</li>
+                <li>• منشور رئيسي بنبرة راقية مع CTA منخفض الاحتكاك.</li>
+                <li>• فكرة صورة Hero بلمسة إضاءة فاخرة وألوان الهوية.</li>
+                <li>• Reel concept بثلاث لقطات: أول انطباع، الميزة، ثم الدعوة للطلب.</li>
+              </ul>
+            </article>
+
+            <article className="rounded-2xl border border-border bg-card p-6 shadow-elegant">
+              <div className="flex items-center gap-2 text-primary">
+                <Clapperboard className="h-5 w-5" />
+                <h2 className="text-xl font-extrabold">ماذا يخرج في أسبوع؟</h2>
+              </div>
+              <ul className="mt-5 space-y-3 text-sm leading-7 text-muted-foreground">
+                <li>• 3 منشورات بيع متنوعة الزوايا.</li>
+                <li>• 2 صور/بوسترات أساسية للحملة.</li>
+                <li>• نص إعلان ممول + CTA + هاشتاقات.</li>
+                <li>• فكرة Reel قصيرة تربط المنتج بالموسم أو العرض.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border bg-secondary/30 py-16">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { icon: Images, title: "هل يعطيني شيئاً جاهزاً؟", text: "نعم، لأن المخرج ليس مجرد فكرة، بل صياغة قابلة للاستخدام مع اقتراح بصري واضح." },
+              { icon: Clock3, title: "هل يوفّر وقتاً فعلاً؟", text: "نعم، عبر حزمة محتوى أسبوعية بدل جلسات كتابة متفرقة تستهلك ساعات التشغيل." },
+              { icon: ShieldCheck, title: "هل يناسب فريق أو وكالة؟", text: "نعم، وهذا ما يتمدد لاحقاً داخل رِفد للأعمال مع Workspaces وعمليات أوسع." },
+            ].map((item) => (
+              <article key={item.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 text-base font-extrabold">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button asChild className="gradient-primary text-primary-foreground shadow-elegant">
+              <Link to="/onboarding">
+                ابدأ التجربة المجانية
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/for-perfumes-beauty">شاهد صفحة قطاعية كمثال</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    </MarketingLayout>
+  );
+}
