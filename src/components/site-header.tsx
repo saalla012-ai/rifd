@@ -30,7 +30,7 @@ export function SiteHeader() {
             <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
           </span>
           <span className="text-lg font-extrabold sm:text-xl">
-            رِفد <span className="text-xs font-medium text-muted-foreground">للأعمال</span>
+            رِفد <span className="text-xs font-medium text-muted-foreground">للتقنية</span>
           </span>
         </Link>
 

@@ -12,10 +12,10 @@ export function SiteFooter() {
               <span className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
                 <Sparkles className="h-5 w-5" />
               </span>
-              <span className="text-lg">رِفد للأعمال</span>
+              <span className="text-lg">رِفد للتقنية</span>
             </Link>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">
-              رِفد للأعمال: حلول التحول التجاري بالذكاء الاصطناعي للمتاجر السعودية — محتوى، صور، حملات، ومسارات تشغيل تتطور شهرياً.
+              رِفد للتقنية: منصة سعودية للمتاجر تقدّم محتوى، صور، وحملات ذكية للسوق السعودي، مع مسار مؤسسي مخصص عند الحاجة للوكالات والمؤسسات.
             </p>
 
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/5 px-3 py-1.5 text-[11px] font-bold text-success">
@@ -66,7 +66,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
-          <span>© {year} رِفد للأعمال — مسجَّلة في المملكة العربية السعودية. جميع الحقوق محفوظة.</span>
+          <span>© {year} رِفد للتقنية — مسجَّلة في المملكة العربية السعودية. جميع الحقوق محفوظة.</span>
           <span className="flex items-center gap-2">
             صُنع بحب 🇸🇦 في الرياض
           </span>

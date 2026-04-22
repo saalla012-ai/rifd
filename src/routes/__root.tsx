@@ -31,20 +31,20 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "رِفد للأعمال — حلول التحول التجاري بالذكاء الاصطناعي" },
+      { title: "رِفد للتقنية — محتوى وصور وحملات لمتجرك السعودي" },
       {
         name: "description",
         content:
-          "حوّل متجرك السعودي إلى آلة محتوى وحملات ذكية. 50+ قالب جاهز للنصوص والصور بالعامية السعودية مع تحديثات شهرية ومسار رِفد للأعمال.",
+          "حوّل متجرك السعودي إلى آلة محتوى وحملات ذكية. 50+ قالب جاهز للنصوص والصور بالعامية السعودية مع تحديثات شهرية من رِفد للتقنية.",
       },
-      { name: "author", content: "رِفد للأعمال" },
+      { name: "author", content: "رِفد للتقنية" },
       { name: "theme-color", content: "#1a5d3e" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "ar_SA" },
-      { property: "og:site_name", content: "رِفد للأعمال" },
+      { property: "og:site_name", content: "رِفد للتقنية" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:title", content: "رِفد للأعمال — حلول التحول التجاري بالذكاء الاصطناعي" },
-      { name: "twitter:title", content: "رِفد للأعمال — حلول التحول التجاري بالذكاء الاصطناعي" },
+      { property: "og:title", content: "رِفد للتقنية — محتوى وصور وحملات لمتجرك السعودي" },
+      { name: "twitter:title", content: "رِفد للتقنية — محتوى وصور وحملات لمتجرك السعودي" },
       {
         property: "og:description",
         content: "50+ قالب ومخرجات محتوى وصور وحملات مناسبة للسوق السعودي مع تحديثات شهرية مستمرة.",
@@ -56,9 +56,9 @@ export const Route = createRootRoute({
       { property: "og:image", content: "https://rifd.site/og-image.jpg" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:image:alt", content: "رِفد للأعمال — حلول التحول التجاري بالذكاء الاصطناعي" },
+      { property: "og:image:alt", content: "رِفد للتقنية — محتوى وصور وحملات لمتجرك السعودي" },
       { name: "twitter:image", content: "https://rifd.site/og-image.jpg" },
-      { name: "twitter:image:alt", content: "رِفد للأعمال — حلول التحول التجاري بالذكاء الاصطناعي" },
+      { name: "twitter:image:alt", content: "رِفد للتقنية — محتوى وصور وحملات لمتجرك السعودي" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

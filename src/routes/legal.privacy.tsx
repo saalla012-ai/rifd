@@ -5,11 +5,11 @@ import { ShieldCheck, Mail, MessageCircle } from "lucide-react";
 export const Route = createFileRoute("/legal/privacy")({
   head: () => ({
     meta: [
-      { title: "سياسة الخصوصية — رِفد للأعمال" },
+      { title: "سياسة الخصوصية — رِفد للتقنية" },
       {
         name: "description",
         content:
-          "سياسة خصوصية رِفد للأعمال وفق نظام حماية البيانات الشخصية السعودي (PDPL). كيف نجمع بياناتك ونحميها ومن يطّلع عليها وحقوقك الكاملة.",
+          "سياسة خصوصية رِفد للتقنية وفق نظام حماية البيانات الشخصية السعودي (PDPL). كيف نجمع بياناتك ونحميها ومن يطّلع عليها وحقوقك الكاملة.",
       },
       { name: "robots", content: "index, follow" },
     ],
@@ -38,7 +38,7 @@ function PrivacyPage() {
           {/* Intro */}
           <section className="rounded-xl border border-border bg-card p-5">
             <p className="text-foreground">
-              نحن في <strong>رِفد للأعمال</strong> (يُشار إليها بـ"رِفد"، "نحن"، "خدمتنا") نلتزم بحماية
+              نحن في <strong>رِفد للتقنية</strong> (يُشار إليها بـ"رِفد"، "نحن"، "خدمتنا") نلتزم بحماية
               خصوصية مستخدمينا وفق نظام حماية البيانات الشخصية الصادر بالمرسوم الملكي رقم
               (م/19) وتاريخ 9/2/1443هـ ولائحته التنفيذية. توضّح هذه السياسة طبيعة البيانات
               الشخصية التي نجمعها، أغراض المعالجة، الأساس النظامي، حقوقك بصفتك صاحب
@@ -50,7 +50,7 @@ function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-xl font-bold text-foreground">1. هوية المتحكم في البيانات</h2>
             <ul className="list-disc space-y-1 pr-5">
-                <li>الاسم التجاري: رِفد للأعمال</li>
+                <li>الاسم التجاري: رِفد للتقنية</li>
               <li>المقر: المملكة العربية السعودية — الرياض</li>
               <li>البريد الرسمي: <a className="text-primary hover:underline" href="mailto:hello@rifd.site">hello@rifd.site</a></li>
               <li>قنوات التواصل بشأن الخصوصية: <a className="text-primary hover:underline" href="mailto:privacy@rifd.site">privacy@rifd.site</a></li>
