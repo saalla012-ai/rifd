@@ -57,9 +57,9 @@ export function CookieBanner() {
       role="dialog"
       aria-live="polite"
       aria-label="إشعار ملفات تعريف الارتباط"
-      className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-3 sm:px-6 sm:pb-6"
+      className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-3 sm:px-6 sm:pb-6 md:start-auto md:end-6 md:w-full md:max-w-[30rem] md:px-0"
     >
-      <div className="mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-border bg-background/95 p-4 shadow-2xl backdrop-blur-md sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+      <div className="mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-border bg-background/95 p-4 shadow-2xl backdrop-blur-md sm:flex-row sm:items-center sm:gap-4 sm:p-5 md:mx-0 md:flex-col md:items-start">
         <button
           type="button"
           onClick={reject}
@@ -75,7 +75,7 @@ export function CookieBanner() {
           </Link>
           .
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2 md:w-full md:justify-start">
           <Button variant="ghost" size="sm" onClick={reject} className="text-muted-foreground">
             رفض
           </Button>
