@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/library")({
   head: () => ({
     meta: [
-      { title: "مكتبة الأوامر — 45+ قالب AI بالعامية السعودية | رِفد" },
+      { title: "مكتبة الأوامر — 50+ قالب AI بالعامية السعودية | رِفد" },
       {
         name: "description",
         content:
-          "تصفّح مكتبة قوالب جاهزة: منشورات سوشيال، أوصاف منتجات، إعلانات، بوسترات وصور. مصممة خصيصاً للمتاجر السعودية.",
+          "تصفّح 50+ قالب جاهز للنصوص والصور والحملات، مع تحديثات وقوالب جديدة شهرياً للمتاجر السعودية.",
       },
       { property: "og:title", content: "مكتبة قوالب AI سعودية | رِفد" },
       {
@@ -54,13 +54,13 @@ function LibraryPage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              {PROMPTS.length} قالب جاهز
+              50+ قالب جاهز
             </div>
             <h1 className="mt-4 text-3xl font-extrabold sm:text-4xl">
               مكتبة الأوامر — كل ما يحتاجه متجرك
             </h1>
             <p className="mt-3 text-muted-foreground">
-              قوالب مهندسة بالعامية السعودية لتوفير ساعات من الكتابة والتصميم
+              قوالب مهندسة بالعامية السعودية لتوفير ساعات من الكتابة والتصميم، مع تطويرات شهرية مستمرة
             </p>
           </div>
 
@@ -70,6 +70,7 @@ function LibraryPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`ابحث في ${PROMPTS.length} قالب... (مثلاً: منشور، عطر، بوستر)`}
+              placeholder="ابحث في 50+ قالب... (مثلاً: منشور، عطر، بوستر)"
               className="pr-10"
             />
           </div>
