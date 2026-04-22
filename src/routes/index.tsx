@@ -6,7 +6,6 @@ import { HomeHero } from "@/components/home-hero";
 import { StickyMobileCta } from "@/components/sticky-mobile-cta";
 import { BrandStrip } from "@/components/brand-strip";
 import { BusinessSolutionsTeaser } from "@/components/business-solutions-teaser";
-import { LiveAiDemo } from "@/components/live-ai-demo";
 import { HeroProofFilm } from "@/components/hero-proof-film";
 import { SavingsCounter } from "@/components/savings-counter";
 import { BeforeAfter } from "@/components/before-after";
@@ -47,41 +46,20 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <MarketingLayout>
-      {/* Hero فوق الـfold (شارة حية + Hook + Mini Demo + CTA) */}
       <HomeHero />
 
-      {/* 3. شريط متوافق مع — قانوني آمن */}
       <BrandStrip />
-
-      {/* 4. Demo كامل (التجربة العميقة) */}
-      <section className="border-t border-border bg-secondary/30 py-12 sm:py-16">
-        <div className="mx-auto max-w-3xl px-4">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-extrabold sm:text-3xl">
-              التجربة الكاملة — <span className="text-gradient-primary">3 حقول فقط</span>
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              خصّص أكثر، شاهد النتيجة الكاملة، وانسخها مباشرة
-            </p>
-          </div>
-          <LiveAiDemo />
-        </div>
-      </section>
 
       <HeroProofFilm />
 
-      {/* 5. أرقام حية حقيقية */}
       <SavingsCounter />
 
-      {/* 6. قبل وبعد */}
       <BeforeAfter />
 
-      {/* 7. كيف يعمل رِفد في 3 خطوات (بديل الشهادات المزيفة) */}
       <HowItWorks />
 
       <ProofCenterPreview />
 
-      {/* 8. مقارنة مختصرة (مع إصلاح الموبايل) */}
       <section className="border-t border-border bg-secondary/30 py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl text-center">
@@ -98,15 +76,12 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 9. الروية */}
       <VisionSection />
 
       <BusinessSolutionsTeaser />
 
-      {/* 10. الميزات (4 + accordion على الموبايل، 8 على الديسكتوب) */}
       <HomeFeatures />
 
-      {/* 11. لمحة عن المكتبة */}
       <section className="border-t border-border bg-background py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -144,7 +119,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 12. CTA الختامي */}
       <section id="final-cta" className="border-t border-border bg-background py-16 pb-24 sm:pb-16">
         <div className="mx-auto max-w-4xl rounded-3xl gradient-primary p-8 text-center text-primary-foreground shadow-elegant sm:p-12">
           <h2 className="text-3xl font-extrabold sm:text-4xl">
