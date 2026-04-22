@@ -77,7 +77,7 @@ export function HomeHero() {
         >
           <span className="block">
             <span className="whitespace-nowrap">
-              حوّل Brief واحد إلى
+              Brief واحد يطلع لك
             </span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
             <span className="whitespace-nowrap">
