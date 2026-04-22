@@ -25,6 +25,12 @@ const pillars = [
   },
 ];
 
+const outcomes = [
+  "إذا صار عندك فريق ومحتوى وقنوات كثيرة لكن بدون نظام قرار واضح.",
+  "إذا كانت الحملات تُدار يدوياً وكل إطلاق يبدأ من الصفر.",
+  "إذا احتجت شريكاً يبني البنية التشغيلية لا مجرد مزود محتوى.",
+];
+
 export function BusinessSolutionsTeaser() {
   return (
     <section className="border-t border-border bg-background py-16">
@@ -39,8 +45,15 @@ export function BusinessSolutionsTeaser() {
               للمتاجر الكبيرة والوكالات: <span className="text-gradient-gold">رِفد لا يقدّم محتوى فقط، بل يبني نظام تشغيل نمو.</span>
             </h2>
             <p className="mt-3 max-w-2xl text-muted-foreground">
-              عندما تحتاج أكثر من توليد سريع، يتحول رِفد إلى طبقة تشغيل تشمل الذاكرة، الحملات، بناء المتجر، الأنظمة، وقنوات العمل المباشر.
+              عندما تتجاوز حاجتك مجرد منشور أو صورة، يتحول رِفد إلى مسار تنفيذي يشمل الذاكرة، الحملات، التحويل، الأنظمة، وآلية عمل مباشرة مع الفريق.
             </p>
+            <div className="mt-5 grid gap-2">
+              {outcomes.map((item) => (
+                <div key={item} className="rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+                  {item}
+                </div>
+              ))}
+            </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild className="gradient-gold text-gold-foreground shadow-gold">
                 <Link to="/business-solutions">
@@ -49,8 +62,8 @@ export function BusinessSolutionsTeaser() {
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <a href="https://wa.me/966582286215" target="_blank" rel="noreferrer noopener">
-                  رد مباشر من المؤسس خلال دقائق
+                <a href="https://wa.me/966582286215?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85+%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C+%D8%A3%D8%B1%D9%8A%D8%AF+%D8%AA%D9%82%D9%8A%D9%8A%D9%85+%D8%A7%D8%AD%D8%AA%D9%8A%D8%A7%D8%AC+%D9%85%D8%AA%D8%AC%D8%B1%D9%8A+%D9%84%D8%B1%D9%90%D9%81%D8%AF+%D9%84%D9%84%D8%A3%D8%B9%D9%85%D8%A7%D9%84" target="_blank" rel="noreferrer noopener">
+                  اطلب تقييم احتياج سريع
                 </a>
               </Button>
             </div>
