@@ -1,17 +1,12 @@
 # Memory: index.md
-Updated: now
+Updated: 3d ago
 
 # Project Memory
 
 ## Core
-- نطاق البريد الصحيح: `notify.rifd.club` (الجذر `rifd.club`). عند أي إعادة إضافة لنطاق البريد، اكتب الجذر `rifd.club` فقط — لا تكتب `notify` يدوياً (Lovable يضيفها تلقائياً، تكرارها يكسر DNS).
-- الإنتاج على `https://rifd.lovable.app` — لا تستخدم نطاق `id-preview` في cron jobs أو روابط مطلقة.
-- صلاحيات الأدمن في `user_roles` مقسّمة إلى 4 سياسات (SELECT/INSERT/UPDATE/DELETE) مع `WITH CHECK` مزدوج. لا تُعد دمجها في سياسة `ALL` واحدة.
-- `app_settings.whatsapp_number` و عدّاد المؤسسين يُقرَآن عبر RPC `get_founding_status()` / `get_public_app_settings()` فقط — لا تكشف الجدول مباشرة لـ `anon`.
-- ترقية خطة المشترك تتم تلقائياً عبر تريغر `sync_profile_plan_on_activation` عند تغيير `subscription_requests.status` إلى `activated`. لا تكتب كود ترقية يدوي في Frontend.
-- `ab_test_events.event_type` محصور في قائمة مغلقة (`view, cta_click, demo_try, click, convert, impression, exposure, signup, submit`) — أي حدث جديد يجب توسيع السياسة أولاً.
-- OG image في `public/og-image.jpg` (1200×630) و Favicon في `public/favicon.png` (≤1KB، PNG هندسي مولّد بـPython) — كلاهما مرتبط في `__root.tsx`. لا تستبدل favicon بصورة مولّدة بـAI (تعطي ملفات >800KB).
-- تنبيهات تشغيلية: cron `check-email-dlq` كل 10 دقائق + `check-stale-subscriptions` يومي 09:00 UTC — كلاهما يستخدم `internal_config` للـ secret + cooldown.
+نطاق البريد الصحيح: `notify.rifd.club` (الجذر `rifd.club`). عند أي إعادة إضافة لنطاق البريد، اكتب الجذر `rifd.club` فقط — لا تكتب `notify` يدوياً (Lovable يضيفها تلقائياً، تكرارها يكسر DNS).
+لا تعدّل قسم الـHero/الجزء الحالي من الصفحة الرئيسية مرة أخرى إلا بطلب صريح من المستخدم.
 
 ## Memories
 - [Email domain naming](mem://constraints/email-domain-name) — قاعدة كتابة اسم النطاق عند الإعداد + سجلات NS الصحيحة
+- [Home hero freeze](mem://constraints/home-hero-freeze) — تجميد هذا الجزء من الصفحة الرئيسية وعدم تعديله دون طلب صريح
