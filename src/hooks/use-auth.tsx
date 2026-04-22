@@ -18,6 +18,16 @@ type Profile = {
   audience: string | null;
   tone: string | null;
   brand_color: string | null;
+  brand_personality: string | null;
+  unique_selling_point: string | null;
+  banned_phrases: string[] | null;
+  shipping_policy: string | null;
+  exchange_policy: string | null;
+  faq_notes: string | null;
+  high_margin_products: string[] | null;
+  cta_style: string | null;
+  seasonal_priorities: string[] | null;
+  compliance_notes: string | null;
   whatsapp: string | null;
   plan: "free" | "pro" | "business";
   onboarded: boolean;

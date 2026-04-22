@@ -386,46 +386,76 @@ export type Database = {
       profiles: {
         Row: {
           audience: string | null
+          banned_phrases: string[]
           brand_color: string | null
+          brand_personality: string | null
+          compliance_notes: string | null
           created_at: string
+          cta_style: string | null
           email: string | null
+          exchange_policy: string | null
+          faq_notes: string | null
           full_name: string | null
+          high_margin_products: string[]
           id: string
           onboarded: boolean
           plan: Database["public"]["Enums"]["user_plan"]
           product_type: string | null
+          seasonal_priorities: string[]
+          shipping_policy: string | null
           store_name: string | null
           tone: string | null
+          unique_selling_point: string | null
           updated_at: string
           whatsapp: string | null
         }
         Insert: {
           audience?: string | null
+          banned_phrases?: string[]
           brand_color?: string | null
+          brand_personality?: string | null
+          compliance_notes?: string | null
           created_at?: string
+          cta_style?: string | null
           email?: string | null
+          exchange_policy?: string | null
+          faq_notes?: string | null
           full_name?: string | null
+          high_margin_products?: string[]
           id: string
           onboarded?: boolean
           plan?: Database["public"]["Enums"]["user_plan"]
           product_type?: string | null
+          seasonal_priorities?: string[]
+          shipping_policy?: string | null
           store_name?: string | null
           tone?: string | null
+          unique_selling_point?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
         Update: {
           audience?: string | null
+          banned_phrases?: string[]
           brand_color?: string | null
+          brand_personality?: string | null
+          compliance_notes?: string | null
           created_at?: string
+          cta_style?: string | null
           email?: string | null
+          exchange_policy?: string | null
+          faq_notes?: string | null
           full_name?: string | null
+          high_margin_products?: string[]
           id?: string
           onboarded?: boolean
           plan?: Database["public"]["Enums"]["user_plan"]
           product_type?: string | null
+          seasonal_priorities?: string[]
+          shipping_policy?: string | null
           store_name?: string | null
           tone?: string | null
+          unique_selling_point?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
