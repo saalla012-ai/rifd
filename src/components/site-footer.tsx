@@ -9,15 +9,14 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
-            <Link to="/" className="flex items-center gap-2 font-bold">
-              <RifdLogo size="sm" showDescriptor={false} />
-              <span className="text-lg">للتقنية</span>
+            <Link to="/" className="inline-flex items-center font-bold" aria-label="رِفد للتقنية">
+              <RifdLogo size="md" showDescriptor />
             </Link>
-            <p className="mt-3 max-w-md text-sm text-muted-foreground">
+            <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
               رِفد للتقنية: منصة سعودية للمتاجر تقدّم محتوى، صور، وحملات ذكية للسوق السعودي، مع مسار مؤسسي مخصص عند الحاجة للوكالات والمؤسسات.
             </p>
 
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/5 px-3 py-1.5 text-[11px] font-bold text-success">
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/5 px-3 py-1.5 text-[11px] font-bold text-success">
               <ShieldCheck className="h-3.5 w-3.5" />
               متوافق مع نظام حماية البيانات الشخصية السعودي (PDPL)
             </div>
