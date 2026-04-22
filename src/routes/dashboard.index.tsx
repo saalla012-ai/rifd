@@ -92,7 +92,16 @@ function DashboardPage() {
   const limits = LIMITS[plan];
 
   const profileFields = [
-    profile?.store_name, profile?.product_type, profile?.audience, profile?.tone, profile?.brand_color,
+    profile?.store_name,
+    profile?.product_type,
+    profile?.audience,
+    profile?.tone,
+    profile?.brand_color,
+    profile?.brand_personality,
+    profile?.unique_selling_point,
+    profile?.shipping_policy,
+    profile?.exchange_policy,
+    profile?.cta_style,
   ];
   const filled = profileFields.filter(Boolean).length;
   const completionPct = Math.round((filled / profileFields.length) * 100);
@@ -276,7 +285,7 @@ function DashboardPage() {
                 <TrendingUp className="h-4 w-4 text-primary" /> ملف متجرك مكتمل بنسبة {completionPct}%
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                أكمل المعلومات للحصول على نتائج أكثر تخصصاً
+                أكمل ذاكرة متجرك 2.0 للحصول على نتائج أذكى وأكثر تراكمية في كل توليدة لاحقة
               </p>
             </div>
             <Button asChild size="sm">
