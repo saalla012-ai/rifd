@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
+import { HERO_EXPERIMENT } from "./home-hero-content";
 
 /**
  * Sticky CTA bar للموبايل فقط.
@@ -14,7 +15,7 @@ export function StickyMobileCta() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setVariant(getVariant("hero_hook"));
+    setVariant(getVariant(HERO_EXPERIMENT));
 
     const finalCta = document.getElementById("final-cta");
 
@@ -43,8 +44,8 @@ export function StickyMobileCta() {
       <Link
         to="/onboarding"
         onClick={() => {
-          rememberAttribution("hero_hook", variant);
-          void trackEvent("hero_hook", variant, "cta_click");
+          rememberAttribution(HERO_EXPERIMENT, variant);
+          void trackEvent(HERO_EXPERIMENT, variant, "cta_click");
         }}
         className="flex items-center justify-center gap-2 rounded-xl gradient-gold px-4 py-3 text-sm font-extrabold text-gold-foreground shadow-gold"
       >

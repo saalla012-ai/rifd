@@ -5,33 +5,10 @@ import { Button } from "@/components/ui/button";
 import { SubscribersCounter } from "./subscribers-counter";
 import { PRODUCT_TYPES } from "@/lib/demo-results";
 import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
-
-const EXPERIMENT = "hero_hook";
-const HERO_HOOKS = {
-  A: {
-    eyebrow: "بدل ما يضيع يومك على المحتوى",
-    promiseLead: "أعطنا وصفاً سريعاً",
-    promiseEnd: "والباقي على رِفد",
-    outputs: ["منشور", "صورة", "زاوية ريلز"],
-    support: "مخرجات جاهزة لمتجرك بالعامية السعودية خلال دقائق، لا أيام.",
-  },
-  B: {
-    eyebrow: "خلّ عرضك يبان من أول نظرة",
-    promiseLead: "أعطنا وصفاً سريعاً",
-    promiseEnd: "ونطلع لك عرضاً يبيع",
-    outputs: ["محتوى", "صورة", "ريلز"],
-    support: "",
-  },
-} as const;
+import { HERO_BENEFITS, HERO_EXPERIMENT, HERO_HOOKS, QUICK_TYPES } from "./home-hero-content";
 
 /**
- * Hero v2 — موبايل-أولاً، بيعي 10/10
- * - Proof bar موحّد (نجوم + رقم مشتركين)
- * - H1 سطرين قويّين + highlight ذهبي خلف "وقت قهوتك"
- * - مقارنة بصرية ✕/✓ بدل النص الطويل
- * - 4 chips benefits ظاهرة (لا details)
- * - CTA الأساسي ذهبي primary، Demo Teaser outline ثانوي
- * - 3 chips سريعة لأنواع المتاجر (one-tap demo)
+ * Hero الصفحة الرئيسية — نسخة أنظف مع فصل المحتوى الثابت عن منطق العرض.
  */
 export function HomeHero() {
   const [selectedType, setSelectedType] = useState<string>("");
@@ -39,14 +16,14 @@ export function HomeHero() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const resolvedVariant = getVariant(EXPERIMENT);
+    const resolvedVariant = getVariant(HERO_EXPERIMENT);
     setVariant(resolvedVariant);
-    void trackEvent(EXPERIMENT, resolvedVariant, "view");
+    void trackEvent(HERO_EXPERIMENT, resolvedVariant, "view");
   }, []);
 
   const triggerDemo = (typeId: string) => {
     setSelectedType(typeId);
-    void trackEvent(EXPERIMENT, variant, "demo_try");
+    void trackEvent(HERO_EXPERIMENT, variant, "demo_try");
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("rifd:prefill-demo", { detail: { productType: typeId } })
@@ -59,16 +36,9 @@ export function HomeHero() {
   };
 
   const handleCtaClick = () => {
-    rememberAttribution(EXPERIMENT, variant);
-    void trackEvent(EXPERIMENT, variant, "cta_click");
+    rememberAttribution(HERO_EXPERIMENT, variant);
+    void trackEvent(HERO_EXPERIMENT, variant, "cta_click");
   };
-
-  // 3 أكثر أنواع المتاجر شيوعًا للـone-tap demo
-  const QUICK_TYPES = [
-    { id: "perfumes", label: "🌸 عطور" },
-    { id: "fashion", label: "👗 أزياء" },
-    { id: "food", label: "🍫 شوكولاتة" },
-  ];
 
   return (
     <section className="relative overflow-hidden gradient-hero">
@@ -121,17 +91,7 @@ export function HomeHero() {
           </span>
         </h1>
 
-        {HERO_HOOKS[variant].support ? (
-          <p
-            className="mx-auto mt-4 max-w-[19rem] text-center text-sm font-medium leading-7 text-muted-foreground sm:max-w-2xl sm:text-base animate-fade-in"
-            style={{ animationDelay: "120ms" }}
-          >
-            {HERO_HOOKS[variant].support}
-          </p>
-        ) : null}
-
-        {/* مقارنة بصرية ✕/✓ */}
-          <div
+        <div
             className="mx-auto mt-5 flex max-w-md items-center justify-center gap-3 text-base font-bold sm:text-lg animate-fade-in"
             style={{ animationDelay: "180ms" }}
           >
@@ -207,18 +167,12 @@ export function HomeHero() {
           </div>
         </div>
 
-        {/* 4 benefits chips — أفقية scroll على الموبايل، grid على الديسكتوب */}
         <div
           className="mx-auto mt-8 max-w-3xl animate-fade-in"
           style={{ animationDelay: "420ms" }}
         >
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
-            {[
-              { icon: "🇸🇦", title: "عامية أصيلة", sub: "ما تحس إنه مترجم" },
-               { icon: "📦", title: "حزمة أولية", sub: "منشور + صورة + ريلز" },
-              { icon: "⚡", title: "ثوانٍ معدودة", sub: "نتيجة أقرب للتنفيذ" },
-              { icon: "🧠", title: "ذاكرة متجر", sub: "كل مرة أذكى من قبل" },
-            ].map((b) => (
+            {HERO_BENEFITS.map((b) => (
               <div
                 key={b.title}
                 className="flex min-w-[160px] shrink-0 items-center gap-3 rounded-xl border border-border bg-card/80 p-3 backdrop-blur-sm sm:min-w-0"
