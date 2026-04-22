@@ -44,7 +44,7 @@ export function StickyMobileCta() {
         to="/onboarding"
         onClick={() => {
           rememberAttribution("hero_hook", variant);
-          void trackEvent("hero_hook", variant, "sticky_cta_click");
+          void trackEvent("hero_hook", variant, "cta_click");
         }}
         className="flex items-center justify-center gap-2 rounded-xl gradient-gold px-4 py-3 text-sm font-extrabold text-gold-foreground shadow-gold"
       >

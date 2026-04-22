@@ -17,14 +17,13 @@ export const Route = createFileRoute("/admin/ab-tests")({
 type Row = {
   experiment: string;
   variant: "A" | "B";
-  event_type: "view" | "cta_click" | "demo_try" | "sticky_cta_click" | "submit";
+  event_type: "view" | "cta_click" | "demo_try" | "submit";
   session_id: string;
 };
 
 type Stats = {
   views: number;
   cta_clicks: number;
-  sticky_cta_clicks: number;
   demo_tries: number;
   brief_starts: number;
   unique_sessions: number;
@@ -37,13 +36,11 @@ function calcStats(rows: Row[]): Stats {
   const sessions = new Set(rows.map((r) => r.session_id));
   const views = rows.filter((r) => r.event_type === "view").length;
   const cta_clicks = rows.filter((r) => r.event_type === "cta_click").length;
-  const sticky_cta_clicks = rows.filter((r) => r.event_type === "sticky_cta_click").length;
   const demo_tries = rows.filter((r) => r.event_type === "demo_try").length;
   const brief_starts = rows.filter((r) => r.event_type === "submit").length;
   return {
     views,
     cta_clicks,
-    sticky_cta_clicks,
     demo_tries,
     brief_starts,
     unique_sessions: sessions.size,
@@ -206,7 +203,6 @@ function VariantCard({
         <Metric icon={<Users className="h-4 w-4" />} label="جلسات فريدة" value={stats.unique_sessions} />
         <Metric icon={<Users className="h-4 w-4" />} label="مشاهدات" value={stats.views} />
         <Metric icon={<MousePointerClick className="h-4 w-4" />} label="نقرات CTA" value={stats.cta_clicks} suffix={` (${stats.cta_rate.toFixed(1)}%)`} highlight />
-        <Metric icon={<MousePointerClick className="h-4 w-4" />} label="نقرات الشريط السفلي" value={stats.sticky_cta_clicks} />
         <Metric icon={<Wand2 className="h-4 w-4" />} label="بدء إنشاء Brief" value={stats.brief_starts} suffix={` (${stats.brief_start_rate.toFixed(1)}%)`} highlight />
         <Metric icon={<Wand2 className="h-4 w-4" />} label="تجارب Demo" value={stats.demo_tries} suffix={` (${stats.demo_rate.toFixed(1)}%)`} />
       </CardContent>
