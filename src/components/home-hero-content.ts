@@ -15,12 +15,6 @@ export const HERO_HOOKS = {
   },
 } as const;
 
-export const QUICK_TYPES = [
-  { id: "perfumes", label: "🌸 عطور" },
-  { id: "fashion", label: "👗 أزياء" },
-  { id: "food", label: "🍫 شوكولاتة" },
-] as const;
-
 export const HERO_BENEFITS = [
   { icon: "🇸🇦", title: "عامية أصيلة", sub: "ما تحس إنه مترجم" },
   { icon: "📦", title: "حزمة أولية", sub: "منشور + صورة + ريلز" },
