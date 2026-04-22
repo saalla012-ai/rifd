@@ -25,8 +25,8 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-17 max-w-7xl items-center justify-between gap-3 px-4">
-          <Link to="/" className="flex min-w-0 items-center font-bold" aria-label="رِفد للتقنية">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:h-17 sm:gap-3">
+          <Link to="/" className="flex min-w-0 flex-1 items-center font-bold md:flex-none" aria-label="رِفد للتقنية">
             <span className="sm:hidden">
               <RifdLogo size="sm" showDescriptor={false} />
             </span>
@@ -49,7 +49,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -68,6 +68,9 @@ export function SiteHeader() {
             </Button>
           ) : (
             <>
+              <Button asChild size="sm" className="h-9 px-3 text-xs shadow-elegant md:hidden">
+                <Link to="/onboarding">ابدأ مجاناً</Link>
+              </Button>
               <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex">
                 <Link to="/auth">تسجيل دخول</Link>
               </Button>
@@ -79,7 +82,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="h-9 w-9 md:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label="القائمة"
           >
@@ -108,6 +111,9 @@ export function SiteHeader() {
             </Link>
           ))}
           <div className="mt-2 flex gap-2 border-t border-border pt-3">
+            <Button variant="outline" size="icon" onClick={toggle} aria-label="تبديل الوضع" className="shrink-0">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
             {isAuthed ? (
               <Button asChild size="sm" className="flex-1">
                 <Link to="/dashboard" onClick={() => setOpen(false)}>لوحة التحكم</Link>
