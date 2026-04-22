@@ -11,11 +11,11 @@ export const Route = createFileRoute("/library")({
   head: () => ({
     meta: [
       { title: "مكتبة الأوامر — 50+ قالب AI بالعامية السعودية | رِفد" },
-        {
-          name: "description",
-          content:
-            "تصفّح 50+ قالب جاهز للنصوص والصور والحملات، مع تحديثات شهرية مستمرة للمتاجر السعودية.",
-        },
+      {
+        name: "description",
+        content:
+          "تصفّح 50+ قالب جاهز للنصوص والصور والحملات، مع تحديثات وقوالب جديدة شهرياً للمتاجر السعودية.",
+      },
       { property: "og:title", content: "مكتبة قوالب AI سعودية | رِفد" },
       {
         property: "og:description",

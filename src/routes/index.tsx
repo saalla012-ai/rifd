@@ -90,7 +90,7 @@ function HomePage() {
               <p className="text-sm font-bold text-primary">جاهزة للاستخدام</p>
               <h2 className="text-3xl font-extrabold">مكتبة الأوامر</h2>
               <p className="mt-2 text-base leading-7 text-muted-foreground">
-                50+ قالب مهندس بالعامية السعودية مع تحديثات شهرية مستمرة على المكتبة.
+                50+ قالب مهندس بالعامية السعودية مع تطويرات وقوالب جديدة شهرياً.
               </p>
             </div>
             <Button asChild variant="outline">
@@ -128,7 +128,7 @@ function HomePage() {
             جاهز تحوّل متجرك إلى آلة محتوى؟
           </h2>
           <p className="mt-3 text-base leading-7 text-primary-foreground/90">
-            ابدأ مجاناً اليوم — 5 توليدات نص + 2 صورة بدون بطاقة ائتمان
+            ابدأ مجاناً اليوم — 5 توليدات نص + 2 صور بدون بطاقة ائتمان
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" variant="secondary" className="shadow-elegant">
