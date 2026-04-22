@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 const STORAGE_PREFIX = "rifd_ab_";
 const SESSION_KEY = "rifd_ab_session";
 const SENT_EVENTS_KEY = "rifd_ab_sent";
+const ATTRIBUTION_PREFIX = "rifd_ab_attr_";
 
 export type Variant = "A" | "B";
 export type EventType = "view" | "cta_click" | "demo_try" | "sticky_cta_click" | "submit";
@@ -76,5 +77,24 @@ export async function trackEvent(
     });
   } catch {
     // فشل صامت — لا نعطل تجربة المستخدم
+  }
+}
+
+export function rememberAttribution(experiment: string, variant: Variant): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(`${ATTRIBUTION_PREFIX}${experiment}`, variant);
+  } catch {
+    // تجاهل
+  }
+}
+
+export function getRememberedAttribution(experiment: string): Variant | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const value = sessionStorage.getItem(`${ATTRIBUTION_PREFIX}${experiment}`);
+    return value === "A" || value === "B" ? value : null;
+  } catch {
+    return null;
   }
 }

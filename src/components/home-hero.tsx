@@ -4,13 +4,13 @@ import { ArrowLeft, Sparkles, Star, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubscribersCounter } from "./subscribers-counter";
 import { PRODUCT_TYPES } from "@/lib/demo-results";
-import { trackEvent } from "@/lib/ab-test";
+import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
 import heroPhotoThumb from "@/assets/hero-photo-thumb.png";
 
 const EXPERIMENT = "hero_hook";
 const HERO_HOOKS = {
-  A: "Brief واحد يجهّز لك",
-  B: "اكتب Brief سريع وخلّ رِفد",
+  A: "عطنا Brief واحد، وخذ",
+  B: "اكتب Brief سريع والباقي على رِفد",
 } as const;
 
 /**
@@ -48,6 +48,7 @@ export function HomeHero() {
   };
 
   const handleCtaClick = () => {
+    rememberAttribution(EXPERIMENT, variant);
     void trackEvent(EXPERIMENT, variant, "cta_click");
   };
 
@@ -105,7 +106,7 @@ export function HomeHero() {
             </span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
             <span className="whitespace-nowrap font-black text-gradient-primary">
-              {variant === "A" ? "فكرة Reel" : "حملة جاهزة"}
+              {variant === "A" ? "فكرة Reel" : "زاوية Reel"}
             </span>
           </span>
           <span className="mt-1 block text-[0.92em] sm:text-[0.9em]">

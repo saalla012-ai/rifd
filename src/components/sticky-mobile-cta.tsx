@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles } from "lucide-react";
-import { getVariant, trackEvent } from "@/lib/ab-test";
+import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
 
 /**
  * Sticky CTA bar للموبايل فقط.
@@ -42,7 +42,10 @@ export function StickyMobileCta() {
     >
       <Link
         to="/onboarding"
-        onClick={() => void trackEvent("hero_hook", variant, "sticky_cta_click")}
+        onClick={() => {
+          rememberAttribution("hero_hook", variant);
+          void trackEvent("hero_hook", variant, "sticky_cta_click");
+        }}
         className="flex items-center justify-center gap-2 rounded-xl gradient-gold px-4 py-3 text-sm font-extrabold text-gold-foreground shadow-gold"
       >
         <Sparkles className="h-4 w-4" />
