@@ -60,7 +60,7 @@ export function HomeHero() {
         </div>
 
         <h1
-          className="mt-5 text-center text-[1.54rem] font-black leading-[1.14] tracking-tight sm:mt-6 sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
+          className="mt-4 text-center text-[1.5rem] font-black leading-[1.12] tracking-tight sm:mt-6 sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
           style={{ animationDelay: "60ms" }}
         >
           <span className="block text-[0.66em] font-bold text-muted-foreground sm:text-[0.42em]">
@@ -70,14 +70,14 @@ export function HomeHero() {
             <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>
             <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
           </span>
-          <span className="mt-2.5 block text-[0.7em] font-bold leading-[1.42] text-foreground/90 sm:text-[0.56em]">
+          <span className="mt-2 block text-[0.66em] font-bold leading-[1.36] text-foreground/90 sm:text-[0.56em]">
             <span>{HERO_HOOKS[variant].outputs[0]}</span>
             <span className="mx-1 inline-block align-middle font-light text-muted-foreground/60 sm:mx-2">+</span>
             <span className="text-gradient-gold">{HERO_HOOKS[variant].outputs[1]}</span>
             <span className="mx-1 inline-block align-middle font-light text-muted-foreground/60 sm:mx-2">+</span>
             <span>{HERO_HOOKS[variant].outputs[2]}</span>
           </span>
-          <span className="mt-2 block text-[0.84em] leading-[1.18] sm:text-[0.9em]">
+          <span className="mt-1.5 block text-[0.8em] leading-[1.14] sm:text-[0.9em]">
             لمتجرك في{" "}
             <span className="relative inline-block whitespace-nowrap">
               <span
@@ -90,7 +90,7 @@ export function HomeHero() {
         </h1>
 
         <div
-          className="mx-auto mt-4.5 flex max-w-[18rem] items-center justify-center gap-2.5 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg animate-fade-in"
+          className="mx-auto mt-4 flex max-w-[17rem] items-center justify-center gap-2 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg animate-fade-in"
           style={{ animationDelay: "180ms" }}
         >
           <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1.5 text-destructive line-through decoration-2">
@@ -103,7 +103,7 @@ export function HomeHero() {
         </div>
 
         <div
-          className="mt-6 flex flex-col items-center gap-3 animate-fade-in"
+          className="mt-5 flex flex-col items-center gap-2.5 animate-fade-in"
           style={{ animationDelay: "260ms" }}
         >
           <Button
@@ -117,7 +117,7 @@ export function HomeHero() {
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div className="grid max-w-[18rem] grid-cols-1 gap-1 text-center text-[11px] font-medium text-muted-foreground sm:max-w-none sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1">
+          <div className="grid max-w-[17rem] grid-cols-1 gap-0.5 text-center text-[10px] font-medium text-muted-foreground sm:max-w-none sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1 sm:text-[11px]">
             <span>✓ بدون بطاقة ائتمان</span>
             <span>✓ بداية سريعة خلال ثوانٍ</span>
             <span>✓ إلغاء بنقرة</span>
@@ -125,22 +125,22 @@ export function HomeHero() {
         </div>
 
         <div
-          className="mx-auto mt-7 max-w-xl rounded-2xl border-2 border-dashed border-primary/30 bg-card/70 p-3.5 backdrop-blur-sm sm:mt-8 sm:p-5 animate-fade-in"
+          className="mx-auto mt-6 max-w-xl rounded-2xl border-2 border-dashed border-primary/30 bg-card/70 p-3 backdrop-blur-sm sm:mt-8 sm:p-5 animate-fade-in"
           style={{ animationDelay: "340ms" }}
         >
-          <div className="mb-3 flex items-center justify-center gap-2 text-center text-sm font-bold text-primary">
+          <div className="mb-2.5 flex items-center justify-center gap-2 text-center text-sm font-bold text-primary">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10">
               <Wand2 className="h-3.5 w-3.5" />
             </span>
             أو جرّب بدون تسجيل — اختر متجرك:
           </div>
 
-          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:justify-center">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
             {QUICK_TYPES.map((q) => (
               <button
                 key={q.id}
                 onClick={() => triggerDemo(q.id)}
-                className="rounded-full border-2 border-primary/30 bg-background px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground sm:hover:scale-105"
+                className="rounded-full border-2 border-primary/30 bg-background px-3 py-2 text-sm font-bold text-foreground transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground sm:hover:scale-105"
               >
                 {q.label}
               </button>
@@ -148,7 +148,7 @@ export function HomeHero() {
             <select
               value={selectedType}
               onChange={(e) => e.target.value && triggerDemo(e.target.value)}
-              className="w-full rounded-full border-2 border-primary/30 bg-background px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary cursor-pointer sm:w-auto"
+              className="col-span-2 w-full rounded-full border-2 border-primary/30 bg-background px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary cursor-pointer sm:w-auto"
               aria-label="غير ذلك"
             >
               <option value="">غير ذلك ←</option>
