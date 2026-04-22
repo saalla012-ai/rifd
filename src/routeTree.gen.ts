@@ -12,12 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VsChatgptRouteImport } from './routes/vs-chatgpt'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ProofCenterRouteImport } from './routes/proof-center'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ForPerfumesBeautyRouteImport } from './routes/for-perfumes-beauty'
+import { Route as ForGiftsSweetsCoffeeRouteImport } from './routes/for-gifts-sweets-coffee'
+import { Route as ForAbayasFashionRouteImport } from './routes/for-abayas-fashion'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as BusinessSolutionsRouteImport } from './routes/business-solutions'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -77,6 +82,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProofCenterRoute = ProofCenterRouteImport.update({
+  id: '/proof-center',
+  path: '/proof-center',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -97,6 +107,21 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForPerfumesBeautyRoute = ForPerfumesBeautyRouteImport.update({
+  id: '/for-perfumes-beauty',
+  path: '/for-perfumes-beauty',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForGiftsSweetsCoffeeRoute = ForGiftsSweetsCoffeeRouteImport.update({
+  id: '/for-gifts-sweets-coffee',
+  path: '/for-gifts-sweets-coffee',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForAbayasFashionRoute = ForAbayasFashionRouteImport.update({
+  id: '/for-abayas-fashion',
+  path: '/for-abayas-fashion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -105,6 +130,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessSolutionsRoute = BusinessSolutionsRouteImport.update({
+  id: '/business-solutions',
+  path: '/business-solutions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -336,12 +366,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/business-solutions': typeof BusinessSolutionsRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/for-abayas-fashion': typeof ForAbayasFashionRoute
+  '/for-gifts-sweets-coffee': typeof ForGiftsSweetsCoffeeRoute
+  '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
@@ -390,11 +425,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/business-solutions': typeof BusinessSolutionsRoute
   '/contact': typeof ContactRoute
+  '/for-abayas-fashion': typeof ForAbayasFashionRoute
+  '/for-gifts-sweets-coffee': typeof ForGiftsSweetsCoffeeRoute
+  '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
@@ -444,12 +484,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/business-solutions': typeof BusinessSolutionsRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/for-abayas-fashion': typeof ForAbayasFashionRoute
+  '/for-gifts-sweets-coffee': typeof ForGiftsSweetsCoffeeRoute
+  '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
@@ -500,12 +545,17 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/business-solutions'
     | '/contact'
     | '/dashboard'
+    | '/for-abayas-fashion'
+    | '/for-gifts-sweets-coffee'
+    | '/for-perfumes-beauty'
     | '/forgot-password'
     | '/library'
     | '/onboarding'
     | '/pricing'
+    | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
@@ -554,11 +604,16 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/business-solutions'
     | '/contact'
+    | '/for-abayas-fashion'
+    | '/for-gifts-sweets-coffee'
+    | '/for-perfumes-beauty'
     | '/forgot-password'
     | '/library'
     | '/onboarding'
     | '/pricing'
+    | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
@@ -607,12 +662,17 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/business-solutions'
     | '/contact'
     | '/dashboard'
+    | '/for-abayas-fashion'
+    | '/for-gifts-sweets-coffee'
+    | '/for-perfumes-beauty'
     | '/forgot-password'
     | '/library'
     | '/onboarding'
     | '/pricing'
+    | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
     | '/vs-chatgpt'
@@ -662,12 +722,17 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  BusinessSolutionsRoute: typeof BusinessSolutionsRoute
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  ForAbayasFashionRoute: typeof ForAbayasFashionRoute
+  ForGiftsSweetsCoffeeRoute: typeof ForGiftsSweetsCoffeeRoute
+  ForPerfumesBeautyRoute: typeof ForPerfumesBeautyRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LibraryRoute: typeof LibraryRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
+  ProofCenterRoute: typeof ProofCenterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   VsChatgptRoute: typeof VsChatgptRoute
@@ -725,6 +790,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/proof-center': {
+      id: '/proof-center'
+      path: '/proof-center'
+      fullPath: '/proof-center'
+      preLoaderRoute: typeof ProofCenterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -753,6 +825,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/for-perfumes-beauty': {
+      id: '/for-perfumes-beauty'
+      path: '/for-perfumes-beauty'
+      fullPath: '/for-perfumes-beauty'
+      preLoaderRoute: typeof ForPerfumesBeautyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-gifts-sweets-coffee': {
+      id: '/for-gifts-sweets-coffee'
+      path: '/for-gifts-sweets-coffee'
+      fullPath: '/for-gifts-sweets-coffee'
+      preLoaderRoute: typeof ForGiftsSweetsCoffeeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-abayas-fashion': {
+      id: '/for-abayas-fashion'
+      path: '/for-abayas-fashion'
+      fullPath: '/for-abayas-fashion'
+      preLoaderRoute: typeof ForAbayasFashionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -765,6 +858,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/business-solutions': {
+      id: '/business-solutions'
+      path: '/business-solutions'
+      fullPath: '/business-solutions'
+      preLoaderRoute: typeof BusinessSolutionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1107,12 +1207,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  BusinessSolutionsRoute: BusinessSolutionsRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  ForAbayasFashionRoute: ForAbayasFashionRoute,
+  ForGiftsSweetsCoffeeRoute: ForGiftsSweetsCoffeeRoute,
+  ForPerfumesBeautyRoute: ForPerfumesBeautyRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LibraryRoute: LibraryRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
+  ProofCenterRoute: ProofCenterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   VsChatgptRoute: VsChatgptRoute,
