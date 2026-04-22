@@ -68,7 +68,7 @@ export function SiteHeader() {
             </Button>
           ) : (
             <>
-               <Button asChild size="sm" className="h-9 px-3 text-xs shadow-elegant">
+               <Button asChild size="sm" className="h-9 px-3 text-xs shadow-elegant lg:hidden">
                 <Link to="/onboarding">ابدأ مجاناً</Link>
               </Button>
               <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex">
