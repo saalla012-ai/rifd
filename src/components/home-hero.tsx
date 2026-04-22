@@ -50,10 +50,10 @@ export function HomeHero() {
           <span className="block text-[0.66em] font-bold text-muted-foreground sm:text-[0.42em]">
             {HERO_HOOKS[variant].eyebrow}
           </span>
-          <span className="mt-2 block space-y-1.5 sm:space-y-0">
-            <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>
-            <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
-          </span>
+           <span className="mt-2 block space-y-1.5 sm:space-y-0">
+             <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>{" "}
+             <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
+           </span>
           <span className="mt-2 block text-[0.66em] font-bold leading-[1.36] text-foreground/90 sm:text-[0.56em]">
             <span>{HERO_HOOKS[variant].outputs[0]}</span>
             <span className="mx-1 inline-block align-middle font-light text-muted-foreground/60 sm:mx-2">+</span>
