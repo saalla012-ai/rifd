@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { SubscribersCounter } from "./subscribers-counter";
 import { PRODUCT_TYPES } from "@/lib/demo-results";
 import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
-import heroPhotoThumb from "@/assets/hero-photo-thumb.png";
 
 const EXPERIMENT = "hero_hook";
 const HERO_HOOKS = {
@@ -20,7 +19,7 @@ const HERO_HOOKS = {
     eyebrow: "لا تعيد شرح متجرك كل مرة",
     promiseLead: "اكتب Brief سريع",
     promiseEnd: "ونجهّز لك الحملة",
-    outputs: ["محتوى", "صورة", "CTA"],
+    outputs: ["محتوى", "صورة", "ريلز"],
     support: "رسالة بيع وصورة وزاوية تنفيذ جاهزة للنشر بدون لف ودوران.",
   },
 } as const;
@@ -99,27 +98,16 @@ export function HomeHero() {
           <span className="block text-[0.68em] font-bold text-muted-foreground sm:text-[0.42em]">
             {HERO_HOOKS[variant].eyebrow}
           </span>
-          <span className="mt-2 block">
-            <span className="whitespace-nowrap text-gradient-primary">{HERO_HOOKS[variant].promiseLead}</span>
-            <span className="mx-2 inline-block align-middle text-muted-foreground/60 font-light">—</span>
-            <span className="whitespace-nowrap">{HERO_HOOKS[variant].promiseEnd}</span>
+          <span className="mt-2 block space-y-1 sm:space-y-0">
+            <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>
+            <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
           </span>
-          <span className="mt-2 block text-[0.78em] font-bold text-foreground/90 sm:text-[0.56em]">
-            <span className="whitespace-nowrap">{HERO_HOOKS[variant].outputs[0]}</span>
+          <span className="mt-3 block text-[0.78em] font-bold leading-[1.35] text-foreground/90 sm:text-[0.56em]">
+            <span>{HERO_HOOKS[variant].outputs[0]}</span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
-            <span className="whitespace-nowrap text-gradient-gold">
-              {HERO_HOOKS[variant].outputs[1]}
-              <img
-                src={heroPhotoThumb}
-                alt=""
-                aria-hidden
-                width={96}
-                height={96}
-                className="ms-1.5 inline-block h-[0.8em] w-[0.8em] -translate-y-[0.06em] object-contain align-baseline drop-shadow-[0_3px_8px_rgba(212,175,55,0.55)] sm:ms-2 sm:h-[0.85em] sm:w-[0.85em]"
-              />
-            </span>
+            <span className="text-gradient-gold">{HERO_HOOKS[variant].outputs[1]}</span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
-            <span className="whitespace-nowrap">{HERO_HOOKS[variant].outputs[2]}</span>
+            <span>{HERO_HOOKS[variant].outputs[2]}</span>
           </span>
           <span className="mt-2 block text-[0.92em] sm:text-[0.9em]">
             لمتجرك في{" "}
@@ -166,7 +154,7 @@ export function HomeHero() {
           >
             <Link to="/onboarding" onClick={handleCtaClick}>
               <Sparkles className="h-5 w-5" />
-              ابدأ مجاناً — 5 توليدات
+              ابدأ مجاناً 5 توليدات
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
