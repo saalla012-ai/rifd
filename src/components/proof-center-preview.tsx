@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, BadgeCheck, Clapperboard, Images, MessageSquareText, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Clapperboard, Images, MessageSquareText, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const proofItems = [
@@ -25,6 +25,8 @@ const proofItems = [
   },
 ];
 
+const quickAnswers = ["هل النتيجة جاهزة؟", "هل تناسب نوع متجري؟", "هل تختصر وقتاً فعلاً؟"];
+
 export function ProofCenterPreview() {
   return (
     <section className="border-t border-border bg-secondary/30 py-16">
@@ -41,14 +43,30 @@ export function ProofCenterPreview() {
             <p className="mt-3 text-muted-foreground">
               أمثلة قطاعية، قبل/بعد، واعتراضات وردود تشغيلية توضح كيف يتحول الطلب البسيط إلى قرار شراء أوضح وثقة أعلى.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {quickAnswers.map((answer) => (
+                <span
+                  key={answer}
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-foreground/80"
+                >
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  {answer}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <Button asChild variant="outline" className="gap-2 self-start sm:self-auto">
-            <Link to="/proof-center">
-              ادخل مركز الإثبات
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Button asChild className="w-full gap-2 sm:w-auto">
+              <Link to="/onboarding">
+                ابدأ التجربة
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full gap-2 self-start sm:w-auto sm:self-auto">
+              <Link to="/proof-center">ادخل مركز الإثبات</Link>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

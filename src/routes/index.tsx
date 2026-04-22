@@ -130,6 +130,11 @@ function HomePage() {
           <p className="mt-3 text-base leading-7 text-primary-foreground/90">
             ابدأ مجاناً اليوم — 5 توليدات نص + 2 صور بدون بطاقة ائتمان
           </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-primary-foreground/85 sm:text-sm">
+            <span className="rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1">عامية سعودية جاهزة</span>
+            <span className="rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1">نتيجة خلال ثوانٍ</span>
+            <span className="rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1">بدون بطاقة ائتمان</span>
+          </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" variant="secondary" className="shadow-elegant">
               <Link to="/onboarding">ابدأ الآن مجاناً</Link>
@@ -138,6 +143,9 @@ function HomePage() {
               <Link to="/pricing">شوف الباقات</Link>
             </Button>
           </div>
+          <p className="mt-4 text-xs font-medium text-primary-foreground/75 sm:text-sm">
+            إذا كنت تدير متجراً أكبر أو فريقاً متعدد القنوات، فمسار <Link to="/business-solutions" className="font-extrabold underline underline-offset-4">رِفد للأعمال</Link> جاهز لك أيضاً.
+          </p>
         </div>
       </section>
 
