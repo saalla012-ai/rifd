@@ -147,14 +147,14 @@ function AbTestsPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <VariantCard
-                title="Variant A — عطنا Brief واحد، وخذ"
-                hint="يركّز على الوعد المباشر بالمخرجات"
+                title="Variant A — بدل ما يضيع يومك على المحتوى"
+                hint="Pain-led: يبدأ بالألم ثم يعد بأن الباقي على رِفد"
                 stats={a}
                 isWinner={briefWinner === "A"}
               />
               <VariantCard
-                title="Variant B — اكتب Brief سريع والباقي على رِفد"
-                hint="يركّز على تخفيف الجهد وتحميل التنفيذ على المنصة"
+                title="Variant B — لا تعيد شرح متجرك كل مرة"
+                hint="Fatigue-led: يبيع تقليل التكرار ثم الوعد بسرعة التنفيذ"
                 stats={b}
                 isWinner={briefWinner === "B"}
               />
