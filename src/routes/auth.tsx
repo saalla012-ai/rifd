@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول — رِفد للتقنية" },
-      { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديد للبدء بـ5 توليدات مجانية." },
+      { title: "تسجيل الدخول — رِفد للأعمال" },
+      { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديد للبدء بـ5 توليدات مجانية وحزمة بداية أقوى." },
     ],
   }),
   component: AuthPage,

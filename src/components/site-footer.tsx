@@ -12,7 +12,7 @@ export function SiteFooter() {
               <span className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
                 <Sparkles className="h-5 w-5" />
               </span>
-              <span className="text-lg">رِفد للتقنية</span>
+              <span className="text-lg">رِفد للأعمال</span>
             </Link>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">
               رِفد للأعمال: حلول التحول التجاري بالذكاء الاصطناعي للمتاجر السعودية — محتوى، صور، حملات، ومسارات تشغيل تتطور شهرياً.
