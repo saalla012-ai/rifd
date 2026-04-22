@@ -275,7 +275,7 @@
 
 ## `CVR-20` — Conversion Closure
 ### الحالة الحالية
-`PARTIAL`
+`DONE`
 
 ### الهدف
 تحويل الصفحة الرئيسية من جيدة إلى حاسمة بيعياً عبر جميع المقاسات الأساسية.
@@ -313,7 +313,7 @@
 - ملاحظات قبل/بعد على header/hero/cta density
 
 ### الترميز الحالي
-`[PHASE:CVR-20][STATE:PARTIAL][GATE:OPEN][NEXT:CLOSE_HOMEPAGE_SECTION_PACING_AND_PROOF_RHYTHM]`
+`[PHASE:CVR-20][STATE:DONE][GATE:PASS][NEXT:ACT-30]`
 
 ---
 
