@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "من نحن — رِفد للأعمال" },
+      { title: "من نحن — رِفد للتقنية" },
       {
         name: "description",
         content:
-          "رِفد للأعمال — شركة سعودية تبني حلول تحول تجاري بالذكاء الاصطناعي تبدأ من المحتوى وتمتد إلى الأنظمة والتشغيل.",
+          "رِفد للتقنية — شركة سعودية تبني أدوات محتوى وتسويق ذكية للمتاجر، مع مسار أعمال مخصص للوكالات والمؤسسات عند الحاجة.",
       },
-      { property: "og:title", content: "من نحن — رِفد للأعمال" },
+      { property: "og:title", content: "من نحن — رِفد للتقنية" },
       { property: "og:description", content: "قصة رِفد ورؤيتنا لتمكين كل متجر سعودي بأدوات AI محلية." },
     ],
   }),
@@ -29,7 +29,7 @@ function AboutPage() {
             صُنع في الرياض
           </div>
           <h1 className="mt-4 text-4xl font-extrabold sm:text-5xl">
-              نحن <span className="text-gradient-primary">رِفد للأعمال</span>
+              نحن <span className="text-gradient-primary">رِفد للتقنية</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground">
             نؤمن إن كل صاحب متجر سعودي يستحق أدوات ذكاء اصطناعي مصممة بعنايته
