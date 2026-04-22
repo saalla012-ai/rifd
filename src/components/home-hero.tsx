@@ -97,14 +97,14 @@ export function HomeHero() {
           >
             <Link to="/onboarding" onClick={handleCtaClick}>
               <Sparkles className="h-5 w-5" />
-              ابدأ مجاناً 5 توليدات
+              ابدأ مجاناً
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div className="grid max-w-[17rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-none sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
+          <div className="grid w-full max-w-[18rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-xl sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
+            <span>✓ 5 توليدات نص + 2 صورة</span>
             <span>✓ بدون بطاقة ائتمان</span>
             <span>✓ بداية سريعة خلال ثوانٍ</span>
-            <span>✓ إلغاء بنقرة</span>
           </div>
         </div>
 
