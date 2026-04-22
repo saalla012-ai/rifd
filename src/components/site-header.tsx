@@ -24,8 +24,8 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-bold">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
+          <Link to="/" className="flex min-w-0 items-center gap-2 font-bold">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-elegant sm:h-11 sm:w-11">
             <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
           </span>
@@ -48,7 +48,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -67,10 +67,10 @@ export function SiteHeader() {
             </Button>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+              <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex">
                 <Link to="/auth">تسجيل دخول</Link>
               </Button>
-              <Button asChild size="sm" className="hidden md:inline-flex shadow-elegant">
+              <Button asChild size="sm" className="hidden sm:inline-flex shadow-elegant">
                 <Link to="/onboarding">ابدأ مجاناً</Link>
               </Button>
             </>

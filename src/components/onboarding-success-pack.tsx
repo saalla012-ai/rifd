@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, Tags } from "lucide-react";
+import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, Tags, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SuccessPack } from "@/lib/onboarding-success";
 
@@ -76,6 +76,24 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
       <div className="rounded-xl border border-gold/30 bg-gold/10 p-4">
         <div className="text-sm font-bold text-gold-foreground">لماذا هذه النتيجة مناسبة لمتجرك؟</div>
         <p className="mt-2 text-sm leading-7 text-foreground">{pack.whyItFits}</p>
+      </div>
+
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+        <div className="flex items-center gap-2 text-sm font-bold text-primary">
+          <Wand2 className="h-4 w-4" />
+          ما الذي تغيّر الآن عن التوليد العادي؟
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {[
+            "أخذت منشوراً رئيسياً + زوايا توسع، لا مخرجاً واحداً فقط.",
+            "حصلت على اتجاه صورة وريل لتبدأ حملة لا مجرد بوست منفرد.",
+            "كل نتيجة لاحقة داخل حسابك ستبنى على بيانات متجرك نفسها.",
+          ].map((item) => (
+            <div key={item} className="rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground">
+              {item}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">

@@ -5,11 +5,11 @@ import { Mail, MessageCircle, MapPin, Clock } from "lucide-react";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "تواصل معنا — رِفد للتقنية" },
+      { title: "تواصل معنا — رِفد للأعمال" },
       {
         name: "description",
         content:
-          "تواصل مع فريق رِفد للتقنية عبر البريد أو واتساب. نرد على جميع الاستفسارات خلال ساعات العمل (9 ص – 12 ص بتوقيت الرياض).",
+          "تواصل مع فريق رِفد للأعمال عبر البريد أو واتساب. نرد على جميع الاستفسارات خلال ساعات العمل (9 ص – 12 ص بتوقيت الرياض).",
       },
     ],
   }),
@@ -84,7 +84,7 @@ function ContactPage() {
                 المقر
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                رِفد للتقنية — مدينة الرياض
+                رِفد للأعمال — مدينة الرياض
                 <br />
                 المملكة العربية السعودية 🇸🇦
               </p>

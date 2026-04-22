@@ -5,11 +5,11 @@ import { Scale, Mail, MessageCircle } from "lucide-react";
 export const Route = createFileRoute("/legal/terms")({
   head: () => ({
     meta: [
-      { title: "الشروط والأحكام — رِفد للتقنية" },
+      { title: "الشروط والأحكام — رِفد للأعمال" },
       {
         name: "description",
         content:
-          "شروط استخدام منصة رِفد للتقنية: التسجيل، الفوترة، الملكية الفكرية للمحتوى المُولَّد، الاستخدام المقبول، الإلغاء، وحلّ النزاعات.",
+          "شروط استخدام منصة رِفد للأعمال: التسجيل، الفوترة، الملكية الفكرية للمحتوى المُولَّد، الاستخدام المقبول، الإلغاء، وحلّ النزاعات.",
       },
       { name: "robots", content: "index, follow" },
     ],
@@ -36,7 +36,7 @@ function TermsPage() {
         <div className="mt-8 space-y-8 text-[15px] leading-[1.85] text-muted-foreground">
           <section className="rounded-xl border border-border bg-card p-5">
             <p className="text-foreground">
-              باستخدامك لمنصة <strong>رِفد للتقنية</strong> (الموقع: rifd.site) فإنك تقرّ
+              باستخدامك لمنصة <strong>رِفد للأعمال</strong> (الموقع: rifd.site) فإنك تقرّ
               بأنك قرأت هذه الشروط وفهمتها ووافقت على الالتزام بها. إذا لم توافق على
               أي بند منها، يجب عليك التوقف عن استخدام الخدمة فوراً.
             </p>

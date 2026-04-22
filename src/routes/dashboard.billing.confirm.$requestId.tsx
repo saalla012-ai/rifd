@@ -37,7 +37,7 @@ const PLAN_PRICES = {
   business: { monthly: 199, yearly: 1990 },
 } as const;
 
-const TRANSFER_REASON = "رِفد للتقنية";
+const TRANSFER_REASON = "رِفد للأعمال";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"];

@@ -7,6 +7,7 @@ import { StickyMobileCta } from "@/components/sticky-mobile-cta";
 import { BrandStrip } from "@/components/brand-strip";
 import { BusinessSolutionsTeaser } from "@/components/business-solutions-teaser";
 import { LiveAiDemo } from "@/components/live-ai-demo";
+import { HeroProofFilm } from "@/components/hero-proof-film";
 import { SavingsCounter } from "@/components/savings-counter";
 import { BeforeAfter } from "@/components/before-after";
 import { HowItWorks } from "@/components/how-it-works";
@@ -66,6 +67,8 @@ function HomePage() {
           <LiveAiDemo />
         </div>
       </section>
+
+      <HeroProofFilm />
 
       {/* 5. أرقام حية حقيقية */}
       <SavingsCounter />

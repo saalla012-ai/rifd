@@ -5,11 +5,11 @@ import { ShieldCheck, Mail, AlertTriangle } from "lucide-react";
 export const Route = createFileRoute("/legal/refund")({
   head: () => ({
     meta: [
-      { title: "سياسة الاسترجاع — رِفد للتقنية" },
+      { title: "سياسة الاسترجاع — رِفد للأعمال" },
       {
         name: "description",
         content:
-          "ضمان استرجاع 7 أيام كامل على باقات رِفد للتقنية. شروط الاسترجاع، الاستثناءات، وكيفية تقديم الطلب.",
+          "ضمان استرجاع 7 أيام كامل على باقات رِفد للأعمال. شروط الاسترجاع، الاستثناءات، وكيفية تقديم الطلب.",
       },
     ],
   }),
