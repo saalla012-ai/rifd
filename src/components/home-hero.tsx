@@ -9,8 +9,20 @@ import heroPhotoThumb from "@/assets/hero-photo-thumb.png";
 
 const EXPERIMENT = "hero_hook";
 const HERO_HOOKS = {
-  A: "عطنا Brief واحد، وخذ",
-  B: "اكتب Brief سريع والباقي على رِفد",
+  A: {
+    eyebrow: "بدل ما يضيع يومك على المحتوى",
+    promiseLead: "Brief واحد منك",
+    promiseEnd: "والباقي على رِفد",
+    outputs: ["منشور", "صورة", "زاوية Reel"],
+    support: "مخرجات جاهزة لمتجرك بالعامية السعودية خلال دقائق، لا أيام.",
+  },
+  B: {
+    eyebrow: "لا تعيد شرح متجرك كل مرة",
+    promiseLead: "اكتب Brief سريع",
+    promiseEnd: "ونجهّز لك الحملة",
+    outputs: ["محتوى", "صورة", "CTA"],
+    support: "رسالة بيع وصورة وزاوية تنفيذ جاهزة للنشر بدون لف ودوران.",
+  },
 } as const;
 
 /**
@@ -79,22 +91,24 @@ export function HomeHero() {
           <SubscribersCounter variant="inline" />
         </div>
 
-        {/* H1 — منطق V8: Brief واحد يجهّز حزمة حملة أولية */}
+        {/* H1 — pain → promise → outputs */}
         <h1
           className="mt-6 text-center text-[1.75rem] font-black leading-[1.15] tracking-tight sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
           style={{ animationDelay: "60ms" }}
         >
-          <span className="block">
-            <span className="whitespace-nowrap">
-              {HERO_HOOKS[variant]}
-            </span>
+          <span className="block text-[0.68em] font-bold text-muted-foreground sm:text-[0.42em]">
+            {HERO_HOOKS[variant].eyebrow}
+          </span>
+          <span className="mt-2 block">
+            <span className="whitespace-nowrap text-gradient-primary">{HERO_HOOKS[variant].promiseLead}</span>
+            <span className="mx-2 inline-block align-middle text-muted-foreground/60 font-light">—</span>
+            <span className="whitespace-nowrap">{HERO_HOOKS[variant].promiseEnd}</span>
+          </span>
+          <span className="mt-2 block text-[0.78em] font-bold text-foreground/90 sm:text-[0.56em]">
+            <span className="whitespace-nowrap">{HERO_HOOKS[variant].outputs[0]}</span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
-            <span className="whitespace-nowrap">
-              <span className="font-black text-gradient-primary">منشور</span>
-            </span>
-            <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
-            <span className="whitespace-nowrap">
-              <span className="font-black text-gradient-gold">صورة</span>
+            <span className="whitespace-nowrap text-gradient-gold">
+              {HERO_HOOKS[variant].outputs[1]}
               <img
                 src={heroPhotoThumb}
                 alt=""
@@ -105,11 +119,9 @@ export function HomeHero() {
               />
             </span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
-            <span className="whitespace-nowrap font-black text-gradient-primary">
-              {variant === "A" ? "فكرة Reel" : "زاوية Reel"}
-            </span>
+            <span className="whitespace-nowrap">{HERO_HOOKS[variant].outputs[2]}</span>
           </span>
-          <span className="mt-1 block text-[0.92em] sm:text-[0.9em]">
+          <span className="mt-2 block text-[0.92em] sm:text-[0.9em]">
             لمتجرك في{" "}
             <span className="relative inline-block whitespace-nowrap">
               <span
@@ -120,6 +132,13 @@ export function HomeHero() {
             </span>
           </span>
         </h1>
+
+        <p
+          className="mx-auto mt-4 max-w-2xl text-center text-sm font-medium leading-7 text-muted-foreground sm:text-base animate-fade-in"
+          style={{ animationDelay: "120ms" }}
+        >
+          {HERO_HOOKS[variant].support}
+        </p>
 
         {/* مقارنة بصرية ✕/✓ */}
         <div
