@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Clapperboard, Images, MessageSquareText, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const proofSignals = ["وصف واحد", "4 مخرجات مترابطة", "جاهزة لبداية حملة"];
+
 const steps = [
   {
     title: "1) وصف سريع",
@@ -35,15 +37,26 @@ export function HeroProofFilm() {
             فيديو الإثبات — كيف يتحول الطلب إلى حملة
           </div>
           <h2 className="mt-4 text-3xl font-extrabold leading-tight sm:text-4xl">
-            لا يبهرك رِفد بالواجهة فقط — <span className="text-gradient-primary">يُريك كيف يخرج النص والصورة وفكرة الريل من نفس الطلب.</span>
+            لا يبهرك رِفد بالواجهة فقط — <span className="text-gradient-primary">يُريك كيف يخرج النص والصورة وفكرة الريلز من نفس الطلب.</span>
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
             هذه ليست معاينة شكلية. هذا هو منطق الإقناع في رِفد: وصف بسيط يدخل، ثم ترى أمامك نصاً وصورة وفكرة فيديو ضمن حزمة واحدة قابلة للتشغيل.
           </p>
 
+          <div className="mt-4 flex flex-wrap gap-2">
+            {proofSignals.map((signal) => (
+              <span
+                key={signal}
+                className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground/85"
+              >
+                {signal}
+              </span>
+            ))}
+          </div>
+
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {steps.map((step) => (
-              <article key={step.title} className="rounded-xl border border-border bg-card p-4 shadow-soft">
+              <article key={step.title} className="rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <step.icon className="h-5 w-5" />
                 </div>
@@ -54,13 +67,13 @@ export function HeroProofFilm() {
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="gradient-primary text-primary-foreground shadow-elegant">
+            <Button asChild className="w-full gradient-primary text-primary-foreground shadow-elegant sm:w-auto">
               <Link to="/onboarding">
                 ابدأ التجربة المجانية
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link to="/proof-center">شاهد إثباتات أكثر عمقاً</Link>
             </Button>
           </div>
@@ -122,12 +135,12 @@ export function HeroProofFilm() {
                 </div>
 
                 <div className="rounded-2xl border border-gold/30 bg-gold/10 p-4">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <div className="text-xs font-bold text-gold-foreground">المحصلة النهائية</div>
-                       <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز لك منشوراً + صورة + فكرة ريلز + دعوة شراء</div>
+                      <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز لك منشوراً + صورة + فكرة ريلز + دعوة شراء</div>
                     </div>
-                    <div className="rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground">بدلاً من 5 ساعات</div>
+                    <div className="inline-flex self-start rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground sm:self-auto">بدلاً من 5 ساعات</div>
                   </div>
                 </div>
               </div>

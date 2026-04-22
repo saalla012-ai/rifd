@@ -1,4 +1,6 @@
-import { X, Check } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 /**
  * مقارنة بصرية "قبل/بعد" — ChatGPT vs رِفد.
@@ -21,6 +23,8 @@ const SAMPLES = [
   },
 ];
 
+const painPoints = ["عامية سعودية", "زاوية بيع واضحة", "دعوة شراء جاهزة"];
+
 export function BeforeAfter() {
   return (
     <section className="border-t border-border bg-secondary/30 py-14 sm:py-16">
@@ -37,6 +41,13 @@ export function BeforeAfter() {
           <p className="mt-3 text-muted-foreground">
             نفس الطلب — نتيجتان مختلفتان كلياً. شوف بنفسك ↓
           </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {painPoints.map((point) => (
+              <span key={point} className="rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-foreground/80">
+                {point}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
@@ -63,8 +74,24 @@ export function BeforeAfter() {
                   </p>
                 </div>
               </div>
+
+              <div className="mt-4 rounded-xl border border-success/20 bg-success/10 px-4 py-3 text-xs font-bold text-success">
+                النتيجة هنا ليست صياغة أفضل فقط — بل مخرج أقرب للنشر والبيع مباشرة.
+              </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Button asChild className="w-full sm:w-auto">
+            <Link to="/onboarding">
+              جرّب على متجرك الآن
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link to="/vs-chatgpt">شاهد مقارنة أوسع</Link>
+          </Button>
         </div>
       </div>
     </section>
