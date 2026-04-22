@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, Mail, MessageCircle, ShieldCheck } from "lucide-react";
+import { Mail, MessageCircle, ShieldCheck } from "lucide-react";
+import { RifdLogo } from "@/components/rifd-logo";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -9,10 +10,8 @@ export function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <Link to="/" className="flex items-center gap-2 font-bold">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
-                <Sparkles className="h-5 w-5" />
-              </span>
-              <span className="text-lg">رِفد للتقنية</span>
+              <RifdLogo size="sm" showDescriptor={false} />
+              <span className="text-lg">للتقنية</span>
             </Link>
             <p className="mt-3 max-w-md text-sm text-muted-foreground">
               رِفد للتقنية: منصة سعودية للمتاجر تقدّم محتوى، صور، وحملات ذكية للسوق السعودي، مع مسار مؤسسي مخصص عند الحاجة للوكالات والمؤسسات.

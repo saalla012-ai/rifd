@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { RifdLogo } from "@/components/rifd-logo";
 
 const NAV = [
   { to: "/", label: "الرئيسية" },
@@ -26,13 +27,8 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
           <Link to="/" className="flex min-w-0 items-center gap-2 font-bold">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-elegant sm:h-11 sm:w-11">
-            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
-          </span>
-          <span className="text-lg font-extrabold sm:text-xl">
-            رِفد <span className="text-xs font-medium text-muted-foreground">للتقنية</span>
-          </span>
-        </Link>
+            <RifdLogo size="md" showDescriptor />
+          </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
           {NAV.map((item) => (
