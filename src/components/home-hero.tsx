@@ -116,12 +116,14 @@ export function HomeHero() {
             {HERO_BENEFITS.map((b) => (
               <div
                 key={b.title}
-                className="flex min-h-[84px] items-center gap-2 rounded-xl border border-border bg-card/80 p-3 backdrop-blur-sm sm:min-h-[unset] sm:gap-3"
+                className="grid min-h-[96px] grid-cols-[auto,1fr] items-start gap-2 rounded-xl border border-border bg-card/80 p-3 backdrop-blur-sm sm:min-h-[unset] sm:gap-3"
               >
-                <span className="text-xl sm:text-2xl">{b.icon}</span>
-                <div className="min-w-0">
-                  <div className="text-sm font-extrabold leading-tight">{b.title}</div>
-                  <div className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
+                <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center text-xl sm:h-auto sm:w-auto sm:text-2xl">
+                  {b.icon}
+                </span>
+                <div className="min-w-0 self-stretch">
+                  <div className="text-sm font-extrabold leading-[1.2]">{b.title}</div>
+                  <div className="mt-1 text-[11px] leading-[1.35] text-muted-foreground">
                     {b.sub}
                   </div>
                 </div>
