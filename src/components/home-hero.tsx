@@ -70,22 +70,22 @@ export function HomeHero() {
           <SubscribersCounter variant="inline" />
         </div>
 
-        {/* H1 — منشورات + صور، إيقاع متوازن، highlight ذهبي على وقت قهوتك */}
+        {/* H1 — منطق V8: Brief واحد ← حزمة حملة أولية */}
         <h1
           className="mt-6 text-center text-[1.75rem] font-black leading-[1.15] tracking-tight sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
           style={{ animationDelay: "60ms" }}
         >
-          {/* السطر 1: اكتب 30 منشور + 30 صورة 🌸 — كل المجموعة nowrap لمنع الكسر القبيح */}
           <span className="block">
             <span className="whitespace-nowrap">
-              اكتب{" "}
-              <span className="font-black tabular-nums text-gradient-primary">30</span>{" "}
-              منشور
+              حوّل Brief واحد إلى
             </span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
             <span className="whitespace-nowrap">
-              <span className="font-black tabular-nums text-gradient-gold">30</span>{" "}
-              صورة
+              <span className="font-black text-gradient-primary">منشور</span>
+            </span>
+            <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
+            <span className="whitespace-nowrap">
+              <span className="font-black text-gradient-gold">صورة</span>
               <img
                 src={heroPhotoThumb}
                 alt=""
@@ -95,8 +95,9 @@ export function HomeHero() {
                 className="ms-1.5 inline-block h-[0.8em] w-[0.8em] -translate-y-[0.06em] object-contain align-baseline drop-shadow-[0_3px_8px_rgba(212,175,55,0.55)] sm:ms-2 sm:h-[0.85em] sm:w-[0.85em]"
               />
             </span>
+            <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
+            <span className="whitespace-nowrap font-black text-gradient-primary">فكرة Reel</span>
           </span>
-          {/* السطر 2: لمتجرك في وقت قهوتك ☕ */}
           <span className="mt-1 block text-[0.92em] sm:text-[0.9em]">
             لمتجرك في{" "}
             <span className="relative inline-block whitespace-nowrap">
@@ -142,7 +143,7 @@ export function HomeHero() {
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] font-medium text-muted-foreground">
             <span>✓ بدون بطاقة ائتمان</span>
             <span className="opacity-50">·</span>
-            <span>✓ نتيجة في 10 ثواني</span>
+            <span>✓ بداية Success Pack خلال ثوانٍ</span>
             <span className="opacity-50">·</span>
             <span>✓ إلغاء بنقرة</span>
           </div>
@@ -194,9 +195,9 @@ export function HomeHero() {
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
             {[
               { icon: "🇸🇦", title: "عامية أصيلة", sub: "ما تحس إنه مترجم" },
-              { icon: "💰", title: "وفّر ساعات", sub: "بدل كاتب/مصمم" },
-              { icon: "⚡", title: "ثوانٍ معدودة", sub: "نتيجة جاهزة للنشر" },
-              { icon: "🧠", title: "ذاكرة متجر", sub: "يحفظ تفاصيلك" },
+              { icon: "📦", title: "حزمة أولية", sub: "منشور + صورة + Reel" },
+              { icon: "⚡", title: "ثوانٍ معدودة", sub: "نتيجة أقرب للتنفيذ" },
+              { icon: "🧠", title: "ذاكرة متجر", sub: "كل مرة أذكى من قبل" },
             ].map((b) => (
               <div
                 key={b.title}
