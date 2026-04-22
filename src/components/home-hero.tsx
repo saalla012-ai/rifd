@@ -20,7 +20,7 @@ const HERO_HOOKS = {
     promiseLead: "أعطنا Brief سريع",
     promiseEnd: "ونطلع لك عرضاً يبيع",
     outputs: ["محتوى", "صورة", "ريلز"],
-    support: "محتوى جاهز يشرح القيمة ويحرّك الشراء بسرعة وبلهجة سعودية مقنعة.",
+    support: "",
   },
 } as const;
 
@@ -121,12 +121,14 @@ export function HomeHero() {
           </span>
         </h1>
 
-        <p
-          className="mx-auto mt-4 max-w-[19rem] text-center text-sm font-medium leading-7 text-muted-foreground sm:max-w-2xl sm:text-base animate-fade-in"
-          style={{ animationDelay: "120ms" }}
-        >
-          {HERO_HOOKS[variant].support}
-        </p>
+        {HERO_HOOKS[variant].support ? (
+          <p
+            className="mx-auto mt-4 max-w-[19rem] text-center text-sm font-medium leading-7 text-muted-foreground sm:max-w-2xl sm:text-base animate-fade-in"
+            style={{ animationDelay: "120ms" }}
+          >
+            {HERO_HOOKS[variant].support}
+          </p>
+        ) : null}
 
         {/* مقارنة بصرية ✕/✓ */}
           <div
