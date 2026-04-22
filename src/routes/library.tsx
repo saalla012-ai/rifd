@@ -69,7 +69,6 @@ function LibraryPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`ابحث في ${PROMPTS.length} قالب... (مثلاً: منشور، عطر، بوستر)`}
               placeholder="ابحث في 50+ قالب... (مثلاً: منشور، عطر، بوستر)"
               className="pr-10"
             />
