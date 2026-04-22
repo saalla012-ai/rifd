@@ -50,10 +50,10 @@ export function HomeHero() {
           <span className="block text-[0.66em] font-bold text-muted-foreground sm:text-[0.42em]">
             {HERO_HOOKS[variant].eyebrow}
           </span>
-          <span className="mt-2 block space-y-1.5 sm:space-y-0">
-            <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>
-            <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
-          </span>
+           <span className="mt-2 block space-y-1.5 sm:space-y-0">
+             <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>{" "}
+             <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
+           </span>
           <span className="mt-2 block text-[0.66em] font-bold leading-[1.36] text-foreground/90 sm:text-[0.56em]">
             <span>{HERO_HOOKS[variant].outputs[0]}</span>
             <span className="mx-1 inline-block align-middle font-light text-muted-foreground/60 sm:mx-2">+</span>
@@ -97,14 +97,14 @@ export function HomeHero() {
           >
             <Link to="/onboarding" onClick={handleCtaClick}>
               <Sparkles className="h-5 w-5" />
-              ابدأ مجاناً 5 توليدات
+              ابدأ مجاناً
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div className="grid max-w-[17rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-none sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
+          <div className="grid w-full max-w-[18rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-xl sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
+            <span>✓ 5 توليدات نص + 2 صورة</span>
             <span>✓ بدون بطاقة ائتمان</span>
             <span>✓ بداية سريعة خلال ثوانٍ</span>
-            <span>✓ إلغاء بنقرة</span>
           </div>
         </div>
 
