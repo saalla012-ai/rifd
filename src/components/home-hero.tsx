@@ -70,14 +70,14 @@ export function HomeHero() {
           <SubscribersCounter variant="inline" />
         </div>
 
-        {/* H1 — منطق V8: Brief واحد ← حزمة حملة أولية */}
+        {/* H1 — منطق V8: Brief واحد يجهّز حزمة حملة أولية */}
         <h1
           className="mt-6 text-center text-[1.75rem] font-black leading-[1.15] tracking-tight sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
           style={{ animationDelay: "60ms" }}
         >
           <span className="block">
             <span className="whitespace-nowrap">
-              Brief واحد يطلع لك
+              Brief واحد يجهّز لك
             </span>
             <span className="mx-1.5 inline-block align-middle text-muted-foreground/60 font-light sm:mx-2">+</span>
             <span className="whitespace-nowrap">

@@ -72,7 +72,7 @@ export function HeroProofFilm() {
             <div className="mb-4 flex items-center justify-between rounded-2xl border border-border bg-secondary/50 px-4 py-3">
               <div>
                 <div className="text-xs font-bold text-primary">مشهد الإبهار المقترح</div>
-                <div className="mt-1 text-sm font-extrabold">من Brief واحد إلى 4 مخرجات</div>
+                <div className="mt-1 text-sm font-extrabold">Brief واحد يجهّز 4 مخرجات</div>
               </div>
               <div className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-bold text-success">
                 <span className="h-2 w-2 rounded-full bg-success" />
@@ -125,7 +125,7 @@ export function HeroProofFilm() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-xs font-bold text-gold-foreground">المحصلة النهائية</div>
-                      <div className="mt-1 text-sm font-extrabold">Brief واحد ← Post + Visual + Reel angle + CTA</div>
+                       <div className="mt-1 text-sm font-extrabold">Brief واحد يجهّز لك منشور + صورة + فكرة Reel + CTA</div>
                     </div>
                     <div className="rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground">بدلاً من 5 ساعات</div>
                   </div>
