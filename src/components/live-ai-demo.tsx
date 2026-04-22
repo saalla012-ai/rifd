@@ -157,7 +157,7 @@ export function LiveAiDemo() {
             <div className="rounded-lg border border-border bg-background/80 p-3">
               <div className="flex items-center gap-2 text-xs font-bold text-primary">
                 <Tags className="h-3.5 w-3.5" />
-                CTA + هاشتاقات
+                دعوة شراء + هاشتاقات
               </div>
               <p className="mt-2 text-sm leading-6 text-foreground">{pack.cta}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -178,7 +178,7 @@ export function LiveAiDemo() {
             <div className="rounded-lg border border-border bg-background/80 p-3 sm:col-span-2">
               <div className="flex items-center gap-2 text-xs font-bold text-primary">
                 <Clapperboard className="h-3.5 w-3.5" />
-                Reel concept
+                فكرة ريلز
               </div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{pack.reelIdea}</p>
             </div>
