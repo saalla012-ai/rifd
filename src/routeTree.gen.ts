@@ -46,7 +46,6 @@ import { Route as ApiTelegramSetChatIdRouteImport } from './routes/api.telegram-
 import { Route as ApiTelegramDiscoverChatsRouteImport } from './routes/api.telegram-discover-chats'
 import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
-import { Route as ApiDemoGenerateRouteImport } from './routes/api.demo-generate'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
 import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
@@ -254,11 +253,6 @@ const ApiNotifyTelegramAdminRoute = ApiNotifyTelegramAdminRouteImport.update({
   path: '/api/notify-telegram-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiDemoGenerateRoute = ApiDemoGenerateRouteImport.update({
-  id: '/api/demo-generate',
-  path: '/api/demo-generate',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   id: '/admin/subscriptions',
   path: '/admin/subscriptions',
@@ -387,7 +381,6 @@ export interface FileRoutesByFullPath {
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
@@ -445,7 +438,6 @@ export interface FileRoutesByTo {
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
@@ -505,7 +497,6 @@ export interface FileRoutesById {
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/api/demo-generate': typeof ApiDemoGenerateRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
@@ -566,7 +557,6 @@ export interface FileRouteTypes {
     | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
-    | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
     | '/api/telegram-discover-chats'
@@ -624,7 +614,6 @@ export interface FileRouteTypes {
     | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
-    | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
     | '/api/telegram-discover-chats'
@@ -683,7 +672,6 @@ export interface FileRouteTypes {
     | '/admin/email-monitor'
     | '/admin/plan-limits'
     | '/admin/subscriptions'
-    | '/api/demo-generate'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
     | '/api/telegram-discover-chats'
@@ -743,7 +731,6 @@ export interface RootRouteChildren {
   AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
-  ApiDemoGenerateRoute: typeof ApiDemoGenerateRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
   ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
   ApiTelegramDiscoverChatsRoute: typeof ApiTelegramDiscoverChatsRoute
@@ -1028,13 +1015,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNotifyTelegramAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/demo-generate': {
-      id: '/api/demo-generate'
-      path: '/api/demo-generate'
-      fullPath: '/api/demo-generate'
-      preLoaderRoute: typeof ApiDemoGenerateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
       path: '/admin/subscriptions'
@@ -1228,7 +1208,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminEmailMonitorRoute: AdminEmailMonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
-  ApiDemoGenerateRoute: ApiDemoGenerateRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,
   ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,
   ApiTelegramDiscoverChatsRoute: ApiTelegramDiscoverChatsRoute,
