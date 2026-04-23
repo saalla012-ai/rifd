@@ -7,7 +7,7 @@ import {
   Clapperboard,
   Compass,
   MessageSquareQuote,
-  Route,
+  Route as RouteIcon,
   ShieldCheck,
   Sparkles,
   Store,
@@ -163,7 +163,7 @@ const proofRoutes = [
   {
     title: "أريد أن أفهم أين يظهر الأثر داخل التشغيل",
     detail: "اقرأ النتائج التشغيلية ثم عد إلى قرار التجربة أو الباقة.",
-    icon: Route,
+    icon: RouteIcon,
   },
   {
     title: "أريد أن أعرف هل أحتاج المسار الفردي أم المؤسسي",
