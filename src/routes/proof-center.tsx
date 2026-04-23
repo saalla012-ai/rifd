@@ -154,6 +154,30 @@ const fitGuidance = [
   },
 ];
 
+const subscriptionPaths = [
+  {
+    title: "ابدأ مجاناً إذا كان هدفك إثبات الفكرة",
+    description: "هذا هو المسار الأنسب عندما تريد اختبار منطق رِفد على متجر واحد والتأكد أن المخرج أوضح من طريقتك الحالية قبل أي التزام.",
+    proof: "يناسب من يريد الحكم على الترابط بين النص والصورة والزاوية البيعية من أول تجربة.",
+    href: "/onboarding",
+    label: "اختبره مجاناً أولاً",
+  },
+  {
+    title: "اذهب إلى احترافي إذا كان لديك تشغيل مستمر",
+    description: "عندما يصبح المطلوب أسبوعياً ومتكرراً، فالقيمة لا تعود في منشور واحد بل في تحويل الإثبات إلى روتين محتوى مستمر وواضح.",
+    proof: "هذا هو الامتداد الطبيعي إذا اقتنعت بالإثبات وتريد استخدامه داخل دورة المحتوى الشهرية لمتجرك.",
+    href: "/pricing",
+    label: "قارن باقة احترافي",
+  },
+  {
+    title: "اذهب إلى رِفد للأعمال إذا كان القرار مؤسسياً",
+    description: "إذا كنت تدير فريقاً أو عدة متاجر أو تحتاج مسار تأهيل وتسليم أوضح، فالمقارنة الصحيحة ليست بين منشور وآخر بل بين نظامي تشغيل.",
+    proof: "هنا يصبح رِفد للأعمال هو المسار المنطقي لأن احتياجك تجاوز الاستخدام الفردي فعلاً.",
+    href: "/business-solutions",
+    label: "انتقل إلى رِفد للأعمال",
+  },
+];
+
 const proofRoutes = [
   {
     title: "أريد أن أعرف إن كان منطق رِفد يناسب متجري",
@@ -374,7 +398,22 @@ function ProofCenterPage() {
             ))}
           </div>
 
-          <div className="mt-8 rounded-2xl border border-primary/20 bg-secondary/30 p-6 shadow-elegant">
+          <div className="mt-8 grid gap-4 xl:grid-cols-3">
+            {subscriptionPaths.map((item) => (
+              <article key={item.title} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+                <h2 className="text-lg font-extrabold">{item.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">{item.description}</p>
+                <div className="mt-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-3 text-sm leading-6 text-foreground/80">
+                  <span className="font-extrabold text-primary">لماذا هذا هو المسار الصحيح:</span> {item.proof}
+                </div>
+                <Button asChild className="mt-4 w-full" variant="outline">
+                  <Link to={item.href as never}>{item.label}</Link>
+                </Button>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-primary/20 bg-secondary/30 p-6 pb-28 shadow-elegant lg:pb-20">
             <h2 className="text-2xl font-extrabold">إذا اقتنعت، ما هو المسار الصحيح بعد هذه الصفحة؟</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
               هذه النقطة هي جوهر PRF-50: لا نترك الزائر مقتنعاً فقط، بل نربطه مباشرة بالخطوة التالية المنطقية بحسب حجم احتياجه ونوع قراره.
