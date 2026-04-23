@@ -14,6 +14,7 @@ export type SuccessPack = {
   cta: string;
   hashtags: string[];
   imageIdea: string;
+  imagePrompt: string;
   reelIdea: string;
   secondPostIdea: string;
   storySequence: string[];
@@ -94,6 +95,7 @@ export function buildSuccessPack({
     cta: toneCopy.cta,
     hashtags: [`#${slugifyArabic(storeName)}`, `#${slugifyArabic(productTypeLabel)}`, "#متاجر_سعودية"],
     imageIdea: `صورة بطولية لمنتج من ${productTypeLabel} بإضاءة احترافية، ألوان العلامة، ومساحة واضحة لعنوان العرض واسم ${storeName}.`,
+    imagePrompt: `أنشئ صورة إعلان عمودية لـ ${storeName} لمنتج من ${productTypeLabel} بأسلوب ${toneCopy.adjective}، مع تركيز واضح على الوعد الأساسي، وتكوين أنيق مناسب لجمهور ${audienceLabel} ومساحة عنوان عربية واضحة.`,
     reelIdea: `ريل قصير من 3 لقطات: لقطة جذب سريعة، إبراز الفائدة الأساسية لمنتج ${productTypeLabel}، ثم CTA نهائي موجّه إلى ${audienceLabel}.`,
     secondPostIdea: `منشور متابعة يثبت نفس زاوية الحملة لكن من اعتراض مختلف: لماذا ${productTypeLabel} مناسب لـ${audienceLabel} الآن تحديداً، مع مثال استخدام أو مناسبة شراء أوضح.`,
     storySequence: [
@@ -107,7 +109,7 @@ export function buildSuccessPack({
     nextMove: marketAngle.nextMove,
     quickChecklist: [
       "ثبّت وعداً واحداً واضحاً في أول سطر بدلاً من حشد أكثر من فكرة داخل المنشور.",
-      `استخدم الصورة المقترحة لتأكيد زاوية ${productTypeLabel} نفسها حتى تبدو الحملة مترابطة بصرياً.`,
+      `ولّد الصورة أولاً من نفس الزاوية البيعية لـ${productTypeLabel} حتى تبدو الحملة مترابطة بصرياً من أول أصل.`,
       "احتفظ بالـ CTA الحالي كنقطة إغلاق أولى ثم اختبر نسخة ثانية بعد أول نشر.",
     ],
     campaignSequence: [
@@ -126,7 +128,7 @@ export function buildSuccessPack({
     ],
     launchActions: [
       "انسخ المنشور كما هو كنقطة انطلاق، ثم عدّل فقط ما يخص المنتج أو العرض الحالي.",
-      "ولّد صورة واحدة من نفس الزاوية البيعية قبل كتابة نسخة ثانية مختلفة حتى لا تتشتت الحملة.",
+      "ولّد صورة واحدة فوراً من نفس الزاوية البيعية قبل كتابة نسخة ثانية مختلفة حتى لا تتشتت الحملة.",
       "بعد النشر الأول، استخدم نفس الزاوية لعمل Reel قصير بدل البدء من فكرة جديدة تماماً.",
     ],
   };
