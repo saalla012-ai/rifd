@@ -4,7 +4,7 @@ import { COLORS } from "../theme";
 
 const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subsets: ["arabic"] });
 
-const OUTPUT_CARDS = [
+const OUTPUT_CARDS: Array<{ title: string; body: string; tone: "text" | "visual" }> = [
   {
     title: "المنشور الرئيسي",
     body: "افتتاحية بيعية مختصرة + وعد واضح + CTA خفيف يليق بالقطاع.",
