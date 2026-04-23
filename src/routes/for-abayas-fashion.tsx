@@ -6,7 +6,12 @@ export const Route = createFileRoute("/for-abayas-fashion")({
     meta: [
       { title: "رِفد لقطاع الأزياء والعبايات" },
       { name: "description", content: "محتوى وصور وحملات مخصصة لمتاجر الأزياء والعبايات بلهجة سعودية ونبرة بيع مناسبة." },
+      { property: "og:title", content: "رِفد لقطاع الأزياء والعبايات" },
+      { property: "og:description", content: "صفحة بيع قطاعية متخصصة لمتاجر الأزياء والعبايات مع أمثلة وقوالب ومواسم وCTA واضح." },
+      { name: "twitter:title", content: "رِفد لقطاع الأزياء والعبايات" },
+      { name: "twitter:description", content: "محتوى وصور وحملات متخصصة للأزياء والعبايات داخل السوق السعودي." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/for-abayas-fashion" }],
   }),
   component: FashionSectorPage,
 });
