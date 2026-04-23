@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "تعبت تكتب وتصمّم لمتجرك؟ رِفد يولّد لك منشورات وصور وحِزم حملات بالعامية السعودية بسرعة، مع 50+ قالب جاهز وتحديثات شهرية للمتاجر السعودية. جرّب مجاناً بدون بطاقة.",
+          "تعبت تكتب وتصمّم لمتجرك؟ رِفد يولّد لك منشورات وصور وحِزم حملات بالعامية السعودية بسرعة، مع 50+ قالب جاهز وتحديثات شهرية للمتاجر السعودية. جرّب مجاناً بدون بطاقة، وإذا كان احتياجك مؤسسياً فهناك مسار رِفد للأعمال.",
       },
       { property: "og:title", content: "رِفد — محتوى وصور لمتجرك السعودي في وقت قهوتك ☕" },
       {
@@ -144,7 +144,7 @@ function HomePage() {
             </Button>
           </div>
           <p className="mt-4 text-xs font-medium text-primary-foreground/75 sm:text-sm">
-            إذا كنت تدير متجراً أكبر أو فريقاً متعدد القنوات، فمسار <Link to="/business-solutions" className="font-extrabold underline underline-offset-4">رِفد للأعمال</Link> جاهز لك أيضاً.
+            وإذا كان احتياجك يتجاوز الاشتراك داخل المنتج إلى تشخيص وتنفيذ وتأهيل أوسع، فمسار <Link to="/business-solutions" className="font-extrabold underline underline-offset-4">رِفد للأعمال</Link> هو الخيار المؤسسي الصحيح.
           </p>
         </div>
       </section>
