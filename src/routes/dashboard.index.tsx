@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { currentRiyadhMonth } from "@/lib/usage-month";
+import { getMemoryCoverage, getMemorySignals, getWeeklyRecommendation } from "@/lib/memory-insights";
 
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({ meta: [{ title: "لوحة التحكم — رِفد" }] }),
@@ -90,21 +91,9 @@ function DashboardPage() {
 
   const plan = (profile?.plan ?? "free") as keyof typeof LIMITS;
   const limits = LIMITS[plan];
-
-  const profileFields = [
-    profile?.store_name,
-    profile?.product_type,
-    profile?.audience,
-    profile?.tone,
-    profile?.brand_color,
-    profile?.brand_personality,
-    profile?.unique_selling_point,
-    profile?.shipping_policy,
-    profile?.exchange_policy,
-    profile?.cta_style,
-  ];
-  const filled = profileFields.filter(Boolean).length;
-  const completionPct = Math.round((filled / profileFields.length) * 100);
+  const completionPct = getMemoryCoverage(profile);
+  const memorySignals = getMemorySignals(profile);
+  const weeklyRecommendation = getWeeklyRecommendation(profile);
 
   return (
     <DashboardShell>
@@ -245,6 +234,47 @@ function DashboardPage() {
           </p>
           <Button asChild size="sm" variant="link" className="mt-2 h-auto p-0 text-primary">
             <Link to="/dashboard/usage">عرض التفاصيل ←</Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="flex items-center gap-2 text-base font-bold">
+                <TrendingUp className="h-4 w-4 text-primary" /> الأثر التراكمي للذاكرة
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                هذه الإشارات هي ما يجب أن يظهر تدريجياً داخل المخرجات القادمة حتى لا تعود التوليدات عامة أو متكررة.
+              </p>
+            </div>
+            <Badge variant="secondary" className="px-2.5 py-1 text-xs font-bold">
+              {completionPct}% اكتمال
+            </Badge>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {memorySignals.length > 0 ? (
+              memorySignals.map((signal) => (
+                <span key={signal} className="inline-flex items-center rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs font-bold text-foreground/85">
+                  {signal}
+                </span>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                لم تُبنَ إشارات كافية بعد. أكمل ملف المتجر حتى يبدأ رِفد بإظهار أثر تراكمي أوضح في النص والصورة.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 shadow-soft">
+          <h3 className="text-base font-bold">توصية هذا الأسبوع</h3>
+          <p className="mt-3 text-lg font-extrabold leading-8">{weeklyRecommendation.title}</p>
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">{weeklyRecommendation.description}</p>
+          <Button asChild className="mt-4 w-full gradient-primary text-primary-foreground shadow-elegant">
+            <Link to={weeklyRecommendation.ctaHref}>{weeklyRecommendation.ctaLabel}</Link>
           </Button>
         </div>
       </div>

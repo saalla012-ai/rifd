@@ -14,6 +14,8 @@ import { getSuggestionsFor } from "@/lib/prompt-suggestions";
 import { generateText } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
+import { useAuth } from "@/hooks/use-auth";
+import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 
 type TextSearch = { template?: string };
 
@@ -26,6 +28,7 @@ export const Route = createFileRoute("/dashboard/generate-text")({
 });
 
 function GenerateTextPage() {
+  const { profile } = useAuth();
   const search = useSearch({ from: "/dashboard/generate-text" });
   const initial = search.template && TEXT_PROMPTS.some((p) => p.id === search.template)
     ? search.template
@@ -40,6 +43,8 @@ function GenerateTextPage() {
   const router = useRouter();
 
   const template = TEXT_PROMPTS.find((p) => p.id === templateId) ?? TEXT_PROMPTS[0];
+  const smartSuggestions = getSmartPromptSuggestions(profile, "text");
+  const memorySignals = getMemorySignals(profile).slice(0, 4);
 
   const generate = async () => {
     if (!topic.trim()) {
@@ -142,6 +147,23 @@ function GenerateTextPage() {
                   ))}
                 </div>
               </div>
+              {smartSuggestions.length > 0 && (
+                <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                  <p className="text-xs font-bold text-primary">اقتراحات مبنية على ذاكرة متجرك</p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {smartSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => setTopic(suggestion)}
+                        className="rounded-full border border-primary/20 bg-background px-2.5 py-1 text-[11px] text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <Button onClick={generate} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري التوليد...</> : <><Wand2 className="h-4 w-4" /> ولّد النص</>}
@@ -166,6 +188,18 @@ function GenerateTextPage() {
           ) : (
             <div className="mt-3 flex h-48 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
               النتيجة بتظهر هنا
+            </div>
+          )}
+          {memorySignals.length > 0 && (
+            <div className="mt-4 rounded-xl border border-border bg-secondary/30 p-4">
+              <p className="text-xs font-bold text-muted-foreground">ما الذي يفترض أن ينعكس من الذاكرة هنا؟</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {memorySignals.map((signal) => (
+                  <span key={signal} className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-foreground/85">
+                    {signal}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
           <div className="mt-3 text-center">
