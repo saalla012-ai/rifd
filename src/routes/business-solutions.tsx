@@ -68,8 +68,8 @@ export const Route = createFileRoute("/business-solutions")({
         property: "og:description",
         content: "خط أعمال مخصص للوكالات والمتاجر الكبيرة والشركات التي تريد تحولاً تجارياً عملياً بالذكاء الاصطناعي.",
       },
-      { tagName: "link", rel: "canonical", href: "https://rifd.site/business-solutions" },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/business-solutions" }],
   }),
   component: BusinessSolutionsPage,
 });
@@ -89,6 +89,10 @@ function BusinessSolutionsPage() {
           <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
             هذا المسار مخصص للوكالات، والعلامات متعددة المتاجر، والشركات التي تريد بنية تشغيل ومحتوى وأنظمة وواجهات متصلة بالذكاء الاصطناعي ضمن خدمة أكثر عمقاً وإشرافاً.
           </p>
+          <div className="mt-5 max-w-3xl rounded-2xl border border-gold/25 bg-card/80 p-4 text-sm leading-7 text-muted-foreground shadow-soft">
+            <span className="font-extrabold text-foreground">مهم:</span> هذه الصفحة تشرح <span className="font-extrabold text-gold">مسار رِفد للأعمال المؤسسي</span>،
+            وليست باقة الاشتراك الشهرية <span className="font-extrabold text-foreground">"أعمال"</span> الموجودة في صفحة الأسعار. إذا كان احتياجك اشتراكاً أعلى داخل المنتج فقط، فابدأ من الأسعار أولاً.
+          </div>
           <div className="mt-8 grid gap-3 md:grid-cols-2">
             {signals.map((signal) => (
               <div key={signal} className="rounded-xl border border-border bg-card/70 px-4 py-4 text-sm text-muted-foreground shadow-soft backdrop-blur-sm">
@@ -182,7 +186,7 @@ function BusinessSolutionsPage() {
                 </a>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
-                <Link to="/pricing">راجع الباقات الحالية أولاً</Link>
+                <Link to="/pricing">أبحث عن باقة داخل المنتج أولاً</Link>
               </Button>
             </div>
           </div>
