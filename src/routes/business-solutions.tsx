@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, BarChart3, Blocks, BriefcaseBusiness, Building2, CheckCircle2, Compass, Workflow } from "lucide-react";
+import { z } from "zod";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,30 @@ const fitCases = [
   "متاجر كبيرة تحتاج مواءمة بين UX، العروض، والتشغيل بالذكاء الاصطناعي.",
 ];
 
+const intakeSchema = z.object({
+  name: z.string().trim().min(2, "اكتب الاسم أو اسم الجهة بصيغة أوضح").max(100, "الاسم طويل أكثر من اللازم"),
+  businessType: z.string().trim().min(2, "حدد نوع النشاط").max(80, "نوع النشاط طويل أكثر من اللازم"),
+  scope: z.string().trim().min(2, "اذكر نطاق العمل الحالي").max(120, "نطاق العمل طويل أكثر من اللازم"),
+  teamSize: z.string().trim().min(1, "اذكر حجم الفريق").max(80, "وصف حجم الفريق طويل أكثر من اللازم"),
+  channels: z.string().trim().min(10, "اذكر القنوات الحالية بتفصيل مختصر").max(500, "تفاصيل القنوات أطول من اللازم"),
+  bottleneck: z.string().trim().min(10, "اشرح عنق الزجاجة الحالي باختصار مفيد").max(500, "وصف عنق الزجاجة أطول من اللازم"),
+  goal: z.string().trim().min(10, "اذكر هدفاً واضحاً خلال 90 يوماً").max(500, "وصف الهدف أطول من اللازم"),
+  supportType: z.string().trim().min(2, "حدد نوع الدعم المطلوب").max(100, "نوع الدعم طويل أكثر من اللازم"),
+});
+
+type IntakeForm = z.infer<typeof intakeSchema>;
+type IntakeErrors = Partial<Record<keyof IntakeForm, string>>;
+
+function mapZodErrors(error: z.ZodError<IntakeForm>): IntakeErrors {
+  return error.issues.reduce<IntakeErrors>((acc, issue) => {
+    const field = issue.path[0];
+    if (typeof field === "string" && !(field in acc)) {
+      acc[field as keyof IntakeForm] = issue.message;
+    }
+    return acc;
+  }, {});
+}
+
 export const Route = createFileRoute("/business-solutions")({
   head: () => ({
     meta: [
@@ -91,25 +116,64 @@ function BusinessSolutionsPage() {
     goal: "",
     supportType: "",
   });
+  const [errors, setErrors] = React.useState<IntakeErrors>({});
+
+  const normalizedForm = React.useMemo<IntakeForm>(
+    () => ({
+      name: form.name.trim(),
+      businessType: form.businessType.trim(),
+      scope: form.scope.trim(),
+      teamSize: form.teamSize.trim(),
+      channels: form.channels.trim(),
+      bottleneck: form.bottleneck.trim(),
+      goal: form.goal.trim(),
+      supportType: form.supportType.trim(),
+    }),
+    [form],
+  );
+
+  const validation = React.useMemo(() => intakeSchema.safeParse(normalizedForm), [normalizedForm]);
+  const isValid = validation.success;
 
   const intakeMessage = React.useMemo(
     () =>
       [
         "السلام عليكم، أريد تقييم مسار رِفد للأعمال.",
-        `الاسم / الجهة: ${form.name || "..."}`,
-        `نوع النشاط: ${form.businessType || "..."}`,
-        `نطاق العمل الحالي: ${form.scope || "..."}`,
-        `حجم الفريق: ${form.teamSize || "..."}`,
-        `القنوات الحالية: ${form.channels || "..."}`,
-        `أكبر عنق زجاجة: ${form.bottleneck || "..."}`,
-        `الهدف خلال 90 يوماً: ${form.goal || "..."}`,
-        `نوع الدعم المطلوب: ${form.supportType || "..."}`,
+        `الاسم / الجهة: ${normalizedForm.name || "..."}`,
+        `نوع النشاط: ${normalizedForm.businessType || "..."}`,
+        `نطاق العمل الحالي: ${normalizedForm.scope || "..."}`,
+        `حجم الفريق: ${normalizedForm.teamSize || "..."}`,
+        `القنوات الحالية: ${normalizedForm.channels || "..."}`,
+        `أكبر عنق زجاجة: ${normalizedForm.bottleneck || "..."}`,
+        `الهدف خلال 90 يوماً: ${normalizedForm.goal || "..."}`,
+        `نوع الدعم المطلوب: ${normalizedForm.supportType || "..."}`,
       ].join("\n"),
-    [form],
+    [normalizedForm],
   );
 
   const whatsappHref = `https://wa.me/966582286215?text=${encodeURIComponent(intakeMessage)}`;
   const emailHref = `mailto:hello@rifd.site?subject=${encodeURIComponent("طلب تقييم — رِفد للأعمال")}&body=${encodeURIComponent(intakeMessage)}`;
+  const formErrorSummary = !isValid && Object.keys(errors).length > 0 ? "أكمل الحقول المطلوبة أولاً بصياغة أوضح قبل الإرسال." : null;
+
+  function updateField<K extends keyof IntakeForm>(field: K, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function validateBeforeSend(event: React.MouseEvent<HTMLAnchorElement>) {
+    const result = intakeSchema.safeParse(normalizedForm);
+    if (!result.success) {
+      event.preventDefault();
+      setErrors(mapZodErrors(result.error));
+      return;
+    }
+    setErrors({});
+  }
 
   return (
     <MarketingLayout>
@@ -252,50 +316,59 @@ function BusinessSolutionsPage() {
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <div className="md:col-span-2">
                     <Label htmlFor="business-name">الاسم أو اسم الجهة</Label>
-                    <Input id="business-name" className="mt-2 bg-background" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="مثلاً: متجر كذا / وكالة كذا" />
+                    <Input id="business-name" aria-invalid={Boolean(errors.name)} className="mt-2 bg-background" value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="مثلاً: متجر كذا / وكالة كذا" />
+                    {errors.name ? <p className="mt-2 text-xs font-medium text-destructive">{errors.name}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="business-type">نوع النشاط</Label>
-                    <Input id="business-type" className="mt-2 bg-background" value={form.businessType} onChange={(e) => setForm((prev) => ({ ...prev, businessType: e.target.value }))} placeholder="متجر واحد / عدة متاجر / وكالة / فريق داخلي" />
+                    <Input id="business-type" aria-invalid={Boolean(errors.businessType)} className="mt-2 bg-background" value={form.businessType} onChange={(e) => updateField("businessType", e.target.value)} placeholder="متجر واحد / عدة متاجر / وكالة / فريق داخلي" />
+                    {errors.businessType ? <p className="mt-2 text-xs font-medium text-destructive">{errors.businessType}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="business-scope">نطاق العمل الحالي</Label>
-                    <Input id="business-scope" className="mt-2 bg-background" value={form.scope} onChange={(e) => setForm((prev) => ({ ...prev, scope: e.target.value }))} placeholder="عدد المتاجر أو الملفات أو العلامات" />
+                    <Input id="business-scope" aria-invalid={Boolean(errors.scope)} className="mt-2 bg-background" value={form.scope} onChange={(e) => updateField("scope", e.target.value)} placeholder="عدد المتاجر أو الملفات أو العلامات" />
+                    {errors.scope ? <p className="mt-2 text-xs font-medium text-destructive">{errors.scope}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="team-size">حجم الفريق</Label>
-                    <Input id="team-size" className="mt-2 bg-background" value={form.teamSize} onChange={(e) => setForm((prev) => ({ ...prev, teamSize: e.target.value }))} placeholder="مثلاً: 4 أشخاص / 12 شخصاً" />
+                    <Input id="team-size" aria-invalid={Boolean(errors.teamSize)} className="mt-2 bg-background" value={form.teamSize} onChange={(e) => updateField("teamSize", e.target.value)} placeholder="مثلاً: 4 أشخاص / 12 شخصاً" />
+                    {errors.teamSize ? <p className="mt-2 text-xs font-medium text-destructive">{errors.teamSize}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="support-type">نوع الدعم المطلوب</Label>
-                    <Input id="support-type" className="mt-2 bg-background" value={form.supportType} onChange={(e) => setForm((prev) => ({ ...prev, supportType: e.target.value }))} placeholder="تشخيص / تنفيذ / بناء نظام / تشغيل حملات" />
+                    <Input id="support-type" aria-invalid={Boolean(errors.supportType)} className="mt-2 bg-background" value={form.supportType} onChange={(e) => updateField("supportType", e.target.value)} placeholder="تشخيص / تنفيذ / بناء نظام / تشغيل حملات" />
+                    {errors.supportType ? <p className="mt-2 text-xs font-medium text-destructive">{errors.supportType}</p> : null}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="channels">القنوات الحالية</Label>
-                    <Textarea id="channels" className="mt-2 min-h-[88px] bg-background" value={form.channels} onChange={(e) => setForm((prev) => ({ ...prev, channels: e.target.value }))} placeholder="المتجر، الإعلانات، واتساب، المحتوى، CRM، وأي أدوات تشغيل حالية" />
+                    <Textarea id="channels" aria-invalid={Boolean(errors.channels)} className="mt-2 min-h-[88px] bg-background" value={form.channels} onChange={(e) => updateField("channels", e.target.value)} placeholder="المتجر، الإعلانات، واتساب، المحتوى، CRM، وأي أدوات تشغيل حالية" />
+                    {errors.channels ? <p className="mt-2 text-xs font-medium text-destructive">{errors.channels}</p> : null}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="bottleneck">أكبر عنق زجاجة حالياً</Label>
-                    <Textarea id="bottleneck" className="mt-2 min-h-[88px] bg-background" value={form.bottleneck} onChange={(e) => setForm((prev) => ({ ...prev, bottleneck: e.target.value }))} placeholder="هل المشكلة في المحتوى، التحويل، الأنظمة، التشغيل، أو الربط بين القنوات؟" />
+                    <Textarea id="bottleneck" aria-invalid={Boolean(errors.bottleneck)} className="mt-2 min-h-[88px] bg-background" value={form.bottleneck} onChange={(e) => updateField("bottleneck", e.target.value)} placeholder="هل المشكلة في المحتوى، التحويل، الأنظمة، التشغيل، أو الربط بين القنوات؟" />
+                    {errors.bottleneck ? <p className="mt-2 text-xs font-medium text-destructive">{errors.bottleneck}</p> : null}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="goal">الهدف خلال 90 يوماً</Label>
-                    <Textarea id="goal" className="mt-2 min-h-[88px] bg-background" value={form.goal} onChange={(e) => setForm((prev) => ({ ...prev, goal: e.target.value }))} placeholder="مثلاً: رفع التحويل، تسريع الإطلاقات، بناء نظام محتوى وتشغيل، أو توحيد رحلة العميل" />
+                    <Textarea id="goal" aria-invalid={Boolean(errors.goal)} className="mt-2 min-h-[88px] bg-background" value={form.goal} onChange={(e) => updateField("goal", e.target.value)} placeholder="مثلاً: رفع التحويل، تسريع الإطلاقات، بناء نظام محتوى وتشغيل، أو توحيد رحلة العميل" />
+                    {errors.goal ? <p className="mt-2 text-xs font-medium text-destructive">{errors.goal}</p> : null}
                   </div>
                 </div>
+                {formErrorSummary ? <div className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">{formErrorSummary}</div> : null}
                 <div className="mt-5 rounded-xl border border-border bg-background p-4">
                   <div className="text-sm font-extrabold">الملخص الجاهز للإرسال</div>
                   <pre className="mt-3 whitespace-pre-wrap break-words font-sans text-sm leading-8 text-foreground">{intakeMessage}</pre>
                 </div>
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   <Button asChild className="gradient-gold text-gold-foreground shadow-gold sm:w-auto">
-                    <a href={whatsappHref} target="_blank" rel="noreferrer noopener">
+                    <a href={whatsappHref} target="_blank" rel="noreferrer noopener" aria-disabled={!isValid} onClick={validateBeforeSend}>
                       أرسل التقييم عبر واتساب
                       <ArrowLeft className="h-4 w-4" />
                     </a>
                   </Button>
                   <Button asChild variant="outline" className="sm:w-auto">
-                    <a href={emailHref}>أرسل نفس التقييم عبر البريد</a>
+                    <a href={emailHref} aria-disabled={!isValid} onClick={validateBeforeSend}>أرسل نفس التقييم عبر البريد</a>
                   </Button>
                 </div>
               </div>
