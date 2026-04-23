@@ -1,28 +1,33 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BadgeCheck, Briefcase, Clapperboard, Clock3, Images, MessageSquareQuote, ShieldCheck, Sparkles, Store } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Briefcase,
+  CheckCircle2,
+  Clapperboard,
+  Clock3,
+  Images,
+  MessageSquareQuote,
+  ShieldCheck,
+  Sparkles,
+  Store,
+  Target,
+} from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
 
-const layers = [
+const decisionFramework = [
   {
-    title: "قبل / بعد",
-    description: "كيف يتحول طلب بسيط إلى محتوى بيع وصياغة أقرب لواقع المتجر السعودي.",
+    title: "1) افهم الفرق",
+    description: "شاهد كيف ينتقل المتجر من طلب عام إلى حزمة تشغيل أوضح في الرسالة والصورة والـ CTA.",
   },
   {
-    title: "أمثلة قطاعية",
-    description: "عطور، أزياء، هدايا، وإلكترونيات بأمثلة مخصصة بدل ادعاءات عامة.",
+    title: "2) طابقه على قطاعك",
+    description: "لا تعتمد على إثبات عام؛ قارن المثال بالقطاع الأقرب لمتجرك حتى تعرف إن كان المنطق مناسباً لك فعلاً.",
   },
   {
-    title: "حزم حملة كاملة",
-    description: "منشور + هوك + صورة + Reel concept + CTA ضمن منطق حملة واحد.",
-  },
-  {
-    title: "اعتراضات وردود",
-    description: "هل العامية مناسبة؟ هل يصلح للوكالات؟ هل الناتج جاهز للنشر؟ كلها تُجاب عملياً.",
-  },
-  {
-    title: "نتائج تشغيلية",
-    description: "وقت أقل، كثافة إنتاج أعلى، ووضوح أكبر في دورة المحتوى الأسبوعية.",
+    title: "3) اختر المسار التالي",
+    description: "بعد الاقتناع، انتقل مباشرة إلى التجربة أو الباقات أو رِفد للأعمال بحسب نوع قرارك.",
   },
 ];
 
@@ -45,47 +50,65 @@ const beforeAfter = [
   },
 ];
 
-const sectorCases = [
+const proofPackets = [
   {
     title: "العطور والجمال",
-    description: "رسائل توازن بين الفخامة والبيع، مع إبراز الإحساس والثبات والانطباع الأول.",
+    problem: "المنتج يبدو جميلاً لكن الرسالة غالباً تبقى عامة: فخامة، جودة، عرض محدود.",
+    output: "حزمة تبدأ بالإحساس والانطباع الأول، ثم تربط ذلك بالثقة في الاختيار وقرار الشراء.",
+    outcome: "الناتج يصبح أقرب لبيع تجربة العطر لا مجرد وصف الزجاجة أو الخصم.",
     href: "/for-perfumes-beauty",
     icon: Sparkles,
   },
   {
     title: "الأزياء والعبايات",
-    description: "محتوى يرفع قيمة القطعة ويبرر الشراء بالهوية والتنسيق والمناسبة، لا بالخصم فقط.",
+    problem: "المحتوى يكرر وصف الخامة أو اللون بينما سبب الشراء الحقيقي هو الظهور والاستخدام والمناسبة.",
+    output: "رسالة تربط القطعة بالمشهد النهائي على العميلة: تنسيق، حضور، واستخدام يومي أو مناسبة.",
+    outcome: "ترتفع قيمة القطعة في ذهن العميلة لأن المحتوى يبرر الشراء بالهوية لا بالسعر فقط.",
     href: "/for-abayas-fashion",
     icon: Store,
   },
   {
     title: "الهدايا والحلويات والقهوة",
-    description: "زوايا جاهزة للموسم والإهداء والعروض السريعة مع CTA أوضح للحجز والطلب.",
+    problem: "الحملة تفشل حين تعرض المنتج وحده وتنسى المناسبة الاجتماعية التي تدفع الناس للطلب.",
+    output: "زوايا بيعية مرتبطة بالإهداء والزيارة والضيافة والإطلاق الموسمي مع CTA أوضح للحجز والطلب.",
+    outcome: "القرار يصبح أسرع لأن الرسالة تبيع اللحظة المناسبة لا مجرد الصنف المعروض.",
     href: "/for-gifts-sweets-coffee",
     icon: Briefcase,
+  },
+  {
+    title: "الفرق والوكالات",
+    problem: "الاحتياج هنا ليس منشوراً واحداً فقط بل منطقاً يمكن تكراره عبر أكثر من عميل أو حساب.",
+    output: "مسار مؤسسي يرفع من وضوح التسليم والحزم والحالات المناسبة للتشغيل المتكرر.",
+    outcome: "هذا هو الجسر الطبيعي إلى رِفد للأعمال عندما يصبح المطلوب أقرب لنظام تشغيل لا أداة فردية فقط.",
+    href: "/business-solutions",
+    icon: ShieldCheck,
   },
 ];
 
 const objections = [
   {
     title: "هل الناتج مجرد نص عام؟",
-    answer: "لا. المعروض هنا يثبت أن المخرجات تُبنى كحزمة: منشور، هوكات، CTA، صورة، وفكرة Reel ضمن منطق بيع واحد.",
-    next: "ابدأ بـ قبل/بعد ثم قارن ذلك بما ستحصل عليه في التجربة المجانية.",
+    proof: "ستلاحظ أن الإثبات هنا لا يكتفي بمنشور واحد؛ بل يربط المنشور بالهوك والصورة والـ Reel والـ CTA في نفس الحزمة.",
+    answer: "هذا يقلل مشكلة النصوص العامة لأن كل مخرج يخدم نفس الزاوية البيعية بدلاً من أن يعمل منفصلاً عن الآخر.",
+    next: "إذا كان هذا هو اعتراضك الرئيسي، فالخطوة الأدق هي بدء التجربة المجانية ومقارنة أول مخرج بما تكتبه عادة بنفسك.",
   },
   {
     title: "هل يصلح فعلاً للسوق السعودي؟",
-    answer: "نعم، لأن الأمثلة مبنية على عامية محلية وسياقات شراء فعلية لقطاعات سعودية محددة، لا ترجمة حرفية لنسخ أجنبية.",
-    next: "انتقل إلى الصفحة القطاعية الأقرب لمتجرك لترى الصياغة المناسبة فعلاً لنفس السوق.",
+    proof: "الأمثلة هنا مبنية على قطاعات محلية وسياقات شراء فعلية: الإهداء، الفخامة، الاستخدام اليومي، والموسمية.",
+    answer: "لذلك التخصيص ليس شكلياً؛ بل يظهر في نبرة الرسالة، وطريقة العرض، والاعتراضات التي يجري الرد عليها.",
+    next: "افتح الصفحة القطاعية الأقرب لمتجرك، لأن هذه الخطوة تكشف سريعاً إن كان المنطق البيعي مفهوماً لواقع سوقك أم لا.",
   },
   {
     title: "هل يوفّر وقتاً حقيقياً؟",
-    answer: "نعم، لأنه يختصر جلسة التفكير والكتابة والتوجيه البصري في مخرج أولي متماسك أسرع بكثير من البدء من الصفر.",
-    next: "انظر إلى النتائج التشغيلية بالأسفل لتفهم أين يُختصر الوقت فعلياً داخل أسبوع المحتوى.",
+    proof: "القيمة ليست في السرعة المجردة، بل في اختصار 3 مراحل معاً: التفكير، الكتابة، وتحديد الاتجاه البصري الأول.",
+    answer: "حين تبدأ من مخرج مترابط، تقل العودة لنقطة الصفر وتصبح دورة أسبوع المحتوى أخف وأكثر اتساقاً.",
+    next: "انزل إلى النتائج التشغيلية بالأسفل لتعرف أين بالضبط يتم اختصار الوقت داخل العمل الأسبوعي.",
   },
   {
     title: "هل يناسب الفرق والوكالات؟",
-    answer: "نعم، وهذا هو الجسر الطبيعي نحو رِفد للأعمال حيث تتوسع الحزم إلى تشغيل مؤسسي ومسارات أكثر عمقاً.",
-    next: "إذا كنت تعمل لفريق أو عدة متاجر، انتقل بعدها إلى رِفد للأعمال بدلاً من التجربة الفردية فقط.",
+    proof: "إذا كان احتياجك يتجاوز متجراً واحداً أو يحتاج تأهيلاً وتسليماً أوضح، فالمسار الفردي وحده لن يكون كافياً.",
+    answer: "هنا يأتي دور رِفد للأعمال كامتداد مؤسسي، لا كمجرد نسخة أكبر من نفس الصفحة التسويقية.",
+    next: "إن كنت تدير فريقاً أو عدة حسابات، انتقل مباشرة إلى رِفد للأعمال بدلاً من الحكم على المنتج فقط بمنطق التجربة الفردية.",
   },
 ];
 
@@ -101,6 +124,25 @@ const operationalOutcomes = [
   {
     title: "بعد أول نشر",
     description: "يصبح التكرار أسهل لأنك تطور زاوية ثبتت، لا لأنك تعيد اختراع المحتوى كل مرة من الصفر.",
+  },
+];
+
+const fitGuidance = [
+  {
+    title: "مناسب لك إذا...",
+    points: [
+      "تريد بداية حملة أسرع بدل البدء من صفحة فارغة كل مرة.",
+      "تحتاج محتوى أوضح لقطاع محدد لا قالباً عاماً قابلاً للنسخ على أي متجر.",
+      "تريد ربط النص والصورة والـ Reel بنفس الزاوية من أول محاولة.",
+    ],
+  },
+  {
+    title: "ليس الخيار الأدق الآن إذا...",
+    points: [
+      "كنت تبحث عن إدارة تشغيل كاملة لفريقك قبل اختبار المنطق الأساسي للحملة.",
+      "كنت تتوقع أن يغنيك عن فهم عرضك أو موسميتك أو جمهورك تماماً دون إدخال واضح.",
+      "كنت تريد إنتاجاً مؤسسياً مع تدفقات تأهيل وتسليم قبل المرور بمسار رِفد للأعمال.",
+    ],
   },
 ];
 
@@ -122,6 +164,12 @@ const decisionPaths = [
     description: "راجع الباقات بعد فهم الإثبات حتى يكون قرارك مبنياً على قيمة واضحة لا على السعر وحده.",
     href: "/pricing",
     label: "قارن الباقات",
+  },
+  {
+    title: "أدير فريقاً أو أكثر من عميل",
+    description: "إذا كان قرارك مؤسسياً أو تشغيلياً، اذهب إلى رِفد للأعمال لأن مسارك مختلف عن المتجر الفردي.",
+    href: "/business-solutions",
+    label: "اذهب إلى رِفد للأعمال",
   },
 ];
 
@@ -165,8 +213,8 @@ function ProofCenterPage() {
 
       <section className="bg-background py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            {layers.map((layer) => (
+          <div className="grid gap-4 md:grid-cols-3">
+            {decisionFramework.map((layer) => (
               <article key={layer.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
                 <h2 className="text-base font-extrabold">{layer.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{layer.description}</p>
@@ -215,14 +263,18 @@ function ProofCenterPage() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {sectorCases.map((item) => (
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            {proofPackets.map((item) => (
               <article key={item.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <item.icon className="h-5 w-5" />
                 </div>
                 <h3 className="mt-4 text-base font-extrabold">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
+                <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
+                  <p><span className="font-bold text-foreground">المشكلة:</span> {item.problem}</p>
+                  <p><span className="font-bold text-foreground">المخرج:</span> {item.output}</p>
+                  <p><span className="font-bold text-foreground">ما الذي يتغير فعلياً:</span> {item.outcome}</p>
+                </div>
                 <Button asChild variant="outline" className="mt-4 w-full">
                   <Link to={item.href as never}>شاهد المثال القطاعي</Link>
                 </Button>
@@ -230,7 +282,7 @@ function ProofCenterPage() {
             ))}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
             {[
               { icon: Images, title: "هل يعطيني شيئاً جاهزاً؟", text: "نعم، لأن المخرج ليس مجرد فكرة، بل صياغة قابلة للاستخدام مع اقتراح بصري واضح." },
               { icon: Clock3, title: "هل يوفّر وقتاً فعلاً؟", text: "نعم، عبر حزمة محتوى أسبوعية بدل جلسات كتابة متفرقة تستهلك ساعات التشغيل." },
@@ -255,7 +307,10 @@ function ProofCenterPage() {
               {objections.map((item) => (
                 <article key={item.title} className="rounded-xl border border-border bg-secondary/30 p-4">
                   <h3 className="text-base font-extrabold">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.answer}</p>
+                  <div className="mt-3 rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground">
+                    <span className="font-extrabold text-foreground">الإثبات داخل الصفحة:</span> {item.proof}
+                  </div>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">{item.answer}</p>
                   <div className="mt-3 rounded-lg border border-primary/15 bg-background/80 px-3 py-3 text-sm leading-6 text-foreground/80">
                     <span className="font-extrabold text-primary">الخطوة المنطقية التالية:</span> {item.next}
                   </div>
@@ -273,9 +328,30 @@ function ProofCenterPage() {
             ))}
           </div>
 
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {fitGuidance.map((group, index) => (
+              <article
+                key={group.title}
+                className={`rounded-2xl border p-6 shadow-soft ${
+                  index === 0 ? "border-primary/20 bg-primary/5" : "border-border bg-card"
+                }`}
+              >
+                <div className="flex items-center gap-2 text-primary">
+                  {index === 0 ? <CheckCircle2 className="h-5 w-5" /> : <Target className="h-5 w-5" />}
+                  <h2 className="text-xl font-extrabold text-foreground">{group.title}</h2>
+                </div>
+                <ul className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
+                  {group.points.map((point) => (
+                    <li key={point}>• {point}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+
           <div className="mt-8 rounded-2xl border border-primary/20 bg-secondary/30 p-6 shadow-elegant">
             <h2 className="text-2xl font-extrabold">إذا اقتنعت، ما هو المسار الصحيح بعد هذه الصفحة؟</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {decisionPaths.map((item) => (
                 <article key={item.title} className="rounded-xl border border-border bg-card p-5">
                   <h3 className="text-base font-extrabold">{item.title}</h3>
