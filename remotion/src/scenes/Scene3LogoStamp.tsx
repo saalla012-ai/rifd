@@ -55,7 +55,6 @@ export const Scene3LogoStamp: React.FC = () => {
             color: COLORS.greenDeep,
             lineHeight: 1.4,
             paddingTop: 40,
-            letterSpacing: "-10px",
             transform: `scale(${scale})`,
             opacity,
             filter: `blur(${blur}px)`,
