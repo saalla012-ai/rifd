@@ -19,7 +19,10 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForPerfumesBeautyRouteImport } from './routes/for-perfumes-beauty'
+import { Route as ForKidsBabyRouteImport } from './routes/for-kids-baby'
+import { Route as ForHomeDecorRouteImport } from './routes/for-home-decor'
 import { Route as ForGiftsSweetsCoffeeRouteImport } from './routes/for-gifts-sweets-coffee'
+import { Route as ForElectronicsAccessoriesRouteImport } from './routes/for-electronics-accessories'
 import { Route as ForAbayasFashionRouteImport } from './routes/for-abayas-fashion'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -118,11 +121,27 @@ const ForPerfumesBeautyRoute = ForPerfumesBeautyRouteImport.update({
   path: '/for-perfumes-beauty',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForKidsBabyRoute = ForKidsBabyRouteImport.update({
+  id: '/for-kids-baby',
+  path: '/for-kids-baby',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForHomeDecorRoute = ForHomeDecorRouteImport.update({
+  id: '/for-home-decor',
+  path: '/for-home-decor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForGiftsSweetsCoffeeRoute = ForGiftsSweetsCoffeeRouteImport.update({
   id: '/for-gifts-sweets-coffee',
   path: '/for-gifts-sweets-coffee',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForElectronicsAccessoriesRoute =
+  ForElectronicsAccessoriesRouteImport.update({
+    id: '/for-electronics-accessories',
+    path: '/for-electronics-accessories',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ForAbayasFashionRoute = ForAbayasFashionRouteImport.update({
   id: '/for-abayas-fashion',
   path: '/for-abayas-fashion',
@@ -371,7 +390,10 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-abayas-fashion': typeof ForAbayasFashionRoute
+  '/for-electronics-accessories': typeof ForElectronicsAccessoriesRoute
   '/for-gifts-sweets-coffee': typeof ForGiftsSweetsCoffeeRoute
+  '/for-home-decor': typeof ForHomeDecorRoute
+  '/for-kids-baby': typeof ForKidsBabyRoute
   '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
@@ -429,7 +451,10 @@ export interface FileRoutesByTo {
   '/business-solutions': typeof BusinessSolutionsRoute
   '/contact': typeof ContactRoute
   '/for-abayas-fashion': typeof ForAbayasFashionRoute
+  '/for-electronics-accessories': typeof ForElectronicsAccessoriesRoute
   '/for-gifts-sweets-coffee': typeof ForGiftsSweetsCoffeeRoute
+  '/for-home-decor': typeof ForHomeDecorRoute
+  '/for-kids-baby': typeof ForKidsBabyRoute
   '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
@@ -489,7 +514,10 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-abayas-fashion': typeof ForAbayasFashionRoute
+  '/for-electronics-accessories': typeof ForElectronicsAccessoriesRoute
   '/for-gifts-sweets-coffee': typeof ForGiftsSweetsCoffeeRoute
+  '/for-home-decor': typeof ForHomeDecorRoute
+  '/for-kids-baby': typeof ForKidsBabyRoute
   '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
@@ -550,7 +578,10 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/for-abayas-fashion'
+    | '/for-electronics-accessories'
     | '/for-gifts-sweets-coffee'
+    | '/for-home-decor'
+    | '/for-kids-baby'
     | '/for-perfumes-beauty'
     | '/forgot-password'
     | '/library'
@@ -608,7 +639,10 @@ export interface FileRouteTypes {
     | '/business-solutions'
     | '/contact'
     | '/for-abayas-fashion'
+    | '/for-electronics-accessories'
     | '/for-gifts-sweets-coffee'
+    | '/for-home-decor'
+    | '/for-kids-baby'
     | '/for-perfumes-beauty'
     | '/forgot-password'
     | '/library'
@@ -667,7 +701,10 @@ export interface FileRouteTypes {
     | '/contact'
     | '/dashboard'
     | '/for-abayas-fashion'
+    | '/for-electronics-accessories'
     | '/for-gifts-sweets-coffee'
+    | '/for-home-decor'
+    | '/for-kids-baby'
     | '/for-perfumes-beauty'
     | '/forgot-password'
     | '/library'
@@ -727,7 +764,10 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   ForAbayasFashionRoute: typeof ForAbayasFashionRoute
+  ForElectronicsAccessoriesRoute: typeof ForElectronicsAccessoriesRoute
   ForGiftsSweetsCoffeeRoute: typeof ForGiftsSweetsCoffeeRoute
+  ForHomeDecorRoute: typeof ForHomeDecorRoute
+  ForKidsBabyRoute: typeof ForKidsBabyRoute
   ForPerfumesBeautyRoute: typeof ForPerfumesBeautyRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LibraryRoute: typeof LibraryRoute
@@ -840,11 +880,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForPerfumesBeautyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/for-kids-baby': {
+      id: '/for-kids-baby'
+      path: '/for-kids-baby'
+      fullPath: '/for-kids-baby'
+      preLoaderRoute: typeof ForKidsBabyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-home-decor': {
+      id: '/for-home-decor'
+      path: '/for-home-decor'
+      fullPath: '/for-home-decor'
+      preLoaderRoute: typeof ForHomeDecorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/for-gifts-sweets-coffee': {
       id: '/for-gifts-sweets-coffee'
       path: '/for-gifts-sweets-coffee'
       fullPath: '/for-gifts-sweets-coffee'
       preLoaderRoute: typeof ForGiftsSweetsCoffeeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-electronics-accessories': {
+      id: '/for-electronics-accessories'
+      path: '/for-electronics-accessories'
+      fullPath: '/for-electronics-accessories'
+      preLoaderRoute: typeof ForElectronicsAccessoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/for-abayas-fashion': {
@@ -1212,7 +1273,10 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
   ForAbayasFashionRoute: ForAbayasFashionRoute,
+  ForElectronicsAccessoriesRoute: ForElectronicsAccessoriesRoute,
   ForGiftsSweetsCoffeeRoute: ForGiftsSweetsCoffeeRoute,
+  ForHomeDecorRoute: ForHomeDecorRoute,
+  ForKidsBabyRoute: ForKidsBabyRoute,
   ForPerfumesBeautyRoute: ForPerfumesBeautyRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LibraryRoute: LibraryRoute,

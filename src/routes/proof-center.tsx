@@ -84,6 +84,30 @@ const proofPackets = [
     href: "/business-solutions",
     icon: ShieldCheck,
   },
+  {
+    title: "الإلكترونيات والإكسسوارات",
+    problem: "المحتوى ينحصر كثيراً في سرد المواصفات بينما العميل يحتاج فهماً أسرع للفائدة والثقة وسبب تفضيل هذا المنتج.",
+    output: "الإثبات هنا يحول المزايا التقنية إلى منفعة يومية واضحة ويقترح زاوية مقارنة واستخدام تقرّب القرار الشرائي.",
+    outcome: "بدلاً من منشور تقني بارد، يرى العميل لماذا هذا الخيار أنسب له ومتى يجب أن يختاره من بين البدائل.",
+    href: "/for-electronics-accessories",
+    icon: Compass,
+  },
+  {
+    title: "الأطفال والمواليد",
+    problem: "المحتوى اللطيف بصرياً لا يكفي إذا لم يزرع الطمأنينة والثقة ويشرح الراحة الفعلية للأهل.",
+    output: "الإثبات يربط المنتج بالاطمئنان والهدية والتنظيم والراحة اليومية بدل الاكتفاء بصور جميلة أو وصف عام.",
+    outcome: "يتحول القرار من إعجاب عاطفي عابر إلى قناعة أوضح بأن المنتج مناسب للاستعمال اليومي أو للإهداء.",
+    href: "/for-kids-baby",
+    icon: BadgeCheck,
+  },
+  {
+    title: "المنزل والديكور",
+    problem: "عرض القطعة منفصلة يضعف البيع لأن العميل يشتري المشهد النهائي للمكان لا اسم القطعة وحده.",
+    output: "الإثبات يبيع الأثر البصري داخل المساحة ويحوّل المنتج إلى جزء من جو منزلي متكامل يمكن تخيله فوراً.",
+    outcome: "يزداد وضوح القيمة لأن الرسالة لا تتحدث عن القطعة فقط، بل عن شكل الركن أو الغرفة بعد دخولها.",
+    href: "/for-home-decor",
+    icon: Store,
+  },
 ];
 
 const objections = [
@@ -330,7 +354,7 @@ function ProofCenterPage() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <div className="mt-8 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {proofPackets.map((item) => (
               <article key={item.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
