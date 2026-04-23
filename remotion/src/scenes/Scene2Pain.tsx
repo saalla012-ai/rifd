@@ -9,11 +9,11 @@ const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subs
  * Stack of fake ChatGPT posts falling, each rejected with red X.
  */
 const FAKE_POSTS = [
-  "اكتشف منتجاتنا المذهلة والرائعة الآن 🛍️",
-  "عرض حصري لفترة محدودة فقط لا تفوّته!",
-  "نحن نقدم أفضل المنتجات بأسعار تنافسية",
-  "تسوق الآن واستفد من خصومات هائلة",
-  "منتجات عالية الجودة تناسب جميع الأذواق",
+  "اكتشفي فخامة ما لها مثيل مع عرضنا الجديد ✨",
+  "اطلب الآن قبل نفاد الكمية واستفد من أفضل سعر",
+  "منتجات مميزة تناسب جميع الأذواق وبجودة عالية",
+  "نص عام يقدر ينحط على أي متجر بدون فرق واضح",
+  "لا زاوية بيع، لا هوية، ولا سبب شراء حقيقي",
 ];
 
 const PostCard: React.FC<{ index: number; text: string }> = ({ index, text }) => {
@@ -103,7 +103,7 @@ export const Scene2Pain: React.FC = () => {
           transform: `translateY(${interpolate(titleIn, [0, 1], [-30, 0])}px)`,
         }}
       >
-        وتطلع كذا؟
+          وتطلع النتيجة عامة؟
       </div>
 
       <div style={{ position: "relative" }}>

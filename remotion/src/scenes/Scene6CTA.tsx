@@ -35,7 +35,7 @@ export const Scene6CTA: React.FC = () => {
             transform: `translateY(${interpolate(brandIn, [0, 1], [26, 0])}px)`,
           }}
         >
-          أعطه وصفاً واضحاً
+          أعطِه وصفاً واضحاً
         </div>
 
         <div
@@ -52,7 +52,7 @@ export const Scene6CTA: React.FC = () => {
             textShadow: `0 16px 50px ${COLORS.greenDeep}40`,
           }}
         >
-          وخذ بداية حملة
+          وخذ بداية حملة جاهزة
         </div>
 
         <div
@@ -65,7 +65,7 @@ export const Scene6CTA: React.FC = () => {
             lineHeight: 1.5,
           }}
         >
-          منشور + صورة + Reel + CTA من نفس المنطق لتبدأ أسرع
+            منشور + صورة + Reel + CTA من نفس منطق البيع لتبدأ أسرع
         </div>
 
         <div
@@ -85,7 +85,7 @@ export const Scene6CTA: React.FC = () => {
             letterSpacing: 0,
           }}
         >
-          rifd.site
+            www.rifd.site
         </div>
 
         <div

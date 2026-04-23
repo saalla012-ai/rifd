@@ -6,7 +6,7 @@ const { fontFamily } = loadFont("normal", { weights: ["700", "900"], subsets: ["
 
 /**
  * Scene 1 — SHOCK (75 frames, 2.5s)
- * "تكتب 5 ساعات؟" — full-screen, red, spinning clock, scale-burst.
+ * "5 ساعات كل أسبوع؟" — full-screen, red, spinning clock, scale-burst.
  */
 export const Scene1Shock: React.FC = () => {
   const frame = useCurrentFrame();
@@ -104,16 +104,15 @@ export const Scene1Shock: React.FC = () => {
 
         <div
           style={{
-            fontSize: 180,
+            fontSize: 168,
             fontWeight: 900,
             color: COLORS.red,
             lineHeight: 1,
-            letterSpacing: "-6px",
             transform: `scale(${titleScale})`,
             textShadow: `0 8px 30px ${COLORS.red}60`,
           }}
         >
-          5 ساعات؟
+          5 ساعات كل أسبوع؟
         </div>
 
         <div

@@ -27,6 +27,12 @@ const OUTPUT_CARDS: Array<{ title: string; body: string; tone: "text" | "visual"
   },
 ];
 
+const INPUT_PROMPT = [
+  "عطر نسائي بثبات واضح",
+  "نبرة راقية لا تبدو مترجمة",
+  "دعوة شراء خفيفة ومباشرة",
+];
+
 const OutputCard: React.FC<{ index: number; title: string; body: string; tone: "text" | "visual" }> = ({
   index,
   title,
@@ -128,7 +134,7 @@ export const Scene4Magic: React.FC = () => {
             <div style={{ fontSize: 21, fontWeight: 700, color: COLORS.ink, opacity: 0.65, marginBottom: 10 }}>
               المدخل
             </div>
-            <div style={{ fontSize: 40, fontWeight: 900, color: COLORS.greenDeep, lineHeight: 1.3 }}>
+            <div style={{ fontSize: 36, fontWeight: 900, color: COLORS.greenDeep, lineHeight: 1.3 }}>
               متجر عطور — جمهور نسائي — نبرة راقية
             </div>
           </div>
@@ -138,15 +144,40 @@ export const Scene4Magic: React.FC = () => {
               background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.goldGlow})`,
               color: COLORS.greenDeep,
               padding: "20px 28px",
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: 900,
               boxShadow: `0 10px 28px ${COLORS.gold}66`,
               transform: `scale(${interpolate(packIn, [0, 1], [0.88, 1])})`,
               whiteSpace: "nowrap",
             }}
           >
-            ولّد الحزمة ←
+            يولّد الحزمة ←
           </div>
+        </div>
+        <div
+          style={{
+            marginTop: 18,
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+          }}
+        >
+          {INPUT_PROMPT.map((item) => (
+            <div
+              key={item}
+              style={{
+                borderRadius: 999,
+                background: `${COLORS.green}10`,
+                border: `2px solid ${COLORS.green}18`,
+                color: COLORS.greenDeep,
+                padding: "10px 16px",
+                fontSize: 18,
+                fontWeight: 700,
+              }}
+            >
+              {item}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -159,7 +190,7 @@ export const Scene4Magic: React.FC = () => {
         }}
       >
         <div style={{ fontSize: 48, fontWeight: 900, color: COLORS.greenDeep, lineHeight: 1.3 }}>
-          ليس "30 منشوراً" فقط — بل بداية حملة مترابطة من نفس الطلب
+          ليس مجرد نص — بل بداية حملة مترابطة من نفس الطلب
         </div>
       </div>
 
