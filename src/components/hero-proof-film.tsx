@@ -77,6 +77,9 @@ export function HeroProofFilm() {
               <Link to="/proof-center">شاهد إثباتات أكثر عمقاً</Link>
             </Button>
           </div>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            إذا كان هدفك حسم القرار بسرعة، فهذا القسم يجيب على سؤال <span className="font-bold text-foreground">"كيف يختلف رِفد عملياً؟"</span> قبل أن تنتقل إلى مركز الإثبات أو صفحة الأسعار.
+          </p>
         </div>
 
         <div className="relative">

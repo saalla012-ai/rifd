@@ -47,10 +47,10 @@ export function StickyMobileCta() {
           rememberAttribution(HERO_EXPERIMENT, variant);
           void trackEvent(HERO_EXPERIMENT, variant, "cta_click");
         }}
-        className="flex items-center justify-center gap-2 rounded-xl gradient-gold px-4 py-3 text-sm font-extrabold text-gold-foreground shadow-gold"
+        className="flex items-center justify-center gap-2 rounded-xl gradient-gold px-4 py-3 text-center text-sm font-extrabold leading-tight text-gold-foreground shadow-gold"
       >
         <Sparkles className="h-4 w-4" />
-        ابدأ مجاناً — 5 توليدات + 2 صورة
+        ابدأ مجاناً — 5 توليدات + 2 صورة لمتجر واحد
         <ArrowLeft className="h-4 w-4" />
       </Link>
     </div>
