@@ -1,7 +1,11 @@
+import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, BarChart3, Blocks, BriefcaseBusiness, Building2, CheckCircle2, Compass, Workflow } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const tracks = [
   {
@@ -77,6 +81,36 @@ export const Route = createFileRoute("/business-solutions")({
 });
 
 function BusinessSolutionsPage() {
+  const [form, setForm] = React.useState({
+    name: "",
+    businessType: "",
+    scope: "",
+    teamSize: "",
+    channels: "",
+    bottleneck: "",
+    goal: "",
+    supportType: "",
+  });
+
+  const intakeMessage = React.useMemo(
+    () =>
+      [
+        "السلام عليكم، أريد تقييم مسار رِفد للأعمال.",
+        `الاسم / الجهة: ${form.name || "..."}`,
+        `نوع النشاط: ${form.businessType || "..."}`,
+        `نطاق العمل الحالي: ${form.scope || "..."}`,
+        `حجم الفريق: ${form.teamSize || "..."}`,
+        `القنوات الحالية: ${form.channels || "..."}`,
+        `أكبر عنق زجاجة: ${form.bottleneck || "..."}`,
+        `الهدف خلال 90 يوماً: ${form.goal || "..."}`,
+        `نوع الدعم المطلوب: ${form.supportType || "..."}`,
+      ].join("\n"),
+    [form],
+  );
+
+  const whatsappHref = `https://wa.me/966582286215?text=${encodeURIComponent(intakeMessage)}`;
+  const emailHref = `mailto:hello@rifd.site?subject=${encodeURIComponent("طلب تقييم — رِفد للأعمال")}&body=${encodeURIComponent(intakeMessage)}`;
+
   return (
     <MarketingLayout>
       <section className="gradient-hero border-b border-border py-16 sm:py-20">
