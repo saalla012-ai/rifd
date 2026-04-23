@@ -1,24 +1,13 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Check,
-  Clapperboard,
-  Copy,
-  ImagePlus,
-  Lightbulb,
-  Megaphone,
-  Sparkles,
-  Tags,
-  Wand2,
-} from "lucide-react";
+import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, Sparkles, Tags, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SuccessPack } from "@/lib/onboarding-success";
 
 const activationWins = [
   "خرجت بنتيجة مبنية على نوع متجرك وجمهورك لا نص عام.",
   "صار عندك اتجاه حملة أولية: منشور + صورة + ريلز + CTA.",
-  "كل التوليدات القادمة داخل حسابك ستبقى مبنية على نفس ذاكرة المتجر.",
+  "الخطوة التالية أصبحت أوضح: ماذا تنشر أولاً وماذا تولّد بعده.",
 ];
 
 type OnboardingSuccessPackProps = {
@@ -132,6 +121,15 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
         <div className="rounded-xl border border-border bg-card p-4 text-sm leading-7 text-muted-foreground">
           <div className="mb-2 text-sm font-bold text-foreground">لماذا هذه النتيجة مناسبة لمتجرك؟</div>
           <p>{pack.whyItFits}</p>
+
+          <div className="mt-4 space-y-2">
+            {pack.campaignSequence.map((step) => (
+              <div key={step.title} className="rounded-lg border border-border bg-secondary/40 px-3 py-3">
+                <div className="text-xs font-extrabold uppercase tracking-normal text-primary">{step.title}</div>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{step.detail}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
@@ -147,6 +145,17 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
                 {item}
               </div>
             ))}
+          </div>
+
+          <div className="mt-4 rounded-lg border border-primary/15 bg-secondary/30 px-3 py-3">
+            <div className="text-sm font-bold text-foreground">خطة الإطلاق خلال 10 دقائق</div>
+            <div className="mt-3 space-y-2">
+              {pack.launchActions.map((item) => (
+                <div key={item} className="text-sm leading-6 text-muted-foreground">
+                  • {item}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

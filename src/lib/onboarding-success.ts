@@ -20,6 +20,8 @@ export type SuccessPack = {
   firstWin: string;
   nextMove: string;
   quickChecklist: string[];
+  campaignSequence: Array<{ title: string; detail: string }>;
+  launchActions: string[];
 };
 
 const TONE_COPY: Record<string, { adjective: string; cta: string }> = {
@@ -99,6 +101,25 @@ export function buildSuccessPack({
       "ثبّت وعداً واحداً واضحاً في أول سطر بدلاً من حشد أكثر من فكرة داخل المنشور.",
       `استخدم الصورة المقترحة لتأكيد زاوية ${productTypeLabel} نفسها حتى تبدو الحملة مترابطة بصرياً.`,
       "احتفظ بالـ CTA الحالي كنقطة إغلاق أولى ثم اختبر نسخة ثانية بعد أول نشر.",
+    ],
+    campaignSequence: [
+      {
+        title: "Hook",
+        detail: `ابدأ بالهوك الأقرب لـ${audienceLabel} ثم افتح مباشرة على الوعد الأساسي دون مقدمات طويلة.`,
+      },
+      {
+        title: "Visual",
+        detail: `اربط الصورة أو أول لقطة Reel بنفس الانطباع الذي يريد ${storeName} تثبيته حول ${productTypeLabel}.`,
+      },
+      {
+        title: "Conversion",
+        detail: `اختم بنفس CTA الحالي أولاً، ثم راقب التفاعل قبل توسيع العرض أو تغيير الرسالة.`,
+      },
+    ],
+    launchActions: [
+      "انسخ المنشور كما هو كنقطة انطلاق، ثم عدّل فقط ما يخص المنتج أو العرض الحالي.",
+      "ولّد صورة واحدة من نفس الزاوية البيعية قبل كتابة نسخة ثانية مختلفة حتى لا تتشتت الحملة.",
+      "بعد النشر الأول، استخدم نفس الزاوية لعمل Reel قصير بدل البدء من فكرة جديدة تماماً.",
     ],
   };
 }

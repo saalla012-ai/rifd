@@ -6,7 +6,7 @@ const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subs
 
 const STATS = [
   { glyph: "حملة", value: "4", label: "مخرجات مترابطة", note: "منشور + هوكات + صورة + Reel", color: COLORS.green },
-  { glyph: "5د", value: "5", label: "دقائق للانطلاق", note: "بدلاً من ساعات كتابة وتنسيق", color: COLORS.gold },
+  { glyph: "5د", value: "5", label: "دقائق للبداية", note: "لتجهيز أول محاولة نشر لا حملة مكتملة", color: COLORS.gold },
   { glyph: "جاهز", value: "1", label: "زاوية بيع موحدة", note: "أوضح من نصوص عامة متفرقة", color: COLORS.greenDeep },
 ];
 
@@ -87,7 +87,7 @@ export const Scene5Stats: React.FC = () => {
           transform: `translateY(${interpolate(titleIn, [0, 1], [-28, 0])}px)`,
         }}
       >
-        ما الذي يثبت القيمة فعلاً؟
+          ما القيمة التي تظهر فوراً؟
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
