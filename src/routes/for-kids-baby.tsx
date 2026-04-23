@@ -10,7 +10,12 @@ export const Route = createFileRoute("/for-kids-baby")({
         content:
           "محتوى وصور وحملات مخصصة لمنتجات الأطفال والمواليد توازن بين العاطفة والثقة والوضوح للأسر السعودية.",
       },
+      { property: "og:title", content: "رِفد لقطاع الأطفال والمواليد" },
+      { property: "og:description", content: "صفحة بيع قطاعية لمنتجات الأطفال والمواليد تركز على الطمأنينة، الثقة، والراحة اليومية." },
+      { name: "twitter:title", content: "رِفد لقطاع الأطفال والمواليد" },
+      { name: "twitter:description", content: "محتوى وصور متخصصة لقطاع الأطفال والمواليد داخل السوق السعودي." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/for-kids-baby" }],
   }),
   component: KidsBabySectorPage,
 });

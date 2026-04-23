@@ -10,7 +10,12 @@ export const Route = createFileRoute("/for-home-decor")({
         content:
           "محتوى وصور وحملات مخصصة لمتاجر المنزل والديكور تُبرز الإحساس النهائي للمكان وتربط المنتج بمشهد استخدام واضح.",
       },
+      { property: "og:title", content: "رِفد لقطاع المنزل والديكور" },
+      { property: "og:description", content: "صفحة بيع متخصصة لقطاع المنزل والديكور تربط المنتج بالمشهد النهائي والاستخدام الفعلي." },
+      { name: "twitter:title", content: "رِفد لقطاع المنزل والديكور" },
+      { name: "twitter:description", content: "محتوى وحملات متخصصة للمنزل والديكور بزاوية بيع مشهدية واضحة." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/for-home-decor" }],
   }),
   component: HomeDecorSectorPage,
 });

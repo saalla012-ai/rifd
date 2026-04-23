@@ -6,7 +6,12 @@ export const Route = createFileRoute("/for-perfumes-beauty")({
     meta: [
       { title: "رِفد لقطاع العطور والجمال" },
       { name: "description", content: "حلول محتوى وصور مخصصة لمتاجر العطور والجمال مع نبرة سعودية راقية وأمثلة قطاعية جاهزة." },
+      { property: "og:title", content: "رِفد لقطاع العطور والجمال" },
+      { property: "og:description", content: "محتوى وصور وحملات قطاعية للعطور والجمال مع أمثلة واعتراضات وCTA واضح." },
+      { name: "twitter:title", content: "رِفد لقطاع العطور والجمال" },
+      { name: "twitter:description", content: "صفحة بيع متخصصة للعطور والجمال داخل السوق السعودي." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/for-perfumes-beauty" }],
   }),
   component: PerfumesSectorPage,
 });
