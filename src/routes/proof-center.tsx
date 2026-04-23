@@ -5,9 +5,9 @@ import {
   Briefcase,
   CheckCircle2,
   Clapperboard,
-  Clock3,
-  Images,
+  Compass,
   MessageSquareQuote,
+  Route as RouteIcon,
   ShieldCheck,
   Sparkles,
   Store,
@@ -18,22 +18,22 @@ import { Button } from "@/components/ui/button";
 
 const decisionFramework = [
   {
-    title: "1) افهم الفرق",
-    description: "شاهد كيف ينتقل المتجر من طلب عام إلى حزمة تشغيل أوضح في الرسالة والصورة والـ CTA.",
+    title: "1) افهم نقطة التحول",
+    description: "ابدأ من الفرق بين طلب عام وبين حزمة تشغيل مترابطة تقود النص والصورة والـ CTA بنفس الزاوية.",
   },
   {
-    title: "2) طابقه على قطاعك",
-    description: "لا تعتمد على إثبات عام؛ قارن المثال بالقطاع الأقرب لمتجرك حتى تعرف إن كان المنطق مناسباً لك فعلاً.",
+    title: "2) اختر الإثبات الأقرب لقطاعك",
+    description: "لا تتعامل مع الصفحة كعرض عام؛ استخدم المثال الأقرب لمتجرك حتى تحكم على صلاحية المنطق البيعي فعلاً.",
   },
   {
-    title: "3) اختر المسار التالي",
-    description: "بعد الاقتناع، انتقل مباشرة إلى التجربة أو الباقات أو رِفد للأعمال بحسب نوع قرارك.",
+    title: "3) انتقل للمسار الصحيح",
+    description: "بعد وضوح الإثبات، خذ القرار المناسب: تجربة، باقة، صفحة قطاعية، أو مسار أعمال إذا كان احتياجك مؤسسياً.",
   },
 ];
 
 const beforeAfter = [
   {
-    title: "قبل: طلب عام ومشتت",
+    title: "قبل: طلب مبعثر",
     items: [
       "أبغى بوست عن عرض جديد للعطور.",
       "أحتاج صورة مناسبة لكن ما أعرف الاتجاه.",
@@ -43,9 +43,9 @@ const beforeAfter = [
   {
     title: "بعد: حزمة تشغيل أولية",
     items: [
-      "منشور رئيسي بنبرة راقية يركز على الثبات والانطباع.",
-      "3 هوكات بديلة + CTA منخفض الاحتكاك + هاشتاقات مناسبة.",
-      "اتجاه صورة واضح + Reel concept بثلاث لقطات قابلة للتنفيذ.",
+      "منشور رئيسي بنبرة تخدم دافع الشراء الحقيقي.",
+      "هوكات بديلة + CTA أوضح + اتجاه بصري متسق.",
+      "فكرة Reel قصيرة تنطلق من نفس الرسالة بدل فكرة منفصلة.",
     ],
   },
 ];
@@ -53,33 +53,33 @@ const beforeAfter = [
 const proofPackets = [
   {
     title: "العطور والجمال",
-    problem: "المنتج يبدو جميلاً لكن الرسالة غالباً تبقى عامة: فخامة، جودة، عرض محدود.",
-    output: "حزمة تبدأ بالإحساس والانطباع الأول، ثم تربط ذلك بالثقة في الاختيار وقرار الشراء.",
-    outcome: "الناتج يصبح أقرب لبيع تجربة العطر لا مجرد وصف الزجاجة أو الخصم.",
+    problem: "المحتوى يبقى غالباً عند كلمات مثل الفخامة والجودة دون بيع الإحساس والانطباع الأول.",
+    output: "الإثبات هنا يربط الرسالة بالتجربة والثقة في الاختيار، ثم يترجمها إلى محتوى وصورة وReel متناسقين.",
+    outcome: "العميلة ترى سبب الشراء بشكل أوضح: الانطباع، الثبات، والملاءمة — لا مجرد وصف المنتج.",
     href: "/for-perfumes-beauty",
     icon: Sparkles,
   },
   {
     title: "الأزياء والعبايات",
-    problem: "المحتوى يكرر وصف الخامة أو اللون بينما سبب الشراء الحقيقي هو الظهور والاستخدام والمناسبة.",
-    output: "رسالة تربط القطعة بالمشهد النهائي على العميلة: تنسيق، حضور، واستخدام يومي أو مناسبة.",
-    outcome: "ترتفع قيمة القطعة في ذهن العميلة لأن المحتوى يبرر الشراء بالهوية لا بالسعر فقط.",
+    problem: "التسويق يكرر الخامة واللون بينما قرار الشراء الحقيقي يرتبط بالظهور والاستخدام والمناسبة.",
+    output: "المخرج الجيد هنا يبيع المشهد النهائي: كيف تبدو القطعة، متى تُلبس، ولماذا تبدو اختياراً مناسباً.",
+    outcome: "القيمة ترتفع لأن الرسالة تبرر الشراء بالهوية والاستخدام لا بالخصم فقط.",
     href: "/for-abayas-fashion",
     icon: Store,
   },
   {
     title: "الهدايا والحلويات والقهوة",
-    problem: "الحملة تفشل حين تعرض المنتج وحده وتنسى المناسبة الاجتماعية التي تدفع الناس للطلب.",
-    output: "زوايا بيعية مرتبطة بالإهداء والزيارة والضيافة والإطلاق الموسمي مع CTA أوضح للحجز والطلب.",
-    outcome: "القرار يصبح أسرع لأن الرسالة تبيع اللحظة المناسبة لا مجرد الصنف المعروض.",
+    problem: "إظهار المنتج وحده لا يكفي لأن الشراء هنا تحركه المناسبة واللحظة الاجتماعية أكثر من الصنف بحد ذاته.",
+    output: "الإثبات يربط المحتوى بالإهداء والزيارة والضيافة والإطلاق الموسمي مع CTA أقرب للحجز والطلب.",
+    outcome: "يصبح القرار أسرع لأن الصفحة تبيع المناسبة التي سيُطلب المنتج لأجلها.",
     href: "/for-gifts-sweets-coffee",
     icon: Briefcase,
   },
   {
     title: "الفرق والوكالات",
-    problem: "الاحتياج هنا ليس منشوراً واحداً فقط بل منطقاً يمكن تكراره عبر أكثر من عميل أو حساب.",
-    output: "مسار مؤسسي يرفع من وضوح التسليم والحزم والحالات المناسبة للتشغيل المتكرر.",
-    outcome: "هذا هو الجسر الطبيعي إلى رِفد للأعمال عندما يصبح المطلوب أقرب لنظام تشغيل لا أداة فردية فقط.",
+    problem: "الاحتياج هنا لا يتوقف عند منشور واحد، بل يحتاج منطق تشغيل يمكن تكراره وتسليمه على أكثر من حساب.",
+    output: "الإثبات المؤسسي يوضح متى ينتقل الاستخدام من أداة محتوى فردية إلى مسار أعمال أوضح في التأهيل والتسليم.",
+    outcome: "الزائر يعرف هل يكفيه المسار الفردي أم أن القرار الصحيح هو التوجه مباشرة إلى رِفد للأعمال.",
     href: "/business-solutions",
     icon: ShieldCheck,
   },
@@ -88,27 +88,35 @@ const proofPackets = [
 const objections = [
   {
     title: "هل الناتج مجرد نص عام؟",
-    proof: "ستلاحظ أن الإثبات هنا لا يكتفي بمنشور واحد؛ بل يربط المنشور بالهوك والصورة والـ Reel والـ CTA في نفس الحزمة.",
-    answer: "هذا يقلل مشكلة النصوص العامة لأن كل مخرج يخدم نفس الزاوية البيعية بدلاً من أن يعمل منفصلاً عن الآخر.",
-    next: "إذا كان هذا هو اعتراضك الرئيسي، فالخطوة الأدق هي بدء التجربة المجانية ومقارنة أول مخرج بما تكتبه عادة بنفسك.",
+    proof: "الإثبات هنا لا يعرض منشوراً معزولاً، بل يربطه بهوك وصورة وفكرة Reel وCTA ضمن نفس الحزمة.",
+    answer: "هذا يقلل مشكلة المحتوى العام لأن كل عنصر في الحملة يخدم نفس الدافع البيعي بدلاً من العمل كمخرجات منفصلة.",
+    next: "ابدأ التجربة المجانية ثم قارن أول مخرج بما تكتبه عادة بنفسك، لأن الفرق الحقيقي يظهر في ترابط الحزمة لا في طول النص فقط.",
+    ctaLabel: "ابدأ التجربة المجانية",
+    href: "/onboarding",
   },
   {
     title: "هل يصلح فعلاً للسوق السعودي؟",
-    proof: "الأمثلة هنا مبنية على قطاعات محلية وسياقات شراء فعلية: الإهداء، الفخامة، الاستخدام اليومي، والموسمية.",
-    answer: "لذلك التخصيص ليس شكلياً؛ بل يظهر في نبرة الرسالة، وطريقة العرض، والاعتراضات التي يجري الرد عليها.",
-    next: "افتح الصفحة القطاعية الأقرب لمتجرك، لأن هذه الخطوة تكشف سريعاً إن كان المنطق البيعي مفهوماً لواقع سوقك أم لا.",
+    proof: "الأمثلة مبنية على قطاعات محلية وسياقات شراء حقيقية مثل الإهداء والفخامة والاستخدام اليومي والموسمية.",
+    answer: "التخصيص هنا ليس شكلياً؛ بل يظهر في نبرة الرسالة، والاعتراضات التي يجري الرد عليها، وطريقة دفع القرار الشرائي.",
+    next: "انتقل إلى الصفحة القطاعية الأقرب لمتجرك، لأن الحكم الأدق يكون من منطق سوقك لا من مثال بعيد عنك.",
+    ctaLabel: "شاهد المثال القطاعي",
+    href: "/for-perfumes-beauty",
   },
   {
     title: "هل يوفّر وقتاً حقيقياً؟",
-    proof: "القيمة ليست في السرعة المجردة، بل في اختصار 3 مراحل معاً: التفكير، الكتابة، وتحديد الاتجاه البصري الأول.",
-    answer: "حين تبدأ من مخرج مترابط، تقل العودة لنقطة الصفر وتصبح دورة أسبوع المحتوى أخف وأكثر اتساقاً.",
-    next: "انزل إلى النتائج التشغيلية بالأسفل لتعرف أين بالضبط يتم اختصار الوقت داخل العمل الأسبوعي.",
+    proof: "القيمة ليست في السرعة وحدها، بل في اختصار ثلاث حلقات دفعة واحدة: الفكرة، الصياغة، والاتجاه البصري الأول.",
+    answer: "حين تبدأ من مخرج مترابط، تقل العودة إلى نقطة الصفر وتصبح دورة تجهيز المحتوى الأسبوعية أخف وأكثر اتساقاً.",
+    next: "راجع طبقة النتائج التشغيلية بالأسفل لتعرف بالضبط أين يتم اختصار الوقت داخل الأسبوع التشغيلي.",
+    ctaLabel: "راجع النتائج التشغيلية",
+    href: "/proof-center",
   },
   {
     title: "هل يناسب الفرق والوكالات؟",
-    proof: "إذا كان احتياجك يتجاوز متجراً واحداً أو يحتاج تأهيلاً وتسليماً أوضح، فالمسار الفردي وحده لن يكون كافياً.",
-    answer: "هنا يأتي دور رِفد للأعمال كامتداد مؤسسي، لا كمجرد نسخة أكبر من نفس الصفحة التسويقية.",
-    next: "إن كنت تدير فريقاً أو عدة حسابات، انتقل مباشرة إلى رِفد للأعمال بدلاً من الحكم على المنتج فقط بمنطق التجربة الفردية.",
+    proof: "إذا كان احتياجك يتجاوز متجراً واحداً أو يحتاج تأهيلاً وتسليماً أوضح، فالمسار الفردي وحده لن يغطي هذا العمق.",
+    answer: "هنا يظهر رِفد للأعمال كامتداد مؤسسي، لا كنسخة أكبر فقط من نفس التجربة الفردية.",
+    next: "إذا كنت تدير فريقاً أو عدة حسابات، فالمسار الصحيح هو رِفد للأعمال لأن قرارك تشغيلي قبل أن يكون مجرد قرار تجربة.",
+    ctaLabel: "اذهب إلى رِفد للأعمال",
+    href: "/business-solutions",
   },
 ];
 
@@ -119,11 +127,11 @@ const operationalOutcomes = [
   },
   {
     title: "أثناء تجهيز الحملة",
-    description: "تتحرك من المنشور إلى الصورة والـ Reel والـ CTA بنفس المنطق، لا كمهام منفصلة متضاربة.",
+    description: "تتحرك من المنشور إلى الصورة والـ Reel والـ CTA بنفس المنطق، لا كمهام متفرقة تصطدم ببعضها.",
   },
   {
     title: "بعد أول نشر",
-    description: "يصبح التكرار أسهل لأنك تطور زاوية ثبتت، لا لأنك تعيد اختراع المحتوى كل مرة من الصفر.",
+    description: "يصبح التكرار أسهل لأنك تطور زاوية ثبتت، لا لأنك تعيد اختراع الحملة كل مرة من الصفر.",
   },
 ];
 
@@ -132,17 +140,35 @@ const fitGuidance = [
     title: "مناسب لك إذا...",
     points: [
       "تريد بداية حملة أسرع بدل البدء من صفحة فارغة كل مرة.",
-      "تحتاج محتوى أوضح لقطاع محدد لا قالباً عاماً قابلاً للنسخ على أي متجر.",
+      "تحتاج محتوى أوضح لقطاع محدد لا صياغة عامة قابلة للنسخ على أي متجر.",
       "تريد ربط النص والصورة والـ Reel بنفس الزاوية من أول محاولة.",
     ],
   },
   {
     title: "ليس الخيار الأدق الآن إذا...",
     points: [
-      "كنت تبحث عن إدارة تشغيل كاملة لفريقك قبل اختبار المنطق الأساسي للحملة.",
-      "كنت تتوقع أن يغنيك عن فهم عرضك أو موسميتك أو جمهورك تماماً دون إدخال واضح.",
-      "كنت تريد إنتاجاً مؤسسياً مع تدفقات تأهيل وتسليم قبل المرور بمسار رِفد للأعمال.",
+      "كنت تبحث عن تشغيل مؤسسي كامل قبل اختبار منطق الحملة نفسه.",
+      "كنت تتوقع أن يغنيك عن فهم عرضك وموسميتك وجمهورك دون إدخال واضح.",
+      "كنت تريد مسار تسليم وتأهيل فرق قبل المرور برِفد للأعمال.",
     ],
+  },
+];
+
+const proofRoutes = [
+  {
+    title: "أريد أن أعرف إن كان منطق رِفد يناسب متجري",
+    detail: "ابدأ من قبل/بعد ثم انتقل إلى المثال القطاعي الأقرب لك.",
+    icon: Compass,
+  },
+  {
+    title: "أريد أن أفهم أين يظهر الأثر داخل التشغيل",
+    detail: "اقرأ النتائج التشغيلية ثم عد إلى قرار التجربة أو الباقة.",
+    icon: RouteIcon,
+  },
+  {
+    title: "أريد أن أعرف هل أحتاج المسار الفردي أم المؤسسي",
+    detail: "استخدم قسم الملاءمة ثم احسم بين رِفد العادي ورِفد للأعمال.",
+    icon: Target,
   },
 ];
 
@@ -176,16 +202,16 @@ const decisionPaths = [
 export const Route = createFileRoute("/proof-center")({
   head: () => ({
     meta: [
-      { title: "Proof Center — أمثلة وإثباتات رِفد للمتاجر السعودية" },
+      { title: "Proof Center — مركز إثبات رِفد للمتاجر السعودية" },
       {
         name: "description",
         content:
-          "استكشف مركز الإثبات في رِفد: قبل/بعد، أمثلة قطاعية، وحزم حملات كاملة توضّح كيف يخدم المتاجر السعودية عملياً.",
+          "مركز إثبات رِفد: قبل/بعد، أمثلة قطاعية، اعتراضات شراء، ومسارات قرار واضحة توضّح كيف يخدم المتاجر السعودية عملياً.",
       },
-      { property: "og:title", content: "Proof Center — أمثلة حية من رِفد" },
+      { property: "og:title", content: "Proof Center — مركز إثبات رِفد" },
       {
         property: "og:description",
-        content: "إثبات عملي يناسب قطاعك: محتوى، صور، وأفكار حملات جاهزة للتشغيل.",
+        content: "شاهد الفرق بين الطلب العام وحزمة تشغيل مترابطة، ثم اختر المسار الأنسب لمتجرك أو فريقك.",
       },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/proof-center" }],
@@ -196,17 +222,17 @@ export const Route = createFileRoute("/proof-center")({
 function ProofCenterPage() {
   return (
     <MarketingLayout>
-      <section className="gradient-hero border-b border-border py-16 sm:py-20">
+      <section className="gradient-hero border-b border-border py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
             <BadgeCheck className="h-3.5 w-3.5" />
             مركز الإثبات المعتمد في V8
           </div>
-          <h1 className="mt-4 max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl">
+          <h1 className="mt-4 max-w-4xl text-3xl font-extrabold leading-tight sm:text-5xl">
             لا نكتفي بقول إن رِفد مناسب للسوق السعودي — <span className="text-gradient-primary">نثبت ذلك بالأمثلة.</span>
           </h1>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
-            هنا يرى الزائر كيف يتحول البرومبت البسيط إلى مخرجات صالحة للنشر، وكيف تختلف النتيجة بحسب القطاع والموسم والنبرة والهدف البيعي.
+          <p className="mt-4 max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">
+            هذه الصفحة ليست معرضاً عاماً؛ بل نظام قرار يوضح كيف ينتقل المتجر من طلب مبسط إلى حزمة تشغيل أقرب للنشر، ثم يوجهك إلى الخطوة الصحيحة التالية.
           </p>
         </div>
       </section>
@@ -218,6 +244,18 @@ function ProofCenterPage() {
               <article key={layer.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
                 <h2 className="text-base font-extrabold">{layer.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{layer.description}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {proofRoutes.map((item) => (
+              <article key={item.title} className="rounded-xl border border-primary/15 bg-primary/5 p-5 shadow-soft">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background text-primary shadow-soft">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h2 className="mt-4 text-base font-extrabold">{item.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.detail}</p>
               </article>
             ))}
           </div>
@@ -244,9 +282,9 @@ function ProofCenterPage() {
           </div>
 
           <div className="mt-6 rounded-2xl border border-primary/15 bg-primary/5 p-6 shadow-soft">
-            <h2 className="text-xl font-extrabold">ماذا يثبت هذا القسم فعلياً؟</h2>
+            <h2 className="text-xl font-extrabold">ما الذي يثبته هذا القسم فعلياً؟</h2>
             <p className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground">
-              يثبت أن الفرق ليس في تحسين الكلمات فقط، بل في نقل المتجر من طلب مبعثر إلى نقطة انطلاق قابلة للنشر: رسالة أوضح، زاوية بيع واحدة، واقتراحات بصرية مرتبطة بنفس الهدف.
+              يثبت أن الفارق ليس في تحسين الجمل فقط، بل في نقل المتجر من طلب مبعثر إلى نقطة انطلاق قابلة للنشر: وعد أوضح، زاوية بيع واحدة، واقتراحات بصرية مرتبطة بنفس الهدف.
             </p>
           </div>
         </div>
@@ -259,7 +297,7 @@ function ProofCenterPage() {
               إثبات حسب <span className="text-gradient-primary">القطاع</span> لا بنسخة عامة واحدة
             </h2>
             <p className="mt-3 text-muted-foreground">
-              كل قطاع يشتري بطريقة مختلفة، لذلك يجب أن يَظهر الإثبات بنفس منطق السوق الذي يخاطبه.
+              كل قطاع يشتري بطريقة مختلفة، لذلك يجب أن يظهر الإثبات بنفس منطق السوق الذي يخاطبه.
             </p>
           </div>
 
@@ -276,24 +314,8 @@ function ProofCenterPage() {
                   <p><span className="font-bold text-foreground">ما الذي يتغير فعلياً:</span> {item.outcome}</p>
                 </div>
                 <Button asChild variant="outline" className="mt-4 w-full">
-                  <Link to={item.href as never}>شاهد المثال القطاعي</Link>
+                  <Link to={item.href as never}>شاهد المثال الأقرب</Link>
                 </Button>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              { icon: Images, title: "هل يعطيني شيئاً جاهزاً؟", text: "نعم، لأن المخرج ليس مجرد فكرة، بل صياغة قابلة للاستخدام مع اقتراح بصري واضح." },
-              { icon: Clock3, title: "هل يوفّر وقتاً فعلاً؟", text: "نعم، عبر حزمة محتوى أسبوعية بدل جلسات كتابة متفرقة تستهلك ساعات التشغيل." },
-              { icon: ShieldCheck, title: "هل يناسب فريق أو وكالة؟", text: "نعم، وهذا ما يتمدد لاحقاً داخل رِفد للأعمال مع Workspaces وعمليات أوسع." },
-            ].map((item) => (
-              <article key={item.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <item.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-4 text-base font-extrabold">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
               </article>
             ))}
           </div>
@@ -301,7 +323,7 @@ function ProofCenterPage() {
           <div className="mt-10 rounded-2xl border border-border bg-card p-6 shadow-elegant">
             <div className="flex items-center gap-2 text-primary">
               <Clapperboard className="h-5 w-5" />
-              <h2 className="text-2xl font-extrabold">اعتراضات الشراء الأساسية — بإجابات عملية</h2>
+              <h2 className="text-2xl font-extrabold">اعتراضات الشراء الأساسية — والرد العملي على كل واحد</h2>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               {objections.map((item) => (
@@ -314,6 +336,9 @@ function ProofCenterPage() {
                   <div className="mt-3 rounded-lg border border-primary/15 bg-background/80 px-3 py-3 text-sm leading-6 text-foreground/80">
                     <span className="font-extrabold text-primary">الخطوة المنطقية التالية:</span> {item.next}
                   </div>
+                  <Button asChild variant="outline" className="mt-4 w-full">
+                    <Link to={item.href as never}>{item.ctaLabel}</Link>
+                  </Button>
                 </article>
               ))}
             </div>
@@ -351,6 +376,9 @@ function ProofCenterPage() {
 
           <div className="mt-8 rounded-2xl border border-primary/20 bg-secondary/30 p-6 shadow-elegant">
             <h2 className="text-2xl font-extrabold">إذا اقتنعت، ما هو المسار الصحيح بعد هذه الصفحة؟</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
+              هذه النقطة هي جوهر PRF-50: لا نترك الزائر مقتنعاً فقط، بل نربطه مباشرة بالخطوة التالية المنطقية بحسب حجم احتياجه ونوع قراره.
+            </p>
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {decisionPaths.map((item) => (
                 <article key={item.title} className="rounded-xl border border-border bg-card p-5">
