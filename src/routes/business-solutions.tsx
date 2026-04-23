@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, BarChart3, Blocks, BriefcaseBusiness, Building2, CheckCircle2, Compass, Workflow } from "lucide-react";
+import { z } from "zod";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,30 @@ const fitCases = [
   "متاجر كبيرة تحتاج مواءمة بين UX، العروض، والتشغيل بالذكاء الاصطناعي.",
 ];
 
+const intakeSchema = z.object({
+  name: z.string().trim().min(2, "اكتب الاسم أو اسم الجهة بصيغة أوضح").max(100, "الاسم طويل أكثر من اللازم"),
+  businessType: z.string().trim().min(2, "حدد نوع النشاط").max(80, "نوع النشاط طويل أكثر من اللازم"),
+  scope: z.string().trim().min(2, "اذكر نطاق العمل الحالي").max(120, "نطاق العمل طويل أكثر من اللازم"),
+  teamSize: z.string().trim().min(1, "اذكر حجم الفريق").max(80, "وصف حجم الفريق طويل أكثر من اللازم"),
+  channels: z.string().trim().min(10, "اذكر القنوات الحالية بتفصيل مختصر").max(500, "تفاصيل القنوات أطول من اللازم"),
+  bottleneck: z.string().trim().min(10, "اشرح عنق الزجاجة الحالي باختصار مفيد").max(500, "وصف عنق الزجاجة أطول من اللازم"),
+  goal: z.string().trim().min(10, "اذكر هدفاً واضحاً خلال 90 يوماً").max(500, "وصف الهدف أطول من اللازم"),
+  supportType: z.string().trim().min(2, "حدد نوع الدعم المطلوب").max(100, "نوع الدعم طويل أكثر من اللازم"),
+});
+
+type IntakeForm = z.infer<typeof intakeSchema>;
+type IntakeErrors = Partial<Record<keyof IntakeForm, string>>;
+
+function mapZodErrors(error: z.ZodError<IntakeForm>): IntakeErrors {
+  return error.issues.reduce<IntakeErrors>((acc, issue) => {
+    const field = issue.path[0];
+    if (typeof field === "string" && !(field in acc)) {
+      acc[field as keyof IntakeForm] = issue.message;
+    }
+    return acc;
+  }, {});
+}
+
 export const Route = createFileRoute("/business-solutions")({
   head: () => ({
     meta: [
@@ -91,25 +116,64 @@ function BusinessSolutionsPage() {
     goal: "",
     supportType: "",
   });
+  const [errors, setErrors] = React.useState<IntakeErrors>({});
+
+  const normalizedForm = React.useMemo<IntakeForm>(
+    () => ({
+      name: form.name.trim(),
+      businessType: form.businessType.trim(),
+      scope: form.scope.trim(),
+      teamSize: form.teamSize.trim(),
+      channels: form.channels.trim(),
+      bottleneck: form.bottleneck.trim(),
+      goal: form.goal.trim(),
+      supportType: form.supportType.trim(),
+    }),
+    [form],
+  );
+
+  const validation = React.useMemo(() => intakeSchema.safeParse(normalizedForm), [normalizedForm]);
+  const isValid = validation.success;
 
   const intakeMessage = React.useMemo(
     () =>
       [
         "السلام عليكم، أريد تقييم مسار رِفد للأعمال.",
-        `الاسم / الجهة: ${form.name || "..."}`,
-        `نوع النشاط: ${form.businessType || "..."}`,
-        `نطاق العمل الحالي: ${form.scope || "..."}`,
-        `حجم الفريق: ${form.teamSize || "..."}`,
-        `القنوات الحالية: ${form.channels || "..."}`,
-        `أكبر عنق زجاجة: ${form.bottleneck || "..."}`,
-        `الهدف خلال 90 يوماً: ${form.goal || "..."}`,
-        `نوع الدعم المطلوب: ${form.supportType || "..."}`,
+        `الاسم / الجهة: ${normalizedForm.name || "..."}`,
+        `نوع النشاط: ${normalizedForm.businessType || "..."}`,
+        `نطاق العمل الحالي: ${normalizedForm.scope || "..."}`,
+        `حجم الفريق: ${normalizedForm.teamSize || "..."}`,
+        `القنوات الحالية: ${normalizedForm.channels || "..."}`,
+        `أكبر عنق زجاجة: ${normalizedForm.bottleneck || "..."}`,
+        `الهدف خلال 90 يوماً: ${normalizedForm.goal || "..."}`,
+        `نوع الدعم المطلوب: ${normalizedForm.supportType || "..."}`,
       ].join("\n"),
-    [form],
+    [normalizedForm],
   );
 
   const whatsappHref = `https://wa.me/966582286215?text=${encodeURIComponent(intakeMessage)}`;
   const emailHref = `mailto:hello@rifd.site?subject=${encodeURIComponent("طلب تقييم — رِفد للأعمال")}&body=${encodeURIComponent(intakeMessage)}`;
+  const formErrorSummary = !isValid && Object.keys(errors).length > 0 ? "أكمل الحقول المطلوبة أولاً بصياغة أوضح قبل الإرسال." : null;
+
+  function updateField<K extends keyof IntakeForm>(field: K, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function validateBeforeSend(event: React.MouseEvent<HTMLAnchorElement>) {
+    const result = intakeSchema.safeParse(normalizedForm);
+    if (!result.success) {
+      event.preventDefault();
+      setErrors(mapZodErrors(result.error));
+      return;
+    }
+    setErrors({});
+  }
 
   return (
     <MarketingLayout>
