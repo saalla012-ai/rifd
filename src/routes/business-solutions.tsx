@@ -248,33 +248,54 @@ function BusinessSolutionsPage() {
               </div>
 
               <div className="rounded-2xl border border-gold/25 bg-secondary/20 p-5">
-                <h3 className="text-lg font-extrabold">رسالة التأهيل الجاهزة</h3>
-                <div className="mt-4 rounded-xl border border-border bg-background p-4 text-sm leading-8 text-foreground">
-                  السلام عليكم، أريد تقييم مسار رِفد للأعمال.
-                  <br />
-                  نوع النشاط: متجر / وكالة / فريق داخلي
-                  <br />
-                  عدد المتاجر أو الملفات: …
-                  <br />
-                  حجم الفريق الحالي: …
-                  <br />
-                  القنوات التي نديرها الآن: …
-                  <br />
-                  أكبر عنق زجاجة حالياً: المحتوى / التحويل / الأنظمة / التشغيل
-                  <br />
-                  الهدف خلال 90 يوماً: …
-                  <br />
-                  هل نحتاج تشخيصاً فقط أم تنفيذاً كاملاً؟ …
+                <h3 className="text-lg font-extrabold">نموذج التأهيل المؤسسي</h3>
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="business-name">الاسم أو اسم الجهة</Label>
+                    <Input id="business-name" className="mt-2 bg-background" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="مثلاً: متجر كذا / وكالة كذا" />
+                  </div>
+                  <div>
+                    <Label htmlFor="business-type">نوع النشاط</Label>
+                    <Input id="business-type" className="mt-2 bg-background" value={form.businessType} onChange={(e) => setForm((prev) => ({ ...prev, businessType: e.target.value }))} placeholder="متجر واحد / عدة متاجر / وكالة / فريق داخلي" />
+                  </div>
+                  <div>
+                    <Label htmlFor="business-scope">نطاق العمل الحالي</Label>
+                    <Input id="business-scope" className="mt-2 bg-background" value={form.scope} onChange={(e) => setForm((prev) => ({ ...prev, scope: e.target.value }))} placeholder="عدد المتاجر أو الملفات أو العلامات" />
+                  </div>
+                  <div>
+                    <Label htmlFor="team-size">حجم الفريق</Label>
+                    <Input id="team-size" className="mt-2 bg-background" value={form.teamSize} onChange={(e) => setForm((prev) => ({ ...prev, teamSize: e.target.value }))} placeholder="مثلاً: 4 أشخاص / 12 شخصاً" />
+                  </div>
+                  <div>
+                    <Label htmlFor="support-type">نوع الدعم المطلوب</Label>
+                    <Input id="support-type" className="mt-2 bg-background" value={form.supportType} onChange={(e) => setForm((prev) => ({ ...prev, supportType: e.target.value }))} placeholder="تشخيص / تنفيذ / بناء نظام / تشغيل حملات" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="channels">القنوات الحالية</Label>
+                    <Textarea id="channels" className="mt-2 min-h-[88px] bg-background" value={form.channels} onChange={(e) => setForm((prev) => ({ ...prev, channels: e.target.value }))} placeholder="المتجر، الإعلانات، واتساب، المحتوى، CRM، وأي أدوات تشغيل حالية" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="bottleneck">أكبر عنق زجاجة حالياً</Label>
+                    <Textarea id="bottleneck" className="mt-2 min-h-[88px] bg-background" value={form.bottleneck} onChange={(e) => setForm((prev) => ({ ...prev, bottleneck: e.target.value }))} placeholder="هل المشكلة في المحتوى، التحويل، الأنظمة، التشغيل، أو الربط بين القنوات؟" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="goal">الهدف خلال 90 يوماً</Label>
+                    <Textarea id="goal" className="mt-2 min-h-[88px] bg-background" value={form.goal} onChange={(e) => setForm((prev) => ({ ...prev, goal: e.target.value }))} placeholder="مثلاً: رفع التحويل، تسريع الإطلاقات، بناء نظام محتوى وتشغيل، أو توحيد رحلة العميل" />
+                  </div>
+                </div>
+                <div className="mt-5 rounded-xl border border-border bg-background p-4">
+                  <div className="text-sm font-extrabold">الملخص الجاهز للإرسال</div>
+                  <pre className="mt-3 whitespace-pre-wrap break-words font-sans text-sm leading-8 text-foreground">{intakeMessage}</pre>
                 </div>
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   <Button asChild className="gradient-gold text-gold-foreground shadow-gold sm:w-auto">
-                    <a href="https://wa.me/966582286215?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85+%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C+%D8%A3%D8%B1%D9%8A%D8%AF+%D8%AA%D9%82%D9%8A%D9%8A%D9%85+%D9%85%D8%B3%D8%A7%D8%B1+%D8%B1%D9%90%D9%81%D8%AF+%D9%84%D9%84%D8%A3%D8%B9%D9%85%D8%A7%D9%84.%0A%D9%86%D9%88%D8%B9+%D8%A7%D9%84%D9%86%D8%B4%D8%A7%D8%B7%3A+%D9%85%D8%AA%D8%AC%D8%B1+%2F+%D9%88%D9%83%D8%A7%D9%84%D8%A9+%2F+%D9%81%D8%B1%D9%8A%D9%82+%D8%AF%D8%A7%D8%AE%D9%84%D9%8A.%0A%D8%B9%D8%AF%D8%AF+%D8%A7%D9%84%D9%85%D8%AA%D8%A7%D8%AC%D8%B1+%D8%A3%D9%88+%D8%A7%D9%84%D9%85%D9%84%D9%81%D8%A7%D8%AA%3A+...%0A%D8%AD%D8%AC%D9%85+%D8%A7%D9%84%D9%81%D8%B1%D9%8A%D9%82+%D8%A7%D9%84%D8%AD%D8%A7%D9%84%D9%8A%3A+...%0A%D8%A7%D9%84%D9%82%D9%86%D9%88%D8%A7%D8%AA+%D8%A7%D9%84%D8%AD%D8%A7%D9%84%D9%8A%D8%A9%3A+...%0A%D8%A3%D9%83%D8%A8%D8%B1+%D8%B9%D9%86%D9%82+%D8%B2%D8%AC%D8%A7%D8%AC%D8%A9%3A+...%0A%D8%A7%D9%84%D9%87%D8%AF%D9%81+%D8%AE%D9%84%D8%A7%D9%84+90+%D9%8A%D9%88%D9%85%D8%A7%D9%8B%3A+...%0A%D9%86%D8%AD%D8%AA%D8%A7%D8%AC%3A+%D8%AA%D8%B4%D8%AE%D9%8A%D8%B5+%2F+%D8%AA%D9%86%D9%81%D9%8A%D8%B0+%D9%83%D8%A7%D9%85%D9%84" target="_blank" rel="noreferrer noopener">
-                      أرسل intake عبر واتساب
+                    <a href={whatsappHref} target="_blank" rel="noreferrer noopener">
+                      أرسل التقييم عبر واتساب
                       <ArrowLeft className="h-4 w-4" />
                     </a>
                   </Button>
                   <Button asChild variant="outline" className="sm:w-auto">
-                    <Link to="/contact">أرسل نفس التفاصيل عبر البريد</Link>
+                    <a href={emailHref}>أرسل نفس التقييم عبر البريد</a>
                   </Button>
                 </div>
               </div>
