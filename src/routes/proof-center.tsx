@@ -14,6 +14,7 @@ import {
   Target,
 } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
+import { ProofCenterOperationalProof } from "@/components/proof-center-operational-proof";
 import { Button } from "@/components/ui/button";
 
 const decisionFramework = [
@@ -106,9 +107,9 @@ const objections = [
     title: "هل يوفّر وقتاً حقيقياً؟",
     proof: "القيمة ليست في السرعة وحدها، بل في اختصار ثلاث حلقات دفعة واحدة: الفكرة، الصياغة، والاتجاه البصري الأول.",
     answer: "حين تبدأ من مخرج مترابط، تقل العودة إلى نقطة الصفر وتصبح دورة تجهيز المحتوى الأسبوعية أخف وأكثر اتساقاً.",
-    next: "راجع طبقة النتائج التشغيلية بالأسفل لتعرف بالضبط أين يتم اختصار الوقت داخل الأسبوع التشغيلي.",
-    ctaLabel: "راجع النتائج التشغيلية",
-    href: "/proof-center",
+    next: "راجع طبقة الإثبات التشغيلي بالأسفل لتعرف ما الذي يجب أن تراه فعلياً في أول أسبوع، وكيف تنتقل بعدها إلى الباقة المناسبة.",
+    ctaLabel: "تابع إلى الإثبات التشغيلي",
+    href: "/pricing",
   },
   {
     title: "هل يناسب الفرق والوكالات؟",
@@ -117,21 +118,6 @@ const objections = [
     next: "إذا كنت تدير فريقاً أو عدة حسابات، فالمسار الصحيح هو رِفد للأعمال لأن قرارك تشغيلي قبل أن يكون مجرد قرار تجربة.",
     ctaLabel: "اذهب إلى رِفد للأعمال",
     href: "/business-solutions",
-  },
-];
-
-const operationalOutcomes = [
-  {
-    title: "قبل جلسة الكتابة",
-    description: "بدل البدء من صفحة فارغة، تبدأ من زاوية بيع واضحة مبنية على القطاع والجمهور والنبرة.",
-  },
-  {
-    title: "أثناء تجهيز الحملة",
-    description: "تتحرك من المنشور إلى الصورة والـ Reel والـ CTA بنفس المنطق، لا كمهام متفرقة تصطدم ببعضها.",
-  },
-  {
-    title: "بعد أول نشر",
-    description: "يصبح التكرار أسهل لأنك تطور زاوية ثبتت، لا لأنك تعيد اختراع الحملة كل مرة من الصفر.",
   },
 ];
 
@@ -368,14 +354,7 @@ function ProofCenterPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {operationalOutcomes.map((item) => (
-              <article key={item.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
-                <h2 className="text-base font-extrabold">{item.title}</h2>
-                <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.description}</p>
-              </article>
-            ))}
-          </div>
+          <ProofCenterOperationalProof />
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {fitGuidance.map((group, index) => (
