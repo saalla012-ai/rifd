@@ -39,20 +39,10 @@ export function SectorPage({
   objections,
   primaryCta,
 }: SectorPageProps) {
-  const pageSlug = {
-    "الأزياء والعبايات": "/for-abayas-fashion",
-    "العطور والجمال": "/for-perfumes-beauty",
-    "الهدايا والتمور والشوكولاتة والقهوة": "/for-gifts-sweets-coffee",
-    "الإلكترونيات والإكسسوارات": "/for-electronics-accessories",
-    "الأطفال والمواليد": "/for-kids-baby",
-    "المنزل والديكور": "/for-home-decor",
-  }[shortTitle];
-
   return (
     <MarketingLayout>
       <section className="gradient-hero border-b border-border py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-4">
-          {pageSlug ? <link rel="canonical" href={`https://rifd.site${pageSlug}`} /> : null}
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
             <Sparkles className="h-3.5 w-3.5" />
             {heroLabel}
