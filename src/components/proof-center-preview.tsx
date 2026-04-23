@@ -43,6 +43,9 @@ export function ProofCenterPreview() {
             <p className="mt-3 text-muted-foreground">
               أمثلة قطاعية، قبل/بعد، واعتراضات وردود تشغيلية توضح كيف يتحول الطلب البسيط إلى قرار شراء أوضح وثقة أعلى.
             </p>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+              وستعرف أيضاً متى يكفيك الاشتراك داخل المنتج، ومتى يكون القرار الصحيح هو الانتقال إلى <span className="font-bold text-foreground">رِفد للأعمال</span> كمسار مؤسسي منفصل.
+            </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {quickAnswers.map((answer) => (
                 <span
