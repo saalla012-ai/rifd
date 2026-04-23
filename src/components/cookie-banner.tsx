@@ -21,21 +21,14 @@ function writeConsent(value: Consent) {
   try {
     window.localStorage.setItem(STORAGE_KEY, value);
   } catch {
-    /* ignore quota errors */
   }
 }
 
-/**
- * شريط موافقة الكوكيز — متوافق مع PDPL السعودية و GDPR.
- * - لا يظهر بعد اتخاذ القرار.
- * - مبني SSR-safe (يبدأ مخفياً ويُكشف بعد الـ hydration).
- */
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (readConsent() === null) {
-      // تأخير صغير حتى لا يومض على الـ FCP
       const t = window.setTimeout(() => setVisible(true), 600);
       return () => window.clearTimeout(t);
     }
@@ -47,6 +40,7 @@ export function CookieBanner() {
     writeConsent("accepted");
     setVisible(false);
   };
+
   const reject = () => {
     writeConsent("rejected");
     setVisible(false);
@@ -57,7 +51,7 @@ export function CookieBanner() {
       role="dialog"
       aria-live="polite"
       aria-label="إشعار ملفات تعريف الارتباط"
-      className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-3 sm:px-6 sm:pb-6 md:start-auto md:end-6 md:w-full md:max-w-[30rem] md:px-0"
+      className="fixed inset-x-0 bottom-16 z-[60] px-3 pb-3 sm:bottom-0 sm:px-6 sm:pb-6 md:start-auto md:end-6 md:w-full md:max-w-[30rem] md:px-0"
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-border bg-background/95 p-4 shadow-2xl backdrop-blur-md sm:flex-row sm:items-center sm:gap-4 sm:p-5 md:mx-0 md:flex-col md:items-start">
         <button
