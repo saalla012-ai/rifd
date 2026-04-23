@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Clapperboard, Images, MessageSquareText, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroProofVideoPlayer } from "@/components/hero-proof-video-player";
 
 const proofSignals = ["وصف واحد", "4 مخرجات مترابطة", "جاهزة لبداية حملة"];
 
@@ -84,69 +85,19 @@ export function HeroProofFilm() {
 
         <div className="relative">
           <div className="absolute inset-0 -z-10 rounded-[2rem] bg-primary/10 blur-3xl" aria-hidden />
-          <div className="rounded-[2rem] border border-border bg-card p-4 shadow-elegant sm:p-5">
-            <div className="mb-4 flex items-center justify-between rounded-2xl border border-border bg-secondary/50 px-4 py-3">
+          <HeroProofVideoPlayer />
+
+          <div className="mt-4 rounded-[1.5rem] border border-gold/25 bg-gold/10 p-4 shadow-soft">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <div className="text-xs font-bold text-primary">مشهد الإبهار المقترح</div>
-                <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز 4 مخرجات</div>
+                <div className="text-xs font-bold text-gold-foreground">المحصلة النهائية</div>
+                <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز لك منشوراً + صورة + فكرة ريلز + دعوة شراء</div>
               </div>
-              <div className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-bold text-success">
-                <span className="h-2 w-2 rounded-full bg-success" />
-                تدفّق مباشر
-              </div>
+              <div className="inline-flex self-start rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground sm:self-auto">تقدّم V8: 95%</div>
             </div>
-
-            <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-              <div className="rounded-[1.5rem] border border-primary/15 bg-gradient-to-b from-secondary/80 to-background p-4">
-                <div className="rounded-2xl border border-dashed border-primary/25 bg-background/80 p-4">
-                  <div className="text-xs font-bold text-muted-foreground">المدخل</div>
-                  <div className="mt-2 text-sm font-extrabold">متجر عطور — جمهور نسائي — نبرة راقية</div>
-                  <div className="mt-3 space-y-2 text-xs text-muted-foreground">
-                    <div className="rounded-lg bg-secondary px-3 py-2">عرض جديد لثبات الرائحة</div>
-                    <div className="rounded-lg bg-secondary px-3 py-2">التركيز على الفخامة لا الخصم</div>
-                    <div className="rounded-lg bg-secondary px-3 py-2">دعوة شراء خفيفة</div>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-bold text-primary">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  رِفد ينسّق المخرجات كحزمة لا كأجزاء منفصلة
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <article className="rounded-2xl border border-border bg-background p-4">
-                  <div className="text-xs font-bold text-primary">النص المقترح</div>
-                  <p className="mt-2 text-sm leading-7 text-foreground">
-                    عطر يثبت من أول حضور… نفحات راقية تعيش معك من بداية اليوم إلى آخره، بإحساس فخم يلفت بدون مبالغة.
-                  </p>
-                </article>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <article className="rounded-2xl border border-border bg-background p-4">
-                    <div className="text-xs font-bold text-primary">اتجاه الصورة</div>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      زجاجة العطر بإضاءة ذهبية ناعمة، خلفية داكنة متوازنة، ومساحة عنوان واضحة للعرض.
-                    </p>
-                  </article>
-                  <article className="rounded-2xl border border-border bg-background p-4">
-                    <div className="text-xs font-bold text-primary">فكرة الريلز</div>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      لقطة أولى للعبوة، ثم رشّة قريبة، ثم جملة ختامية: الثبات الذي يترك انطباعاً من أول لحظة.
-                    </p>
-                  </article>
-                </div>
-
-                <div className="rounded-2xl border border-gold/30 bg-gold/10 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-gold-foreground">المحصلة النهائية</div>
-                      <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز لك منشوراً + صورة + فكرة ريلز + دعوة شراء</div>
-                    </div>
-                    <div className="inline-flex self-start rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground sm:self-auto">بدلاً من 5 ساعات</div>
-                  </div>
-                </div>
-              </div>
+            <div className="mt-3 flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-bold text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              تم تحويل الإثبات من شرح وصفي إلى أصل حيّ قابل للمشاهدة داخل الصفحة الرئيسية.
             </div>
           </div>
         </div>
