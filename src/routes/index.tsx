@@ -38,7 +38,10 @@ export const Route = createFileRoute("/")({
       { property: "og:image:alt", content: "رِفد — حزمة محتوى وصور وحملات لمتجرك السعودي" },
       { name: "twitter:image", content: ogHomeImage },
       { name: "twitter:image:alt", content: "رِفد — حزمة محتوى وصور وحملات لمتجرك السعودي" },
+      { name: "twitter:title", content: "رِفد — محتوى وصور لمتجرك السعودي في وقت قهوتك ☕" },
+      { name: "twitter:description", content: "منشورات وصور احترافية بالعامية السعودية — وفّر ساعات من الكتابة والتصميم اليدوي." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/" }],
   }),
   component: HomePage,
 });

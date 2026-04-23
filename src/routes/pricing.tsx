@@ -35,7 +35,10 @@ export const Route = createFileRoute("/pricing")({
       },
       { property: "og:title", content: "أسعار رِفد — باقات شفافة بالريال السعودي" },
       { property: "og:description", content: "مجاني • احترافي 79ر • أعمال 199ر — مع ضمان 7 أيام." },
+      { name: "twitter:title", content: "أسعار رِفد — باقات شفافة بالريال السعودي" },
+      { name: "twitter:description", content: "ابدأ مجاناً، ثم 79ر/شهر للاحترافي و199ر للأعمال — مع ضمان 7 أيام." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/pricing" }],
   }),
   component: PricingPage,
 });

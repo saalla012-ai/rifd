@@ -18,7 +18,10 @@ export const Route = createFileRoute("/vs-chatgpt")({
         property: "og:description",
         content: "ليش يدفع أصحاب المتاجر السعوديين 79 ر.س لرِفد بدل 75 ر.س لـChatGPT؟ شوف الفرق.",
       },
+      { name: "twitter:title", content: "رِفد vs ChatGPT — المقارنة الكاملة" },
+      { name: "twitter:description", content: "السعر، العامية، ذاكرة المتجر، وأمثلة حية لنفس البرومبت — الفرق الحقيقي بين الأدوات." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/vs-chatgpt" }],
   }),
   component: VsChatgptPage,
 });
