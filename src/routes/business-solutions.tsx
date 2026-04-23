@@ -316,50 +316,59 @@ function BusinessSolutionsPage() {
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <div className="md:col-span-2">
                     <Label htmlFor="business-name">الاسم أو اسم الجهة</Label>
-                    <Input id="business-name" className="mt-2 bg-background" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="مثلاً: متجر كذا / وكالة كذا" />
+                    <Input id="business-name" aria-invalid={Boolean(errors.name)} className="mt-2 bg-background" value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="مثلاً: متجر كذا / وكالة كذا" />
+                    {errors.name ? <p className="mt-2 text-xs font-medium text-destructive">{errors.name}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="business-type">نوع النشاط</Label>
-                    <Input id="business-type" className="mt-2 bg-background" value={form.businessType} onChange={(e) => setForm((prev) => ({ ...prev, businessType: e.target.value }))} placeholder="متجر واحد / عدة متاجر / وكالة / فريق داخلي" />
+                    <Input id="business-type" aria-invalid={Boolean(errors.businessType)} className="mt-2 bg-background" value={form.businessType} onChange={(e) => updateField("businessType", e.target.value)} placeholder="متجر واحد / عدة متاجر / وكالة / فريق داخلي" />
+                    {errors.businessType ? <p className="mt-2 text-xs font-medium text-destructive">{errors.businessType}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="business-scope">نطاق العمل الحالي</Label>
-                    <Input id="business-scope" className="mt-2 bg-background" value={form.scope} onChange={(e) => setForm((prev) => ({ ...prev, scope: e.target.value }))} placeholder="عدد المتاجر أو الملفات أو العلامات" />
+                    <Input id="business-scope" aria-invalid={Boolean(errors.scope)} className="mt-2 bg-background" value={form.scope} onChange={(e) => updateField("scope", e.target.value)} placeholder="عدد المتاجر أو الملفات أو العلامات" />
+                    {errors.scope ? <p className="mt-2 text-xs font-medium text-destructive">{errors.scope}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="team-size">حجم الفريق</Label>
-                    <Input id="team-size" className="mt-2 bg-background" value={form.teamSize} onChange={(e) => setForm((prev) => ({ ...prev, teamSize: e.target.value }))} placeholder="مثلاً: 4 أشخاص / 12 شخصاً" />
+                    <Input id="team-size" aria-invalid={Boolean(errors.teamSize)} className="mt-2 bg-background" value={form.teamSize} onChange={(e) => updateField("teamSize", e.target.value)} placeholder="مثلاً: 4 أشخاص / 12 شخصاً" />
+                    {errors.teamSize ? <p className="mt-2 text-xs font-medium text-destructive">{errors.teamSize}</p> : null}
                   </div>
                   <div>
                     <Label htmlFor="support-type">نوع الدعم المطلوب</Label>
-                    <Input id="support-type" className="mt-2 bg-background" value={form.supportType} onChange={(e) => setForm((prev) => ({ ...prev, supportType: e.target.value }))} placeholder="تشخيص / تنفيذ / بناء نظام / تشغيل حملات" />
+                    <Input id="support-type" aria-invalid={Boolean(errors.supportType)} className="mt-2 bg-background" value={form.supportType} onChange={(e) => updateField("supportType", e.target.value)} placeholder="تشخيص / تنفيذ / بناء نظام / تشغيل حملات" />
+                    {errors.supportType ? <p className="mt-2 text-xs font-medium text-destructive">{errors.supportType}</p> : null}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="channels">القنوات الحالية</Label>
-                    <Textarea id="channels" className="mt-2 min-h-[88px] bg-background" value={form.channels} onChange={(e) => setForm((prev) => ({ ...prev, channels: e.target.value }))} placeholder="المتجر، الإعلانات، واتساب، المحتوى، CRM، وأي أدوات تشغيل حالية" />
+                    <Textarea id="channels" aria-invalid={Boolean(errors.channels)} className="mt-2 min-h-[88px] bg-background" value={form.channels} onChange={(e) => updateField("channels", e.target.value)} placeholder="المتجر، الإعلانات، واتساب، المحتوى، CRM، وأي أدوات تشغيل حالية" />
+                    {errors.channels ? <p className="mt-2 text-xs font-medium text-destructive">{errors.channels}</p> : null}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="bottleneck">أكبر عنق زجاجة حالياً</Label>
-                    <Textarea id="bottleneck" className="mt-2 min-h-[88px] bg-background" value={form.bottleneck} onChange={(e) => setForm((prev) => ({ ...prev, bottleneck: e.target.value }))} placeholder="هل المشكلة في المحتوى، التحويل، الأنظمة، التشغيل، أو الربط بين القنوات؟" />
+                    <Textarea id="bottleneck" aria-invalid={Boolean(errors.bottleneck)} className="mt-2 min-h-[88px] bg-background" value={form.bottleneck} onChange={(e) => updateField("bottleneck", e.target.value)} placeholder="هل المشكلة في المحتوى، التحويل، الأنظمة، التشغيل، أو الربط بين القنوات؟" />
+                    {errors.bottleneck ? <p className="mt-2 text-xs font-medium text-destructive">{errors.bottleneck}</p> : null}
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="goal">الهدف خلال 90 يوماً</Label>
-                    <Textarea id="goal" className="mt-2 min-h-[88px] bg-background" value={form.goal} onChange={(e) => setForm((prev) => ({ ...prev, goal: e.target.value }))} placeholder="مثلاً: رفع التحويل، تسريع الإطلاقات، بناء نظام محتوى وتشغيل، أو توحيد رحلة العميل" />
+                    <Textarea id="goal" aria-invalid={Boolean(errors.goal)} className="mt-2 min-h-[88px] bg-background" value={form.goal} onChange={(e) => updateField("goal", e.target.value)} placeholder="مثلاً: رفع التحويل، تسريع الإطلاقات، بناء نظام محتوى وتشغيل، أو توحيد رحلة العميل" />
+                    {errors.goal ? <p className="mt-2 text-xs font-medium text-destructive">{errors.goal}</p> : null}
                   </div>
                 </div>
+                {formErrorSummary ? <div className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">{formErrorSummary}</div> : null}
                 <div className="mt-5 rounded-xl border border-border bg-background p-4">
                   <div className="text-sm font-extrabold">الملخص الجاهز للإرسال</div>
                   <pre className="mt-3 whitespace-pre-wrap break-words font-sans text-sm leading-8 text-foreground">{intakeMessage}</pre>
                 </div>
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   <Button asChild className="gradient-gold text-gold-foreground shadow-gold sm:w-auto">
-                    <a href={whatsappHref} target="_blank" rel="noreferrer noopener">
+                    <a href={whatsappHref} target="_blank" rel="noreferrer noopener" aria-disabled={!isValid} onClick={validateBeforeSend}>
                       أرسل التقييم عبر واتساب
                       <ArrowLeft className="h-4 w-4" />
                     </a>
                   </Button>
                   <Button asChild variant="outline" className="sm:w-auto">
-                    <a href={emailHref}>أرسل نفس التقييم عبر البريد</a>
+                    <a href={emailHref} aria-disabled={!isValid} onClick={validateBeforeSend}>أرسل نفس التقييم عبر البريد</a>
                   </Button>
                 </div>
               </div>
