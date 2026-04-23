@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles, Star } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubscribersCounter } from "./subscribers-counter";
 import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
@@ -101,6 +101,19 @@ export function HomeHero() {
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-foreground/80 sm:text-sm">
+            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/80 px-3 py-1.5 shadow-soft backdrop-blur-sm">
+              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+              هذا المسار مناسب إذا كنت تريد تشغيل متجر واحد بسرعة
+            </span>
+            <Link
+              to="/proof-center"
+              className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-primary transition-colors hover:bg-primary/10"
+            >
+              شاهد الإثبات أولاً
+              <ArrowLeft className="h-3.5 w-3.5" />
+            </Link>
+          </div>
           <div className="grid w-full max-w-[18rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-xl sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
             <span>✓ 5 توليدات نص + 2 صورة</span>
             <span>✓ بدون بطاقة ائتمان</span>
@@ -109,9 +122,12 @@ export function HomeHero() {
         </div>
 
         <div
-          className="mx-auto mt-9 max-w-3xl animate-fade-in"
+          className="mx-auto mt-7 max-w-3xl animate-fade-in"
           style={{ animationDelay: "420ms" }}
         >
+          <div className="mb-3 text-center text-xs font-bold text-muted-foreground sm:text-sm">
+            ماذا ستحسم في أول ثوانٍ؟ الوعد، الفرق، والثقة — قبل أن تنزل لباقي الصفحة.
+          </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
             {HERO_BENEFITS.map((b) => (
               <div
