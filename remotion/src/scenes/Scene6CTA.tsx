@@ -13,7 +13,8 @@ export const Scene6CTA: React.FC = () => {
   const urlIn = spring({ frame: frame - 34, fps, config: { damping: 12, stiffness: 130 } });
   const chipsIn = spring({ frame: frame - 56, fps, config: { damping: 16 } });
   const pulse = 1 + Math.sin(frame * 0.18) * 0.025;
-  const parallax = interpolate(frame, [0, 220], [0, -20]);
+  const parallax = interpolate(frame, [0, 200], [0, -18]);
+  const proofIn = spring({ frame: frame - 82, fps, config: { damping: 15, stiffness: 150 } });
 
   return (
     <AbsoluteFill
@@ -35,7 +36,7 @@ export const Scene6CTA: React.FC = () => {
             transform: `translateY(${interpolate(brandIn, [0, 1], [26, 0])}px)`,
           }}
         >
-          أعطِه وصفاً واضحاً
+          اكتب وصفاً واضحاً
         </div>
 
         <div
@@ -52,7 +53,7 @@ export const Scene6CTA: React.FC = () => {
             textShadow: `0 16px 50px ${COLORS.greenDeep}40`,
           }}
         >
-          وخذ بداية حملة جاهزة
+          وخذ صورةً ومعها بداية حملة جاهزة
         </div>
 
         <div
@@ -65,7 +66,26 @@ export const Scene6CTA: React.FC = () => {
             lineHeight: 1.5,
           }}
         >
-            منشور + صورة + Reel + CTA من نفس منطق البيع لتبدأ أسرع
+            الصورة تظهر أولاً، ثم تتبعها النسخة والـ Reel وCTA بنفس منطق البيع
+        </div>
+
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "16px 24px",
+            borderRadius: 999,
+            background: COLORS.white,
+            border: `2px solid ${COLORS.gold}30`,
+            marginTop: 26,
+            opacity: proofIn,
+            transform: `translateY(${interpolate(proofIn, [0, 1], [18, 0])}px)`,
+            boxShadow: "0 12px 28px rgba(15,31,24,0.08)",
+          }}
+        >
+          <div style={{ width: 14, height: 14, borderRadius: "50%", background: COLORS.goldGlow, boxShadow: `0 0 22px ${COLORS.goldGlow}` }} />
+          <div style={{ fontSize: 26, fontWeight: 800, color: COLORS.greenDeep }}>تجربة مجانية تبدأ من أول صورة وأول زاوية بيع</div>
         </div>
 
         <div
@@ -99,9 +119,9 @@ export const Scene6CTA: React.FC = () => {
           }}
         >
           {[
-            "✓ 5 توليدات أولية مجانية",
+                "✓ 5 توليدات أولية مجانية",
             "✓ بدون بطاقة ائتمان",
-            "✓ جاهز لمتجرك السعودي",
+                "✓ مناسب لمتجرك السعودي",
           ].map((chip) => (
             <div
               key={chip}
