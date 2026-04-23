@@ -47,6 +47,9 @@ export function BusinessSolutionsTeaser() {
             <p className="mt-3 max-w-2xl text-muted-foreground">
               عندما تتجاوز حاجتك مجرد منشور أو صورة، يتحول رِفد إلى مسار تنفيذي يشمل الذاكرة، الحملات، التحويل، الأنظمة، وآلية عمل مباشرة مع الفريق.
             </p>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+              هذا ليس امتداداً عادياً لباقات الاشتراك داخل المنتج، بل <span className="font-bold text-foreground">مسار مؤسسي منفصل</span> عندما تصبح حاجتك تشخيصية وتشغيلية أوسع من مجرد رفع السعة.
+            </p>
             <div className="mt-5 grid gap-2">
               {outcomes.map((item) => (
                 <div key={item} className="rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
