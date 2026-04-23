@@ -91,6 +91,7 @@ const objections = [
     title: "هل الناتج مجرد نص عام؟",
     proof: "الإثبات هنا لا يعرض منشوراً معزولاً، بل يربطه بهوك وصورة وفكرة Reel وCTA ضمن نفس الحزمة.",
     answer: "هذا يقلل مشكلة المحتوى العام لأن كل عنصر في الحملة يخدم نفس الدافع البيعي بدلاً من العمل كمخرجات منفصلة.",
+    decisionSignal: "إذا لاحظت أن أكبر مشكلتك اليوم هي تكرار نصوص عامة لا تُترجم إلى زاوية بيع واحدة، فهذا الاعتراض محسوم لصالح التجربة.",
     next: "ابدأ التجربة المجانية ثم قارن أول مخرج بما تكتبه عادة بنفسك، لأن الفرق الحقيقي يظهر في ترابط الحزمة لا في طول النص فقط.",
     ctaLabel: "ابدأ التجربة المجانية",
     href: "/onboarding",
@@ -99,6 +100,7 @@ const objections = [
     title: "هل يصلح فعلاً للسوق السعودي؟",
     proof: "الأمثلة مبنية على قطاعات محلية وسياقات شراء حقيقية مثل الإهداء والفخامة والاستخدام اليومي والموسمية.",
     answer: "التخصيص هنا ليس شكلياً؛ بل يظهر في نبرة الرسالة، والاعتراضات التي يجري الرد عليها، وطريقة دفع القرار الشرائي.",
+    decisionSignal: "إذا كنت لا تريد وعوداً عامة، فالحكم الصحيح هنا يكون من الصفحة القطاعية الأقرب لسوقك لا من الصفحة الرئيسية وحدها.",
     next: "انتقل إلى الصفحة القطاعية الأقرب لمتجرك، لأن الحكم الأدق يكون من منطق سوقك لا من مثال بعيد عنك.",
     ctaLabel: "شاهد المثال القطاعي",
     href: "/for-perfumes-beauty",
@@ -107,6 +109,7 @@ const objections = [
     title: "هل يوفّر وقتاً حقيقياً؟",
     proof: "القيمة ليست في السرعة وحدها، بل في اختصار ثلاث حلقات دفعة واحدة: الفكرة، الصياغة، والاتجاه البصري الأول.",
     answer: "حين تبدأ من مخرج مترابط، تقل العودة إلى نقطة الصفر وتصبح دورة تجهيز المحتوى الأسبوعية أخف وأكثر اتساقاً.",
+    decisionSignal: "إذا كان عنق الزجاجة عندك هو بدء الحملة كل أسبوع من الصفر، فهنا يظهر الأثر التشغيلي الحقيقي لا مجرد فرق في سرعة الكتابة.",
     next: "راجع طبقة الإثبات التشغيلي بالأسفل لتعرف ما الذي يجب أن تراه فعلياً في أول أسبوع، وكيف تنتقل بعدها إلى الباقة المناسبة.",
     ctaLabel: "تابع إلى الإثبات التشغيلي",
     href: "#operational-proof",
@@ -115,9 +118,25 @@ const objections = [
     title: "هل يناسب الفرق والوكالات؟",
     proof: "إذا كان احتياجك يتجاوز متجراً واحداً أو يحتاج تأهيلاً وتسليماً أوضح، فالمسار الفردي وحده لن يغطي هذا العمق.",
     answer: "هنا يظهر رِفد للأعمال كامتداد مؤسسي، لا كنسخة أكبر فقط من نفس التجربة الفردية.",
+    decisionSignal: "إذا كان قرارك يتضمن فريقاً أو أكثر من عميل أو أكثر من متجر، فالمقارنة الصحيحة تصبح بين مسارين تشغيليين لا بين باقتين فقط.",
     next: "إذا كنت تدير فريقاً أو عدة حسابات، فالمسار الصحيح هو رِفد للأعمال لأن قرارك تشغيلي قبل أن يكون مجرد قرار تجربة.",
     ctaLabel: "اذهب إلى رِفد للأعمال",
     href: "/business-solutions",
+  },
+];
+
+const purchaseDecisionChecklist = [
+  {
+    title: "احسم أولاً: هل تريد إثبات الفكرة أم تشغيلها؟",
+    description: "إذا كنت تريد فقط معرفة هل المخرج أوضح من طريقتك الحالية، فالتجربة هي القرار الصحيح. أما إذا اقتنعت بالفعل وتبحث عن روتين أسبوعي مستمر، فانتقل للباقات.",
+  },
+  {
+    title: "ميّز بين احتياج متجر واحد واحتياج فريق",
+    description: "كلما دخلت متطلبات تأهيل وتسليم أو تعدد حسابات، خرج القرار من باقة فردية إلى مسار أعمال مؤسسي أوضح.",
+  },
+  {
+    title: "لا تساوِ بين جودة النص وحدها وجودة الحملة",
+    description: "معيار الحكم هنا ليس هل المنشور جميل فقط، بل هل خرجت مع زاوية بيع وصورة وReel وCTA تعمل كحزمة قرار واحدة.",
   },
 ];
 
@@ -343,16 +362,37 @@ function ProofCenterPage() {
                     <span className="font-extrabold text-foreground">الإثبات داخل الصفحة:</span> {item.proof}
                   </div>
                   <p className="mt-3 text-sm leading-7 text-muted-foreground">{item.answer}</p>
+                  <div className="mt-3 rounded-lg border border-gold/30 bg-gold/10 px-3 py-3 text-sm leading-6 text-foreground/85">
+                    <span className="font-extrabold text-foreground">إشارة القرار:</span> {item.decisionSignal}
+                  </div>
                   <div className="mt-3 rounded-lg border border-primary/15 bg-background/80 px-3 py-3 text-sm leading-6 text-foreground/80">
                     <span className="font-extrabold text-primary">الخطوة المنطقية التالية:</span> {item.next}
                   </div>
-                   <Button asChild variant="outline" className="mt-4 w-full">
-                     {item.href.startsWith("#") ? (
-                       <a href={item.href}>{item.ctaLabel}</a>
-                     ) : (
-                       <Link to={item.href as never}>{item.ctaLabel}</Link>
-                     )}
-                   </Button>
+                  <Button asChild variant="outline" className="mt-4 w-full">
+                    {item.href.startsWith("#") ? (
+                      <a href={item.href}>{item.ctaLabel}</a>
+                    ) : (
+                      <Link to={item.href as never}>{item.ctaLabel}</Link>
+                    )}
+                  </Button>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-6 shadow-soft">
+            <div className="flex items-center gap-2 text-primary">
+              <Target className="h-5 w-5" />
+              <h2 className="text-2xl font-extrabold">كيف تحسم قرارك خلال 90 ثانية؟</h2>
+            </div>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground">
+              هذا القسم يختصر جوهر PRF-50: لا نعرض الإثبات فقط، بل نحوّله إلى منطق قرار سريع حتى لا يخرج الزائر مقتنعاً ومعلّقاً بين عدة مسارات.
+            </p>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {purchaseDecisionChecklist.map((item) => (
+                <article key={item.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
+                  <h3 className="text-base font-extrabold">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.description}</p>
                 </article>
               ))}
             </div>
