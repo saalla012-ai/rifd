@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, Sparkles, Tags, Wand2 } from "lucide-react";
+import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, PlayCircle, Sparkles, Tags, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SuccessPack } from "@/lib/onboarding-success";
 
@@ -106,6 +106,10 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
             اقتراح الصورة
           </div>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">{pack.imageIdea}</p>
+          <div className="mt-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-3">
+            <div className="text-xs font-extrabold text-primary">Prompt جاهز لإنشاء الصورة</div>
+            <p className="mt-2 text-sm leading-7 text-foreground/85">{pack.imagePrompt}</p>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4">
@@ -182,6 +186,18 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
               ))}
             </div>
           </div>
+
+          <div className="mt-4 rounded-lg border border-gold/30 bg-gold/10 px-3 py-3">
+            <div className="flex items-center gap-2 text-sm font-bold text-gold-foreground">
+              <PlayCircle className="h-4 w-4" />
+              ماذا تفعل بالصورة أولاً؟
+            </div>
+            <div className="mt-3 space-y-2 text-sm leading-6 text-foreground/85">
+              <p>1) ولّد الصورة من الـ prompt الجاهز نفسه قبل تغيير الرسالة.</p>
+              <p>2) استخدمها كأصل الإعلان الأول أو كغطاء Reel حتى يبقى الوعد البصري متطابقاً مع النص.</p>
+              <p>3) بعد ذلك فقط ابدأ اختبار هوك ثانٍ أو CTA بديل.</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -197,21 +213,32 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
             <Link to="/pricing">شاهد الباقات المناسبة بعد التجربة</Link>
           </Button>
         </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border border-border bg-background/70 px-3 py-3 text-sm leading-6 text-muted-foreground">
+            <span className="font-extrabold text-foreground">المسار التنفيذي الأنسب الآن:</span> ابدأ من توليد الصورة أو تحسينها داخل لوحة التحكم ثم افتح القوالب لتوسيع الحملة على نفس الزاوية.
+          </div>
+          <div className="rounded-lg border border-border bg-background/70 px-3 py-3 text-sm leading-6 text-muted-foreground">
+            <span className="font-extrabold text-foreground">مسار الإثبات التالي:</span> شاهد فيديو الإثبات ومركز الإثبات حتى ترى كيف تتحول نفس البداية إلى تشغيل أسبوعي مستمر.
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-4">
         <Button asChild className="gradient-primary text-primary-foreground shadow-elegant md:col-span-1">
           <Link to="/dashboard">
             ادخل لوحة التحكم
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
+        <Button asChild variant="outline" className="md:col-span-1">
+          <Link to="/dashboard/generate-image">ولّد الصورة الآن</Link>
+        </Button>
         <Button type="button" variant="outline" className="gap-2 md:col-span-1" onClick={handleCopy}>
           <Copy className="h-4 w-4" />
           {copied ? "تم نسخ المنشور" : "انسخ المنشور الرئيسي"}
         </Button>
         <Button asChild variant="outline" className="md:col-span-1">
-          <Link to="/dashboard/templates">افتح القوالب التالية</Link>
+          <Link to="/proof-center">شاهد فيديو ومركز الإثبات</Link>
         </Button>
       </div>
     </div>
