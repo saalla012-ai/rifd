@@ -117,6 +117,31 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
         </div>
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <Megaphone className="h-4 w-4 text-primary" />
+            ماذا تنشر بعد المنشور الأول؟
+          </div>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">{pack.secondPostIdea}</p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <Sparkles className="h-4 w-4 text-primary" />
+            تسلسل ستوري جاهز
+          </div>
+          <div className="mt-3 space-y-2">
+            {pack.storySequence.map((item, index) => (
+              <div key={item} className="rounded-lg bg-secondary/60 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                <span className="ml-2 text-xs font-extrabold text-primary">{index + 1}.</span>
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-xl border border-border bg-card p-4 text-sm leading-7 text-muted-foreground">
           <div className="mb-2 text-sm font-bold text-foreground">لماذا هذه النتيجة مناسبة لمتجرك؟</div>
@@ -157,6 +182,20 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-extrabold text-primary">الخطوة المنطقية التالية</div>
+            <p className="mt-1 text-sm leading-7 text-foreground/85">
+              إذا أعجبتك هذه البداية، فالقرار الآن ليس "هل أكتب منشوراً آخر؟" بل كيف تحوّل هذه الزاوية إلى تشغيل أسبوعي داخل حسابك.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link to="/pricing">شاهد الباقات المناسبة بعد التجربة</Link>
+          </Button>
         </div>
       </div>
 

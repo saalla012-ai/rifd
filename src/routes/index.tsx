@@ -48,9 +48,9 @@ function HomePage() {
     <MarketingLayout>
       <HomeHero />
 
-      <BrandStrip />
-
       <HeroProofFilm />
+
+      <BrandStrip />
 
       <SavingsCounter />
 
