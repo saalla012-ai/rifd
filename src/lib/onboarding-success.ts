@@ -15,6 +15,8 @@ export type SuccessPack = {
   hashtags: string[];
   imageIdea: string;
   reelIdea: string;
+  secondPostIdea: string;
+  storySequence: string[];
   whyItFits: string;
   campaignAngle: string;
   firstWin: string;
@@ -93,6 +95,12 @@ export function buildSuccessPack({
     hashtags: [`#${slugifyArabic(storeName)}`, `#${slugifyArabic(productTypeLabel)}`, "#متاجر_سعودية"],
     imageIdea: `صورة بطولية لمنتج من ${productTypeLabel} بإضاءة احترافية، ألوان العلامة، ومساحة واضحة لعنوان العرض واسم ${storeName}.`,
     reelIdea: `ريل قصير من 3 لقطات: لقطة جذب سريعة، إبراز الفائدة الأساسية لمنتج ${productTypeLabel}، ثم CTA نهائي موجّه إلى ${audienceLabel}.`,
+    secondPostIdea: `منشور متابعة يثبت نفس زاوية الحملة لكن من اعتراض مختلف: لماذا ${productTypeLabel} مناسب لـ${audienceLabel} الآن تحديداً، مع مثال استخدام أو مناسبة شراء أوضح.`,
+    storySequence: [
+      `ستوري 1: هوك سريع يبرز الوعد الأساسي لـ${productTypeLabel}.`,
+      `ستوري 2: صورة أو لقطة مقرّبة تعزّز الثقة وتوضح الفائدة بشكل مباشر.`,
+      `ستوري 3: CTA مختصر يدفع ${audienceLabel} إلى الطلب أو الاستفسار فوراً.`,
+    ],
     whyItFits: `بُني هذا الناتج على نوع متجرك (${productTypeLabel})، والجمهور المستهدف (${audienceLabel})، ونبرة العلامة ${toneCopy.adjective} حتى يظهر المحتوى وكأنه مكتوب خصيصاً لـ${storeName}.`,
     campaignAngle: marketAngle.campaignAngle,
     firstWin: marketAngle.firstWin,

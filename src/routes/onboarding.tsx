@@ -33,7 +33,7 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
       { title: "ابدأ مع رِفد — 4 خطوات لأول محتوى مخصص لمتجرك" },
-      { name: "description", content: "أنشئ ملف متجرك في 3 دقائق واحصل على أول نتيجة AI مخصصة فوراً." },
+      { name: "description", content: "أنشئ ملف متجرك في 3 دقائق واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
     ],
   }),
   component: OnboardingPage,
