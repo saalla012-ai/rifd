@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Sparkles, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,6 +30,9 @@ import {
 import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 
 export const Route = createFileRoute("/onboarding")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    preview: search.preview === "success" ? "success" : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "ابدأ مع رِفد — 4 خطوات لأول محتوى مخصص لمتجرك" },
@@ -48,6 +51,7 @@ const TONES = [
 
 function OnboardingPage() {
   const navigate = useNavigate();
+  const { preview } = Route.useSearch();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [storeName, setStoreName] = useState("");
@@ -59,6 +63,25 @@ function OnboardingPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
+  const previewMode = preview === "success";
+
+  const previewPack = useMemo(() => {
+    if (!previewMode) return null;
+
+    const previewStoreName = profile?.store_name?.trim() || "رِفد للعطور";
+    const previewProductType = profile?.product_type || "عطور فاخرة";
+    const previewAudience = profile?.audience || "نساء يبحثن عن هدية أو عطر يومي فاخر";
+    const previewTone = profile?.tone || "luxury";
+    const previewPost = `عطر يبان من أول حضور… تركيبة راقية تمنح ${previewStoreName} افتتاحية إعلان أقرب للفخامة من النصوص العامة، مع دعوة شراء هادئة وواضحة من أول نظرة.`;
+
+    return buildSuccessPack({
+      storeName: previewStoreName,
+      productTypeLabel: previewProductType,
+      audienceLabel: previewAudience,
+      tone: previewTone,
+      primaryPost: previewPost,
+    });
+  }, [previewMode, profile]);
 
   // المستخدم لازم يكون مسجل دخول للوصول
   useEffect(() => {
@@ -69,7 +92,7 @@ function OnboardingPage() {
     }
     // إذا أكمل onboarding من قبل وعنده رقم واتساب → dashboard مباشرة
     // (المستخدمون القدامى بدون رقم يكملون الاستمارة لإضافته)
-    if (profile?.onboarded && profile?.whatsapp) {
+    if (!previewMode && profile?.onboarded && profile?.whatsapp) {
       void navigate({ to: "/dashboard" });
     }
     // عبّي القيم لو فيه profile جزئي
@@ -79,7 +102,7 @@ function OnboardingPage() {
     if (profile?.audience) setAudience(profile.audience);
     if (profile?.tone) setTone(profile.tone);
     if (profile?.brand_color) setColor(profile.brand_color);
-  }, [authLoading, user, profile, navigate]);
+  }, [authLoading, user, profile, navigate, previewMode]);
 
   const next = () => setStep((s) => Math.min(5, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -319,7 +342,11 @@ function OnboardingPage() {
             </div>
           )}
 
-          {step === 5 && result && successPack && (
+          {previewMode && previewPack ? (
+            <OnboardingSuccessPack pack={previewPack} />
+          ) : null}
+
+          {!previewMode && step === 5 && result && successPack && (
             <OnboardingSuccessPack pack={successPack} />
           )}
         </div>
