@@ -109,7 +109,7 @@ const objections = [
     answer: "حين تبدأ من مخرج مترابط، تقل العودة إلى نقطة الصفر وتصبح دورة تجهيز المحتوى الأسبوعية أخف وأكثر اتساقاً.",
     next: "راجع طبقة الإثبات التشغيلي بالأسفل لتعرف ما الذي يجب أن تراه فعلياً في أول أسبوع، وكيف تنتقل بعدها إلى الباقة المناسبة.",
     ctaLabel: "تابع إلى الإثبات التشغيلي",
-    href: "/pricing",
+    href: "#operational-proof",
   },
   {
     title: "هل يناسب الفرق والوكالات؟",
@@ -346,9 +346,13 @@ function ProofCenterPage() {
                   <div className="mt-3 rounded-lg border border-primary/15 bg-background/80 px-3 py-3 text-sm leading-6 text-foreground/80">
                     <span className="font-extrabold text-primary">الخطوة المنطقية التالية:</span> {item.next}
                   </div>
-                  <Button asChild variant="outline" className="mt-4 w-full">
-                    <Link to={item.href as never}>{item.ctaLabel}</Link>
-                  </Button>
+                   <Button asChild variant="outline" className="mt-4 w-full">
+                     {item.href.startsWith("#") ? (
+                       <a href={item.href}>{item.ctaLabel}</a>
+                     ) : (
+                       <Link to={item.href as never}>{item.ctaLabel}</Link>
+                     )}
+                   </Button>
                 </article>
               ))}
             </div>
