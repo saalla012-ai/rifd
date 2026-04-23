@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, Tags, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Clapperboard,
+  Copy,
+  ImagePlus,
+  Lightbulb,
+  Megaphone,
+  Sparkles,
+  Tags,
+  Wand2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SuccessPack } from "@/lib/onboarding-success";
-
-const nextSteps = [
-  "انسخ المنشور الرئيسي واستخدمه كأول إعلان أو منشور اليوم.",
-  "حوّل اقتراح الصورة إلى تصميم أو توليد صورة داخل حسابك.",
-  "استخدم فكرة الريلز لتبدأ سلسلة محتوى بدل بوست منفرد.",
-];
 
 const activationWins = [
   "خرجت بنتيجة مبنية على نوع متجرك وجمهورك لا نص عام.",
@@ -35,13 +40,15 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-success/15">
+      <div className="flex items-start gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-success/15">
           <Check className="h-5 w-5 text-success" />
         </div>
         <div>
-          <h2 className="text-xl font-extrabold">هذه ليست نتيجة عابرة — هذه بداية حملتك الأولى</h2>
-          <p className="text-sm text-muted-foreground">حزمة بداية مبنية على القطاع والجمهور والنبرة التي أدخلتها، مع خطوة تالية واضحة داخل حسابك.</p>
+          <h2 className="text-xl font-extrabold">هذه ليست نتيجة عابرة — هذه بداية حملة أولى قابلة للتنفيذ</h2>
+          <p className="text-sm leading-7 text-muted-foreground">
+            حزمة تشغيل أولية مبنية على القطاع والجمهور والنبرة التي أدخلتها، مع تفسير بيعي وخطوة تالية واضحة داخل حسابك.
+          </p>
         </div>
       </div>
 
@@ -53,12 +60,25 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
         ))}
       </div>
 
-      <div className="rounded-xl border border-primary/20 bg-secondary/50 p-4">
-        <div className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
-          <Megaphone className="h-4 w-4" />
-          المنشور الرئيسي
+      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-xl border border-primary/20 bg-secondary/50 p-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+            <Megaphone className="h-4 w-4" />
+            المنشور الرئيسي
+          </div>
+          <pre className="whitespace-pre-wrap text-right font-sans text-sm leading-7">{pack.primaryPost}</pre>
         </div>
-        <pre className="whitespace-pre-wrap text-right font-sans text-sm leading-7">{pack.primaryPost}</pre>
+
+        <div className="rounded-xl border border-gold/30 bg-gold/10 p-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-gold-foreground">
+            <Sparkles className="h-4 w-4" />
+            زاوية الحملة المقترحة
+          </div>
+          <p className="mt-3 text-sm leading-7 text-foreground">{pack.campaignAngle}</p>
+          <div className="mt-4 rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground">
+            <span className="font-extrabold text-foreground">أول مكسب مباشر:</span> {pack.firstWin}
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -69,7 +89,9 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
           </div>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {pack.hooks.map((hook) => (
-              <li key={hook} className="rounded-lg bg-secondary/60 px-3 py-2">{hook}</li>
+              <li key={hook} className="rounded-lg bg-secondary/60 px-3 py-2">
+                {hook}
+              </li>
             ))}
           </ul>
         </div>
@@ -106,23 +128,26 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gold/30 bg-gold/10 p-4">
-        <div className="text-sm font-bold text-gold-foreground">لماذا هذه النتيجة مناسبة لمتجرك؟</div>
-        <p className="mt-2 text-sm leading-7 text-foreground">{pack.whyItFits}</p>
-      </div>
-
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-        <div className="flex items-center gap-2 text-sm font-bold text-primary">
-          <Wand2 className="h-4 w-4" />
-          ماذا تفعل بهذه الحزمة خلال أول 15 دقيقة؟
+      <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="rounded-xl border border-border bg-card p-4 text-sm leading-7 text-muted-foreground">
+          <div className="mb-2 text-sm font-bold text-foreground">لماذا هذه النتيجة مناسبة لمتجرك؟</div>
+          <p>{pack.whyItFits}</p>
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {nextSteps.map((item, index) => (
-            <div key={item} className="rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground">
-              <div className="mb-2 text-xs font-extrabold text-primary">الخطوة {index + 1}</div>
-              {item}
-            </div>
-          ))}
+
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-primary">
+            <Wand2 className="h-4 w-4" />
+            ما الذي يجب فعله الآن لتحويلها إلى حملة؟
+          </div>
+          <p className="mt-3 text-sm leading-7 text-foreground">{pack.nextMove}</p>
+          <div className="mt-4 space-y-2">
+            {pack.quickChecklist.map((item, index) => (
+              <div key={item} className="rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground">
+                <span className="ml-2 text-xs font-extrabold text-primary">{index + 1}.</span>
+                {item}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -140,10 +165,6 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
         <Button asChild variant="outline" className="md:col-span-1">
           <Link to="/dashboard/templates">افتح القوالب التالية</Link>
         </Button>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-4 text-sm leading-7 text-muted-foreground">
-        <span className="font-extrabold text-foreground">الخطوة التالية داخل الخطة:</span> بعد تثبيت هذه البداية، سنعمّق الحزمة لتصبح أكثر قطاعية وربطاً بنتيجة الصورة والريلز داخل مسار التفعيل الكامل.
       </div>
     </div>
   );

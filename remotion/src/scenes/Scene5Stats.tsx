@@ -5,77 +5,57 @@ import { COLORS } from "../theme";
 const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subsets: ["arabic"] });
 
 const STATS = [
-  { num: 30, suffix: "", label: "منشور جاهز", glyph: "30+", color: COLORS.green },
-  { num: 5, suffix: "د", label: "بدل 5 ساعات", glyph: "⏱", color: COLORS.gold },
-  { num: 800, suffix: " ر.س", label: "وفّرها شهرياً", glyph: "ر.س", color: COLORS.greenDeep },
+  { glyph: "حملة", value: "4", label: "مخرجات مترابطة", note: "منشور + هوكات + صورة + Reel", color: COLORS.green },
+  { glyph: "5د", value: "5", label: "دقائق للانطلاق", note: "بدلاً من ساعات كتابة وتنسيق", color: COLORS.gold },
+  { glyph: "جاهز", value: "1", label: "زاوية بيع موحدة", note: "أوضح من نصوص عامة متفرقة", color: COLORS.greenDeep },
 ];
 
 const StatBlock: React.FC<{ index: number; delay: number }> = ({ index, delay }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const stat = STATS[index];
-  const local = frame - delay;
-
-  const cardIn = spring({ frame: local, fps, config: { damping: 12, stiffness: 140 } });
-  const numCount = interpolate(local, [8, 40], [0, stat.num], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const display = Math.round(numCount).toString();
-  const iconBounce = spring({ frame: local - 4, fps, config: { damping: 8, stiffness: 200 } });
+  const reveal = spring({ frame: frame - delay, fps, config: { damping: 12, stiffness: 150 } });
 
   return (
     <div
       style={{
-        opacity: cardIn,
-        transform: `translateX(${interpolate(cardIn, [0, 1], [-80, 0])}px) scale(${interpolate(cardIn, [0, 1], [0.85, 1])})`,
+        opacity: reveal,
+        transform: `translateX(${interpolate(reveal, [0, 1], [-90, 0])}px) scale(${interpolate(reveal, [0, 1], [0.86, 1])})`,
         background: COLORS.white,
         borderRadius: 28,
-        padding: "32px 40px",
+        padding: "32px 38px",
         boxShadow: "0 16px 40px rgba(15,31,24,0.15)",
-        border: `3px solid ${stat.color}30`,
+        border: `3px solid ${stat.color}28`,
         display: "flex",
         alignItems: "center",
-        gap: 32,
+        gap: 28,
       }}
     >
       <div
         style={{
-          width: 110,
-          height: 110,
-          borderRadius: 24,
+          width: 112,
+          height: 112,
+          borderRadius: 28,
           background: `linear-gradient(135deg, ${stat.color}, ${stat.color}cc)`,
           color: COLORS.cream,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: stat.glyph.length > 2 ? 28 : 50,
+          fontSize: 34,
           fontWeight: 900,
           flexShrink: 0,
-          transform: `scale(${iconBounce}) rotate(${interpolate(iconBounce, [0, 1], [-15, 0])}deg)`,
           boxShadow: `0 10px 24px ${stat.color}50`,
         }}
       >
         {stat.glyph}
       </div>
       <div style={{ flex: 1 }}>
-        <div
-          style={{
-            fontSize: 130,
-            fontWeight: 900,
-            color: stat.color,
-            lineHeight: 1,
-            letterSpacing: "-4px",
-            display: "flex",
-            alignItems: "baseline",
-            gap: 8,
-          }}
-        >
-          {display}
-          <span style={{ fontSize: 50, fontWeight: 700 }}>{stat.suffix}</span>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+          <div style={{ fontSize: 116, fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+          <div style={{ fontSize: 34, fontWeight: 800, color: COLORS.ink }}>{stat.label}</div>
         </div>
-        <div style={{ fontSize: 32, fontWeight: 700, color: COLORS.ink, marginTop: 6 }}>
-          {stat.label}
+        <div style={{ fontSize: 26, fontWeight: 500, color: COLORS.ink, opacity: 0.78, marginTop: 10 }}>
+          {stat.note}
         </div>
       </div>
     </div>
@@ -92,25 +72,25 @@ export const Scene5Stats: React.FC = () => {
       style={{
         fontFamily,
         direction: "rtl",
-        padding: "60px 50px",
+        padding: "60px 54px",
         justifyContent: "center",
       }}
     >
       <div
         style={{
-          fontSize: 60,
+          fontSize: 58,
           fontWeight: 900,
           color: COLORS.greenDeep,
           textAlign: "center",
-          marginBottom: 40,
+          marginBottom: 38,
           opacity: titleIn,
-          transform: `translateY(${interpolate(titleIn, [0, 1], [-30, 0])}px)`,
+          transform: `translateY(${interpolate(titleIn, [0, 1], [-28, 0])}px)`,
         }}
       >
-        الفرق بأرقام
+        ما الذي يثبت القيمة فعلاً؟
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         <StatBlock index={0} delay={10} />
         <StatBlock index={1} delay={28} />
         <StatBlock index={2} delay={46} />
