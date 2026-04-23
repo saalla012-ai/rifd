@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { generateImage } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
+import { useAuth } from "@/hooks/use-auth";
+import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 
 type ImgSearch = { template?: string };
 
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/dashboard/generate-image")({
 });
 
 function GenerateImagePage() {
+  const { profile } = useAuth();
   const search = useSearch({ from: "/dashboard/generate-image" });
   const initial = search.template && IMAGE_PROMPTS.some((p) => p.id === search.template)
     ? search.template
@@ -37,6 +40,8 @@ function GenerateImagePage() {
   const router = useRouter();
 
   const template = IMAGE_PROMPTS.find((p) => p.id === templateId) ?? IMAGE_PROMPTS[0];
+  const smartSuggestions = getSmartPromptSuggestions(profile, "image");
+  const memorySignals = getMemorySignals(profile).slice(0, 4);
 
   const go = async () => {
     if (!prompt.trim()) { toast.error("اكتب وصف الصورة أولاً"); return; }
@@ -131,6 +136,23 @@ function GenerateImagePage() {
               className="mt-1 min-h-24"
               maxLength={1500}
             />
+            {smartSuggestions.length > 0 && (
+              <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <p className="text-xs font-bold text-primary">اقتراحات بصرية مبنية على ذاكرة متجرك</p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {smartSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => setPrompt(suggestion)}
+                      className="rounded-full border border-primary/20 bg-background px-2.5 py-1 text-[11px] text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <Button onClick={go} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
@@ -162,6 +184,18 @@ function GenerateImagePage() {
               "الصورة بتظهر هنا"
             )}
           </div>
+          {memorySignals.length > 0 && (
+            <div className="mt-4 rounded-xl border border-border bg-secondary/30 p-4">
+              <p className="text-xs font-bold text-muted-foreground">الإشارات التي يُفترض أن تنعكس بصرياً</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {memorySignals.map((signal) => (
+                  <span key={signal} className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-foreground/85">
+                    {signal}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="mt-3 text-center">
             <Link to="/dashboard/library" className="text-xs text-primary hover:underline">
               شوف كل توليداتك في المكتبة ←
