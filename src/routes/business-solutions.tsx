@@ -68,8 +68,8 @@ export const Route = createFileRoute("/business-solutions")({
         property: "og:description",
         content: "خط أعمال مخصص للوكالات والمتاجر الكبيرة والشركات التي تريد تحولاً تجارياً عملياً بالذكاء الاصطناعي.",
       },
-      { tagName: "link", rel: "canonical", href: "https://rifd.site/business-solutions" },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/business-solutions" }],
   }),
   component: BusinessSolutionsPage,
 });
