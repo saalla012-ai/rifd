@@ -31,16 +31,16 @@ export function HeroProofVideoPlayer() {
 
       <div className="grid gap-3 border-t border-border bg-background/80 px-4 py-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card px-3 py-3">
-          <div className="text-[11px] font-bold text-primary">Input</div>
+          <div className="text-[11px] font-bold text-primary">المدخل</div>
           <div className="mt-1 text-sm font-bold text-foreground">وصف متجر + جمهور + زاوية بيع</div>
         </div>
         <div className="rounded-xl border border-border bg-card px-3 py-3">
-          <div className="text-[11px] font-bold text-primary">Output</div>
-          <div className="mt-1 text-sm font-bold text-foreground">نص + صورة + Reel concept + CTA</div>
+          <div className="text-[11px] font-bold text-primary">المخرج</div>
+          <div className="mt-1 text-sm font-bold text-foreground">نص + صورة + فكرة ريلز + CTA</div>
         </div>
         <div className="rounded-xl border border-border bg-card px-3 py-3">
-          <div className="text-[11px] font-bold text-primary">V8 Status</div>
-          <div className="mt-1 text-sm font-bold text-foreground">إغلاق فعلي لمرحلة Visual Proof</div>
+          <div className="text-[11px] font-bold text-primary">حالة V8</div>
+          <div className="mt-1 text-sm font-bold text-foreground">مرحلة Visual Proof أغلقت فعلياً مع أصل قابل للمشاهدة</div>
         </div>
       </div>
     </div>
