@@ -1,12 +1,13 @@
 # Memory: index.md
-Updated: 3d ago
+Updated: today
 
 # Project Memory
 
 ## Core
 نطاق البريد الصحيح: `notify.rifd.club` (الجذر `rifd.club`). عند أي إعادة إضافة لنطاق البريد، اكتب الجذر `rifd.club` فقط — لا تكتب `notify` يدوياً (Lovable يضيفها تلقائياً، تكرارها يكسر DNS).
-لا تعدّل قسم الـHero/الجزء الحالي من الصفحة الرئيسية مرة أخرى إلا بطلب صريح من المستخدم.
+خطة V8 تُنفذ بترتيب إلزامي: Foundation → Conversion → Activation → Visual Proof → Proof → Sector → Retention → Revenue.
+لا تُغلق أي مرحلة في V8 قبل اجتياز بوابات: الاتساق، الوضوح، الإقناع، والقابلية للتوسع.
 
 ## Memories
 - [Email domain naming](mem://constraints/email-domain-name) — قاعدة كتابة اسم النطاق عند الإعداد + سجلات NS الصحيحة
-- [Home hero freeze](mem://constraints/home-hero-freeze) — تجميد هذا الجزء من الصفحة الرئيسية وعدم تعديله دون طلب صريح
+- [V8 execution roadmap](mem://features/v8-execution-roadmap) — ترتيب مراحل V8 ومعايير QA وبوابات الاعتماد الإلزامية
