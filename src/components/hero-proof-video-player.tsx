@@ -16,7 +16,10 @@ export function HeroProofVideoPlayer() {
         <video
           className="h-full w-full object-cover"
           src="/rifd-promo.mp4"
+          autoPlay
           controls
+          loop
+          muted
           playsInline
           preload="metadata"
           poster="/og-image.jpg"
