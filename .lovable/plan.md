@@ -376,7 +376,7 @@
 
 ## `PRF-50` — Proof Center Deepening
 ### الحالة الحالية
-`PARTIAL`
+`DONE`
 
 ### الهدف
 تحويل مركز الإثبات من صفحة جيدة إلى نظام قرار شراء.
@@ -408,13 +408,13 @@
 - proof coverage across key sectors
 
 ### الترميز الحالي
-`[PHASE:PRF-50][STATE:PARTIAL][GATE:OPEN][NEXT:DEEPEN_PROOF_LAYERS]`
+`[PHASE:PRF-50][STATE:DONE][GATE:PASS][NEXT:SEC-60]`
 
 ---
 
 ## `SEC-60` — Sector Expansion Wave 2
 ### الحالة الحالية
-`TODO`
+`DONE`
 
 ### الهدف
 استكمال التوسع القطاعي بعد إغلاق الأساس والتحويل والإثبات.
@@ -447,7 +447,7 @@
 - internal links from proof/pricing/home when relevant
 
 ### الترميز الحالي
-`[PHASE:SEC-60][STATE:TODO][GATE:OPEN][NEXT:WAIT_FOR_PRF_50]`
+`[PHASE:SEC-60][STATE:DONE][GATE:PASS][NEXT:RET-70]`
 
 ---
 
