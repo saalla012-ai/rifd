@@ -15,10 +15,10 @@ import { Scene6CTA } from "./scenes/Scene6CTA";
  *  1 Shock        75   (2.5s)
  *  2 Pain         60   (2.0s)
  *  3 LogoStamp    45   (1.5s)
- *  4 Magic       180   (6.0s)
+ *  4 Magic       200   (6.7s)
  *  5 Stats       120   (4.0s)
- *  6 CTA         180   (6.0s)
- * Sum = 660. Transitions overlap (5 × 8 = 40), final composition adds back via durations.
+ *  6 CTA         200   (6.7s)
+ * Sum = 700. Transitions overlap (5 × 8 = 40), final composition = 660 displayed frames.
  * To stay at 660 total, each transition reduces by its duration. Sum 660 - 40 = 620.
  * We pad CTA by +40 to keep brand on screen at end. Total displayed = 660 frames.
  */
@@ -48,7 +48,7 @@ export const MainVideo: React.FC = () => {
           presentation={wipe({ direction: "from-right" })}
           timing={springTiming({ config: { damping: 200 }, durationInFrames: 8 })}
         />
-        <TransitionSeries.Sequence durationInFrames={180}>
+         <TransitionSeries.Sequence durationInFrames={200}>
           <Scene4Magic />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
@@ -62,7 +62,7 @@ export const MainVideo: React.FC = () => {
           presentation={fade()}
           timing={linearTiming({ durationInFrames: 8 })}
         />
-        <TransitionSeries.Sequence durationInFrames={220}>
+         <TransitionSeries.Sequence durationInFrames={200}>
           <Scene6CTA />
         </TransitionSeries.Sequence>
       </TransitionSeries>

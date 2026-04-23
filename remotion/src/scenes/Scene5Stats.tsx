@@ -5,9 +5,9 @@ import { COLORS } from "../theme";
 const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subsets: ["arabic"] });
 
 const STATS = [
-  { glyph: "حملة", value: "4", label: "مخرجات مترابطة", note: "منشور + هوكات + صورة + Reel", color: COLORS.green },
-  { glyph: "5د", value: "5", label: "دقائق للبداية", note: "لتجهيز أول محاولة نشر لا حملة مكتملة", color: COLORS.gold },
-  { glyph: "جاهز", value: "1", label: "زاوية بيع موحدة", note: "أوضح من نصوص عامة متفرقة", color: COLORS.greenDeep },
+  { glyph: "صورة", value: "1", label: "معاينة بصرية فورية", note: "تظهر من نفس الوصف بدل انتظار مصمم أو إعادة شرح", color: COLORS.gold },
+  { glyph: "حملة", value: "4", label: "مخرجات مترابطة", note: "نسخة + هوكات + صورة + Reel ضمن نفس المنطق", color: COLORS.green },
+  { glyph: "جاهز", value: "1", label: "بداية إعلان واضحة", note: "أقرب للنشر من نصوص عامة متفرقة", color: COLORS.greenDeep },
 ];
 
 const StatBlock: React.FC<{ index: number; delay: number }> = ({ index, delay }) => {
@@ -87,7 +87,7 @@ export const Scene5Stats: React.FC = () => {
           transform: `translateY(${interpolate(titleIn, [0, 1], [-28, 0])}px)`,
         }}
       >
-          ما القيمة التي تظهر فوراً؟
+          ما الذي يظهر فوراً بعد كتابة الوصف؟
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
