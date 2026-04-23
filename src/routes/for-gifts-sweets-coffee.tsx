@@ -6,7 +6,12 @@ export const Route = createFileRoute("/for-gifts-sweets-coffee")({
     meta: [
       { title: "رِفد لقطاع الهدايا والتمور والشوكولاتة والقهوة" },
       { name: "description", content: "محتوى موسمي وعاطفي وحملات بيع جاهزة لمتاجر الهدايا والتمور والشوكولاتة والقهوة في السوق السعودي." },
+      { property: "og:title", content: "رِفد لقطاع الهدايا والتمور والشوكولاتة والقهوة" },
+      { property: "og:description", content: "صفحة بيع قطاعية للهدايا والتمور والشوكولاتة والقهوة مع أمثلة ومواسم وCTA واضح." },
+      { name: "twitter:title", content: "رِفد لقطاع الهدايا والتمور والشوكولاتة والقهوة" },
+      { name: "twitter:description", content: "محتوى وحملات موسمية متخصصة لقطاع الهدايا والقهوة والحلويات." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/for-gifts-sweets-coffee" }],
   }),
   component: GiftsSectorPage,
 });

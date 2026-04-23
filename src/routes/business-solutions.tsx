@@ -68,6 +68,8 @@ export const Route = createFileRoute("/business-solutions")({
         property: "og:description",
         content: "خط أعمال مخصص للوكالات والمتاجر الكبيرة والشركات التي تريد تحولاً تجارياً عملياً بالذكاء الاصطناعي.",
       },
+      { name: "twitter:title", content: "رِفد للأعمال" },
+      { name: "twitter:description", content: "تشخيص احتياج، intake مؤسسي، ومسار تحول تجاري منضبط بالذكاء الاصطناعي." },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/business-solutions" }],
   }),
@@ -102,7 +104,7 @@ function BusinessSolutionsPage() {
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild className="gradient-gold text-gold-foreground shadow-gold">
-              <a href="https://wa.me/966582286215?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85+%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C+%D8%A3%D8%B1%D9%8A%D8%AF+%D8%AA%D8%B4%D8%AE%D9%8A%D8%B5+%D8%A7%D8%AD%D8%AA%D9%8A%D8%A7%D8%AC+%D8%B1%D9%90%D9%81%D8%AF+%D9%84%D9%84%D8%A3%D8%B9%D9%85%D8%A7%D9%84" target="_blank" rel="noreferrer noopener">
+              <a href="#business-intake">
                 اطلب تشخيص احتياجك
                 <ArrowLeft className="h-4 w-4" />
               </a>
@@ -181,7 +183,7 @@ function BusinessSolutionsPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg" variant="secondary">
-                <a href="https://wa.me/966582286215?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85+%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C+%D8%A3%D8%B1%D9%8A%D8%AF+%D8%AA%D9%82%D9%8A%D9%8A%D9%85+%D9%85%D8%B3%D8%A7%D8%B1+%D8%B1%D9%90%D9%81%D8%AF+%D9%84%D9%84%D8%A3%D8%B9%D9%85%D8%A7%D9%84+%D9%84%D9%85%D8%AA%D8%AC%D8%B1%D9%8A" target="_blank" rel="noreferrer noopener">
+                <a href="#business-intake">
                   ابدأ التقييم الآن
                 </a>
               </Button>
@@ -190,6 +192,60 @@ function BusinessSolutionsPage() {
               </Button>
             </div>
           </div>
+
+          <section id="business-intake" className="mt-10 rounded-2xl border border-border bg-card p-6 shadow-elegant sm:p-8">
+            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+                  <BriefcaseBusiness className="h-3.5 w-3.5" />
+                  intake مؤسسي منظم
+                </div>
+                <h2 className="mt-4 text-2xl font-extrabold sm:text-3xl">هل يناسبك رِفد للأعمال أم تكفيك باقة داخل المنتج؟</h2>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
+                  املأ هذه النبذة المختصرة ثم أرسلها مباشرة. النموذج مصمم ليغطي حجم الفريق، حالة المتجر، القنوات، والأولوية التنفيذية حتى لا يبدأ التقييم من محادثة عامة.
+                </p>
+
+                <div className="mt-5 space-y-3 text-sm text-muted-foreground">
+                  <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3">1) حجم النشاط: متجر واحد / عدة متاجر / وكالة / فريق داخلي</div>
+                  <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3">2) القنوات الحالية: متجر — إعلانات — واتساب — محتوى — CRM</div>
+                  <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3">3) عنق الزجاجة: المحتوى / التحويل / الأنظمة / التشغيل</div>
+                  <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3">4) المخرج المطلوب: تشخيص / تنفيذ / بناء نظام / تشغيل حملات</div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gold/25 bg-secondary/20 p-5">
+                <h3 className="text-lg font-extrabold">رسالة التأهيل الجاهزة</h3>
+                <div className="mt-4 rounded-xl border border-border bg-background p-4 text-sm leading-8 text-foreground">
+                  السلام عليكم، أريد تقييم مسار رِفد للأعمال.
+                  <br />
+                  نوع النشاط: متجر / وكالة / فريق داخلي
+                  <br />
+                  عدد المتاجر أو الملفات: …
+                  <br />
+                  حجم الفريق الحالي: …
+                  <br />
+                  القنوات التي نديرها الآن: …
+                  <br />
+                  أكبر عنق زجاجة حالياً: المحتوى / التحويل / الأنظمة / التشغيل
+                  <br />
+                  الهدف خلال 90 يوماً: …
+                  <br />
+                  هل نحتاج تشخيصاً فقط أم تنفيذاً كاملاً؟ …
+                </div>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <Button asChild className="gradient-gold text-gold-foreground shadow-gold sm:w-auto">
+                    <a href="https://wa.me/966582286215?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85+%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C+%D8%A3%D8%B1%D9%8A%D8%AF+%D8%AA%D9%82%D9%8A%D9%8A%D9%85+%D9%85%D8%B3%D8%A7%D8%B1+%D8%B1%D9%90%D9%81%D8%AF+%D9%84%D9%84%D8%A3%D8%B9%D9%85%D8%A7%D9%84.%0A%D9%86%D9%88%D8%B9+%D8%A7%D9%84%D9%86%D8%B4%D8%A7%D8%B7%3A+%D9%85%D8%AA%D8%AC%D8%B1+%2F+%D9%88%D9%83%D8%A7%D9%84%D8%A9+%2F+%D9%81%D8%B1%D9%8A%D9%82+%D8%AF%D8%A7%D8%AE%D9%84%D9%8A.%0A%D8%B9%D8%AF%D8%AF+%D8%A7%D9%84%D9%85%D8%AA%D8%A7%D8%AC%D8%B1+%D8%A3%D9%88+%D8%A7%D9%84%D9%85%D9%84%D9%81%D8%A7%D8%AA%3A+...%0A%D8%AD%D8%AC%D9%85+%D8%A7%D9%84%D9%81%D8%B1%D9%8A%D9%82+%D8%A7%D9%84%D8%AD%D8%A7%D9%84%D9%8A%3A+...%0A%D8%A7%D9%84%D9%82%D9%86%D9%88%D8%A7%D8%AA+%D8%A7%D9%84%D8%AD%D8%A7%D9%84%D9%8A%D8%A9%3A+...%0A%D8%A3%D9%83%D8%A8%D8%B1+%D8%B9%D9%86%D9%82+%D8%B2%D8%AC%D8%A7%D8%AC%D8%A9%3A+...%0A%D8%A7%D9%84%D9%87%D8%AF%D9%81+%D8%AE%D9%84%D8%A7%D9%84+90+%D9%8A%D9%88%D9%85%D8%A7%D9%8B%3A+...%0A%D9%86%D8%AD%D8%AA%D8%A7%D8%AC%3A+%D8%AA%D8%B4%D8%AE%D9%8A%D8%B5+%2F+%D8%AA%D9%86%D9%81%D9%8A%D8%B0+%D9%83%D8%A7%D9%85%D9%84" target="_blank" rel="noreferrer noopener">
+                      أرسل intake عبر واتساب
+                      <ArrowLeft className="h-4 w-4" />
+                    </a>
+                  </Button>
+                  <Button asChild variant="outline" className="sm:w-auto">
+                    <Link to="/contact">أرسل نفس التفاصيل عبر البريد</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </MarketingLayout>

@@ -10,7 +10,12 @@ export const Route = createFileRoute("/for-electronics-accessories")({
         content:
           "محتوى وصور وحملات مخصصة لمتاجر الإلكترونيات والإكسسوارات يترجم المواصفات إلى فائدة شراء واضحة داخل السوق السعودي.",
       },
+      { property: "og:title", content: "رِفد لقطاع الإلكترونيات والإكسسوارات" },
+      { property: "og:description", content: "صفحة بيع متخصصة للإلكترونيات والإكسسوارات مع زوايا استخدام، إثبات، وCTA مباشر." },
+      { name: "twitter:title", content: "رِفد لقطاع الإلكترونيات والإكسسوارات" },
+      { name: "twitter:description", content: "حوّل المواصفات إلى قرار شراء أوضح بصفحة قطاعية متخصصة." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/for-electronics-accessories" }],
   }),
   component: ElectronicsSectorPage,
 });
