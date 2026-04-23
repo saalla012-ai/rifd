@@ -124,9 +124,9 @@ const PLANS: Plan[] = [
     name: "أعمال",
     tier: "premium",
     price: { monthly: 199, yearly: 1990 },
-    tagline: "المسار الأنسب للوكالات والمتاجر الكبرى ورِفد للأعمال",
-    badge: { text: "👑 الأنسب للوكالات", icon: Crown },
-    valueLine: "≈ 39.8 ر.س لكل متجر (5 ملفات) • يعادل موظف بـ4,000 ر.س",
+    tagline: "باقة داخل المنتج للفرق الصغيرة والوكالات الخفيفة متعددة الملفات",
+    badge: { text: "👑 للفرق الصغيرة والوكالات", icon: Crown },
+    valueLine: "≈ 39.8 ر.س لكل ملف من أصل 5 • تشغيل أعلى بدون الدخول لمسار مؤسسي كامل",
     bonusGroups: [
       {
         title: "كل مزايا احترافي +",
@@ -138,11 +138,11 @@ const PLANS: Plan[] = [
         ],
       },
       {
-        title: "أدوات احترافية متقدمة",
+        title: "تشغيل أوسع داخل المنتج",
         icon: Briefcase,
         items: [
-          "API للوصول البرمجي (قريباً)",
-          "تكامل مع Meta و Google Ads (قريباً)",
+          "ملفات متاجر منفصلة لفصل السياقات والعملاء",
+          "مسار أنسب للفرق الصغيرة قبل الاحتياج إلى خدمة مؤسسية",
         ],
       },
       {
@@ -155,7 +155,7 @@ const PLANS: Plan[] = [
         ],
       },
     ],
-    cta: "احجز مكانك في الأعمال 👑",
+      cta: "اشترك في باقة أعمال",
   },
 ];
 
@@ -416,6 +416,28 @@ function PricingPage() {
             })}
           </div>
 
+          <div className="mt-12 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-card to-primary/5 p-5">
+            <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+              <div>
+                <h2 className="text-lg font-extrabold">توضيح مهم: باقة "أعمال" ليست هي "رِفد للأعمال"</h2>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                  <span className="font-bold text-foreground">باقة أعمال</span> هي اشتراك داخل المنتج مناسب لمن يدير عدة ملفات أو فريقاً صغيراً ويحتاج سعة أعلى.
+                  أما <span className="font-bold text-gold">رِفد للأعمال</span> فهو مسار مؤسسي منفصل للتشخيص والتنفيذ والتحول التشغيلي الأوسع.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="rounded-xl border border-border bg-background/80 p-4 text-sm text-muted-foreground">
+                  <span className="block font-extrabold text-foreground">اختر باقة أعمال إذا:</span>
+                  تدير حتى عدة ملفات وتريد تشغيل المحتوى من داخل رِفد نفسه.
+                </div>
+                <div className="rounded-xl border border-gold/25 bg-gold/10 p-4 text-sm text-foreground/85">
+                  <span className="block font-extrabold text-gold">اذهب إلى رِفد للأعمال إذا:</span>
+                  كنت تحتاج تشخيصاً، تأهيلاً، تنفيذاً، أو مساراً مؤسسياً يتجاوز الاشتراك الشهري.
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Pro → Business comparison bar */}
           <div className="mt-12 rounded-2xl border border-gold/30 bg-gradient-to-l from-gold/10 via-primary/5 to-transparent p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -428,9 +450,7 @@ function PricingPage() {
                     الترقية من <span className="text-primary">احترافي</span> إلى{" "}
                     <span className="text-gold">أعمال</span>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    +150 صورة • +4 ملفات متاجر • +مدير حساب مخصص • API و تكامل إعلانات (قريباً)
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">+150 صورة • +4 ملفات متاجر • أولوية أعلى • مدير حساب مخصص</p>
                 </div>
               </div>
               <div className="text-left sm:text-right">
@@ -477,15 +497,15 @@ function PricingPage() {
               <ul className="mt-4 space-y-2.5 text-sm">
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <span>تدير +5 متاجر أو وكالة محتوى — كل ملف منفصل</span>
+                  <span>تدير عدة ملفات أو وكالة خفيفة وتريد فصل كل متجر أو عميل داخل المنتج</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <span>تحتاج مدير حساب وأولوية في طابور التوليد</span>
+                  <span>تحتاج سعة أعلى وأولوية في طابور التوليد دون الدخول لمسار خدمات مؤسسي</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                  <span>مدير حساب VIP + جلسة استشارية مجانية + دعم مخصص ذو أولوية</span>
+                  <span>إذا احتجت تشخيصاً وتنفيذاً أوسع فانتقل بعدها إلى صفحة رِفد للأعمال المؤسسية</span>
                 </li>
               </ul>
             </div>
