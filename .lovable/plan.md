@@ -60,8 +60,8 @@
 | `CVR-20` | Conversion Closure | `PARTIAL` | الرئيسية متقدمة لكن لم تُغلق بالكامل عبر كل breakpoints |
 | `ACT-30` | Activation Wow Closure | `PARTIAL` | يوجد Success Pack فعلي لكن التجربة لم تصل لسقف wow الكامل |
 | `VPS-40` | Visual Proof Asset | `PARTIAL` | يوجد proof narrative حي لكن ليس proof video system كاملاً |
-| `PRF-50` | Proof Center Deepening | `PARTIAL` | Proof Center موجود ويعمل لكنه يحتاج تعميق قرار الشراء |
-| `SEC-60` | Sector Expansion Wave 2 | `TODO` | الدفعة الأولى موجودة، الدفعة الثانية لم تبدأ |
+| `PRF-50` | Proof Center Deepening | `DONE` | Proof Center أصبح نظام قرار شراء أوضح مع اعتراضات ومسارات قرار وربط داخلي أنضج |
+| `SEC-60` | Sector Expansion Wave 2 | `DONE` | تم تنفيذ موجة الصفحات القطاعية الثانية لثلاثة قطاعات وربطها من مركز الإثبات |
 | `RET-70` | Retention Engine الحقيقي | `PARTIAL` | Memory 2.0 موجودة لكن الحلقة التراكمية لم تُغلق |
 | `REV-80` | Revenue Expansion Closure | `PARTIAL` | business route موجود لكن revenue system المؤسسي غير مغلق |
 
@@ -75,7 +75,7 @@
 - `BusinessSolutionsTeaser` موجود في الرئيسية.
 - `Success Pack` موجود في onboarding.
 - `/proof-center` موجود كمسار حي.
-- أول 3 صفحات قطاعية موجودة.
+- أول 6 صفحات قطاعية موجودة.
 - `/dashboard/store-profile` تمت ترقيته إلى Memory 2.0 بشكل واضح.
 - `/business-solutions` موجود كمسار حي.
 - مكتبة القوالب تعرض **50 قالباً فعلياً** وتسوّق كـ `50+`.
@@ -90,7 +90,6 @@
 - business lead system المؤسسي.
 
 ### C) غير منفذ بعد
-- Wave 2 من الصفحات القطاعية.
 - proof video حي متكامل كأصل إقناعي قابل لإعادة الاستخدام.
 - seasonal / weekly recommendation engine فعلي.
 - intake flow مؤسسي structured.
