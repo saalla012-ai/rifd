@@ -11,7 +11,12 @@ export const Route = createFileRoute("/contact")({
         content:
           "تواصل مع فريق رِفد للأعمال عبر البريد أو واتساب. نرد على جميع الاستفسارات خلال ساعات العمل (9 ص – 12 ص بتوقيت الرياض).",
       },
+      { property: "og:title", content: "تواصل معنا — رِفد للأعمال" },
+      { property: "og:description", content: "اختر القناة الأنسب لك: واتساب أو بريد، ونرد عليك خلال ساعات العمل." },
+      { name: "twitter:title", content: "تواصل معنا — رِفد للأعمال" },
+      { name: "twitter:description", content: "اختر القناة الأنسب لك: واتساب أو بريد، ونرد عليك خلال ساعات العمل." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/contact" }],
   }),
   component: ContactPage,
 });

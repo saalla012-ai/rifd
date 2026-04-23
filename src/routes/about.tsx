@@ -14,7 +14,10 @@ export const Route = createFileRoute("/about")({
       },
       { property: "og:title", content: "من نحن — رِفد للتقنية" },
       { property: "og:description", content: "قصة رِفد ورؤيتنا لتمكين كل متجر سعودي بأدوات AI محلية." },
+      { name: "twitter:title", content: "من نحن — رِفد للتقنية" },
+      { name: "twitter:description", content: "قصة رِفد ورؤيتنا لتمكين كل متجر سعودي بأدوات AI محلية." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/about" }],
   }),
   component: AboutPage,
 });

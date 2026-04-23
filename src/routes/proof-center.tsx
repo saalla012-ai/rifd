@@ -266,6 +266,8 @@ export const Route = createFileRoute("/proof-center")({
         property: "og:description",
         content: "شاهد الفرق بين الطلب العام وحزمة تشغيل مترابطة، ثم اختر المسار الأنسب لمتجرك أو فريقك.",
       },
+      { name: "twitter:title", content: "Proof Center — مركز إثبات رِفد" },
+      { name: "twitter:description", content: "قبل/بعد، أمثلة قطاعية، اعتراضات شراء، ومسارات قرار واضحة." },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/proof-center" }],
   }),

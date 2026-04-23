@@ -21,7 +21,10 @@ export const Route = createFileRoute("/library")({
         property: "og:description",
         content: "قوالب نصية وصور بالعامية السعودية. اختر، خصّص، ولّد بسرعة.",
       },
+      { name: "twitter:title", content: "مكتبة قوالب AI سعودية | رِفد" },
+      { name: "twitter:description", content: "50+ قالب جاهز للنصوص والصور والحملات بالعامية السعودية." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/library" }],
   }),
   component: LibraryPage,
 });

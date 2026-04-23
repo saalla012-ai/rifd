@@ -34,7 +34,12 @@ export const Route = createFileRoute("/onboarding")({
     meta: [
       { title: "ابدأ مع رِفد — 4 خطوات لأول محتوى مخصص لمتجرك" },
       { name: "description", content: "أنشئ ملف متجرك في 3 دقائق واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
+      { property: "og:title", content: "ابدأ مع رِفد — 4 خطوات لأول حملة مخصصة لمتجرك" },
+      { property: "og:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
+      { name: "twitter:title", content: "ابدأ مع رِفد — 4 خطوات لأول حملة مخصصة لمتجرك" },
+      { name: "twitter:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
     ],
+    links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
   }),
   component: OnboardingPage,
 });
