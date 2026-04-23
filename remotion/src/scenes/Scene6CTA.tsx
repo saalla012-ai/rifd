@@ -44,7 +44,7 @@ export const Scene6CTA: React.FC = () => {
             fontWeight: 900,
             color: COLORS.greenDeep,
             margin: "18px 0 20px",
-            letterSpacing: "-8px",
+            letterSpacing: 0,
             lineHeight: 1.3,
             paddingTop: 26,
             opacity: brandIn,
@@ -65,7 +65,7 @@ export const Scene6CTA: React.FC = () => {
             lineHeight: 1.5,
           }}
         >
-          منشور + صورة + Reel + CTA من نفس المنطق خلال دقائق
+          منشور + صورة + Reel + CTA من نفس المنطق لتبدأ أسرع
         </div>
 
         <div
@@ -82,7 +82,7 @@ export const Scene6CTA: React.FC = () => {
             transform: `scale(${pulse * interpolate(urlIn, [0, 1], [0.74, 1])})`,
             boxShadow: `0 24px 60px ${COLORS.gold}70, 0 0 80px ${COLORS.goldGlow}50`,
             direction: "ltr",
-            letterSpacing: "-2px",
+            letterSpacing: 0,
           }}
         >
           rifd.site
@@ -99,7 +99,7 @@ export const Scene6CTA: React.FC = () => {
           }}
         >
           {[
-            "✓ 5 توليدات مجانية",
+            "✓ 5 توليدات أولية مجانية",
             "✓ بدون بطاقة ائتمان",
             "✓ جاهز لمتجرك السعودي",
           ].map((chip) => (
