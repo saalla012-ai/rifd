@@ -70,18 +70,58 @@ const objections = [
   {
     title: "هل الناتج مجرد نص عام؟",
     answer: "لا. المعروض هنا يثبت أن المخرجات تُبنى كحزمة: منشور، هوكات، CTA، صورة، وفكرة Reel ضمن منطق بيع واحد.",
+    next: "ابدأ بـ قبل/بعد ثم قارن ذلك بما ستحصل عليه في التجربة المجانية.",
   },
   {
     title: "هل يصلح فعلاً للسوق السعودي؟",
     answer: "نعم، لأن الأمثلة مبنية على عامية محلية وسياقات شراء فعلية لقطاعات سعودية محددة، لا ترجمة حرفية لنسخ أجنبية.",
+    next: "انتقل إلى الصفحة القطاعية الأقرب لمتجرك لترى الصياغة المناسبة فعلاً لنفس السوق.",
   },
   {
     title: "هل يوفّر وقتاً حقيقياً؟",
     answer: "نعم، لأنه يختصر جلسة التفكير والكتابة والتوجيه البصري في مخرج أولي متماسك أسرع بكثير من البدء من الصفر.",
+    next: "انظر إلى النتائج التشغيلية بالأسفل لتفهم أين يُختصر الوقت فعلياً داخل أسبوع المحتوى.",
   },
   {
     title: "هل يناسب الفرق والوكالات؟",
     answer: "نعم، وهذا هو الجسر الطبيعي نحو رِفد للأعمال حيث تتوسع الحزم إلى تشغيل مؤسسي ومسارات أكثر عمقاً.",
+    next: "إذا كنت تعمل لفريق أو عدة متاجر، انتقل بعدها إلى رِفد للأعمال بدلاً من التجربة الفردية فقط.",
+  },
+];
+
+const operationalOutcomes = [
+  {
+    title: "قبل جلسة الكتابة",
+    description: "بدل البدء من صفحة فارغة، تبدأ من زاوية بيع واضحة مبنية على القطاع والجمهور والنبرة.",
+  },
+  {
+    title: "أثناء تجهيز الحملة",
+    description: "تتحرك من المنشور إلى الصورة والـ Reel والـ CTA بنفس المنطق، لا كمهام منفصلة متضاربة.",
+  },
+  {
+    title: "بعد أول نشر",
+    description: "يصبح التكرار أسهل لأنك تطور زاوية ثبتت، لا لأنك تعيد اختراع المحتوى كل مرة من الصفر.",
+  },
+];
+
+const decisionPaths = [
+  {
+    title: "عندي متجر وأريد إثباتاً سريعاً",
+    description: "ابدأ بالتجربة المجانية ثم ارجع إلى هذه الصفحة إذا أردت مقارنة النتيجة بما رأيته هنا.",
+    href: "/onboarding",
+    label: "ابدأ التجربة المجانية",
+  },
+  {
+    title: "أريد مثالاً أقرب لقطاعي",
+    description: "اختر الصفحة القطاعية الأقرب لتعرف كيف تتغير الرسالة والاعتراضات من سوق إلى آخر.",
+    href: "/for-perfumes-beauty",
+    label: "شاهد مثالاً قطاعياً",
+  },
+  {
+    title: "أقارن قبل قرار الاشتراك",
+    description: "راجع الباقات بعد فهم الإثبات حتى يكون قرارك مبنياً على قيمة واضحة لا على السعر وحده.",
+    href: "/pricing",
+    label: "قارن الباقات",
   },
 ];
 
@@ -154,6 +194,13 @@ function ProofCenterPage() {
               </article>
             ))}
           </div>
+
+          <div className="mt-6 rounded-2xl border border-primary/15 bg-primary/5 p-6 shadow-soft">
+            <h2 className="text-xl font-extrabold">ماذا يثبت هذا القسم فعلياً؟</h2>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground">
+              يثبت أن الفرق ليس في تحسين الكلمات فقط، بل في نقل المتجر من طلب مبعثر إلى نقطة انطلاق قابلة للنشر: رسالة أوضح، زاوية بيع واحدة، واقتراحات بصرية مرتبطة بنفس الهدف.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -209,6 +256,33 @@ function ProofCenterPage() {
                 <article key={item.title} className="rounded-xl border border-border bg-secondary/30 p-4">
                   <h3 className="text-base font-extrabold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.answer}</p>
+                  <div className="mt-3 rounded-lg border border-primary/15 bg-background/80 px-3 py-3 text-sm leading-6 text-foreground/80">
+                    <span className="font-extrabold text-primary">الخطوة المنطقية التالية:</span> {item.next}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            {operationalOutcomes.map((item) => (
+              <article key={item.title} className="rounded-xl border border-border bg-card p-5 shadow-soft">
+                <h2 className="text-base font-extrabold">{item.title}</h2>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.description}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-primary/20 bg-secondary/30 p-6 shadow-elegant">
+            <h2 className="text-2xl font-extrabold">إذا اقتنعت، ما هو المسار الصحيح بعد هذه الصفحة؟</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {decisionPaths.map((item) => (
+                <article key={item.title} className="rounded-xl border border-border bg-card p-5">
+                  <h3 className="text-base font-extrabold">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
+                  <Button asChild variant="outline" className="mt-4 w-full">
+                    <Link to={item.href as never}>{item.label}</Link>
+                  </Button>
                 </article>
               ))}
             </div>
