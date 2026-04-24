@@ -43,6 +43,7 @@ import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templ
 import { Route as DashboardStoreProfileRouteImport } from './routes/dashboard.store-profile'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library'
+import { Route as DashboardGenerateVideoRouteImport } from './routes/dashboard.generate-video'
 import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
 import { Route as DashboardEditImageRouteImport } from './routes/dashboard.edit-image'
@@ -248,6 +249,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
 const DashboardLibraryRoute = DashboardLibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardGenerateVideoRoute = DashboardGenerateVideoRouteImport.update({
+  id: '/generate-video',
+  path: '/generate-video',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardGenerateTextRoute = DashboardGenerateTextRouteImport.update({
@@ -466,6 +472,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
+  '/dashboard/generate-video': typeof DashboardGenerateVideoRoute
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
@@ -534,6 +541,7 @@ export interface FileRoutesByTo {
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
+  '/dashboard/generate-video': typeof DashboardGenerateVideoRoute
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
@@ -604,6 +612,7 @@ export interface FileRoutesById {
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
+  '/dashboard/generate-video': typeof DashboardGenerateVideoRoute
   '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
@@ -675,6 +684,7 @@ export interface FileRouteTypes {
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
+    | '/dashboard/generate-video'
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
@@ -743,6 +753,7 @@ export interface FileRouteTypes {
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
+    | '/dashboard/generate-video'
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
@@ -812,6 +823,7 @@ export interface FileRouteTypes {
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
     | '/dashboard/generate-text'
+    | '/dashboard/generate-video'
     | '/dashboard/library'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
@@ -1138,6 +1150,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLibraryRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/generate-video': {
+      id: '/dashboard/generate-video'
+      path: '/generate-video'
+      fullPath: '/dashboard/generate-video'
+      preLoaderRoute: typeof DashboardGenerateVideoRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/generate-text': {
       id: '/dashboard/generate-text'
       path: '/generate-text'
@@ -1377,6 +1396,7 @@ interface DashboardRouteChildren {
   DashboardEditImageRoute: typeof DashboardEditImageRoute
   DashboardGenerateImageRoute: typeof DashboardGenerateImageRoute
   DashboardGenerateTextRoute: typeof DashboardGenerateTextRoute
+  DashboardGenerateVideoRoute: typeof DashboardGenerateVideoRoute
   DashboardLibraryRoute: typeof DashboardLibraryRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStoreProfileRoute: typeof DashboardStoreProfileRoute
@@ -1392,6 +1412,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardEditImageRoute: DashboardEditImageRoute,
   DashboardGenerateImageRoute: DashboardGenerateImageRoute,
   DashboardGenerateTextRoute: DashboardGenerateTextRoute,
+  DashboardGenerateVideoRoute: DashboardGenerateVideoRoute,
   DashboardLibraryRoute: DashboardLibraryRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStoreProfileRoute: DashboardStoreProfileRoute,
@@ -1467,3 +1488,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
