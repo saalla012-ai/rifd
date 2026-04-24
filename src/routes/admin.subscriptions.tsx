@@ -184,7 +184,15 @@ function AdminSubscriptionsPage() {
       if (profileErr) {
         toast.error("تم تحديث الطلب لكن فشل ترقية الباقة في الملف");
       } else {
-        toast.success(`تم تفعيل باقة ${PLAN_LABELS[req.plan]} للمستخدم ✨`);
+        const { error: creditsErr } = await supabase.rpc("reset_monthly_credits", {
+          _user_id: req.user_id,
+          _plan: req.plan,
+        });
+        if (creditsErr) {
+          toast.error("تم تفعيل الباقة لكن فشل منح نقاط الفيديو الشهرية");
+        } else {
+          toast.success(`تم تفعيل باقة ${PLAN_LABELS[req.plan]} ومنح نقاط الفيديو للمستخدم ✨`);
+        }
       }
 
       // إرسال بريد إشعار التفعيل للعميل (لا يكسر التدفق إن فشل)
