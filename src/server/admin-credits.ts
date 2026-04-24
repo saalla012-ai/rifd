@@ -267,7 +267,7 @@ export const rejectTopup = createServerFn({ method: "POST" })
 const LedgerInput = z.object({
   userId: z.string().uuid().optional(),
   txnType: z
-    .enum(["plan_grant", "topup_purchase", "consume_image", "consume_video", "refund", "admin_adjust", "expire", "all"])
+    .enum(["plan_grant", "topup_purchase", "consume_video", "refund", "admin_adjust", "expire", "all"])
     .optional()
     .default("all"),
   limit: z.number().int().min(1).max(500).optional().default(200),

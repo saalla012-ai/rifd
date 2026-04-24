@@ -1,5 +1,5 @@
 /**
- * Phase 4 — دفتر النقاط (Credit Ledger Audit) للأدمن
+ * Phase 4 — دفتر نقاط الفيديو (Credit Ledger Audit) للأدمن
  *
  * يعرض كل حركات النقاط مع فلترة بنوع المعاملة + المستخدم،
  * ويسمح بإجراء ضبط يدوي (منح/سحب) مع توثيق السبب.
@@ -50,7 +50,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/credit-ledger")({
-  head: () => ({ meta: [{ title: "دفتر النقاط — رِفد" }] }),
+  head: () => ({ meta: [{ title: "دفتر نقاط الفيديو — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل الدفتر…">
       <CreditLedgerPage />
@@ -61,7 +61,6 @@ export const Route = createFileRoute("/admin/credit-ledger")({
 const TXN_LABELS: Record<string, string> = {
   plan_grant: "منح باقة",
   topup_purchase: "شحن إضافي",
-  consume_image: "صورة",
   consume_video: "فيديو",
   refund: "استرجاع",
   admin_adjust: "ضبط يدوي",
@@ -71,7 +70,6 @@ const TXN_LABELS: Record<string, string> = {
 const TXN_TONES: Record<string, string> = {
   plan_grant: "bg-primary/15 text-primary",
   topup_purchase: "bg-success/15 text-success",
-  consume_image: "bg-muted text-muted-foreground",
   consume_video: "bg-muted text-muted-foreground",
   refund: "bg-warning/20 text-warning-foreground",
   admin_adjust: "bg-gold/15 text-gold",
@@ -139,7 +137,7 @@ function CreditLedgerPage() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       toast.success(
-        `✅ ${amount > 0 ? "مُنح" : "سُحب"} ${fmt(Math.abs(amount))} نقطة — الرصيد الجديد: plan=${fmt(r.new_plan)}, topup=${fmt(r.new_topup)}`
+        `✅ ${amount > 0 ? "مُنح" : "سُحب"} ${fmt(Math.abs(amount))} نقطة فيديو — الرصيد الجديد: plan=${fmt(r.new_plan)}, topup=${fmt(r.new_topup)}`
       );
       setAdjustOpen(false);
       setAdjUser(""); setAdjAmount(""); setAdjReason("");
@@ -162,10 +160,10 @@ function CreditLedgerPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold flex items-center gap-2">
-            <Coins className="h-6 w-6 text-gold" /> دفتر النقاط
+            <Coins className="h-6 w-6 text-gold" /> دفتر نقاط الفيديو
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            تدقيق كامل لكل حركات النقاط — للمراجعة والاسترجاع وحل النزاعات
+            تدقيق كامل لكل حركات نقاط الفيديو — للمراجعة والاسترجاع وحل النزاعات
           </p>
         </div>
         <div className="flex gap-2">
@@ -260,10 +258,10 @@ function CreditLedgerPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Wand2 className="h-5 w-5 text-gold" /> ضبط يدوي للنقاط
+              <Wand2 className="h-5 w-5 text-gold" /> ضبط يدوي لنقاط الفيديو
             </DialogTitle>
             <DialogDescription>
-              منح أو سحب نقاط من مستخدم. كل عملية موثَّقة في الدفتر وفي سجل التدقيق.
+              منح أو سحب نقاط فيديو من مستخدم. كل عملية موثَّقة في الدفتر وفي سجل التدقيق.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
