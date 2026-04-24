@@ -97,7 +97,7 @@
 راجع `.lovable/launch-day-runbook.md` للتفاصيل الكاملة. الملخص:
 - **يومياً 9ص:** Telegram + `/admin/email-monitor` + `/admin/subscriptions?status=pending` + `/admin/contact-submissions?status=new`
 - **يومياً 9م:** PostHog Dashboard + funnel signup→onboarding + `/admin/audit`
-- **أسبوعياً:** `supabase--linter` + KPI weekly + شحن Lovable AI credits
+- **أسبوعياً:** Lovable Cloud linter + KPI weekly + شحن Lovable AI credits
 
 ---
 
