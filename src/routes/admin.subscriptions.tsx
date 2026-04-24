@@ -52,7 +52,7 @@ export const Route = createFileRoute("/admin/subscriptions")({
 type Req = {
   id: string;
   user_id: string;
-  plan: "pro" | "business";
+  plan: "starter" | "growth" | "pro" | "business";
   billing_cycle: string;
   store_name: string | null;
   whatsapp: string;
@@ -68,7 +68,12 @@ type Req = {
   created_at: string;
 };
 
-const PLAN_LABELS = { pro: "احترافي", business: "أعمال" } as const;
+const PLAN_LABELS = {
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
+} as const;
 
 const STATUS_BADGE: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
@@ -179,7 +184,15 @@ function AdminSubscriptionsPage() {
       if (profileErr) {
         toast.error("تم تحديث الطلب لكن فشل ترقية الباقة في الملف");
       } else {
-        toast.success(`تم تفعيل باقة ${PLAN_LABELS[req.plan]} للمستخدم ✨`);
+        const { error: creditsErr } = await supabase.rpc("reset_monthly_credits", {
+          _user_id: req.user_id,
+          _plan: req.plan,
+        });
+        if (creditsErr) {
+          toast.error("تم تفعيل الباقة لكن فشل منح نقاط الفيديو الشهرية");
+        } else {
+          toast.success(`تم تفعيل باقة ${PLAN_LABELS[req.plan]} ومنح نقاط الفيديو للمستخدم ✨`);
+        }
       }
 
       // إرسال بريد إشعار التفعيل للعميل (لا يكسر التدفق إن فشل)

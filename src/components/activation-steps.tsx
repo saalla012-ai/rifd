@@ -21,7 +21,7 @@ const STEPS = [
   },
   {
     icon: Sparkles,
-    title: "حسابك يصبح Pro",
+    title: "تفعيل باقتك المختارة",
     desc: "تفعيل خلال 24 ساعة + فاتورة ضريبية",
     duration: "≤ 24 ساعة",
   },

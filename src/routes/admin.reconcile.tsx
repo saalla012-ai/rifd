@@ -107,7 +107,7 @@ function ReconcilePage() {
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm">
             <Link to="/admin/credit-ledger">
-              <ArrowLeft className="h-3.5 w-3.5" /> دفتر النقاط
+              <ArrowLeft className="h-3.5 w-3.5" /> دفتر نقاط الفيديو
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">

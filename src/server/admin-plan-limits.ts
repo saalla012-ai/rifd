@@ -22,7 +22,7 @@ async function assertAdmin(db: DbClient, userId: string): Promise<void> {
 }
 
 export type PlanLimitRow = {
-  plan: "free" | "pro" | "business";
+  plan: "free" | "starter" | "growth" | "pro" | "business";
   kind: "text" | "image";
   monthly_limit: number;
   updated_at: string;
@@ -57,7 +57,7 @@ export const listPlanLimits = createServerFn({ method: "POST" })
   });
 
 const updateSchema = z.object({
-  plan: z.enum(["free", "pro", "business"]),
+  plan: z.enum(["free", "starter", "growth", "pro", "business"]),
   kind: z.enum(["text", "image"]),
   monthly_limit: z.number().int().min(0).max(1_000_000),
 });

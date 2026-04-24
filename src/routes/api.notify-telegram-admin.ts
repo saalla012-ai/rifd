@@ -11,9 +11,11 @@ function safeEqualStrings(a: string, b: string): boolean {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  pro: "احترافي (Pro)",
-  business: "أعمال (Business)",
   free: "مجاني",
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
 };
 
 const CYCLE_LABELS: Record<string, string> = {

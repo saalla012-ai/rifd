@@ -36,7 +36,7 @@ const NAV = [
   { to: "/dashboard/library", label: "مكتبتي", icon: Library },
   { to: "/dashboard/store-profile", label: "ملف متجري", icon: Store },
   { to: "/dashboard/usage", label: "الاستخدام", icon: BarChart3 },
-  { to: "/dashboard/credits", label: "شحن النقاط", icon: Coins },
+  { to: "/dashboard/credits", label: "شحن نقاط الفيديو", icon: Coins },
   { to: "/dashboard/billing", label: "الفواتير", icon: CreditCard },
   { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ] as const;
@@ -44,8 +44,8 @@ const NAV = [
 const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
   { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
-  { to: "/admin/credits", label: "شحن النقاط", icon: Coins },
-  { to: "/admin/credit-ledger", label: "دفتر النقاط", icon: BarChart3 },
+  { to: "/admin/credits", label: "شحن نقاط الفيديو", icon: Coins },
+  { to: "/admin/credit-ledger", label: "دفتر نقاط الفيديو", icon: BarChart3 },
   { to: "/admin/reconcile", label: "مزامنة الاستخدام", icon: Database },
   { to: "/admin/contact-submissions", label: "رسائل التواصل", icon: Inbox, badgeKey: "contact" as const },
   { to: "/admin/email-monitor", label: "مراقبة البريد", icon: Mail },
