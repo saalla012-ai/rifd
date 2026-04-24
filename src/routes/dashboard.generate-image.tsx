@@ -56,7 +56,7 @@ function GenerateImagePage() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setImageUrl(out.url);
-      setRemaining(out.remainingCredits);
+      setRemaining(out.remainingDaily);
       track("generation_created", { kind: "image", template: template.id, quality });
       toast.success("تم توليد الصورة ✨");
       router.invalidate();
@@ -77,7 +77,7 @@ function GenerateImagePage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold">توليد صور</h1>
-          <p className="mt-1 text-sm text-muted-foreground">بوسترات وصور منتجات بنص عربي بارز</p>
+          <p className="mt-1 text-sm text-muted-foreground">بوسترات وصور منتجات ضمن حصة يومية مجانية</p>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm" className="gap-1">
@@ -85,7 +85,7 @@ function GenerateImagePage() {
           </Button>
           {remaining !== null && (
             <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
-              باقي {remaining.toLocaleString("ar-SA")} نقطة
+              باقي {remaining.toLocaleString("ar-SA")} صورة اليوم
             </span>
           )}
         </div>
