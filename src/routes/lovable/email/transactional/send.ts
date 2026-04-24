@@ -6,8 +6,8 @@ import { TEMPLATES } from '@/lib/email-templates/registry'
 
 // Configuration
 const SITE_NAME = 'رِفد'
-const SENDER_DOMAIN = 'notify.rifd.site'
-const FROM_ADDRESS = `${SITE_NAME} <noreply@notify.rifd.site>`
+const SENDER_DOMAIN = 'mail.rifd.site'
+const FROM_ADDRESS = `${SITE_NAME} <noreply@mail.rifd.site>`
 const PURPOSE = 'transactional'
 const QUEUE_NAME = 'transactional_emails'
 
