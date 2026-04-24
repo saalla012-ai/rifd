@@ -137,7 +137,15 @@ const proofPackets: Array<{
   },
 ];
 
-const objections = [
+const objections: Array<{
+  title: string;
+  proof: string;
+  answer: string;
+  decisionSignal: string;
+  next: string;
+  ctaLabel: string;
+  href: InternalRoute | "#operational-proof";
+}> = [
   {
     title: "هل الناتج مجرد نص عام؟",
     proof: "الإثبات هنا لا يعرض منشوراً معزولاً، بل يربطه بهوك وصورة وفكرة Reel وCTA ضمن نفس الحزمة.",
@@ -210,7 +218,7 @@ const fitGuidance = [
   },
 ];
 
-const subscriptionPaths = [
+const subscriptionPaths: Array<{ title: string; description: string; proof: string; href: InternalRoute; label: string }> = [
   {
     title: "ابدأ مجاناً إذا كان هدفك إثبات الفكرة",
     description: "هذا هو المسار الأنسب عندما تريد اختبار منطق رِفد على متجر واحد والتأكد أن المخرج أوضح من طريقتك الحالية قبل أي التزام.",
@@ -252,7 +260,7 @@ const proofRoutes = [
   },
 ];
 
-const decisionPaths = [
+const decisionPaths: Array<{ title: string; description: string; href: InternalRoute; label: string }> = [
   {
     title: "عندي متجر وأريد إثباتاً سريعاً",
     description: "ابدأ بالتجربة المجانية ثم ارجع إلى هذه الصفحة إذا أردت مقارنة النتيجة بما رأيته هنا.",
