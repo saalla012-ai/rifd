@@ -11,6 +11,7 @@ import { lovable } from "@/integrations/lovable";
 import { sendWelcomeEmail } from "@/server/send-welcome";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/posthog";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -72,6 +73,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        track("signup_completed", { method: "email" });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
         // welcome سيُرسل تلقائياً من useEffect عند تحديث user
       } else {

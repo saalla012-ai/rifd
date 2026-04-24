@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
+import { track } from "@/lib/analytics/posthog";
 
 type ImgSearch = { template?: string };
 
@@ -56,6 +57,7 @@ function GenerateImagePage() {
       });
       setImageUrl(out.url);
       setRemaining(out.remaining);
+      track("generation_created", { kind: "image", template: template.id, quality });
       toast.success("تم توليد الصورة ✨");
       router.invalidate();
     } catch (e) {

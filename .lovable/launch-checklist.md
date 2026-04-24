@@ -1,6 +1,17 @@
 # Launch Checklist — رِفد للتقنية
 
-آخر تحديث: 21 أبريل 2026 — الجاهزية: **89/100** بعد إغلاق ادعاءات الثقة الحرجة
+آخر تحديث: 25 أبريل 2026 — الجاهزية: **80/100** بعد إنجاز P1+P2+P3+P4 بنية تحتية
+
+## ✅ موجة الإطلاق V8 (P1→P5)
+- [x] **P1 — الأمان:** AdminGuard مركزي + RLS مُراجعة + cleanup الكود القديم
+- [x] **P2 — نموذج /contact:** schema + server route + UI + email template + Telegram
+- [x] **P3 — Admin Inbox:** جدول رسائل التواصل + sidebar badge + تحديث الحالة
+- [x] **P3 — QA Runbook:** `.lovable/qa-runbook.md` بـ7 سيناريوهات × 3 مقاسات × 2 متصفح
+- [x] **P4 — PostHog Analytics (بنية):** posthog-js + 5 events + AnalyticsBridge SSR-safe
+- [ ] **P4 — تفعيل PostHog:** يحتاج `VITE_POSTHOG_KEY` من المستخدم
+- [ ] **P5 — الإطلاق الفعلي:** publish + DNS check + launch-day-runbook
+
+
 
 ## ✅ الموجة 5 — رد على تقرير ChatGPT (57/100)
 - [x] توحيد عدد القوالب: حذف "40 قالب" الثابت → "مكتبة قوالب" + `PROMPTS.length` ديناميكي + "45+" في meta.
