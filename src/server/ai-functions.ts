@@ -56,7 +56,7 @@ async function bumpUsage(
 function creditError(e: unknown): Error {
   if (e instanceof InsufficientCreditsError) {
     return new Error(
-      `INSUFFICIENT_CREDITS: رصيد النقاط لا يكفي (تحتاج ${e.required} نقطة). اشحن نقاط إضافية أو رقّ باقتك.`
+      `INSUFFICIENT_CREDITS: رصيد نقاط الفيديو لا يكفي (تحتاج ${e.required} نقطة فيديو). اشحن نقاط فيديو إضافية أو رقّ باقتك.`
     );
   }
   if (e instanceof TextQuotaExceededError) {
