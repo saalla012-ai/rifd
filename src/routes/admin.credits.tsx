@@ -298,7 +298,7 @@ function AdminCreditsPage() {
                       <Badge className={cn("gap-1", meta.tone)}>
                         <Icon className="h-3 w-3" /> {meta.label}
                       </Badge>
-                      <span className="text-sm font-bold tabular-nums">{fmt(r.credits)} نقطة</span>
+                      <span className="text-sm font-bold tabular-nums">{fmt(r.credits)} نقطة فيديو</span>
                       <span className="text-xs text-muted-foreground">· {fmt(r.price_sar)} ر.س</span>
                       <span className="text-[10px] text-muted-foreground">· {r.package_id}</span>
                     </div>
@@ -358,7 +358,7 @@ function AdminCreditsPage() {
           <DialogHeader>
             <DialogTitle>تفعيل طلب الشحن</DialogTitle>
             <DialogDescription>
-              سيتم إضافة <span className="font-bold tabular-nums">{fmt(activateTarget?.credits ?? 0)}</span> نقطة لرصيد
+              سيتم إضافة <span className="font-bold tabular-nums">{fmt(activateTarget?.credits ?? 0)}</span> نقطة فيديو لرصيد
               المستخدم <span className="font-bold">{activateTarget?.user_email || activateTarget?.user_id}</span>.
               هذه العملية موثَّقة ولا يمكن التراجع عنها (يمكنك الاسترجاع لاحقاً).
             </DialogDescription>
