@@ -136,5 +136,6 @@
 1. **يدوي**: تنفيذ السيناريوهات الـ7 من `qa-runbook.md` على iPhone حقيقي + Android + Desktop
 2. **يدوي**: تشغيل Lighthouse على 5 صفحات والتأكد من ≥ 80 Performance
 3. **يدوي**: تأكيد iOS Safari لا يكسر أي مسار (خاصة `/auth` و `/dashboard/billing`)
-4. **بعد القبول**: نشر إعلان قنوات (X + LinkedIn + WhatsApp Business)
-5. **مراقبة 72 ساعة متواصلة** حسب جدول `launch-day-runbook.md`
+4. **جاهز**: خطة إعلان القنوات الأولى موثقة في `launch-day-runbook.md`
+5. **بعد القبول**: نشر إعلان X + LinkedIn + WhatsApp Business
+6. **مراقبة 72 ساعة متواصلة** حسب جدول `launch-day-runbook.md`
