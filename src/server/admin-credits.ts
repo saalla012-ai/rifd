@@ -310,7 +310,7 @@ export const listCreditLedger = createServerFn({ method: "POST" })
       entries: (rows ?? []).map((r) => ({
         ...r,
         user_email: emailMap.get(r.user_id) ?? null,
-        metadata: (r.metadata as Record<string, unknown> | null) ?? null,
+        metadata: (r.metadata as LedgerJson) ?? null,
       })),
     };
   });
