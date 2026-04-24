@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as React from "react";
 import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const SITE_NAME = "رِفد";
 const SENDER_DOMAIN = "notify.rifd.site";
@@ -14,13 +15,31 @@ const QUEUE_NAME = "transactional_emails";
  * via the Lovable Email queue (pgmq). The process-email-queue dispatcher
  * picks it up within 5 seconds and sends via Lovable Email API.
  *
+ * SECURITY: identity (userId + email) is derived ONLY from the verified
+ * Supabase JWT via `requireSupabaseAuth`. The optional `fullName` input
+ * is the only client-supplied field and is sanitized.
+ *
  * Idempotent: uses message_id `welcome-{userId}` and skips if already logged.
  */
 export const sendWelcomeEmail = createServerFn({ method: "POST" })
-  .inputValidator(
-    (input: { userId: string; email: string; fullName?: string }) => input,
-  )
-  .handler(async ({ data }) => {
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { fullName?: string }) => ({
+    fullName:
+      typeof input?.fullName === "string"
+        ? input.fullName.trim().slice(0, 120)
+        : undefined,
+  }))
+  .handler(async ({ data, context }) => {
+    const { userId, claims } = context as {
+      userId: string;
+      claims: { email?: string };
+    };
+    const trustedEmail = (claims?.email ?? "").toString().trim().toLowerCase();
+    if (!trustedEmail) {
+      console.error("send-welcome: no email in verified JWT claims");
+      return { status: "no_verified_email" as const };
+    }
+
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !serviceKey) {
@@ -29,8 +48,8 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
     }
 
     const supabase = createClient<any>(supabaseUrl, serviceKey);
-    const messageId = `welcome-${data.userId}`;
-    const email = data.email.toLowerCase();
+    const messageId = `welcome-${userId}`;
+    const email = trustedEmail;
 
     // suppression check
     const { data: suppressed } = await supabase
