@@ -36,26 +36,6 @@ function videoCreditError(e: unknown): Error {
   return e instanceof Error ? e : new Error(String(e));
 }
 
-async function createLocalPreviewVideo(prompt: string, quality: VideoQuality): Promise<string> {
-  const safePrompt = prompt.replace(/[<>&]/g, (ch) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[ch] ?? ch);
-  const badge = quality === "quality" ? "Quality" : "Fast";
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#143A2A"/><stop offset="0.55" stop-color="#1F5C42"/><stop offset="1" stop-color="#D4A24C"/></linearGradient>
-    </defs>
-    <rect width="1080" height="1920" fill="url(#g)"/>
-    <circle cx="875" cy="245" r="180" fill="#FBF8F1" opacity="0.12"/>
-    <circle cx="145" cy="1560" r="260" fill="#FBF8F1" opacity="0.09"/>
-    <text x="540" y="360" text-anchor="middle" font-family="Arial" font-size="48" font-weight="700" fill="#FBF8F1">رِفد Video</text>
-    <text x="540" y="455" text-anchor="middle" font-family="Arial" font-size="34" fill="#F0C674">${badge} Preview</text>
-    <foreignObject x="120" y="690" width="840" height="520">
-      <div xmlns="http://www.w3.org/1999/xhtml" style="direction:rtl;color:#FBF8F1;font-family:Arial,sans-serif;font-size:52px;line-height:1.45;font-weight:700;text-align:center;">${safePrompt.slice(0, 180)}</div>
-    </foreignObject>
-    <text x="540" y="1655" text-anchor="middle" font-family="Arial" font-size="30" fill="#FBF8F1" opacity="0.86">سيُستبدل هذا الرابط بنتيجة مزوّد الفيديو عند تفعيل الربط الكامل</text>
-  </svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
 async function createReplicatePrediction(input: z.infer<typeof videoInputSchema>) {
   const token = process.env.REPLICATE_API_TOKEN;
   if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
