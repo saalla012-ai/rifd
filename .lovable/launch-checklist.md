@@ -41,7 +41,7 @@
          [x] Telegram يعمل
          [x] التوليد يخصم من usage_logs (trigger مفعَّل)
          [x] /contact يعمل end-to-end
-         [x] نطاق البريد rifd.site verified
+         [x] نطاق البريد send.rifd.site verified
 
 تجربة:   [ ] 0 console errors على 5 صفحات (يدوي post-launch)
          [ ] Lighthouse ≥ 80 موبايل (يدوي post-launch)
