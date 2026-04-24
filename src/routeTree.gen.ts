@@ -56,6 +56,8 @@ import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
 import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
 import { Route as AdminDnsCheckRouteImport } from './routes/admin.dns-check'
+import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
+import { Route as AdminCreditLedgerRouteImport } from './routes/admin.credit-ledger'
 import { Route as AdminContactSubmissionsRouteImport } from './routes/admin.contact-submissions'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -313,6 +315,16 @@ const AdminDnsCheckRoute = AdminDnsCheckRouteImport.update({
   path: '/admin/dns-check',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCreditsRoute = AdminCreditsRouteImport.update({
+  id: '/admin/credits',
+  path: '/admin/credits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCreditLedgerRoute = AdminCreditLedgerRouteImport.update({
+  id: '/admin/credit-ledger',
+  path: '/admin/credit-ledger',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminContactSubmissionsRoute = AdminContactSubmissionsRouteImport.update({
   id: '/admin/contact-submissions',
   path: '/admin/contact-submissions',
@@ -432,6 +444,8 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
+  '/admin/credit-ledger': typeof AdminCreditLedgerRoute
+  '/admin/credits': typeof AdminCreditsRoute
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
@@ -497,6 +511,8 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
+  '/admin/credit-ledger': typeof AdminCreditLedgerRoute
+  '/admin/credits': typeof AdminCreditsRoute
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
@@ -564,6 +580,8 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
+  '/admin/credit-ledger': typeof AdminCreditLedgerRoute
+  '/admin/credits': typeof AdminCreditsRoute
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
@@ -632,6 +650,8 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/contact-submissions'
+    | '/admin/credit-ledger'
+    | '/admin/credits'
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
@@ -697,6 +717,8 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/contact-submissions'
+    | '/admin/credit-ledger'
+    | '/admin/credits'
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
@@ -763,6 +785,8 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/contact-submissions'
+    | '/admin/credit-ledger'
+    | '/admin/credits'
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
@@ -830,6 +854,8 @@ export interface RootRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminContactSubmissionsRoute: typeof AdminContactSubmissionsRoute
+  AdminCreditLedgerRoute: typeof AdminCreditLedgerRoute
+  AdminCreditsRoute: typeof AdminCreditsRoute
   AdminDnsCheckRoute: typeof AdminDnsCheckRoute
   AdminDomainScanRoute: typeof AdminDomainScanRoute
   AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
@@ -1190,6 +1216,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDnsCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/credits': {
+      id: '/admin/credits'
+      path: '/admin/credits'
+      fullPath: '/admin/credits'
+      preLoaderRoute: typeof AdminCreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/credit-ledger': {
+      id: '/admin/credit-ledger'
+      path: '/admin/credit-ledger'
+      fullPath: '/admin/credit-ledger'
+      preLoaderRoute: typeof AdminCreditLedgerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/contact-submissions': {
       id: '/admin/contact-submissions'
       path: '/admin/contact-submissions'
@@ -1372,6 +1412,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminContactSubmissionsRoute: AdminContactSubmissionsRoute,
+  AdminCreditLedgerRoute: AdminCreditLedgerRoute,
+  AdminCreditsRoute: AdminCreditsRoute,
   AdminDnsCheckRoute: AdminDnsCheckRoute,
   AdminDomainScanRoute: AdminDomainScanRoute,
   AdminEmailMonitorRoute: AdminEmailMonitorRoute,
