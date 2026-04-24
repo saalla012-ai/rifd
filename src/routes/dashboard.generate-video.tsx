@@ -284,7 +284,7 @@ function GenerateVideoPage() {
       <QuotaExceededDialog
         open={quotaDialog.open}
         onOpenChange={(v) => setQuotaDialog((s) => ({ ...s, open: v }))}
-        kind="صورة"
+        kind="فيديو"
         reason={quotaDialog.reason}
       />
     </DashboardShell>
