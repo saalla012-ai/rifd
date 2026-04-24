@@ -77,7 +77,7 @@
 - [x] `SubscribersCounter`: skeleton ثابت + fallback عند فشل RPC.
 
 ## ✅ الموجة 2 — توحيد الهوية
-- [x] og:image + canonical + twitter:image على `rifd.site`.
+- [x] og:image + canonical + twitter:image على الصفحات التسويقية الأساسية؛ لا توجد صورة مشاركة أو canonical عام مفروض من الجذر.
 - [x] `sitemap.xml` و `robots.txt` على `rifd.site`.
 - [x] إخفاء Lovable badge.
 - [x] استبدال جميع ادعاءات "24/7" بصياغات صادقة.
