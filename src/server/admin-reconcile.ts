@@ -53,7 +53,12 @@ export const reconcileUsageLogs = createServerFn({ method: "POST" })
     const list = rows ?? [];
     const total_text_diff = list.reduce((s, r) => s + r.text_diff, 0);
     const total_image_diff = list.reduce((s, r) => s + r.image_diff, 0);
-    const month = list[0]?.month ?? data.month ?? new Date().toISOString().slice(0, 7);
+    // شهر الرياض كـ fallback (يطابق منطق الـRPC)
+    const riyadhMonth = (() => {
+      const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Riyadh" }));
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    })();
+    const month = list[0]?.month ?? data.month ?? riyadhMonth;
 
     return {
       month,

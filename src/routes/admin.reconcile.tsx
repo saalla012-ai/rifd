@@ -207,26 +207,28 @@ function ReconcilePage() {
                 </h3>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-right text-sm">
+                <table className="w-full min-w-[640px] text-right text-sm">
                   <thead className="border-b border-border bg-muted/20 text-xs text-muted-foreground">
                     <tr>
-                      <th className="py-2.5 px-4 font-medium">User ID</th>
-                      <th className="py-2.5 px-4 font-medium">نصوص (قديم → جديد)</th>
-                      <th className="py-2.5 px-4 font-medium">فرق</th>
-                      <th className="py-2.5 px-4 font-medium">صور (قديم → جديد)</th>
-                      <th className="py-2.5 px-4 font-medium">فرق</th>
+                      <th className="py-2.5 px-3 font-medium">User</th>
+                      <th className="py-2.5 px-3 font-medium">نصوص</th>
+                      <th className="py-2.5 px-3 font-medium">Δ نص</th>
+                      <th className="py-2.5 px-3 font-medium">صور</th>
+                      <th className="py-2.5 px-3 font-medium">Δ صور</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {sortedRows.map((r) => (
                       <tr key={r.user_id} className="hover:bg-muted/20">
-                        <td className="py-2.5 px-4 font-mono text-xs">{r.user_id.slice(0, 8)}…</td>
-                        <td className="py-2.5 px-4 tabular-nums">
+                        <td className="py-2.5 px-3 font-mono text-[11px]" title={r.user_id}>
+                          {r.user_id.slice(0, 8)}…
+                        </td>
+                        <td className="py-2.5 px-3 tabular-nums whitespace-nowrap">
                           <span className="text-muted-foreground">{fmt(r.old_text_count)}</span>
-                          <span className="mx-1.5 text-muted-foreground">→</span>
+                          <span className="mx-1 text-muted-foreground">→</span>
                           <span className="font-bold">{fmt(r.new_text_count)}</span>
                         </td>
-                        <td className="py-2.5 px-4">
+                        <td className="py-2.5 px-3">
                           {r.text_diff !== 0 ? (
                             <Badge
                               className={cn(
@@ -242,12 +244,12 @@ function ReconcilePage() {
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </td>
-                        <td className="py-2.5 px-4 tabular-nums">
+                        <td className="py-2.5 px-3 tabular-nums whitespace-nowrap">
                           <span className="text-muted-foreground">{fmt(r.old_image_count)}</span>
-                          <span className="mx-1.5 text-muted-foreground">→</span>
+                          <span className="mx-1 text-muted-foreground">→</span>
                           <span className="font-bold">{fmt(r.new_image_count)}</span>
                         </td>
-                        <td className="py-2.5 px-4">
+                        <td className="py-2.5 px-3">
                           {r.image_diff !== 0 ? (
                             <Badge
                               className={cn(
