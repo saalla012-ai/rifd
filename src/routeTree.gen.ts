@@ -54,6 +54,7 @@ import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscript
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
 import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
+import { Route as AdminContactSubmissionsRouteImport } from './routes/admin.contact-submissions'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminAbTestsRouteImport } from './routes/admin.ab-tests'
@@ -300,6 +301,11 @@ const AdminDomainScanRoute = AdminDomainScanRouteImport.update({
   path: '/admin/domain-scan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminContactSubmissionsRoute = AdminContactSubmissionsRouteImport.update({
+  id: '/admin/contact-submissions',
+  path: '/admin/contact-submissions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/admin/audit',
   path: '/admin/audit',
@@ -413,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -475,6 +482,7 @@ export interface FileRoutesByTo {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -539,6 +547,7 @@ export interface FileRoutesById {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -604,6 +613,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/contact-submissions'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
@@ -666,6 +676,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/contact-submissions'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
@@ -729,6 +740,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/contact-submissions'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
@@ -793,6 +805,7 @@ export interface RootRouteChildren {
   AdminAbTestsRoute: typeof AdminAbTestsRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminContactSubmissionsRoute: typeof AdminContactSubmissionsRoute
   AdminDomainScanRoute: typeof AdminDomainScanRoute
   AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
@@ -1138,6 +1151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDomainScanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/contact-submissions': {
+      id: '/admin/contact-submissions'
+      path: '/admin/contact-submissions'
+      fullPath: '/admin/contact-submissions'
+      preLoaderRoute: typeof AdminContactSubmissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/audit': {
       id: '/admin/audit'
       path: '/admin/audit'
@@ -1310,6 +1330,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAbTestsRoute: AdminAbTestsRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
+  AdminContactSubmissionsRoute: AdminContactSubmissionsRoute,
   AdminDomainScanRoute: AdminDomainScanRoute,
   AdminEmailMonitorRoute: AdminEmailMonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
