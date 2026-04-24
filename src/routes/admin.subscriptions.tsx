@@ -52,7 +52,7 @@ export const Route = createFileRoute("/admin/subscriptions")({
 type Req = {
   id: string;
   user_id: string;
-  plan: "pro" | "business";
+  plan: "starter" | "growth" | "pro" | "business";
   billing_cycle: string;
   store_name: string | null;
   whatsapp: string;
@@ -68,7 +68,12 @@ type Req = {
   created_at: string;
 };
 
-const PLAN_LABELS = { pro: "احترافي", business: "أعمال" } as const;
+const PLAN_LABELS = {
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
+} as const;
 
 const STATUS_BADGE: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
