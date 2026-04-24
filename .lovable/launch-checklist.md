@@ -25,7 +25,7 @@
 - [x] **P3 — Admin Inbox:** جدول رسائل التواصل + sidebar badge + تحديث الحالة
 - [x] **P3 — QA Runbook:** `.lovable/qa-runbook.md` بـ7 سيناريوهات × 3 مقاسات × 2 متصفح
 - [x] **P4 — PostHog Analytics:** posthog-js + 5 events + AnalyticsBridge SSR-safe + CSP محدَّث
-- [x] **P5 — الإطلاق:** publish + DNS verified + linter clean + `launch-day-runbook.md` + بريد `rifd.site` ✅
+- [x] **P5 — الإطلاق:** publish + DNS verified + linter clean + `launch-day-runbook.md` + بريد `send.rifd.site` ✅
 
 ---
 
