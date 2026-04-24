@@ -39,10 +39,9 @@ function AuthPage() {
       // أرسل welcome مرة واحدة لكل user (idempotent عبر message_id في الخادم)
       // يغطي Google OAuth + email/password + أي تدفق مستقبلي
       if (user.email) {
+        // الخادم يشتقّ userId+email من JWT الموثوق — نمرّر فقط fullName.
         void sendWelcomeEmail({
           data: {
-            userId: user.id,
-            email: user.email,
             fullName:
               (user.user_metadata?.full_name as string | undefined) ||
               (user.user_metadata?.name as string | undefined) ||
