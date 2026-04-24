@@ -129,9 +129,9 @@ ORDER BY created_at ASC;
 - راجع `auth_logs` لمحاولات brute-force
 
 ### أسبوعياً
-- شغّل `supabase--linter`
-- راجع RLS policies على أي جدول جديد
-- دوّر مفاتيح Lovable AI إن لزم (`rotate_lovable_api_key`)
+- شغّل فحص Lovable Cloud Linter
+- راجع سياسات الوصول على أي جدول جديد
+- دوّر مفاتيح Lovable AI إن لزم
 
 ### شهرياً
 - مراجعة كاملة لـSOP في `qa-runbook.md`
@@ -144,7 +144,6 @@ ORDER BY created_at ASC;
 
 - **دعم Lovable**: https://discord.com/channels/1119885301872070706/
 - **دعم Namecheap (DNS)**: لوحة الحساب
-- **مستندات Supabase**: https://supabase.com/docs
 - **PostHog status**: https://status.posthog.com
 
 ---

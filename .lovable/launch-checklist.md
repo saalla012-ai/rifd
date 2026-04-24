@@ -33,8 +33,8 @@
 
 ```text
 أمان:    [x] 0 critical/high في security scan
-         [x] 0 errors في supabase linter
-         [x] كل RLS مُراجعة يدوياً
+         [x] 0 errors في Lovable Cloud linter
+         [x] كل سياسات الوصول مُراجعة يدوياً
          [x] Security Headers + CSP فعّالة (src/start.ts)
 
 وظيفة:   [x] بريد التفعيل < 60 ثانية (مؤكَّد عبر S5)
