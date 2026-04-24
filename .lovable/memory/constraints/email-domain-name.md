@@ -1,28 +1,31 @@
 ---
 name: Email domain naming rule
-description: قاعدة اسم نطاق البريد + سجل المحاولات
+description: تاريخ المحاولات الفاشلة + الحل الصحيح
 type: constraint
 ---
 
-## القرار النهائي (24 أبريل 2026)
-- **النطاق الفعلي:** `rifd.site` (الجذر مباشرة، بدون subdomain)
-- **From address:** `رِفد <noreply@rifd.site>`
-- **Site name:** `رِفد`
+## الوضع الحالي (24 أبريل 2026)
+**لا يوجد نطاق بريد فعّال.** الكود مُحدَّث لـ `mail.rifd.site` لكنه لم يُضَف في Lovable.
 
-## سجل المحاولات
-1. ❌ `notify.rifd.site` — فشل: `DOMAIN_OWNED_BY_ANOTHER_ACCOUNT` في Mailgun
-2. ❌ `mail.rifd.site` — لم يُستخدم (تم القفز للجذر مباشرة)
-3. ✅ `rifd.site` — يعمل (تحت Setting up)
+## سجل المحاولات (كلها فاشلة حالياً)
+| المحاولة | النتيجة | السبب |
+|---|---|---|
+| `notify.rifd.site` | ❌ Failed | `DOMAIN_OWNED_BY_ANOTHER_ACCOUNT` في Mailgun |
+| `rifd.site` (الجذر) | ❌ Failed | نفس المشكلة — مملوك لحساب Mailgun آخر |
+| `mail.rifd.site` | ⏳ لم يُجرَّب | يجب إضافته يدوياً في Lovable |
 
-## ملاحظة Lovable
-Lovable يدعم استخدام الجذر مباشرة كـ sender domain — لا يلزم subdomain.
+## الحل الصحيح
+1. في Lovable Cloud → Emails → اضغط `+ Add a new email domain`
+2. أدخل: `mail.rifd.site`
+3. إذا فشل أيضاً → جرب `send.rifd.site` أو `email.rifd.site`
+4. إذا فشلت كل المحاولات → تواصل مع دعم Lovable لتحرير ملكية `rifd.site` من Mailgun
 
-## الملفات المُحدَّثة (تستخدم rifd.site الآن)
+## الملفات (تستخدم mail.rifd.site الآن)
 1. `src/routes/lovable/email/auth/webhook.ts`
 2. `src/routes/lovable/email/transactional/send.ts`
 3. `src/routes/hooks/onboarding-emails.ts`
 4. `src/routes/hooks/expiring-subscriptions.ts`
 5. `src/server/send-welcome.ts`
 
-## DNS (تُدار تلقائياً من Lovable)
-سجلات NS + SPF + DKIM + DMARC تُولَّد وتُتحقق من Lovable Cloud.
+## درس مستفاد
+لا تثق بالصور المعروضة في حوارات الإعداد كدليل على النجاح — تحقق دائماً عبر `email_domain--check_email_domain_status`.
