@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
+import { track } from "@/lib/analytics/posthog";
 
 type TextSearch = { template?: string };
 
@@ -63,6 +64,7 @@ function GenerateTextPage() {
       });
       setResult(out.result);
       setRemaining(out.remaining);
+      track("generation_created", { kind: "text", template: template.id });
       toast.success("تم التوليد ✨");
       router.invalidate();
     } catch (e) {

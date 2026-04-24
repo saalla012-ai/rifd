@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateText } from "@/server/ai-functions";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/posthog";
 import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
 import { OnboardingSuccessPack } from "@/components/onboarding-success-pack";
 import {
@@ -120,6 +121,7 @@ function OnboardingPage() {
         .eq("id", user.id);
 
       if (error) throw error;
+      track("onboarding_completed", { product_type: productType, audience });
       await refreshProfile();
 
       // 2) ولّد أول منشور حقيقي عبر AI (يستخدم سياق الملف الجديد)

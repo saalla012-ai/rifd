@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { track } from "@/lib/analytics/posthog";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { TrustBadges } from "@/components/trust-badges";
 import { ActivationSteps } from "@/components/activation-steps";
@@ -235,6 +236,7 @@ function BillingPage() {
     }
 
     toast.success("✅ تم استلام طلبك! ننتقل لصفحة التأكيد...");
+    track("subscription_requested", { plan, billing_cycle: billingCycle, payment_method: paymentMethod });
     await refreshProfile();
     // ننتقل لصفحة التأكيد المخصصة بدل فتح واتساب مباشرة
     void navigate({
