@@ -152,6 +152,86 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_ledger: {
+        Row: {
+          amount: number
+          balance_after_plan: number
+          balance_after_topup: number
+          created_at: string
+          id: string
+          metadata: Json | null
+          reference_id: string | null
+          reference_type: string | null
+          refund_ledger_id: string | null
+          refunded_at: string | null
+          source: Database["public"]["Enums"]["credit_source"] | null
+          txn_type: Database["public"]["Enums"]["credit_txn_type"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after_plan: number
+          balance_after_topup: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          refund_ledger_id?: string | null
+          refunded_at?: string | null
+          source?: Database["public"]["Enums"]["credit_source"] | null
+          txn_type: Database["public"]["Enums"]["credit_txn_type"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after_plan?: number
+          balance_after_topup?: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          refund_ledger_id?: string | null
+          refunded_at?: string | null
+          source?: Database["public"]["Enums"]["credit_source"] | null
+          txn_type?: Database["public"]["Enums"]["credit_txn_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ledger_refund_ledger_id_fkey"
+            columns: ["refund_ledger_id"]
+            isOneToOne: false
+            referencedRelation: "credit_ledger"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_text_usage: {
+        Row: {
+          day: string
+          image_count: number
+          text_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          image_count?: number
+          text_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          image_count?: number
+          text_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       demo_rate_limits: {
         Row: {
           count: number
@@ -404,6 +484,30 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_credits: {
+        Row: {
+          daily_image_cap: number
+          daily_text_cap: number
+          monthly_credits: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          updated_at: string
+        }
+        Insert: {
+          daily_image_cap?: number
+          daily_text_cap?: number
+          monthly_credits: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          updated_at?: string
+        }
+        Update: {
+          daily_image_cap?: number
+          daily_text_cap?: number
+          monthly_credits?: number
+          plan?: Database["public"]["Enums"]["user_plan"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plan_limits: {
         Row: {
           kind: string
@@ -608,6 +712,114 @@ export type Database = {
         }
         Relationships: []
       }
+      topup_packages: {
+        Row: {
+          created_at: string
+          credits: number
+          display_name: string
+          display_order: number
+          id: string
+          is_active: boolean
+          price_sar: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          display_name: string
+          display_order?: number
+          id: string
+          is_active?: boolean
+          price_sar: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          display_name?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          price_sar?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      topup_purchases: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          admin_notes: string | null
+          created_at: string
+          credits: number
+          id: string
+          idempotency_key: string
+          ledger_id: string | null
+          metadata: Json | null
+          package_id: string
+          payment_method: string | null
+          price_sar: number
+          receipt_path: string | null
+          receipt_uploaded_at: string | null
+          status: Database["public"]["Enums"]["topup_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          credits: number
+          id?: string
+          idempotency_key: string
+          ledger_id?: string | null
+          metadata?: Json | null
+          package_id: string
+          payment_method?: string | null
+          price_sar: number
+          receipt_path?: string | null
+          receipt_uploaded_at?: string | null
+          status?: Database["public"]["Enums"]["topup_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          credits?: number
+          id?: string
+          idempotency_key?: string
+          ledger_id?: string | null
+          metadata?: Json | null
+          package_id?: string
+          payment_method?: string | null
+          price_sar?: number
+          receipt_path?: string | null
+          receipt_uploaded_at?: string | null
+          status?: Database["public"]["Enums"]["topup_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topup_purchases_ledger_id_fkey"
+            columns: ["ledger_id"]
+            isOneToOne: false
+            referencedRelation: "credit_ledger"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topup_purchases_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "topup_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usage_logs: {
         Row: {
           id: string
@@ -635,6 +847,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_credits: {
+        Row: {
+          cycle_ends_at: string | null
+          cycle_started_at: string
+          plan_credits: number
+          topup_credits: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cycle_ends_at?: string | null
+          cycle_started_at?: string
+          plan_credits?: number
+          topup_credits?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cycle_ends_at?: string | null
+          cycle_started_at?: string
+          plan_credits?: number
+          topup_credits?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -656,11 +895,116 @@ export type Database = {
         }
         Relationships: []
       }
+      video_jobs: {
+        Row: {
+          aspect_ratio: string
+          completed_at: string | null
+          created_at: string
+          credits_charged: number
+          duration_seconds: number
+          error_message: string | null
+          estimated_cost_usd: number | null
+          id: string
+          ledger_id: string | null
+          metadata: Json | null
+          prompt: string
+          provider: string
+          provider_job_id: string | null
+          quality: Database["public"]["Enums"]["video_quality"]
+          refund_ledger_id: string | null
+          result_url: string | null
+          starting_frame_url: string | null
+          status: Database["public"]["Enums"]["video_job_status"]
+          storage_path: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string
+          completed_at?: string | null
+          created_at?: string
+          credits_charged: number
+          duration_seconds?: number
+          error_message?: string | null
+          estimated_cost_usd?: number | null
+          id?: string
+          ledger_id?: string | null
+          metadata?: Json | null
+          prompt: string
+          provider?: string
+          provider_job_id?: string | null
+          quality: Database["public"]["Enums"]["video_quality"]
+          refund_ledger_id?: string | null
+          result_url?: string | null
+          starting_frame_url?: string | null
+          status?: Database["public"]["Enums"]["video_job_status"]
+          storage_path?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string
+          completed_at?: string | null
+          created_at?: string
+          credits_charged?: number
+          duration_seconds?: number
+          error_message?: string | null
+          estimated_cost_usd?: number | null
+          id?: string
+          ledger_id?: string | null
+          metadata?: Json | null
+          prompt?: string
+          provider?: string
+          provider_job_id?: string | null
+          quality?: Database["public"]["Enums"]["video_quality"]
+          refund_ledger_id?: string | null
+          result_url?: string | null
+          starting_frame_url?: string | null
+          status?: Database["public"]["Enums"]["video_job_status"]
+          storage_path?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_jobs_ledger_id_fkey"
+            columns: ["ledger_id"]
+            isOneToOne: false
+            referencedRelation: "credit_ledger"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_jobs_refund_ledger_id_fkey"
+            columns: ["refund_ledger_id"]
+            isOneToOne: false
+            referencedRelation: "credit_ledger"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      _ensure_user_credits: { Args: { _uid: string }; Returns: undefined }
+      activate_topup_purchase: {
+        Args: { _purchase_id: string }
+        Returns: {
+          cycle_ends_at: string | null
+          cycle_started_at: string
+          plan_credits: number
+          topup_credits: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_credits"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       bump_usage: {
         Args: { _kind: string; _month: string }
         Returns: {
@@ -679,12 +1023,35 @@ export type Database = {
         }
       }
       check_email_dlq_health: { Args: never; Returns: Json }
+      consume_credits: {
+        Args: {
+          _amount: number
+          _metadata?: Json
+          _reference_id?: string
+          _reference_type?: string
+          _txn_type: Database["public"]["Enums"]["credit_txn_type"]
+        }
+        Returns: {
+          ledger_id: string
+          remaining_plan: number
+          remaining_topup: number
+          remaining_total: number
+        }[]
+      }
       consume_demo_token: {
         Args: { _ip: string; _limit: number }
         Returns: {
           allowed: boolean
           remaining: number
           reset_at: string
+        }[]
+      }
+      consume_text_quota: {
+        Args: never
+        Returns: {
+          allowed: boolean
+          daily_cap: number
+          used: number
         }[]
       }
       delete_email: {
@@ -726,6 +1093,18 @@ export type Database = {
           status: Database["public"]["Enums"]["subscription_request_status"]
           store_name: string
           whatsapp: string
+        }[]
+      }
+      get_user_credits_summary: {
+        Args: never
+        Returns: {
+          cycle_ends_at: string
+          daily_text_cap: number
+          daily_text_used: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          plan_credits: number
+          topup_credits: number
+          total_credits: number
         }[]
       }
       has_role: {
@@ -801,9 +1180,42 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      refund_credits: {
+        Args: { _ledger_id: string; _reason?: string }
+        Returns: string
+      }
+      reset_monthly_credits: {
+        Args: {
+          _plan: Database["public"]["Enums"]["user_plan"]
+          _user_id: string
+        }
+        Returns: {
+          cycle_ends_at: string | null
+          cycle_started_at: string
+          plan_credits: number
+          topup_credits: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_credits"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      credit_source: "plan" | "topup"
+      credit_txn_type:
+        | "plan_grant"
+        | "topup_purchase"
+        | "consume_image"
+        | "consume_video"
+        | "refund"
+        | "admin_adjust"
+        | "expire"
       generation_type: "text" | "image" | "image_enhance"
       subscription_request_status:
         | "pending"
@@ -811,7 +1223,16 @@ export type Database = {
         | "activated"
         | "rejected"
         | "expired"
+      topup_status: "pending" | "paid" | "activated" | "rejected" | "refunded"
       user_plan: "free" | "pro" | "business"
+      video_job_status:
+        | "pending"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "cancelled"
+        | "refunded"
+      video_quality: "fast" | "quality"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -940,6 +1361,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      credit_source: ["plan", "topup"],
+      credit_txn_type: [
+        "plan_grant",
+        "topup_purchase",
+        "consume_image",
+        "consume_video",
+        "refund",
+        "admin_adjust",
+        "expire",
+      ],
       generation_type: ["text", "image", "image_enhance"],
       subscription_request_status: [
         "pending",
@@ -948,7 +1379,17 @@ export const Constants = {
         "rejected",
         "expired",
       ],
+      topup_status: ["pending", "paid", "activated", "rejected", "refunded"],
       user_plan: ["free", "pro", "business"],
+      video_job_status: [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "cancelled",
+        "refunded",
+      ],
+      video_quality: ["fast", "quality"],
     },
   },
 } as const
