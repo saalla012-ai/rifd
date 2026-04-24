@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import {
   BarChart,
@@ -20,7 +20,6 @@ import { Loader2, Users, Sparkles, DollarSign, TrendingUp, RefreshCw, ArrowLeft,
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { getAdminAnalytics, type AdminAnalytics } from "@/server/admin-analytics";
 import { reconcileUsageLogs, type ReconcileResult } from "@/server/admin-reconcile";
