@@ -19,10 +19,12 @@ import {
   TrendingUp,
   Mail,
   Inbox,
+  Coins,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getNewContactCount } from "@/server/admin-contact-submissions";
+import { CreditsBar } from "@/components/credits-bar";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -33,6 +35,7 @@ const NAV = [
   { to: "/dashboard/library", label: "مكتبتي", icon: Library },
   { to: "/dashboard/store-profile", label: "ملف متجري", icon: Store },
   { to: "/dashboard/usage", label: "الاستخدام", icon: BarChart3 },
+  { to: "/dashboard/credits", label: "شحن النقاط", icon: Coins },
   { to: "/dashboard/billing", label: "الفواتير", icon: CreditCard },
   { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ] as const;
