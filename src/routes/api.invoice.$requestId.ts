@@ -12,8 +12,10 @@ import { fileURLToPath } from "node:url";
 import type { Database } from "@/integrations/supabase/types";
 
 const PLAN_LABELS: Record<string, string> = {
-  pro: "احترافي",
-  business: "أعمال",
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
 };
 
 const CYCLE_LABELS: Record<string, string> = {
@@ -23,8 +25,10 @@ const CYCLE_LABELS: Record<string, string> = {
 
 // نفس أسعار صفحة pricing.tsx (قبل الضريبة)
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
-  pro: { monthly: 79, yearly: 790 },
-  business: { monthly: 199, yearly: 1990 },
+  starter: { monthly: 149, yearly: 1490 },
+  growth: { monthly: 249, yearly: 2490 },
+  pro: { monthly: 399, yearly: 3990 },
+  business: { monthly: 999, yearly: 9990 },
 };
 
 const VAT_RATE = 0.15;
@@ -199,7 +203,7 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           const sellerWhatsapp = appRes.data?.whatsapp_number || "";
 
           // الأسعار
-          const planKey = req.plan as "pro" | "business";
+          const planKey = req.plan as "starter" | "growth" | "pro" | "business";
           const cycle = req.billing_cycle === "yearly" ? "yearly" : "monthly";
           const subtotal = PLAN_PRICES[planKey]?.[cycle] ?? 0;
           const vat = subtotal * VAT_RATE;

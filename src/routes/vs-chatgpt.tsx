@@ -16,7 +16,7 @@ export const Route = createFileRoute("/vs-chatgpt")({
       { property: "og:title", content: "رِفد vs ChatGPT — المقارنة الكاملة" },
       {
         property: "og:description",
-        content: "ليش يدفع أصحاب المتاجر السعوديين 79 ر.س لرِفد بدل 75 ر.س لـChatGPT؟ شوف الفرق.",
+        content: "ليش يختار أصحاب المتاجر السعوديون رِفد بدل أدوات عامة مثل ChatGPT؟ شوف الفرق.",
       },
       { name: "twitter:title", content: "رِفد vs ChatGPT — المقارنة الكاملة" },
       { name: "twitter:description", content: "السعر، العامية، ذاكرة المتجر، وأمثلة حية لنفس البرومبت — الفرق الحقيقي بين الأدوات." },
@@ -66,7 +66,7 @@ function VsChatgptPage() {
             رِفد <span className="text-gradient-primary">vs</span> ChatGPT
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            ليش يدفع أصحاب المتاجر السعوديين 79 ر.س لرِفد بدل 75 ر.س لـChatGPT؟
+            ليش يختار أصحاب المتاجر السعوديون رِفد بدل أدوات عامة مثل ChatGPT؟
             <br />
             <strong className="text-foreground">لأن رِفد ما هو ChatGPT بواجهة عربية — هو منتج مختلف كلياً.</strong>
           </p>
