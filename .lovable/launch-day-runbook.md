@@ -19,7 +19,7 @@
 | **SEO** (sitemap/robots/OG) | ✅ كل شيء يستجيب 200 | |
 | **قاعدة البيانات** | ✅ نشطة | 10 مستخدمين، 7 onboarded، 15 توليدة في 7 أيام |
 | **بريد معاملاتي** | ⚠️ **غير مُكوَّن** | لا يوجد نطاق بريد في الـworkspace |
-| **طلبات اشتراك معلقة** | ⚠️ **4 pending** | يحتاج مراجعة يدوية |
+| **طلبات اشتراك معلقة** | ⚠️ **5 pending** (4 منها >24س) | يحتاج مراجعة يدوية فورية |
 
 ---
 
@@ -51,15 +51,20 @@ No email domains configured for this workspace.
 
 ## 🟡 إجراءات تنظيف موصى بها (يمكن تأجيلها 24 ساعة)
 
-### 1. مراجعة 4 طلبات اشتراك معلقة
-| ID | Plan | منذ |
-|----|------|-----|
-| `0a84f5b2` | pro | اليوم |
-| `bbb067f3` | pro | يومين |
-| `dda61756` | business | 5 أيام ⚠️ |
-| `ebcc111b` | business | 5 أيام ⚠️ |
+### 1. مراجعة 5 طلبات اشتراك معلقة (4 منها أقدم من 24 ساعة — حرجة)
 
-افتح `/admin/contact-submissions` → اقسم Subscriptions tab → اتصل بالعملاء يدوياً عبر واتساب.
+افتح `/admin/subscriptions` → فلتر "pending" → اتصل بكل عميل يدوياً عبر واتساب خلال 4 ساعات.
+
+```sql
+-- استعلام سريع للمراجعة:
+SELECT id, plan, billing_cycle, whatsapp, created_at,
+       EXTRACT(EPOCH FROM (now() - created_at))/3600 AS hours_old
+FROM subscription_requests
+WHERE status = 'pending'
+ORDER BY created_at ASC;
+```
+
+**SLA:** أي طلب أقدم من 24 ساعة بحالة pending = blocker لمعدل التحويل.
 
 ### 2. تأكيد إعدادات PostHog النهائية
 - النطاقات الـ5 المُضافة ✅
