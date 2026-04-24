@@ -42,6 +42,12 @@ export const Route = createFileRoute("/contact")({
         content:
           "اختر القناة الأنسب لك: نموذج رسمي، واتساب، أو بريد. نرد عليك خلال 4 ساعات عمل.",
       },
+      { property: "og:image", content: "https://rifd.site/og-image.jpg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "رِفد — تواصل مع فريق رِفد للأعمال" },
+      { name: "twitter:image", content: "https://rifd.site/og-image.jpg" },
+      { name: "twitter:image:alt", content: "رِفد — تواصل مع فريق رِفد للأعمال" },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/contact" }],
   }),
