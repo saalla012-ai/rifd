@@ -1,5 +1,6 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   LayoutDashboard,
   Wand2,
@@ -17,9 +18,11 @@ import {
   ShieldCheck,
   TrendingUp,
   Mail,
+  Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { getNewContactCount } from "@/server/admin-contact-submissions";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -37,12 +40,15 @@ const NAV = [
 const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
   { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
+  { to: "/admin/contact-submissions", label: "رسائل التواصل", icon: Inbox, badgeKey: "contact" as const },
   { to: "/admin/email-monitor", label: "مراقبة البريد", icon: Mail },
 ] as const;
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user, profile, loading, isAdmin, signOut } = useAuth();
+  const fetchNewContacts = useServerFn(getNewContactCount);
+  const [newContactCount, setNewContactCount] = useState(0);
 
   // حماية: غير المسجلين يُحوَّلون إلى /auth
   useEffect(() => {
@@ -50,6 +56,26 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       void navigate({ to: "/auth" });
     }
   }, [loading, user, navigate]);
+
+  // عدّاد رسائل التواصل الجديدة (للأدمن فقط)
+  useEffect(() => {
+    if (!isAdmin) return;
+    let alive = true;
+    const tick = async () => {
+      try {
+        const r = await fetchNewContacts({});
+        if (alive) setNewContactCount(r.count);
+      } catch {
+        // silent
+      }
+    };
+    void tick();
+    const id = setInterval(tick, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isAdmin, fetchNewContacts]);
 
   const handleLogout = async () => {
     try {
@@ -112,17 +138,26 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               <div className="mt-4 mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-gold/80">
                 الإدارة
               </div>
-              {ADMIN_NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gold hover:bg-gold/10"
-                  activeProps={{ className: "bg-gold/15 text-gold" }}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              ))}
+              {ADMIN_NAV.map((item) => {
+                const showBadge =
+                  "badgeKey" in item && item.badgeKey === "contact" && newContactCount > 0;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gold hover:bg-gold/10"
+                    activeProps={{ className: "bg-gold/15 text-gold" }}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span className="flex-1">{item.label}</span>
+                    {showBadge && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                        {newContactCount > 99 ? "99+" : newContactCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </>
           )}
         </nav>
