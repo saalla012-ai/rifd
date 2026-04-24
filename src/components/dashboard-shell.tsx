@@ -40,6 +40,7 @@ const NAV = [
 const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
   { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
+  { to: "/admin/contact-submissions", label: "رسائل التواصل", icon: Inbox, badgeKey: "contact" as const },
   { to: "/admin/email-monitor", label: "مراقبة البريد", icon: Mail },
 ] as const;
 
