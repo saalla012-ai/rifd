@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2 } from "lucide-react";
+import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -121,9 +121,13 @@ function LibraryPage() {
           ما عندك توليدات بعد. ابدأ من{" "}
           <Link to="/dashboard/generate-text" className="text-primary hover:underline">توليد نص</Link>{" "}
           أو{" "}
-          <Link to="/dashboard/generate-image" className="text-primary hover:underline">توليد صور</Link>.
+          <Link to="/dashboard/generate-image" className="text-primary hover:underline">توليد صور</Link>{" "}
+          أو{" "}
+          <Link to="/dashboard/generate-video" className="text-primary hover:underline">توليد فيديو</Link>.
         </div>
       ) : (
+        <>
+        <VideoJobsSection />
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((g) => (
             <article key={g.id} className="rounded-xl border border-border bg-card p-4 shadow-soft">
@@ -167,7 +171,27 @@ function LibraryPage() {
             </article>
           ))}
         </div>
+        </>
       )}
     </DashboardShell>
+  );
+}
+
+function VideoJobsSection() {
+  return (
+    <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <Clapperboard className="h-4 w-4 text-primary" />
+          <div>
+            <h2 className="text-sm font-extrabold">فيديوهاتك محفوظة في صفحة توليد الفيديو</h2>
+            <p className="text-xs text-muted-foreground">الفيديوهات تستخدم جدول مهام مستقل لضمان خصم واسترجاع نقاط الفيديو بأمان.</p>
+          </div>
+        </div>
+        <Button asChild size="sm" variant="outline">
+          <Link to="/dashboard/generate-video">فتح الفيديوهات</Link>
+        </Button>
+      </div>
+    </div>
   );
 }
