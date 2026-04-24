@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { AdminGuard } from "@/components/admin-guard";
 import {
   Mail,
   CheckCircle2,
@@ -27,7 +28,11 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/email-monitor")({
   head: () => ({ meta: [{ title: "مراقبة البريد — لوحة الأدمن" }] }),
-  component: EmailMonitorPage,
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل مراقبة البريد…">
+      <EmailMonitorPage />
+    </AdminGuard>
+  ),
 });
 
 type EmailRow = {
