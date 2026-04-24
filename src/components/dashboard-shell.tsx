@@ -47,6 +47,8 @@ const ADMIN_NAV = [
 export function DashboardShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user, profile, loading, isAdmin, signOut } = useAuth();
+  const fetchNewContacts = useServerFn(getNewContactCount);
+  const [newContactCount, setNewContactCount] = useState(0);
 
   // حماية: غير المسجلين يُحوَّلون إلى /auth
   useEffect(() => {
@@ -54,6 +56,26 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       void navigate({ to: "/auth" });
     }
   }, [loading, user, navigate]);
+
+  // عدّاد رسائل التواصل الجديدة (للأدمن فقط)
+  useEffect(() => {
+    if (!isAdmin) return;
+    let alive = true;
+    const tick = async () => {
+      try {
+        const r = await fetchNewContacts({});
+        if (alive) setNewContactCount(r.count);
+      } catch {
+        // silent
+      }
+    };
+    void tick();
+    const id = setInterval(tick, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isAdmin, fetchNewContacts]);
 
   const handleLogout = async () => {
     try {
