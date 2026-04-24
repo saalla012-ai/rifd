@@ -1046,6 +1046,14 @@ export type Database = {
           reset_at: string
         }[]
       }
+      consume_image_quota: {
+        Args: never
+        Returns: {
+          allowed: boolean
+          daily_cap: number
+          used: number
+        }[]
+      }
       consume_text_quota: {
         Args: never
         Returns: {
