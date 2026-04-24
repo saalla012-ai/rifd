@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
-import { generateVideo, listVideoJobs } from "@/server/video-functions";
+import { generateVideo, listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
@@ -37,6 +37,7 @@ function GenerateVideoPage() {
   const router = useRouter();
   const generateVideoFn = useServerFn(generateVideo);
   const listVideoJobsFn = useServerFn(listVideoJobs);
+  const refreshVideoJobFn = useServerFn(refreshVideoJob);
   const [quality, setQuality] = useState<VideoQuality>("fast");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
@@ -96,6 +97,23 @@ function GenerateVideoPage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshActiveJob = async () => {
+    if (!activeJob) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("سجّل الدخول أولاً");
+      const out = await refreshVideoJobFn({
+        data: { jobId: activeJob.id },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      setActiveJob(out.job);
+      setJobs((current) => current.map((job) => job.id === out.job.id ? out.job : job));
+      toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
     }
   };
 
@@ -222,6 +240,11 @@ function GenerateVideoPage() {
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
+              {activeJob?.status === "processing" && (
+                <button type="button" onClick={refreshActiveJob} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                  <RefreshCw className="h-3 w-3" /> تحديث
+                </button>
+              )}
               {latestResult && (
                 <a href={latestResult} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
                   <Download className="h-3 w-3" /> فتح
