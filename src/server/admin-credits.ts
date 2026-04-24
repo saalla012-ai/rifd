@@ -108,12 +108,18 @@ export const listAdminTopups = createServerFn({ method: "POST" })
       : { data: [] as { id: string; email: string | null; store_name: string | null }[] };
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
 
-    // إحصاءات إجمالية (كل الحالات بدون فلتر)
-    const { data: allRows } = await supabaseAdmin
-      .from("topup_purchases")
-      .select("status");
+    // إحصاءات إجمالية بـcount دقيق (بدون جلب الصفوف — يتفادى حد 1000)
+    const statusList = ["pending", "paid", "activated", "rejected", "refunded"] as const;
     const counts: Record<string, number> = { pending: 0, paid: 0, activated: 0, rejected: 0, refunded: 0 };
-    for (const r of allRows ?? []) counts[r.status] = (counts[r.status] ?? 0) + 1;
+    await Promise.all(
+      statusList.map(async (s) => {
+        const { count } = await supabaseAdmin
+          .from("topup_purchases")
+          .select("id", { count: "exact", head: true })
+          .eq("status", s);
+        counts[s] = count ?? 0;
+      })
+    );
 
     return {
       rows: (rows ?? []).map((r) => {
