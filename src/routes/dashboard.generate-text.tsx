@@ -63,7 +63,7 @@ function GenerateTextPage() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setResult(out.result);
-      setRemaining(out.remaining);
+      setRemaining(out.remainingDaily);
       track("generation_created", { kind: "text", template: template.id });
       toast.success("تم التوليد ✨");
       router.invalidate();
@@ -99,7 +99,7 @@ function GenerateTextPage() {
           </Button>
           {remaining !== null && (
             <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">
-              باقي {remaining} توليدة
+              باقي {remaining} نص اليوم
             </span>
           )}
         </div>

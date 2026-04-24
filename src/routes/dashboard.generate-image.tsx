@@ -56,7 +56,7 @@ function GenerateImagePage() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setImageUrl(out.url);
-      setRemaining(out.remaining);
+      setRemaining(out.remainingCredits);
       track("generation_created", { kind: "image", template: template.id, quality });
       toast.success("تم توليد الصورة ✨");
       router.invalidate();
@@ -85,7 +85,7 @@ function GenerateImagePage() {
           </Button>
           {remaining !== null && (
             <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
-              باقي {remaining} صورة
+              باقي {remaining.toLocaleString("ar-SA")} نقطة
             </span>
           )}
         </div>

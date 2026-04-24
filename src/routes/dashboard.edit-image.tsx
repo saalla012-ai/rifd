@@ -161,7 +161,7 @@ function EditImagePage() {
       });
 
       setResultUrl(out.url);
-      setRemaining(out.remaining);
+      setRemaining(out.remainingCredits);
       toast.success("تم تعديل الصورة ✨");
       router.invalidate();
     } catch (e) {
@@ -187,7 +187,7 @@ function EditImagePage() {
         </div>
         {remaining !== null && (
           <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
-            باقي {remaining} صورة
+            باقي {remaining.toLocaleString("ar-SA")} نقطة
           </span>
         )}
       </div>
