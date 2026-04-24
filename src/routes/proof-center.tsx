@@ -51,7 +51,15 @@ const beforeAfter = [
   },
 ];
 
-const proofPackets = [
+const proofPackets: Array<{
+  title: string;
+  studio: { product: string; audience: string; offer: string; goal: "launch" | "offer" | "seasonal" | "retention"; channel: "instagram" | "snapchat" | "tiktok" | "whatsapp" };
+  problem: string;
+  output: string;
+  outcome: string;
+  href: string;
+  icon: typeof Sparkles;
+}> = [
   {
     title: "العطور والجمال",
     studio: { product: "عطر شرقي فاخر 100مل بثبات عالٍ", audience: "نساء ورجال يبحثون عن هدية راقية وانطباع أول قوي", offer: "إطلاق مجموعة جديدة مع عرض أول دفعة", goal: "launch", channel: "instagram" },
