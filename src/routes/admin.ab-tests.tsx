@@ -1,16 +1,16 @@
 /**
- * Admin A/B Test Results — لوحة بسيطة لعرض نتائج تجارب A/B.
- * محمية بفحص دور admin (RLS على ab_test_events يسمح للأدمن فقط بالقراءة).
+ * Admin A/B Test Results — لوحة عرض نتائج تجارب A/B.
+ * الحماية: AdminGuard على الواجهة + getAbTestResults يفرض دور admin خادمياً.
+ * (لا استعلامات Supabase مباشرة من العميل — defense-in-depth.)
  */
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, Users, MousePointerClick, Wand2 } from "lucide-react";
+import { getAbTestResults, type AbStats } from "@/server/admin-ab-tests";
 
 export const Route = createFileRoute("/admin/ab-tests")({
   head: () => ({ meta: [{ title: "نتائج اختبارات A/B — رِفد" }] }),
@@ -21,104 +21,44 @@ export const Route = createFileRoute("/admin/ab-tests")({
   ),
 });
 
-type Row = {
-  experiment: string;
-  variant: "A" | "B";
-  event_type: "view" | "cta_click" | "demo_try" | "submit";
-  session_id: string;
-};
-
-type Stats = {
-  views: number;
-  cta_clicks: number;
-  demo_tries: number;
-  brief_starts: number;
-  unique_sessions: number;
-  cta_rate: number;
-  brief_start_rate: number;
-  demo_rate: number;
-};
-
-function calcStats(rows: Row[]): Stats {
-  const sessions = new Set(rows.map((r) => r.session_id));
-  const views = rows.filter((r) => r.event_type === "view").length;
-  const cta_clicks = rows.filter((r) => r.event_type === "cta_click").length;
-  const demo_tries = rows.filter((r) => r.event_type === "demo_try").length;
-  const brief_starts = rows.filter((r) => r.event_type === "submit").length;
-  return {
-    views,
-    cta_clicks,
-    demo_tries,
-    brief_starts,
-    unique_sessions: sessions.size,
-    cta_rate: views > 0 ? (cta_clicks / views) * 100 : 0,
-    brief_start_rate: views > 0 ? (brief_starts / views) * 100 : 0,
-    demo_rate: views > 0 ? (demo_tries / views) * 100 : 0,
-  };
-}
+type Stats = AbStats;
 
 function AbTestsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [a, setA] = useState<Stats | null>(null);
   const [b, setB] = useState<Stats | null>(null);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      navigate({ to: "/auth", search: { redirect: "/admin/ab-tests" } });
-      return;
-    }
     let active = true;
     (async () => {
-      // تحقق من دور admin قبل أي قراءة
-      const { data: roleRow } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (!active) return;
-      if (!roleRow) {
-        navigate({ to: "/dashboard" });
-        return;
-      }
-      setIsAdmin(true);
-      const { data, error } = await supabase
-        .from("ab_test_events")
-        .select("experiment, variant, event_type, session_id")
-        .eq("experiment", "hero_hook")
-        .limit(10000);
-      if (!active) return;
-      if (error) {
-        setError(error.message);
+      try {
+        const res = await getAbTestResults({ data: { experiment: "hero_hook" } });
+        if (!active) return;
+        setA(res.A);
+        setB(res.B);
         setLoading(false);
-        return;
+      } catch (e: any) {
+        if (!active) return;
+        setError(e?.message ?? "تعذّر تحميل النتائج");
+        setLoading(false);
       }
-      const rows = (data ?? []) as Row[];
-      setA(calcStats(rows.filter((r) => r.variant === "A")));
-      setB(calcStats(rows.filter((r) => r.variant === "B")));
-      setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [authLoading, user, navigate]);
+  }, []);
 
-  if (authLoading || (!isAdmin && loading)) {
+  if (loading) {
     return (
       <DashboardShell>
         <div className="mx-auto flex max-w-6xl items-center gap-2 p-6 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          جاري التحقق…
+          جاري التحميل…
         </div>
       </DashboardShell>
     );
   }
-  if (!isAdmin) return null;
 
   const winner =
     a && b
