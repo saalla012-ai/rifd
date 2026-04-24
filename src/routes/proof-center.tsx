@@ -18,6 +18,17 @@ import { MarketingLayout } from "@/components/marketing-layout";
 import { ProofCenterOperationalProof } from "@/components/proof-center-operational-proof";
 import { Button } from "@/components/ui/button";
 
+type InternalRoute =
+  | "/onboarding"
+  | "/pricing"
+  | "/business-solutions"
+  | "/for-perfumes-beauty"
+  | "/for-abayas-fashion"
+  | "/for-gifts-sweets-coffee"
+  | "/for-electronics-accessories"
+  | "/for-kids-baby"
+  | "/for-home-decor";
+
 const decisionFramework = [
   {
     title: "1) افهم نقطة التحول",
@@ -58,7 +69,7 @@ const proofPackets: Array<{
   problem: string;
   output: string;
   outcome: string;
-  href: string;
+  href: InternalRoute;
   icon: typeof Sparkles;
 }> = [
   {
