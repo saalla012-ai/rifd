@@ -9,9 +9,11 @@ const SENDER_DOMAIN = "send.rifd.site";
 const FROM_DOMAIN = "send.rifd.site";
 
 const PLAN_LABELS: Record<string, string> = {
-  pro: "احترافي",
-  business: "أعمال",
   free: "مجاني",
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
 };
 
 /**
