@@ -33,12 +33,6 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "رِفد للتقنية — محتوى وصور وحملات لمتجرك السعودي" },
-      {
-        name: "description",
-        content:
-          "حوّل متجرك السعودي إلى آلة محتوى وحملات ذكية. 50+ قالب جاهز للنصوص والصور بالعامية السعودية مع تحديثات شهرية من رِفد للتقنية.",
-      },
       { name: "author", content: "رِفد للتقنية" },
       { name: "theme-color", content: "#1a5d3e" },
       { property: "og:type", content: "website" },
