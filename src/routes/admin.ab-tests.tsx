@@ -2,7 +2,7 @@
  * Admin A/B Test Results — لوحة بسيطة لعرض نتائج تجارب A/B.
  * محمية بفحص دور admin (RLS على ab_test_events يسمح للأدمن فقط بالقراءة).
  */
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,14 +52,35 @@ function calcStats(rows: Row[]): Stats {
 }
 
 function AbTestsPage() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [a, setA] = useState<Stats | null>(null);
   const [b, setB] = useState<Stats | null>(null);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: "/admin/ab-tests" } });
+      return;
+    }
     let active = true;
     (async () => {
+      // تحقق من دور admin قبل أي قراءة
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!active) return;
+      if (!roleRow) {
+        navigate({ to: "/dashboard" });
+        return;
+      }
+      setIsAdmin(true);
       const { data, error } = await supabase
         .from("ab_test_events")
         .select("experiment, variant, event_type, session_id")
@@ -79,7 +100,19 @@ function AbTestsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [authLoading, user, navigate]);
+
+  if (authLoading || (!isAdmin && loading)) {
+    return (
+      <DashboardShell>
+        <div className="mx-auto flex max-w-6xl items-center gap-2 p-6 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          جاري التحقق…
+        </div>
+      </DashboardShell>
+    );
+  }
+  if (!isAdmin) return null;
 
   const winner =
     a && b
