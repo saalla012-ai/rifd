@@ -27,7 +27,7 @@
 
 ### البريد المعاملاتي مُفعّل
 
-**الحالة الحالية:** نطاق البريد `rifd.site` مُكوَّن ومُوثَّق داخل Lovable Cloud وجاهز للإرسال.
+**الحالة الحالية:** نطاق البريد المفوّض `send.rifd.site` مُكوَّن ومُوثَّق داخل Lovable Cloud وجاهز للإرسال.
 
 **اختبار قبول قبل الإعلان التسويقي:**
 1. تسجيل حساب تجريبي جديد من `/auth`.
@@ -90,7 +90,7 @@ ORDER BY created_at ASC;
 ### السيناريو 2: التسجيل لا يعمل (لا يصل بريد)
 1. افتح `/admin/email-monitor` وتحقق من DLQ والرسائل الفاشلة.
 2. نفّذ اختبار recovery من `/forgot-password` لبريدك الإداري.
-3. إن تكرر الفشل: افتح Lovable Cloud → Emails وتحقق من حالة `rifd.site`.
+3. إن تكرر الفشل: افتح Lovable Cloud → Emails وتحقق من حالة `send.rifd.site`.
 
 ### السيناريو 3: التوليدات تفشل (429/quota)
 1. تحقق من `/admin/plan-limits`
@@ -151,7 +151,7 @@ ORDER BY created_at ASC;
 ## ✅ خطوات الإطلاق العلني (Marketing Launch)
 
 1. ✅ DNS مستقر بدون أعطال.
-2. ✅ نطاق البريد مُكوَّن ومُوثَّق على `rifd.site`.
+2. ✅ نطاق البريد مُكوَّن ومُوثَّق على `send.rifd.site`.
 3. ✅ اختبر مسار التسجيل الكامل: signup → email confirm → onboarding → first generation.
 4. ✅ اختبر مسار الاشتراك الكامل: pricing → subscription_request → دفع → activation يدوي.
 5. ⏳ إعلان على القنوات: تويتر، لينكدإن، واتساب الأعمال.

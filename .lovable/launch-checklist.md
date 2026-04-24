@@ -14,7 +14,7 @@
 | **نموذج /contact** (P2) | 100% | end-to-end يعمل (DB + بريد + Telegram + Inbox) |
 | **QA Runbook** (P3) | 100% (وثائق) | 7 سيناريوهات × 6 تشكيلات موثَّقة — التنفيذ اليدوي post-launch |
 | **PostHog Analytics** (P4) | 100% | 5 أحداث + identify + pageviews + CSP |
-| **الإطلاق** (P5) | 100% | DNS + بريد verified + runbook كامل |
+| **الإطلاق** (P5) | 100% | DNS + بريد `send.rifd.site` verified + runbook كامل |
 
 ---
 
