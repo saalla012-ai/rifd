@@ -26,12 +26,18 @@ export const Route = createFileRoute("/admin/plan-limits")({
   ),
 });
 
-const PLANS = ["free", "pro", "business"] as const;
+const PLANS = ["free", "starter", "growth", "pro", "business"] as const;
 const KINDS = ["text", "image"] as const;
 type Plan = (typeof PLANS)[number];
 type Kind = (typeof KINDS)[number];
 
-const PLAN_LABEL: Record<Plan, string> = { free: "مجاني", pro: "محترف", business: "أعمال" };
+const PLAN_LABEL: Record<Plan, string> = {
+  free: "مجاني",
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
+};
 const KIND_LABEL: Record<Kind, string> = { text: "نصوص", image: "صور" };
 
 function AdminPlanLimitsPage() {
@@ -134,7 +140,7 @@ function AdminPlanLimitsPage() {
         <div>
           <h1 className="text-2xl font-extrabold">حدود الباقات</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            عدّل الحد الشهري لكل باقة (نصوص/صور). كل تعديل يُسجَّل في سجل المراجعة.
+            راجع سقوف الحماية للنصوص والصور لكل باقة. نقاط الفيديو تُدار من نظام الرصيد والشحن.
           </p>
         </div>
         <div className="flex gap-2">
@@ -150,7 +156,7 @@ function AdminPlanLimitsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {PLANS.map((plan) => (
           <div key={plan} className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h3 className="text-base font-bold">{PLAN_LABEL[plan]}</h3>
@@ -162,7 +168,7 @@ function AdminPlanLimitsPage() {
                 return (
                   <div key={kind} className="space-y-1.5">
                     <Label htmlFor={k} className="text-xs">
-                      {KIND_LABEL[kind]} (الحد الشهري)
+                      {KIND_LABEL[kind]} (سقف حماية)
                     </Label>
                     <div className="flex gap-2">
                       <Input
