@@ -78,7 +78,11 @@ function JsonBlock({ label, value }: { label: string; value: unknown }) {
 
 export const Route = createFileRoute("/admin/audit")({
   head: () => ({ meta: [{ title: "سجل تعديلات الأدمن — رِفد" }] }),
-  component: AdminAuditPage,
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل سجل التعديلات…">
+      <AdminAuditPage />
+    </AdminGuard>
+  ),
 });
 
 const ACTION_LABEL: Record<string, string> = {

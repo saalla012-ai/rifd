@@ -18,7 +18,11 @@ import {
 
 export const Route = createFileRoute("/admin/plan-limits")({
   head: () => ({ meta: [{ title: "حدود الباقات — رِفد" }] }),
-  component: AdminPlanLimitsPage,
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل حدود الباقات…">
+      <AdminPlanLimitsPage />
+    </AdminGuard>
+  ),
 });
 
 const PLANS = ["free", "pro", "business"] as const;

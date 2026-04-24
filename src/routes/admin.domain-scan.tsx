@@ -20,7 +20,12 @@ type ScanRow = {
 };
 
 export const Route = createFileRoute("/admin/domain-scan")({
-  component: DomainScanPage,
+  head: () => ({ meta: [{ title: "فحص النطاقات — رِفد" }] }),
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل فحص النطاقات…">
+      <DomainScanPage />
+    </AdminGuard>
+  ),
 });
 
 function DomainScanPage() {

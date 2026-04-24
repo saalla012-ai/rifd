@@ -42,7 +42,11 @@ import { sendTransactionalEmail } from "@/lib/email/send";
 
 export const Route = createFileRoute("/admin/subscriptions")({
   head: () => ({ meta: [{ title: "إدارة الاشتراكات — رِفد" }] }),
-  component: AdminSubscriptionsPage,
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل إدارة الاشتراكات…">
+      <AdminSubscriptionsPage />
+    </AdminGuard>
+  ),
 });
 
 type Req = {

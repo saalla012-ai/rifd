@@ -27,7 +27,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/analytics")({
   head: () => ({ meta: [{ title: "تحليلات الأدمن — رِفد" }] }),
-  component: AdminAnalyticsPage,
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل لوحة التحليلات…">
+      <AdminAnalyticsPage />
+    </AdminGuard>
+  ),
 });
 
 const COLORS = ["#1a5d3e", "#d4a017", "#0ea5e9", "#a855f7", "#ef4444", "#10b981"];

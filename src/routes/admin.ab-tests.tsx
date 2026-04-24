@@ -12,7 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, Users, MousePointerClick, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/ab-tests")({
-  component: AbTestsPage,
+  head: () => ({ meta: [{ title: "نتائج اختبارات A/B — رِفد" }] }),
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل نتائج التجارب…">
+      <AbTestsPage />
+    </AdminGuard>
+  ),
 });
 
 type Row = {
