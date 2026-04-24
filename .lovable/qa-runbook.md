@@ -171,12 +171,51 @@
 
 ---
 
+## 🤖 نتائج الفحص الآلي للبنية التحتية (2026-04-24)
+
+| الفحص | النتيجة | التفاصيل |
+|---|---|---|
+| **Supabase Linter** | ✅ 0 issues | لا أخطاء أو تحذيرات أمنية |
+| **Cron Jobs النشطة** | ✅ 6 jobs | `process-email-queue` (5s), `check-email-dlq` (10m), `daily-domain-scan` (6 ص), `rifd-onboarding-emails-daily` (6 ص), `check-stale-subscriptions` (9 ص), `send-expiring-subscription-reminders` (9 ص) |
+| **طوابير البريد الفعلية** | ✅ 0 pending | trans_pending=0, auth_pending=0 |
+| **DLQ** | ⚠️ 2 رسائل قديمة | رسالتا welcome من قبل تأكيد النطاق (`saalla012@gmail.com`, `a6439875542@gmail.com`) — يمكن تجاهلها أو إعادة إرسالها يدوياً |
+| **Recovery emails (آخر ساعة)** | ✅ 4 رسائل تُعالج | كلها بحالة `pending` تنتظر cron (تأكدنا أن المستخدم استلمها) |
+| **مسارات الإدارة** | ✅ 9 مسارات محمية | جميعها تستخدم `<AdminGuard>` أو `requireSupabaseAuth` + `has_role` |
+| **Triggers الحماية** | ✅ نشطة | `trg_enforce_generation_quota`, `trg_enforce_generation_integrity` |
+| **Security Headers** | ✅ مُفعّلة عبر `src/start.ts` | CSP, HSTS, X-Frame-Options: DENY, Permissions-Policy |
+
+---
+
 ## 🐛 سجل الأخطاء (يُحدَّث أثناء التنفيذ)
 
 | التاريخ | السيناريو | المقاس | المتصفح | الوصف | الحالة |
 |---|---|---|---|---|---|
-| (مثال) 2026-04-25 | S4 | 390 | Safari iOS | رفع الإيصال يفشل > 2MB | تم — أُضيف ضغط تلقائي |
+| 2026-04-24 | البنية التحتية | — | — | 2 رسائل welcome عالقة في DLQ من قبل تأكيد النطاق | مقبول — لا يؤثر على الإطلاق |
+| 2026-04-24 | S5 (Recovery) | Mobile | Chrome | تم تأكيد وصول بريد Recovery للمستخدم | ✅ نجح |
 | | | | | | |
+
+---
+
+## 🚦 Lighthouse — التشغيل اليدوي السريع
+
+افتح Chrome DevTools → Lighthouse Tab → اختر **Mobile** + **Performance/SEO/A11y/Best Practices** ثم Analyze:
+
+```text
+https://rifd.site/                  → Performance ≥80, SEO ≥95, A11y ≥90
+https://rifd.site/pricing           → Performance ≥80, SEO ≥95, A11y ≥90
+https://rifd.site/about             → Performance ≥80, SEO ≥95, A11y ≥90
+https://rifd.site/auth              → Performance ≥80, SEO ≥90, A11y ≥90
+https://rifd.site/contact           → Performance ≥80, SEO ≥95, A11y ≥90
+```
+
+**سيناريوهات الفشل المحتملة + الحل السريع:**
+
+| المقياس | الحد الأدنى | إن سقط | الحل |
+|---|---|---|---|
+| LCP | < 2.5s | افحص الصور الكبيرة في hero | استخدم `loading="lazy"` على الصور غير المرئية |
+| CLS | < 0.1 | عناصر تتحرك بعد التحميل | حدّد `width/height` على الصور |
+| Contrast | AA | نص رمادي على خلفية فاتحة | استبدل بـ`text-foreground` بدل `text-muted-foreground` |
+| Meta tags | 100% | صفحة بدون og:title | تأكد من `head()` في route file |
 
 ---
 
