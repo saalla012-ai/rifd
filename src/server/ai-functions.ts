@@ -250,6 +250,7 @@ export const generateImage = createServerFn({ method: "POST" })
         },
       });
       if (insErr) {
+        // فشل التسجيل بعد توليد الصورة → احذف الملف ورُدّ النقاط (المعالج الخارجي يلتقط الخطأ ويعمل refund)
         await supabase.storage.from("generated-images").remove([filename]).catch(() => {});
         throw new Error(`فشل حفظ الصورة: ${insErr.message}`);
       }
