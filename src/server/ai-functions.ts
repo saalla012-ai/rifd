@@ -260,7 +260,7 @@ export const generateImage = createServerFn({ method: "POST" })
   });
 
 // ============================================================
-// editImage — يستهلك نفس تكلفة Flash (10 نقاط)
+// editImage — حصة صور يومية بدون نقاط
 // ============================================================
 export const editImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -284,17 +284,10 @@ export const editImage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    const cost = imageCost("flash"); // التعديل دائماً Flash
 
-    let ledgerId: string;
-    let remainingTotal: number;
+    let quota: { used: number; cap: number };
     try {
-      const r = await consume(supabase, cost, "consume_image", {
-        operation: "edit",
-        template_id: data.templateId,
-      });
-      ledgerId = r.ledgerId;
-      remainingTotal = r.remainingTotal;
+      quota = await consumeImageQuota(supabase);
     } catch (e) {
       throw creditError(e);
     }
@@ -362,8 +355,8 @@ export const editImage = createServerFn({ method: "POST" })
         _metadata: {
           template_title: data.templateTitle,
           storage_path: filename,
-          credits_charged: cost,
-          ledger_id: ledgerId,
+          credits_charged: 0,
+          billing_scope: "daily_image_quota",
         },
       });
       if (insErr) {
@@ -375,11 +368,12 @@ export const editImage = createServerFn({ method: "POST" })
 
       return {
         url: publicUrl,
-        creditsCharged: cost,
-        remainingCredits: remainingTotal,
+        creditsCharged: 0,
+        remainingDaily: quota.cap - quota.used,
+        dailyUsed: quota.used,
+        dailyCap: quota.cap,
       };
     } catch (e) {
-      await refund(supabase, ledgerId, "image_edit_failed");
       throw e;
     }
   });
