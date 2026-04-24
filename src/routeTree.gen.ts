@@ -48,6 +48,7 @@ import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.ge
 import { Route as DashboardGenerateImageRouteImport } from './routes/dashboard.generate-image'
 import { Route as DashboardEditImageRouteImport } from './routes/dashboard.edit-image'
 import { Route as DashboardCreditsRouteImport } from './routes/dashboard.credits'
+import { Route as DashboardCampaignStudioRouteImport } from './routes/dashboard.campaign-studio'
 import { Route as ApiTelegramSetChatIdRouteImport } from './routes/api.telegram-set-chat-id'
 import { Route as ApiTelegramDiscoverChatsRouteImport } from './routes/api.telegram-discover-chats'
 import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
@@ -276,6 +277,11 @@ const DashboardCreditsRoute = DashboardCreditsRouteImport.update({
   path: '/credits',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCampaignStudioRoute = DashboardCampaignStudioRouteImport.update({
+  id: '/campaign-studio',
+  path: '/campaign-studio',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const ApiTelegramSetChatIdRoute = ApiTelegramSetChatIdRouteImport.update({
   id: '/api/telegram-set-chat-id',
   path: '/api/telegram-set-chat-id',
@@ -468,6 +474,7 @@ export interface FileRoutesByFullPath {
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
   '/api/telegram-set-chat-id': typeof ApiTelegramSetChatIdRoute
+  '/dashboard/campaign-studio': typeof DashboardCampaignStudioRoute
   '/dashboard/credits': typeof DashboardCreditsRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
@@ -537,6 +544,7 @@ export interface FileRoutesByTo {
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
   '/api/telegram-set-chat-id': typeof ApiTelegramSetChatIdRoute
+  '/dashboard/campaign-studio': typeof DashboardCampaignStudioRoute
   '/dashboard/credits': typeof DashboardCreditsRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
@@ -608,6 +616,7 @@ export interface FileRoutesById {
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
   '/api/telegram-discover-chats': typeof ApiTelegramDiscoverChatsRoute
   '/api/telegram-set-chat-id': typeof ApiTelegramSetChatIdRoute
+  '/dashboard/campaign-studio': typeof DashboardCampaignStudioRoute
   '/dashboard/credits': typeof DashboardCreditsRoute
   '/dashboard/edit-image': typeof DashboardEditImageRoute
   '/dashboard/generate-image': typeof DashboardGenerateImageRoute
@@ -680,6 +689,7 @@ export interface FileRouteTypes {
     | '/api/setup-notify-config'
     | '/api/telegram-discover-chats'
     | '/api/telegram-set-chat-id'
+    | '/dashboard/campaign-studio'
     | '/dashboard/credits'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
@@ -749,6 +759,7 @@ export interface FileRouteTypes {
     | '/api/setup-notify-config'
     | '/api/telegram-discover-chats'
     | '/api/telegram-set-chat-id'
+    | '/dashboard/campaign-studio'
     | '/dashboard/credits'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
@@ -819,6 +830,7 @@ export interface FileRouteTypes {
     | '/api/setup-notify-config'
     | '/api/telegram-discover-chats'
     | '/api/telegram-set-chat-id'
+    | '/dashboard/campaign-studio'
     | '/dashboard/credits'
     | '/dashboard/edit-image'
     | '/dashboard/generate-image'
@@ -1185,6 +1197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCreditsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/campaign-studio': {
+      id: '/dashboard/campaign-studio'
+      path: '/campaign-studio'
+      fullPath: '/dashboard/campaign-studio'
+      preLoaderRoute: typeof DashboardCampaignStudioRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/api/telegram-set-chat-id': {
       id: '/api/telegram-set-chat-id'
       path: '/api/telegram-set-chat-id'
@@ -1392,6 +1411,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
+  DashboardCampaignStudioRoute: typeof DashboardCampaignStudioRoute
   DashboardCreditsRoute: typeof DashboardCreditsRoute
   DashboardEditImageRoute: typeof DashboardEditImageRoute
   DashboardGenerateImageRoute: typeof DashboardGenerateImageRoute
@@ -1408,6 +1428,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardCampaignStudioRoute: DashboardCampaignStudioRoute,
   DashboardCreditsRoute: DashboardCreditsRoute,
   DashboardEditImageRoute: DashboardEditImageRoute,
   DashboardGenerateImageRoute: DashboardGenerateImageRoute,
@@ -1488,3 +1509,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
