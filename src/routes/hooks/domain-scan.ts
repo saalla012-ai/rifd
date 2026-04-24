@@ -86,51 +86,52 @@ export const Route = createFileRoute("/hooks/domain-scan")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // ---- Auth: require a valid Supabase JWT belonging to an admin user ----
+        // ---- Auth: قبول إما (1) JWT أدمن من واجهة الأدمن، أو (2) NOTIFY_WEBHOOK_SECRET من cron ----
         // (السابق كان يعتمد على anon key وهو مكشوف في الـ bundle — ثغرة HOOKS_ANON_KEY_AUTH)
-        const authHeader = request.headers.get("authorization");
-        const token = authHeader?.replace(/^Bearer\s+/i, "").trim();
-
-        if (!token) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-
         const supabaseUrl = process.env.SUPABASE_URL!;
         const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY!;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        const webhookSecret = process.env.NOTIFY_WEBHOOK_SECRET;
 
-        // نتحقق من JWT عبر anon client + global header (آمن ولا يكشف service key)
-        const supabaseUserCtx = createClient(supabaseUrl, anonKey, {
-          global: { headers: { Authorization: `Bearer ${token}` } },
-          auth: { autoRefreshToken: false, persistSession: false },
-        });
+        const authHeader = request.headers.get("authorization");
+        const token = authHeader?.replace(/^Bearer\s+/i, "").trim();
+        const providedWebhookSecret = request.headers.get("x-webhook-secret");
 
-        const { data: claimsData, error: claimsErr } =
-          await supabaseUserCtx.auth.getClaims(token);
-        const userId = claimsData?.claims?.sub;
-        if (claimsErr || !userId) {
+        let authorized = false;
+
+        // مسار 1: webhook secret من cron (يُحدَّث الـ cron لاحقاً ليستخدم x-webhook-secret)
+        if (
+          webhookSecret &&
+          providedWebhookSecret &&
+          providedWebhookSecret === webhookSecret
+        ) {
+          authorized = true;
+        }
+
+        // مسار 2: JWT أدمن من admin UI
+        if (!authorized && token) {
+          const supabaseUserCtx = createClient(supabaseUrl, anonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: { autoRefreshToken: false, persistSession: false },
+          });
+          const { data: claimsData } = await supabaseUserCtx.auth.getClaims(token);
+          const userId = claimsData?.claims?.sub;
+          if (userId) {
+            const { data: isAdmin } = await supabaseUserCtx.rpc("has_role", {
+              _user_id: userId,
+              _role: "admin",
+            });
+            if (isAdmin) authorized = true;
+          }
+        }
+
+        if (!authorized) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
           });
         }
 
-        // التحقق من دور admin عبر RPC has_role (SECURITY DEFINER آمنة)
-        const { data: isAdmin, error: roleErr } = await supabaseUserCtx.rpc(
-          "has_role",
-          { _user_id: userId, _role: "admin" }
-        );
-        if (roleErr || !isAdmin) {
-          return new Response(JSON.stringify({ error: "forbidden" }), {
-            status: 403,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-
-        // الآن نُنشئ admin client لإجراء الفحص الفعلي
         const supabaseAdmin = createClient(supabaseUrl, serviceKey, {
           auth: { autoRefreshToken: false, persistSession: false },
         });
