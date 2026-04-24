@@ -89,7 +89,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
       await supabase.from("email_send_log").insert({
         message_id: messageId,
         template_name: "welcome",
-        recipient_email: data.email,
+        recipient_email: email,
         status: "pending",
         metadata: { source: "signup_trigger" },
       });
@@ -97,7 +97,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
       const { error: enqueueError } = await supabase.rpc("enqueue_email", {
         queue_name: QUEUE_NAME,
         payload: {
-          to: data.email,
+          to: email,
           from: FROM_ADDRESS,
           sender_domain: SENDER_DOMAIN,
           subject,
@@ -117,7 +117,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
         await supabase.from("email_send_log").insert({
           message_id: messageId,
           template_name: "welcome",
-          recipient_email: data.email,
+          recipient_email: email,
           status: "failed",
           error_message: errMsg,
           metadata: { source: "signup_trigger" },
