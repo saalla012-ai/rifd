@@ -68,12 +68,17 @@ function DomainScanPage() {
   async function runScanNow() {
     setRunning(true);
     try {
-      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error("الجلسة منتهية — يرجى إعادة تسجيل الدخول");
+        setRunning(false);
+        return;
+      }
       const res = await fetch("/hooks/domain-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${anonKey}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({}),
       });
