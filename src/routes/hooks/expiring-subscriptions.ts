@@ -5,8 +5,8 @@ import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
 const SITE_NAME = "رِفد";
-const SENDER_DOMAIN = "notify.rifd.site";
-const FROM_DOMAIN = "notify.rifd.site";
+const SENDER_DOMAIN = "send.rifd.site";
+const FROM_DOMAIN = "send.rifd.site";
 
 const PLAN_LABELS: Record<string, string> = {
   pro: "احترافي",
