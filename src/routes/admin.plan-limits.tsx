@@ -35,8 +35,7 @@ const PLAN_LABEL: Record<Plan, string> = { free: "مجاني", pro: "محترف"
 const KIND_LABEL: Record<Kind, string> = { text: "نصوص", image: "صور" };
 
 function AdminPlanLimitsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  // الحماية مضمونة عبر <AdminGuard>.
   const [rows, setRows] = useState<PlanLimitRow[]>([]);
   const [audit, setAudit] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,11 +71,9 @@ function AdminPlanLimitsPage() {
   };
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) { void navigate({ to: "/auth" }); return; }
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
+  }, []);
 
   const onSave = async (plan: Plan, kind: Kind) => {
     const k = keyOf(plan, kind);

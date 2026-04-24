@@ -141,8 +141,7 @@ function summarize(entry: AuditEntry): string {
 }
 
 function AdminAuditPage() {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  // الحماية مضمونة عبر <AdminGuard>.
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [facets, setFacets] = useState<AuditFacets>({ actions: [], tables: [] });
   const [loading, setLoading] = useState(true);
@@ -191,11 +190,9 @@ function AdminAuditPage() {
   };
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) { void navigate({ to: "/auth" }); return; }
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
+  }, []);
 
   const resetFilters = () => {
     setActionFilter("__all__");
