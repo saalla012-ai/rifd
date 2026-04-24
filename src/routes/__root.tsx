@@ -1,7 +1,9 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { AuthProvider } from "@/hooks/use-auth";
+import { useEffect } from "react";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouter } from "@tanstack/react-router";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieBanner } from "@/components/cookie-banner";
+import { initAnalytics, identifyUser, resetAnalytics, trackPageview } from "@/lib/analytics/posthog";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -92,9 +94,48 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * يهيّئ PostHog مرة واحدة، ويربط/يفك ربط المستخدم تلقائياً،
+ * ويتتبّع كل تغيير route كـpageview. SSR-safe بالكامل.
+ */
+function AnalyticsBridge() {
+  const router = useRouter();
+  const { user, profile, loading } = useAuth();
+
+  // تهيئة + اشتراك بتغييرات الـrouter
+  useEffect(() => {
+    void initAnalytics().then((ph) => {
+      if (!ph) return;
+      // pageview الأول
+      trackPageview(window.location.pathname + window.location.search);
+    });
+
+    const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
+      trackPageview(toLocation.pathname + (toLocation.searchStr || ""));
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  // ربط/فك ربط المستخدم
+  useEffect(() => {
+    if (loading) return;
+    if (user) {
+      identifyUser(user.id, {
+        plan: profile?.plan,
+        onboarded: profile?.onboarded,
+      });
+    } else {
+      resetAnalytics();
+    }
+  }, [user, profile, loading]);
+
+  return null;
+}
+
 function RootComponent() {
   return (
     <AuthProvider>
+      <AnalyticsBridge />
       <Outlet />
       <Toaster richColors position="top-center" />
       <CookieBanner />
