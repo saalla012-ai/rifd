@@ -132,7 +132,7 @@
 
 **P5.1** Publish + التحقق من DNS لـ `rifd.site` و `www.rifd.site`
 **P5.2** اختبار بريد production: signup حقيقي → welcome وصل، contact form → confirmation وصل
-**P5.3** التحقق من sender domain `notify.rifd.club` يعمل (راجع `mem://constraints/email-domain-name`)
+**P5.3** التحقق من sender domain `send.rifd.site` يعمل (المرسل `noreply@notify.send.rifd.site` — راجع `mem://constraints/email-domain-name`) ✅ النطاق Verified
 **P5.4** تحديث `.lovable/launch-checklist.md` → 100/100
 **P5.5** كتابة `.lovable/launch-day-runbook.md`:
 - معايير نجاح أول أسبوع: 100 زائر / 10 تسجيلات / 1-3 طلبات اشتراك
