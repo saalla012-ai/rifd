@@ -263,6 +263,8 @@ const LedgerInput = z.object({
   limit: z.number().int().min(1).max(500).optional().default(200),
 });
 
+type LedgerJson = string | number | boolean | null | LedgerJson[] | { [k: string]: LedgerJson };
+
 export type AdminLedgerEntry = {
   id: string;
   user_id: string;
@@ -276,7 +278,7 @@ export type AdminLedgerEntry = {
   reference_id: string | null;
   refunded_at: string | null;
   created_at: string;
-  metadata: Record<string, unknown> | null;
+  metadata: LedgerJson;
 };
 
 export const listCreditLedger = createServerFn({ method: "POST" })
