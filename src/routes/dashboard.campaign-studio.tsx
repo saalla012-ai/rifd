@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, Image as ImageIcon, LayoutTemplate, Megaphone, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -10,6 +10,13 @@ import { cn } from "@/lib/utils";
 
 type CampaignGoal = "launch" | "offer" | "seasonal" | "retention";
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
+type CampaignSearch = {
+  product?: string;
+  audience?: string;
+  offer?: string;
+  goal?: CampaignGoal;
+  channel?: CampaignChannel;
+};
 
 const GOALS: Array<{ value: CampaignGoal; label: string; angle: string }> = [
   { value: "launch", label: "إطلاق منتج", angle: "تركيز على التشويق، المشكلة، والتحوّل بعد استخدام المنتج" },
@@ -54,15 +61,23 @@ const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string
 
 export const Route = createFileRoute("/dashboard/campaign-studio")({
   head: () => ({ meta: [{ title: "Campaign Studio — رِفد" }] }),
+  validateSearch: (s: Record<string, unknown>): CampaignSearch => ({
+    product: typeof s.product === "string" ? s.product.slice(0, 500) : undefined,
+    audience: typeof s.audience === "string" ? s.audience.slice(0, 500) : undefined,
+    offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
+    goal: ["launch", "offer", "seasonal", "retention"].includes(String(s.goal)) ? (s.goal as CampaignGoal) : undefined,
+    channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as CampaignChannel) : undefined,
+  }),
   component: CampaignStudioPage,
 });
 
 function CampaignStudioPage() {
-  const [goal, setGoal] = useState<CampaignGoal>("launch");
-  const [channel, setChannel] = useState<CampaignChannel>("instagram");
-  const [product, setProduct] = useState("");
-  const [audience, setAudience] = useState("");
-  const [offer, setOffer] = useState("");
+  const search = useSearch({ from: "/dashboard/campaign-studio" });
+  const [goal, setGoal] = useState<CampaignGoal>(search.goal ?? "launch");
+  const [channel, setChannel] = useState<CampaignChannel>(search.channel ?? "instagram");
+  const [product, setProduct] = useState(search.product ?? "");
+  const [audience, setAudience] = useState(search.audience ?? "");
+  const [offer, setOffer] = useState(search.offer ?? "");
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? GOALS[0];
   const selectedChannel = CHANNELS.find((item) => item.value === channel) ?? CHANNELS[0];
