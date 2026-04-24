@@ -65,7 +65,7 @@ type Purchase = {
 };
 
 const STATUS_META: Record<Purchase["status"], { label: string; tone: string; icon: typeof Clock }> = {
-  pending: { label: "بانتظار رفع إيصال", tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400", icon: Clock },
+  pending: { label: "بانتظار رفع إيصال", tone: "bg-warning/20 text-warning-foreground", icon: Clock },
   paid: { label: "بانتظار تأكيد الأدمن", tone: "bg-primary/15 text-primary", icon: FileCheck2 },
   activated: { label: "تم الإضافة ✨", tone: "bg-success/15 text-success", icon: CheckCircle2 },
   rejected: { label: "تم الرفض", tone: "bg-destructive/15 text-destructive", icon: AlertCircle },
@@ -265,11 +265,11 @@ function CreditsPage() {
 
       {/* Pending purchase banner */}
       {pendingPurchase && (
-        <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4">
+        <div className="mb-6 rounded-xl border border-warning/50 bg-warning/10 p-4">
           <div className="flex items-start gap-3">
-            <Clock className="mt-0.5 h-5 w-5 text-amber-600" />
+            <Clock className="mt-0.5 h-5 w-5 text-warning-foreground" />
             <div className="flex-1">
-              <p className="font-bold text-amber-700 dark:text-amber-400">
+              <p className="font-bold text-warning-foreground">
                 لديك طلب شحن {pendingPurchase.status === "pending" ? "بانتظار رفع إيصال" : "بانتظار تأكيد الأدمن"}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">

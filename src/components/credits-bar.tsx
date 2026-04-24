@@ -71,7 +71,7 @@ export function CreditsBar() {
           <span className="tabular-nums">{formatNum(total)}</span>
           <span className="hidden text-muted-foreground sm:inline">نقطة</span>
           {(lowCredits || textNearLimit) && (
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+            <AlertTriangle className="h-3.5 w-3.5 text-warning" />
           )}
         </button>
       </PopoverTrigger>
@@ -116,7 +116,7 @@ export function CreditsBar() {
               <span
                 className={cn(
                   "font-bold tabular-nums",
-                  textNearLimit ? "text-amber-600" : "text-foreground"
+                  textNearLimit ? "text-warning-foreground" : "text-foreground"
                 )}
               >
                 {formatNum(data.dailyTextUsed)} / {formatNum(data.dailyTextCap)}
@@ -126,7 +126,7 @@ export function CreditsBar() {
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
-                  textNearLimit ? "bg-amber-500" : "bg-primary"
+                  textNearLimit ? "bg-warning" : "bg-primary"
                 )}
                 style={{ width: `${textPct}%` }}
               />
