@@ -145,7 +145,7 @@ const objections = [
     decisionSignal: "إذا لاحظت أن أكبر مشكلتك اليوم هي تكرار نصوص عامة لا تُترجم إلى زاوية بيع واحدة، فهذا الاعتراض محسوم لصالح التجربة.",
     next: "ابدأ التجربة المجانية ثم قارن أول مخرج بما تكتبه عادة بنفسك، لأن الفرق الحقيقي يظهر في ترابط الحزمة لا في طول النص فقط.",
     ctaLabel: "ابدأ التجربة المجانية",
-    href: "/onboarding",
+    href: "/onboarding" as const,
   },
   {
     title: "هل يصلح فعلاً للسوق السعودي؟",
@@ -154,7 +154,7 @@ const objections = [
     decisionSignal: "إذا كنت لا تريد وعوداً عامة، فالحكم الصحيح هنا يكون من الصفحة القطاعية الأقرب لسوقك لا من الصفحة الرئيسية وحدها.",
     next: "انتقل إلى الصفحة القطاعية الأقرب لمتجرك، لأن الحكم الأدق يكون من منطق سوقك لا من مثال بعيد عنك.",
     ctaLabel: "شاهد المثال القطاعي",
-    href: "/for-perfumes-beauty",
+    href: "/for-perfumes-beauty" as const,
   },
   {
     title: "هل يوفّر وقتاً حقيقياً؟",
@@ -163,7 +163,7 @@ const objections = [
     decisionSignal: "إذا كان عنق الزجاجة عندك هو بدء الحملة كل أسبوع من الصفر، فهنا يظهر الأثر التشغيلي الحقيقي لا مجرد فرق في سرعة الكتابة.",
     next: "راجع طبقة الإثبات التشغيلي بالأسفل لتعرف ما الذي يجب أن تراه فعلياً في أول أسبوع، وكيف تنتقل بعدها إلى الباقة المناسبة.",
     ctaLabel: "تابع إلى الإثبات التشغيلي",
-    href: "#operational-proof",
+    href: "#operational-proof" as const,
   },
   {
     title: "هل يناسب الفرق والوكالات؟",
@@ -172,7 +172,7 @@ const objections = [
     decisionSignal: "إذا كان قرارك يتضمن فريقاً أو أكثر من عميل أو أكثر من متجر، فالمقارنة الصحيحة تصبح بين مسارين تشغيليين لا بين باقتين فقط.",
     next: "إذا كنت تدير فريقاً أو عدة حسابات، فالمسار الصحيح هو رِفد للأعمال لأن قرارك تشغيلي قبل أن يكون مجرد قرار تجربة.",
     ctaLabel: "اذهب إلى رِفد للأعمال",
-    href: "/business-solutions",
+    href: "/business-solutions" as const,
   },
 ];
 
@@ -279,8 +279,8 @@ const decisionPaths = [
   },
 ];
 
-function InternalLink({ href, children }: { href: string; children: ReactNode }) {
-  return <Link to={href as "/onboarding"}>{children}</Link>;
+function InternalLink({ href, children }: { href: InternalRoute; children: ReactNode }) {
+  return <Link to={href}>{children}</Link>;
 }
 
 export const Route = createFileRoute("/proof-center")({
