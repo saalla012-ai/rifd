@@ -388,7 +388,7 @@ function ProofCenterPage() {
                   <p><span className="font-bold text-foreground">ما الذي يتغير فعلياً:</span> {item.outcome}</p>
                 </div>
                 <Button asChild variant="outline" className="mt-4 w-full">
-                  <Link to={item.href as never}>شاهد المثال الأقرب</Link>
+                  <InternalLink href={item.href}>شاهد المثال الأقرب</InternalLink>
                 </Button>
                 <Button asChild className="mt-2 w-full gradient-primary text-primary-foreground shadow-elegant">
                   <Link to="/dashboard/campaign-studio" search={item.studio}>حوّله إلى حملة جاهزة</Link>
@@ -420,7 +420,7 @@ function ProofCenterPage() {
                     {item.href.startsWith("#") ? (
                       <a href={item.href}>{item.ctaLabel}</a>
                     ) : (
-                      <Link to={item.href as never}>{item.ctaLabel}</Link>
+                      <InternalLink href={item.href}>{item.ctaLabel}</InternalLink>
                     )}
                   </Button>
                 </article>
@@ -478,7 +478,7 @@ function ProofCenterPage() {
                   <span className="font-extrabold text-primary">لماذا هذا هو المسار الصحيح:</span> {item.proof}
                 </div>
                 <Button asChild className="mt-4 w-full" variant="outline">
-                  <Link to={item.href as never}>{item.label}</Link>
+                  <InternalLink href={item.href}>{item.label}</InternalLink>
                 </Button>
               </article>
             ))}
@@ -495,7 +495,7 @@ function ProofCenterPage() {
                   <h3 className="text-base font-extrabold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
                   <Button asChild variant="outline" className="mt-4 w-full">
-                    <Link to={item.href as never}>{item.label}</Link>
+                    <InternalLink href={item.href}>{item.label}</InternalLink>
                   </Button>
                 </article>
               ))}
