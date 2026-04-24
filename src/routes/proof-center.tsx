@@ -378,6 +378,9 @@ function ProofCenterPage() {
                 <Button asChild variant="outline" className="mt-4 w-full">
                   <Link to={item.href as never}>شاهد المثال الأقرب</Link>
                 </Button>
+                <Button asChild className="mt-2 w-full gradient-primary text-primary-foreground shadow-elegant">
+                  <Link to="/dashboard/campaign-studio" search={item.studio}>حوّله إلى حملة جاهزة</Link>
+                </Button>
               </article>
             ))}
           </div>
