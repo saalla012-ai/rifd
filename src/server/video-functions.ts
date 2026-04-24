@@ -209,3 +209,45 @@ export const listVideoJobs = createServerFn({ method: "POST" })
     if (error) throw new Error(`فشل جلب الفيديوهات: ${error.message}`);
     return { jobs: (data as VideoJobRow[] | null) ?? [] };
   });
+
+export const refreshVideoJob = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ jobId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    const { data: job, error } = await supabase
+      .from("video_jobs")
+      .select("*")
+      .eq("id", data.jobId)
+      .eq("user_id", userId)
+      .single();
+    if (error || !job) throw new Error(`فشل جلب مهمة الفيديو: ${error?.message ?? "غير موجودة"}`);
+    const row = job as VideoJobRow;
+    if (!row.provider_job_id || row.status !== "processing") return { job: row };
+
+    const prediction = await getReplicatePrediction(row.provider_job_id);
+    if (prediction.status === "failed" || prediction.status === "canceled") {
+      if (row.ledger_id) await refund(supabase, row.ledger_id, "video_generation_failed");
+      const { data: updated, error: updateError } = await supabaseAdmin
+        .from("video_jobs")
+        .update({ status: "refunded", error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
+        .eq("id", row.id)
+        .select("*")
+        .single();
+      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
+      return { job: updated as VideoJobRow };
+    }
+
+    if (prediction.status === "succeeded" && prediction.resultUrl) {
+      const { data: updated, error: updateError } = await supabaseAdmin
+        .from("video_jobs")
+        .update({ status: "completed", result_url: prediction.resultUrl, completed_at: new Date().toISOString() })
+        .eq("id", row.id)
+        .select("*")
+        .single();
+      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
+      return { job: updated as VideoJobRow };
+    }
+
+    return { job: row };
+  });
