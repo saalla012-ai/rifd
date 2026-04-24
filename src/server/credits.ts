@@ -142,6 +142,21 @@ export async function consumeTextQuota(db: DbClient): Promise<{ used: number; ca
   return { used: row.used, cap: row.daily_cap };
 }
 
+/**
+ * يستهلك محاولة واحدة من حصة الصور اليومية.
+ * الصور لا تخصم نقاط فيديو — تستخدم عدّاد حماية منفصل.
+ */
+export async function consumeImageQuota(db: DbClient): Promise<{ used: number; cap: number }> {
+  const { data, error } = await db.rpc("consume_image_quota");
+  if (error) throw new Error(`فشل التحقق من حصة الصور: ${error.message}`);
+
+  const row = (data as Array<{ allowed: boolean; used: number; daily_cap: number }>)?.[0];
+  if (!row) throw new Error("استجابة فارغة من حصة الصور");
+
+  if (!row.allowed) throw new ImageQuotaExceededError(row.used, row.daily_cap);
+  return { used: row.used, cap: row.daily_cap };
+}
+
 // ============================================================
 // Server Function: ملخص النقاط للواجهة (شريط الرصيد)
 // ============================================================
