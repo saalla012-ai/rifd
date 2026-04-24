@@ -101,6 +101,23 @@
 
 ---
 
+## 🛡️ تقرير الفحص الأمني النهائي (24 أبريل 2026)
+
+**Security Scan:** 6 نتائج مفحوصة يدوياً:
+
+| # | المستوى | البند | الحالة |
+|---|---|---|---|
+| 1 | error (false positive) | PRIVILEGE_ESCALATION_RISK في `user_roles` | ✅ آمن — RESTRICTIVE policy `Block non-admin role mutations` تحجب أي insert من غير admin (مفحوصة في `pg_policy`) |
+| 2 | warn | `email_unsubscribe_tokens` بدون SELECT للأدمن | ✅ مقبول — التوكنات entropy عالية (gen_random_uuid) ولا يوجد سيناريو enumeration |
+| 3 | warn | `suppressed_emails` بدون admin SELECT | ✅ **مُصلَح** — أُضيفت سياسة `Admins can view suppressed emails` |
+| 4 | warn | CSP `unsafe-eval` | ✅ مقبول — لازم لـVite hydration و PostHog session recording |
+| 5 | warn | CSP `unsafe-inline` للسكربتات | ✅ مقبول — لازم لـTanStack SSR hydration (لا nonce-based دعم بعد) |
+| 6 | warn | OAuth state غير ظاهر | ✅ مُدار داخلياً — `lovable.auth.signInWithOAuth` يولّد state تلقائياً |
+
+**الخلاصة:** 0 critical فعلي، 1 إصلاح مُطبَّق، 5 تحذيرات مقبولة موثَّقة.
+
+---
+
 ## 🚀 ما تأجَّل عمداً (post-launch)
 
 | المؤجَّل | الشرط لتفعيله |
