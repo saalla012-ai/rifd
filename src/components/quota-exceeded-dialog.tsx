@@ -20,28 +20,38 @@ export type QuotaErrorKind = "text_quota" | "insufficient_credits" | "plan_quota
 
 export function detectQuotaError(message: string): QuotaErrorKind | null {
   if (!message) return null;
-  // English error codes from server (credits.ts)
+  const m = message.toLowerCase();
+
+  // كودات السيرفر (credits.ts + RPC)
   if (/text_quota_exceeded/i.test(message)) return "text_quota";
   if (/insufficient_credits/i.test(message)) return "insufficient_credits";
-  // Arabic patterns from older flows
+  // quota_exceeded من enforce_generation_quota trigger (legacy)
+  if (/quota_exceeded:\s*plan=.*kind=text/i.test(message)) return "text_quota";
+  if (/quota_exceeded:\s*plan=.*kind=image/i.test(message)) return "plan_quota";
+
+  // أنماط عربية قديمة
   if (
     message.includes("استنفدت توليدات النص") ||
     message.includes("الحصة اليومية") ||
-    message.includes("نفدت حصة النصوص")
+    message.includes("نفدت حصة النصوص") ||
+    message.includes("حد النصوص اليومي")
   ) {
     return "text_quota";
   }
   if (
-    message.includes("لا يكفي") ||
-    message.includes("رصيد النقاط") ||
+    message.includes("رصيد النقاط لا يكفي") ||
+    message.includes("النقاط غير كافية") ||
+    (m.includes("لا يكفي") && (m.includes("نقاط") || m.includes("نقطة"))) ||
     message.includes("نقاطك")
   ) {
     return "insufficient_credits";
   }
   if (
     message.includes("وصلت حدّ") ||
+    message.includes("وصلت حد") ||
     message.includes("الباقة الاحترافية فقط") ||
-    message.includes("رقّ باقتك")
+    message.includes("رقّ باقتك") ||
+    message.includes("رقي باقتك")
   ) {
     return "plan_quota";
   }
