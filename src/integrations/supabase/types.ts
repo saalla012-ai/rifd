@@ -1099,6 +1099,8 @@ export type Database = {
         Args: never
         Returns: {
           cycle_ends_at: string
+          daily_image_cap: number
+          daily_image_used: number
           daily_text_cap: number
           daily_text_used: number
           plan: Database["public"]["Enums"]["user_plan"]
