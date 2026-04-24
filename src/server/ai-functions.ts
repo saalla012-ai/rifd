@@ -151,7 +151,7 @@ export const generateText = createServerFn({ method: "POST" })
   });
 
 // ============================================================
-// generateImage — يستهلك نقاط (Flash=10 / Pro=25)
+// generateImage — حصة صور يومية بدون نقاط
 // ============================================================
 export const generateImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -170,23 +170,14 @@ export const generateImage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    const cost = imageCost(data.quality);
 
-    // 1) خصم النقاط أولاً (يرفع InsufficientCreditsError إذا الرصيد ناقص)
-    let ledgerId: string;
-    let remainingTotal: number;
+    let quota: { used: number; cap: number };
     try {
-      const r = await consume(supabase, cost, "consume_image", {
-        quality: data.quality,
-        template_id: data.templateId,
-      });
-      ledgerId = r.ledgerId;
-      remainingTotal = r.remainingTotal;
+      quota = await consumeImageQuota(supabase);
     } catch (e) {
       throw creditError(e);
     }
 
-    // 2) من هنا فصاعداً: أي فشل يستوجب refund
     try {
       const profile = await loadProfile(supabase, userId);
       const ctx: StoreContext = profile ?? {};
@@ -244,8 +235,8 @@ export const generateImage = createServerFn({ method: "POST" })
           template_title: data.templateTitle,
           quality: data.quality,
           storage_path: filename,
-          credits_charged: cost,
-          ledger_id: ledgerId,
+          credits_charged: 0,
+          billing_scope: "daily_image_quota",
         },
       });
       if (insErr) {
@@ -258,12 +249,12 @@ export const generateImage = createServerFn({ method: "POST" })
 
       return {
         url: publicUrl,
-        creditsCharged: cost,
-        remainingCredits: remainingTotal,
+        creditsCharged: 0,
+        remainingDaily: quota.cap - quota.used,
+        dailyUsed: quota.used,
+        dailyCap: quota.cap,
       };
     } catch (e) {
-      // 3) فشل بعد الخصم → ردّ النقاط
-      await refund(supabase, ledgerId, "image_generation_failed");
       throw e;
     }
   });
