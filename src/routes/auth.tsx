@@ -11,6 +11,7 @@ import { lovable } from "@/integrations/lovable";
 import { sendWelcomeEmail } from "@/server/send-welcome";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/posthog";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
