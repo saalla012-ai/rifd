@@ -1,5 +1,5 @@
 /**
- * Phase 4 — إدارة شحن النقاط (Admin)
+ * Phase 4 — إدارة شحن نقاط الفيديو (Admin)
  *
  * يعرض كل طلبات الشحن مع فلترة بالحالة + أزرار تفعيل/رفض + معاينة الإيصال.
  * كل عملية تُسجَّل في admin_audit_log عبر server functions.
@@ -54,9 +54,9 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/credits")({
-  head: () => ({ meta: [{ title: "إدارة شحن النقاط — رِفد" }] }),
+  head: () => ({ meta: [{ title: "إدارة شحن نقاط الفيديو — رِفد" }] }),
   component: () => (
-    <AdminGuard loadingLabel="جاري تحميل إدارة النقاط…">
+    <AdminGuard loadingLabel="جاري تحميل إدارة نقاط الفيديو…">
       <AdminCreditsPage />
     </AdminGuard>
   ),
@@ -155,7 +155,7 @@ function AdminCreditsPage() {
         data: { purchaseId: activateTarget.id, adminNotes: activateNotes || undefined },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-      toast.success(`✅ تم تفعيل ${fmt(r.credits_added)} نقطة — رصيد المستخدم الآن: ${fmt(r.new_topup_balance)}`);
+      toast.success(`✅ تم تفعيل ${fmt(r.credits_added)} نقطة فيديو — رصيد المستخدم الآن: ${fmt(r.new_topup_balance)}`);
       setActivateTarget(null);
       setActivateNotes("");
       await load();
@@ -206,10 +206,10 @@ function AdminCreditsPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold flex items-center gap-2">
-            <Coins className="h-6 w-6 text-gold" /> إدارة شحن النقاط
+            <Coins className="h-6 w-6 text-gold" /> إدارة شحن نقاط الفيديو
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            راجع طلبات شحن المستخدمين، فعّلها أو ارفضها مع توثيق كامل
+            راجع طلبات شحن نقاط الفيديو، فعّلها أو ارفضها مع توثيق كامل
           </p>
         </div>
         <div className="flex gap-2">
@@ -218,7 +218,7 @@ function AdminCreditsPage() {
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to="/admin/credit-ledger">
-              <Settings2 className="h-4 w-4" /> دفتر النقاط
+              <Settings2 className="h-4 w-4" /> دفتر نقاط الفيديو
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
