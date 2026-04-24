@@ -90,9 +90,10 @@ const inputSchema = z.object({
 
 export const checkEmailDns = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
-  .handler(async ({ data }) => {
-    const { db, user } = await requireSupabaseAuth();
-    await assertAdmin(db as DbClient, user.id);
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<DnsCheckResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
 
     const domain = data.domain.toLowerCase().trim();
     const records: RecordCheck[] = [];
