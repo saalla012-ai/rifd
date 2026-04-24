@@ -43,12 +43,6 @@ export const Route = createFileRoute("/pricing")({
         content:
           "اختر باقتك حسب عدد فيديوهاتك الشهرية: Fast من 150 نقطة وQuality من 450 نقطة.",
       },
-      { property: "og:image", content: "https://rifd.site/og-image.jpg" },
-      { property: "og:image:width", content: "1200" },
-      { property: "og:image:height", content: "630" },
-      { property: "og:image:alt", content: "رِفد — باقات ونقاط فيديو واضحة للمتاجر السعودية" },
-      { name: "twitter:image", content: "https://rifd.site/og-image.jpg" },
-      { name: "twitter:image:alt", content: "رِفد — باقات ونقاط فيديو واضحة للمتاجر السعودية" },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/pricing" }],
   }),
