@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import {
   Mail,
@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/email-monitor")({
@@ -91,9 +90,7 @@ function formatArDateTime(iso: string): string {
 }
 
 function EmailMonitorPage() {
-  const navigate = useNavigate();
-  const { isAdmin, loading: authLoading } = useAuth();
-
+  // الحماية مضمونة عبر <AdminGuard> — لا حاجة لإعادة فحص دور الأدمن.
   const [range, setRange] = useState<RangeKey>("7d");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [templateFilter, setTemplateFilter] = useState<string>("all");
@@ -103,13 +100,6 @@ function EmailMonitorPage() {
   const [health, setHealth] = useState<DlqHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  // Admin guard
-  useEffect(() => {
-    if (!authLoading && !isAdmin) {
-      void navigate({ to: "/dashboard" });
-    }
-  }, [authLoading, isAdmin, navigate]);
 
   async function loadAll() {
     setRefreshing(true);
@@ -168,9 +158,9 @@ function EmailMonitorPage() {
   }
 
   useEffect(() => {
-    if (!isAdmin) return;
     void loadAll();
-  }, [isAdmin, range]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range]);
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
@@ -190,7 +180,7 @@ function EmailMonitorPage() {
     return out;
   }, [rows]);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <DashboardShell>
         <div className="flex justify-center py-20">
@@ -199,8 +189,6 @@ function EmailMonitorPage() {
       </DashboardShell>
     );
   }
-
-  if (!isAdmin) return null;
 
   return (
     <DashboardShell>
