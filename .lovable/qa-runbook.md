@@ -175,7 +175,7 @@
 
 | الفحص | النتيجة | التفاصيل |
 |---|---|---|
-| **Supabase Linter** | ✅ 0 issues | لا أخطاء أو تحذيرات أمنية |
+| **Lovable Cloud Linter** | ✅ 0 issues | لا أخطاء أو تحذيرات أمنية |
 | **Cron Jobs النشطة** | ✅ 6 jobs | `process-email-queue` (5s), `check-email-dlq` (10m), `daily-domain-scan` (6 ص), `rifd-onboarding-emails-daily` (6 ص), `check-stale-subscriptions` (9 ص), `send-expiring-subscription-reminders` (9 ص) |
 | **طوابير البريد الفعلية** | ✅ 0 pending | trans_pending=0, auth_pending=0 |
 | **DLQ** | ⚠️ 2 رسائل قديمة | رسالتا welcome من قبل تأكيد النطاق (`saalla012@gmail.com`, `a6439875542@gmail.com`) — يمكن تجاهلها أو إعادة إرسالها يدوياً |
