@@ -59,6 +59,7 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminAbTestsRouteImport } from './routes/admin.ab-tests'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicContactSubmitRouteImport } from './routes/api.public.contact-submit'
 import { Route as ApiInvoiceRequestIdRouteImport } from './routes/api.invoice.$requestId'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -324,6 +325,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContactSubmitRoute = ApiPublicContactSubmitRouteImport.update({
+  id: '/api/public/contact-submit',
+  path: '/api/public/contact-submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInvoiceRequestIdRoute = ApiInvoiceRequestIdRouteImport.update({
   id: '/api/invoice/$requestId',
   path: '/api/invoice/$requestId',
@@ -432,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
+  '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
@@ -493,6 +500,7 @@ export interface FileRoutesByTo {
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
+  '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
@@ -556,6 +564,7 @@ export interface FileRoutesById {
   '/legal/terms': typeof LegalTermsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
+  '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
@@ -620,6 +629,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/dashboard/'
     | '/api/invoice/$requestId'
+    | '/api/public/contact-submit'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/api/public/hooks/check-email-dlq'
@@ -681,6 +691,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/dashboard'
     | '/api/invoice/$requestId'
+    | '/api/public/contact-submit'
     | '/lovable/email/suppression'
     | '/dashboard/billing'
     | '/api/public/hooks/check-email-dlq'
@@ -743,6 +754,7 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/dashboard/'
     | '/api/invoice/$requestId'
+    | '/api/public/contact-submit'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/api/public/hooks/check-email-dlq'
@@ -797,6 +809,7 @@ export interface RootRouteChildren {
   LegalRefundRoute: typeof LegalRefundRoute
   LegalTermsRoute: typeof LegalTermsRoute
   ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
+  ApiPublicContactSubmitRoute: typeof ApiPublicContactSubmitRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
   ApiPublicHooksCheckStaleSubscriptionsRoute: typeof ApiPublicHooksCheckStaleSubscriptionsRoute
@@ -1160,6 +1173,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/contact-submit': {
+      id: '/api/public/contact-submit'
+      path: '/api/public/contact-submit'
+      fullPath: '/api/public/contact-submit'
+      preLoaderRoute: typeof ApiPublicContactSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/invoice/$requestId': {
       id: '/api/invoice/$requestId'
       path: '/api/invoice/$requestId'
@@ -1306,6 +1326,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalRefundRoute: LegalRefundRoute,
   LegalTermsRoute: LegalTermsRoute,
   ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
+  ApiPublicContactSubmitRoute: ApiPublicContactSubmitRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksCheckEmailDlqRoute: ApiPublicHooksCheckEmailDlqRoute,
   ApiPublicHooksCheckStaleSubscriptionsRoute:
