@@ -76,7 +76,7 @@ export function CreditsBar() {
         </button>
       </PopoverTrigger>
 
-      <PopoverContent align="end" sideOffset={8} className="w-80 p-0">
+      <PopoverContent align="end" sideOffset={8} className="w-[min(20rem,calc(100vw-1.5rem))] p-0">
         {/* Header */}
         <div className="rounded-t-md gradient-primary px-4 py-3 text-primary-foreground">
           <div className="flex items-center justify-between">
