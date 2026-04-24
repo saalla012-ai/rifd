@@ -126,7 +126,11 @@ function CreditsPage() {
       return;
     }
     setSubmittingId(pkg.id);
-    const idempotencyKey = `${user.id}-${pkg.id}-${Date.now()}`;
+    // مفتاح فريد قوي يمنع التكرار حتى لو ضُغط الزر مرتين بنفس الميلي ثانية
+    const idempotencyKey =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${user.id}-${pkg.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const { data, error } = await supabase
       .from("topup_purchases")
       .insert({
