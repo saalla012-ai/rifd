@@ -4,7 +4,7 @@ Updated: today
 # Project Memory
 
 ## Core
-نطاق البريد الصحيح للمشروع: `mail.rifd.site` (الجذر `rifd.site`). تم استبدال `notify.rifd.site` المُعطّل (مملوك لحساب Mailgun آخر) في 24 أبريل 2026. عند أي إعداد لنطاق البريد، استخدم prefix = `mail` فقط.
+نطاق البريد الفعلي: **`rifd.site`** (الجذر مباشرة، بدون subdomain). تم اختياره في Lovable Emails بدلاً من المحاولات السابقة الفاشلة (`notify.rifd.site` و `mail.rifd.site`). من العنوان: `رِفد <noreply@rifd.site>`.
 
 ## Memories
-- [Email domain naming](mem://constraints/email-domain-name) — قاعدة كتابة اسم النطاق + سبب التغيير من notify إلى mail
+- [Email domain naming](mem://constraints/email-domain-name) — تاريخ المحاولات + القرار النهائي
