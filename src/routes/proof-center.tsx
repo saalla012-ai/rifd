@@ -267,6 +267,10 @@ const decisionPaths = [
   },
 ];
 
+function InternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return <Link to={href as "/onboarding"}>{children}</Link>;
+}
+
 export const Route = createFileRoute("/proof-center")({
   head: () => ({
     meta: [
