@@ -37,17 +37,16 @@ function getRetryAfterSeconds(error: unknown): number {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   queue: string,
   msg: { msg_id: number; message: Record<string, unknown> },
   reason: string
 ): Promise<void> {
-  const payload = msg.message as Record<string, unknown>
+  const payload = msg.message
   await supabase.from('email_send_log').insert({
-    message_id: payload.message_id as string | undefined,
+    message_id: payload.message_id,
     template_name: (payload.label || queue) as string,
-    recipient_email: payload.to as string,
+    recipient_email: payload.to,
     status: 'dlq',
     error_message: reason,
   })
