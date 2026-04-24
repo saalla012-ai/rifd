@@ -38,7 +38,7 @@ function UsagePage() {
 
   return (
     <DashboardShell>
-      <h1 className="text-2xl font-extrabold">الاستخدام هذا الشهر</h1>
+      <h1 className="text-2xl font-extrabold">الاستخدام والرصيد</h1>
       <p className="mt-1 text-sm text-muted-foreground">باقتك الحالية: <strong>{PLAN_LABEL[plan] ?? plan}</strong></p>
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -55,7 +55,7 @@ function UsagePage() {
             <span>{fmt(data?.dailyImageUsed ?? 0)} / {fmt(data?.dailyImageCap ?? 0)}</span>
           </div>
           <Progress value={imgPct} className="mt-3" />
-          <p className="mt-2 text-xs text-muted-foreground">يتجدد بداية الشهر القادم</p>
+          <p className="mt-2 text-xs text-muted-foreground">مجانية ضمن سقف حماية يومي</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex justify-between text-sm">
