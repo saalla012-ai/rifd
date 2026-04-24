@@ -138,17 +138,26 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               <div className="mt-4 mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-gold/80">
                 الإدارة
               </div>
-              {ADMIN_NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gold hover:bg-gold/10"
-                  activeProps={{ className: "bg-gold/15 text-gold" }}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              ))}
+              {ADMIN_NAV.map((item) => {
+                const showBadge =
+                  "badgeKey" in item && item.badgeKey === "contact" && newContactCount > 0;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gold hover:bg-gold/10"
+                    activeProps={{ className: "bg-gold/15 text-gold" }}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span className="flex-1">{item.label}</span>
+                    {showBadge && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                        {newContactCount > 99 ? "99+" : newContactCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </>
           )}
         </nav>
