@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { consume, refund, videoCost, type VideoQuality, InsufficientCreditsError } from "./credits";
 
 const VIDEO_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
@@ -118,7 +119,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       });
       ledgerId = charge.ledgerId;
 
-      const { data: inserted, error: insertError } = await supabase
+      const { data: inserted, error: insertError } = await supabaseAdmin
         .from("video_jobs")
         .insert({
           user_id: userId,
@@ -146,7 +147,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       const finalStatus = prediction?.resultUrl || fallbackPreview ? "completed" : "processing";
       const finalUrl = prediction?.resultUrl ?? fallbackPreview;
 
-      const { data: updated, error: updateError } = await supabase
+      const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
         .update({
           provider_job_id: prediction?.providerJobId ?? null,
@@ -174,7 +175,7 @@ export const generateVideo = createServerFn({ method: "POST" })
     } catch (e) {
       if (ledgerId) await refund(supabase, ledgerId, "video_generation_failed");
       if (jobId) {
-        await supabase
+        await supabaseAdmin
           .from("video_jobs")
           .update({ status: "refunded", error_message: e instanceof Error ? e.message : String(e) })
           .eq("id", jobId);
