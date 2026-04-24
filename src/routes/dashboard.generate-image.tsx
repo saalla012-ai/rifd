@@ -15,12 +15,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
 
-type ImgSearch = { template?: string };
+type ImgSearch = { template?: string; prompt?: string };
 
 export const Route = createFileRoute("/dashboard/generate-image")({
   head: () => ({ meta: [{ title: "توليد صور — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): ImgSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
+    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
   }),
   component: GenerateImagePage,
 });
@@ -33,7 +34,7 @@ function GenerateImagePage() {
     : IMAGE_PROMPTS[0].id;
   const [quality, setQuality] = useState<"flash" | "pro">("flash");
   const [templateId, setTemplateId] = useState(initial);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);

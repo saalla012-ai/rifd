@@ -18,12 +18,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
 
-type TextSearch = { template?: string };
+type TextSearch = { template?: string; prompt?: string };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "توليد نص — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): TextSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
+    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
   }),
   component: GenerateTextPage,
 });
@@ -35,7 +36,7 @@ function GenerateTextPage() {
     ? search.template
     : TEXT_PROMPTS[0].id;
   const [templateId, setTemplateId] = useState(initial);
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState(search.prompt ?? "");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);

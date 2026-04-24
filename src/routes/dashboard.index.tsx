@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wand2, Image as ImageIcon, ImagePlus, Sparkles, TrendingUp, Clock, Star, FileText, ArrowLeft, Phone, Pencil } from "lucide-react";
+import { Wand2, Image as ImageIcon, Sparkles, TrendingUp, Clock, Star, FileText, ArrowLeft, Phone, Pencil, Clapperboard, Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -138,8 +138,18 @@ function DashboardPage() {
       </div>
 
       {/* بطاقات الأدوات الرئيسية */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
+          {
+            to: "/dashboard/campaign-studio" as const,
+            title: "استوديو الحملات",
+            desc: "موجز واحد للنص والصورة والفيديو",
+            icon: Megaphone,
+            tone: "from-primary/25 via-gold/10 to-transparent",
+            iconBg: "bg-primary/15 text-primary",
+            cta: "ابنِ حملة",
+            badge: "Campaign",
+          },
           {
             to: "/dashboard/generate-text" as const,
             title: "توليد نص",
@@ -159,13 +169,13 @@ function DashboardPage() {
             cta: "أنشئ صورة",
           },
           {
-            to: "/dashboard/edit-image" as const,
-            title: "تعديل صور",
-            desc: "ارفع صورتك وعدّلها بالذكاء",
-            icon: ImagePlus,
+            to: "/dashboard/generate-video" as const,
+            title: "توليد فيديو",
+            desc: "لقطات قصيرة بنقاط فيديو واضحة",
+            icon: Clapperboard,
             tone: "from-success/25 via-success/5 to-transparent",
             iconBg: "bg-success/15 text-success",
-            cta: "عدّل صورة",
+            cta: "أنشئ فيديو",
             badge: "جديد",
           },
         ].map((card) => (
@@ -217,7 +227,8 @@ function DashboardPage() {
               { to: "/dashboard/generate-text" as const, label: "📱 منشور إنستقرام" },
               { to: "/dashboard/generate-text" as const, label: "🛍️ وصف منتج" },
               { to: "/dashboard/generate-image" as const, label: "🎨 بوستر إعلاني" },
-              { to: "/dashboard/generate-image" as const, label: "📸 صورة منتج" },
+              { to: "/dashboard/campaign-studio" as const, label: "📣 حملة كاملة" },
+              { to: "/dashboard/generate-video" as const, label: "🎬 فيديو قصير" },
             ].map((q, i) => (
               <Button key={i} asChild variant="outline" className="justify-start">
                 <Link to={q.to}>{q.label}</Link>

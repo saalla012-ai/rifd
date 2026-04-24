@@ -58,10 +58,10 @@ async function createLocalPreviewVideo(prompt: string, quality: VideoQuality): P
 
 async function createReplicatePrediction(input: z.infer<typeof videoInputSchema>) {
   const token = process.env.REPLICATE_API_TOKEN;
-  if (!token) return null;
+  if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
 
   const model = VIDEO_MODEL_BY_QUALITY[input.quality];
-  const response = await fetch("https://api.replicate.com/v1/models/google/veo-3/predictions", {
+  const response = await fetch(`https://api.replicate.com/v1/models/${model}/predictions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -74,7 +74,6 @@ async function createReplicatePrediction(input: z.infer<typeof videoInputSchema>
         aspect_ratio: input.aspectRatio,
         duration: input.durationSeconds,
         image: input.startingFrameUrl || undefined,
-        model,
       },
     }),
   });
@@ -98,6 +97,21 @@ async function createReplicatePrediction(input: z.infer<typeof videoInputSchema>
     status: prediction.status ?? "processing",
     resultUrl: typeof output === "string" ? output : null,
   };
+}
+
+async function getReplicatePrediction(predictionId: string) {
+  const token = process.env.REPLICATE_API_TOKEN;
+  if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
+  const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`فشل تحديث حالة الفيديو (${response.status}): ${text.slice(0, 300)}`);
+  }
+  const prediction = await response.json() as { status?: string; output?: string | string[]; error?: string };
+  const output = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+  return { status: prediction.status ?? "processing", resultUrl: typeof output === "string" ? output : null, error: prediction.error };
 }
 
 export const generateVideo = createServerFn({ method: "POST" })
@@ -143,21 +157,19 @@ export const generateVideo = createServerFn({ method: "POST" })
       jobId = job.id;
 
       const prediction = await createReplicatePrediction(data);
-      const fallbackPreview = prediction ? null : await createLocalPreviewVideo(data.prompt, data.quality);
-      const finalStatus = prediction?.resultUrl || fallbackPreview ? "completed" : "processing";
-      const finalUrl = prediction?.resultUrl ?? fallbackPreview;
+      const finalStatus = prediction.resultUrl ? "completed" : "processing";
+      const finalUrl = prediction.resultUrl;
 
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
         .update({
-          provider_job_id: prediction?.providerJobId ?? null,
+          provider_job_id: prediction.providerJobId ?? null,
           result_url: finalUrl,
           status: finalStatus,
           completed_at: finalStatus === "completed" ? new Date().toISOString() : null,
           metadata: {
             ...(job.metadata as Record<string, unknown> | null),
-            provider_status: prediction?.status ?? "local_preview",
-            fallback_preview: !prediction,
+            provider_status: prediction.status,
           },
         })
         .eq("id", job.id)
@@ -196,4 +208,46 @@ export const listVideoJobs = createServerFn({ method: "POST" })
       .limit(20);
     if (error) throw new Error(`فشل جلب الفيديوهات: ${error.message}`);
     return { jobs: (data as VideoJobRow[] | null) ?? [] };
+  });
+
+export const refreshVideoJob = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ jobId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    const { data: job, error } = await supabase
+      .from("video_jobs")
+      .select("*")
+      .eq("id", data.jobId)
+      .eq("user_id", userId)
+      .single();
+    if (error || !job) throw new Error(`فشل جلب مهمة الفيديو: ${error?.message ?? "غير موجودة"}`);
+    const row = job as VideoJobRow;
+    if (!row.provider_job_id || row.status !== "processing") return { job: row };
+
+    const prediction = await getReplicatePrediction(row.provider_job_id);
+    if (prediction.status === "failed" || prediction.status === "canceled") {
+      if (row.ledger_id) await refund(supabase, row.ledger_id, "video_generation_failed");
+      const { data: updated, error: updateError } = await supabaseAdmin
+        .from("video_jobs")
+        .update({ status: "refunded", error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
+        .eq("id", row.id)
+        .select("*")
+        .single();
+      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
+      return { job: updated as VideoJobRow };
+    }
+
+    if (prediction.status === "succeeded" && prediction.resultUrl) {
+      const { data: updated, error: updateError } = await supabaseAdmin
+        .from("video_jobs")
+        .update({ status: "completed", result_url: prediction.resultUrl, completed_at: new Date().toISOString() })
+        .eq("id", row.id)
+        .select("*")
+        .single();
+      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
+      return { job: updated as VideoJobRow };
+    }
+
+    return { job: row };
   });

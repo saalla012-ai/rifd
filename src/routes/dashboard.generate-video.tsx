@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Clapperboard, Crown, Download, Film, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Zap } from "lucide-react";
 import { toast } from "sonner";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
-import { generateVideo, listVideoJobs } from "@/server/video-functions";
+import { generateVideo, listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
@@ -16,6 +16,7 @@ import { track } from "@/lib/analytics/posthog";
 type VideoQuality = "fast" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
+type VideoSearch = { prompt?: string };
 
 const QUALITY = {
   fast: { label: "Fast", cost: 150, icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
@@ -30,17 +31,22 @@ const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
 
 export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
+  validateSearch: (s: Record<string, unknown>): VideoSearch => ({
+    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+  }),
   component: GenerateVideoPage,
 });
 
 function GenerateVideoPage() {
   const router = useRouter();
+  const search = useSearch({ from: "/dashboard/generate-video" });
   const generateVideoFn = useServerFn(generateVideo);
   const listVideoJobsFn = useServerFn(listVideoJobs);
+  const refreshVideoJobFn = useServerFn(refreshVideoJob);
   const [quality, setQuality] = useState<VideoQuality>("fast");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [startingFrameUrl, setStartingFrameUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<VideoJob[]>([]);
@@ -96,6 +102,23 @@ function GenerateVideoPage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshActiveJob = async () => {
+    if (!activeJob) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("سجّل الدخول أولاً");
+      const out = await refreshVideoJobFn({
+        data: { jobId: activeJob.id },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      setActiveJob(out.job);
+      setJobs((current) => current.map((job) => job.id === out.job.id ? out.job : job));
+      toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
     }
   };
 
@@ -222,6 +245,11 @@ function GenerateVideoPage() {
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
+              {activeJob?.status === "processing" && (
+                <button type="button" onClick={refreshActiveJob} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                  <RefreshCw className="h-3 w-3" /> تحديث
+                </button>
+              )}
               {latestResult && (
                 <a href={latestResult} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
                   <Download className="h-3 w-3" /> فتح
