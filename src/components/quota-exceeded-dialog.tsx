@@ -69,7 +69,7 @@ type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   /** نوع التوليد للسياق */
-  kind: "نص" | "صورة";
+  kind: "نص" | "صورة" | "فيديو";
   /** رسالة الخطأ الأصلية من السيرفر */
   reason?: string;
 };
@@ -89,7 +89,7 @@ function generationKindFromMessage(message: string): "image" | "text" | "unknown
   return "unknown";
 }
 
-function getVariant(kindOfError: QuotaErrorKind, generationKind: "نص" | "صورة"): Variant {
+function getVariant(kindOfError: QuotaErrorKind, generationKind: "نص" | "صورة" | "فيديو"): Variant {
   if (kindOfError === "text_quota") {
     return {
       icon: Clock,
