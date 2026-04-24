@@ -1,16 +1,11 @@
 /**
- * Server functions for AI generation (Phase 2 — Credits-aware)
+ * Server functions for AI generation (Phase 2 — quota-aware)
  * ─────────────────────────────────────────────────────────────
  * - generateText: نص — يستهلك حصة يومية فقط (consume_text_quota)
- * - generateImage / editImage: يستهلك نقاط من المحفظة قبل الاستدعاء، ويرد عند الفشل
- *
- * تدفق النقاط (للصور):
- *   1) consume(amount, 'consume_image') → يحجز النقاط ويُرجع ledgerId
- *   2) استدعاء AI + رفع للتخزين
- *   3) عند الفشل في أي خطوة → refund(ledgerId)
+ * - generateImage / editImage: يستهلك حصة صور يومية فقط، بدون خصم نقاط
  *
  * IMPORTANT: نُبقي bump_usage و usage_logs للتوافق مع لوحة الإدارة وتقارير الكلفة.
- * النقاط هي مصدر الحقيقة للحجب — usage_logs للقياس فقط.
+ * الحصص اليومية هي مصدر الحقيقة للنصوص والصور — usage_logs للقياس فقط.
  */
 
 import { createServerFn } from "@tanstack/react-start";
@@ -22,11 +17,10 @@ import { estimateTextCost, estimateImageCost } from "./cost";
 import { buildTextSystemPrompt, buildImagePrompt, type StoreContext } from "./prompts";
 import { currentRiyadhMonth } from "@/lib/usage-month";
 import {
-  consume,
-  refund,
+  consumeImageQuota,
   consumeTextQuota,
-  imageCost,
   InsufficientCreditsError,
+  ImageQuotaExceededError,
   TextQuotaExceededError,
 } from "./credits";
 
@@ -68,6 +62,11 @@ function creditError(e: unknown): Error {
   if (e instanceof TextQuotaExceededError) {
     return new Error(
       `TEXT_QUOTA_EXCEEDED: وصلت حدّ ${e.cap} نص يومياً (${e.used}/${e.cap}). يتجدّد العداد بعد منتصف الليل بتوقيت الرياض.`
+    );
+  }
+  if (e instanceof ImageQuotaExceededError) {
+    return new Error(
+      `IMAGE_QUOTA_EXCEEDED: وصلت حدّ ${e.cap} صورة يومياً (${e.used}/${e.cap}). يتجدّد العداد بعد منتصف الليل بتوقيت الرياض.`
     );
   }
   return e instanceof Error ? e : new Error(String(e));
