@@ -40,6 +40,7 @@ export function detectQuotaError(message: string): QuotaErrorKind | null {
     return "text_quota";
   }
   if (
+    message.includes("رصيد نقاط الفيديو لا يكفي") ||
     message.includes("رصيد النقاط لا يكفي") ||
     message.includes("النقاط غير كافية") ||
     (m.includes("لا يكفي") && (m.includes("نقاط") || m.includes("نقطة"))) ||
