@@ -31,13 +31,21 @@ export const Route = createFileRoute("/dashboard/billing/confirm/$requestId")({
   component: ConfirmRequestPage,
 });
 
-const PLAN_LABELS = { free: "مجاني", pro: "احترافي", business: "أعمال" } as const;
+const PLAN_LABELS = {
+  free: "Free",
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
+} as const;
 const PLAN_PRICES = {
-  pro: { monthly: 79, yearly: 790 },
-  business: { monthly: 199, yearly: 1990 },
+  starter: { monthly: 149, yearly: 1490 },
+  growth: { monthly: 249, yearly: 2490 },
+  pro: { monthly: 399, yearly: 3990 },
+  business: { monthly: 999, yearly: 9990 },
 } as const;
 
-const TRANSFER_REASON = "رِفد للأعمال";
+const TRANSFER_REASON = "اشتراك رِفد";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"];
@@ -45,7 +53,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "ap
 type RequestRow = {
   id: string;
   user_id: string;
-  plan: "pro" | "business";
+  plan: "starter" | "growth" | "pro" | "business";
   billing_cycle: string;
   store_name: string | null;
   whatsapp: string;
