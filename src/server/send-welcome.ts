@@ -6,8 +6,8 @@ import { TEMPLATES } from "@/lib/email-templates/registry";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const SITE_NAME = "رِفد";
-const SENDER_DOMAIN = "rifd.site";
-const FROM_ADDRESS = `${SITE_NAME} <noreply@rifd.site>`;
+const SENDER_DOMAIN = "mail.rifd.site";
+const FROM_ADDRESS = `${SITE_NAME} <noreply@mail.rifd.site>`;
 const QUEUE_NAME = "transactional_emails";
 
 /**
