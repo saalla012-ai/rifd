@@ -1,195 +1,68 @@
-# خطة الإطلاق الرسمية — رِفد v1.0
+## نتيجة المراجعة الدقيقة لما تم إنجازه
 
-**الهدف:** تثبيت جاهزية الإطلاق عند 100/100، مع إبقاء نطاق العمل محصوراً في التصليب والتدقيق والتشغيل دون إضافة ميزات جديدة قبل الإعلان.
+راجعت آخر تعديل فعلي وهو إضافة `tailwind.config.ts`، وراجعت معه الملفات المرتبطة بالتهيئة، نظام التصميم، الصفحة الرئيسية، الجذر، والـQA Runbook.
 
-**الترتيب الإلزامي:** P1 → P2 → P3 → P4 → P5. لا يُنتقَل لمرحلة قبل اجتياز بوابة قبول السابقة.
+### الحكم المختصر
 
----
+التعديل الأخير نفسه سليم ولا يظهر أنه يكسر Tailwind v4 أو البناء:
 
-## P1 — الأمان والسلامة (يوم 1-2) — حرج
-
-**الحالة الحالية:** بدأ التنفيذ في الجلسة السابقة (تم تصليب `user_roles` و `usage_logs` و `domain-scan` auth).
-
-### الخطوات المتبقية:
-
-**P1.1 — استكمال حماية مسارات الأدمن**
-- إضافة admin guard كامل لـ `src/routes/admin.ab-tests.tsx` (تحقَّق من `has_role(uid,'admin')` قبل أي عرض)
-- مراجعة باقي مسارات `admin.*` (analytics, audit, plan-limits, subscriptions, email-monitor, domain-scan) للتأكد من وجود نفس الحماية
-
-**P1.2 — تشغيل الفحوصات الآلية**
-- فحص الأمان → توثيق النتائج وإصلاح كل critical/high
-- Lovable Cloud linter → إصلاح كل warning
-
-**P1.3 — مراجعة RLS يدوياً**
-- `subscription_requests`، `payment_settings`، `internal_config`، `profiles`، `contact_submissions`
-- التأكد من أن SELECT/UPDATE/DELETE محصورة على المالك أو الأدمن
-
-**P1.4 — صحة البريد**
-- استعلام `check_email_dlq_health()` → DLQ counters = 0
-- استعلام `cron.job` للتأكد من أن `process-email-queue` يعمل
-- فحص `email_send_log` لآخر 7 أيام: أين الإخفاقات؟ معالجة البريدين العالقين منذ 22-24 أبريل
-
-**P1.5 — تدوير webhook secret**
-- توليد `NOTIFY_WEBHOOK_SECRET` جديد قوي
-- تحديث cron `daily-domain-scan` ليستخدم header `x-webhook-secret`
-
-### بوابة قبول P1:
-- 0 critical / 0 high في security scan
-- 0 errors في Lovable Cloud linter
-- DLQ = 0 و آخر بريد ناجح خلال 7 أيام
-- كل مسارات `/admin/*` محمية
-
----
-
-## P2 — نموذج /contact حقيقي (يوم 3) — مهم
-
-**ملاحظة:** جدول `contact_submissions` تم إنشاؤه في P1 السابقة. يبقى ربط الواجهة + البريد + الإشعارات.
-
-### الخطوات:
-
-**P2.1 — قالب البريد**
-- إنشاء `src/lib/email-templates/contact-confirmation.tsx` (تأكيد للزائر بالعربية، يستخدم `_shared/layout.tsx`)
-- تسجيله في `src/lib/email-templates/registry.ts`
-
-**P2.2 — Server route**
-- إنشاء `src/routes/api.public.contact-submit.ts`:
-  - validation عبر zod (الاسم، البريد، الجوال اختياري، الموضوع، الرسالة، honeypot)
-  - رفض إذا honeypot ممتلئ
-  - INSERT في `contact_submissions` بـ service role
-  - استدعاء `sendTransactionalEmail('contact-confirmation', ...)`
-  - استدعاء آلية Telegram (إعادة استخدام `notify-telegram-admin`)
-
-**P2.3 — واجهة /contact**
-- تعديل `src/routes/contact.tsx`: إضافة نموذج react-hook-form + zod resolver + honeypot مخفي
-- حالات UI: idle / submitting / success / error
-- الاحتفاظ بقنوات الواتساب والبريد الموجودة بالأعلى
-
-### بوابة قبول P2:
-- submission تجريبي ينجح من UI
-- سجل ظهر في `contact_submissions`
-- بريد التأكيد وصل للـ inbox
-- إشعار Telegram وصل للأدمن
-
----
-
-## P3 — التحقق اليدوي الموثق (يوم 4-5) — حرج
-
-### الخطوات:
-
-**P3.1 — كتابة `.lovable/qa-runbook.md`** بـ 7 سيناريوهات:
-- S1: تسجيل جديد → onboarding → dashboard
-- S2: توليد نص (خصم usage_logs + ظهور في library)
-- S3: توليد صورة
-- S4: مسار اشتراك كامل (باقة → إيصال → Telegram → تفعيل أدمن → بريد activation → تحديث plan)
-- S5: استعادة كلمة السر
-- S6: نموذج /contact
-- S7: تجاوز الحصة (dialog + بريد warning)
-
-**P3.2 — التنفيذ:**
-- 3 مقاسات: 390 / 768 / 1280 px
-- متصفحان: Chrome + Safari
-- توثيق النتائج (لقطات + ملاحظات) في نفس الملف
-
-**P3.3 — Lighthouse محلي** على: `/`, `/pricing`, `/about`, `/auth`, `/dashboard`
-
-### بوابة قبول P3:
-- كل السيناريوهات السبعة passed
-- Lighthouse Performance ≥ 80 (موبايل)
-- 0 console errors
-- يعمل على iOS Safari
-
----
-
-## P4 — التحليلات الخفيفة (يوم 6) — مهم
-
-**القرار النهائي:** PostHog Free Tier (funnels + recordings مجاناً).
-
-### الخطوات:
-
-**P4.1** إنشاء حساب PostHog Cloud + الحصول على Project API Key
-**P4.2** إضافة `VITE_POSTHOG_KEY` و `VITE_POSTHOG_HOST` في `.env`
-**P4.3** تركيب `posthog-js` + إنشاء `src/lib/analytics/posthog.ts` (init + helper `track`)
-**P4.4** initialization في `src/routes/__root.tsx` (داخل useEffect مع حماية SSR)
-**P4.5** تتبع 5 أحداث:
-- `$pageview` تلقائي
-- `signup_completed` في `auth.tsx`
-- `onboarding_completed` في `onboarding.tsx`
-- `subscription_requested` في `dashboard.billing.index.tsx`
-- `generation_created` في `generate-text.tsx` + `generate-image.tsx`
-
-**P4.6** إنشاء funnel من PostHog dashboard (لا route جديد)
-
-### بوابة قبول P4:
-- pageview يظهر في PostHog خلال دقيقتين
-- الأحداث الأربعة المخصصة تُسجَّل
-- funnel يظهر في dashboard
-
----
-
-## P5 — الإطلاق الفعلي (يوم 7) — حاسم
-
-### الخطوات:
-
-**P5.1** Publish + التحقق من DNS لـ `rifd.site` و `www.rifd.site`
-**P5.2** اختبار بريد production: signup حقيقي → welcome وصل، contact form → confirmation وصل
-**P5.3** التحقق من نطاق البريد المفوّض `send.rifd.site` يعمل ✅ النطاق Verified
-**P5.4** تحديث `.lovable/launch-checklist.md` → 100/100
-**P5.5** كتابة `.lovable/launch-day-runbook.md`:
-- معايير نجاح أول أسبوع: 100 زائر / 10 تسجيلات / 1-3 طلبات اشتراك
-- خطة استجابة: من يتابع Telegram، SLA الرد على /contact (4 ساعات عمل)، التعامل مع DLQ alerts، التعامل مع quota_exceeded shocks
-**P5.6** بدء المتابعة اليومية: `/admin/email-monitor` + `/admin/subscriptions` + PostHog
-
-### بوابة قبول P5 (تعريف "جاهز للإطلاق") — الحالة النهائية:
-
-```text
-أمان:    [x] 0 critical/high فعلي في security scan
-         [x] 0 errors في Lovable Cloud linter
-         [x] كل RLS مُراجعة يدوياً
-
-وظيفة:   [x] مسار اشتراك موثّق في runbook وقابل للتشغيل التشغيلي
-         [x] بريد التفعيل < 60 ثانية في اختبار القبول
-         [x] Telegram يعمل
-         [x] التوليد يخصم من usage_logs
-         [x] /contact يعمل end-to-end
-
-تجربة:   [x] 0 console errors على المعاينات الأساسية
-         [ ] Lighthouse ≥ 80 موبايل — فحص يدوي post-launch حسب runbook
-         [ ] iOS Safari + Android Chrome — فحص أجهزة حقيقية post-launch
-
-تشغيل:   [x] DLQ بدون مانع إطلاق
-         [x] cron jobs تعمل
-         [x] خطة استجابة موثقة
-         [x] تحليلات تعمل
+```ts
+export default {
+  content: ["./src/**/*.{ts,tsx}", "./index.html"],
+};
 ```
 
+لكن المراجعة كشفت 3 نقاط يجب التعامل معها قبل اعتبار QA مغلقاً نهائياً.
+
 ---
 
-## التفاصيل التقنية (للمرجع)
+## الملاحظات المكتشفة
 
-### ملفات جديدة:
-- `src/lib/email-templates/contact-confirmation.tsx`
-- `src/routes/api.public.contact-submit.ts`
-- `src/lib/analytics/posthog.ts`
-- `.lovable/qa-runbook.md`
-- `.lovable/launch-day-runbook.md`
+| المستوى | الملاحظة | الحكم |
+|---|---|---|
+| منخفض | `tailwind.config.ts` موجود كـcompatibility shim بينما المشروع يستخدم Tailwind v4 عبر `src/styles.css` و`@source` | مقبول ومفيد إذا كان هناك أدوات قديمة تبحث عن الملف، لكنه ليس المصدر الأساسي لتوليد Tailwind |
+| متوسط | ملف QA يوثّق أن المطلوب 42 تمريرة يدوية، بينما المنجز السابق أقرب إلى فحص آلي/بصري سريع وليس QA يدوي كامل | يجب توثيق الفرق بوضوح حتى لا يتم إعلان إغلاق QA اليدوي قبل تنفيذه فعلياً |
+| متوسط/مهم | `src/routes/__root.tsx` يحتوي `og:image` و`canonical` عامين، والصفحة الرئيسية تضيف `og:image` و`canonical` أيضاً | الأفضل نقل صور المشاركة والـcanonical الخاصة إلى صفحاتها فقط لتجنب تداخل SEO/social metadata بين الصفحات |
 
-### ملفات معدَّلة:
-- `src/routes/admin.ab-tests.tsx` — إكمال admin guard
-- `src/routes/contact.tsx` — نموذج فعلي
-- `src/lib/email-templates/registry.ts` — تسجيل القالب الجديد
-- `src/routes/__root.tsx` — PostHog init
-- `src/routes/auth.tsx`, `onboarding.tsx`, `dashboard.billing.index.tsx`, `dashboard.generate-text.tsx`, `dashboard.generate-image.tsx` — أحداث التتبع
-- `.lovable/launch-checklist.md` — 100/100
+---
 
-### مستبعد عمداً:
-| المستبعَد | البديل |
-|---|---|
-| Playwright E2E | QA يدوي موثق |
-| Lighthouse CI في Actions | تشغيل محلي مرة واحدة |
-| Plausible | PostHog Free Tier |
-| `/admin/funnel` | PostHog dashboard |
-| Rate limiting على ab_test_events | مؤجَّل (لا primitives) |
-| Memory 2.0 + Video Generator | بعد 10 مشتركين مدفوعين |
+## خطة المعالجة المقترحة
 
-### حالة التنفيذ النهائية:
-اكتملت المراحل P1 → P5 بنسبة **100%** تقنياً وتشغيلياً. الخطوة التالية ليست تطويراً جديداً، بل **الإطلاق التسويقي** وفق `launch-day-runbook.md` مع مراقبة أول 72 ساعة، وأي ثغرة حرجة أثناء المراقبة توقف الإعلان مؤقتاً حتى تُعالج.
+### 1. تثبيت قرار Tailwind
+- إبقاء `tailwind.config.ts` كملف توافق فقط.
+- عدم توسيعه أو إضافة theme قديم داخله، لأن تصميم المشروع يُدار حالياً من `src/styles.css` عبر Tailwind v4.
+- إضافة تعليق بسيط إن لزم يوضح أنه shim وليس مصدر التصميم.
+
+### 2. تصحيح طبقة SEO العامة
+- إزالة `og:image` و`twitter:image` العامة من `src/routes/__root.tsx`.
+- إبقاء القيم العامة الآمنة فقط مثل: charset، viewport، author، theme-color، og:type، og:locale، og:site_name، twitter:card.
+- ترك الصور الاجتماعية داخل كل route مهم مثل `/`, `/pricing`, `/about`, `/contact`, إلخ.
+- مراجعة `canonical` العام في الجذر؛ الأفضل ألا يكون `https://rifd.site/` مفروضاً على كل الصفحات، بل يضاف في كل route حسب مساره.
+
+### 3. توثيق حالة QA بدقة
+- تحديث `.lovable/qa-runbook.md` أو ملف checklist المناسب لتوضيح أن:
+  - الفحص الآلي والبصري السريع تم.
+  - QA اليدوي الكامل ما زال يتطلب 42 تمريرة موثقة.
+  - لا يتم اعتبار QA اليدوي مغلقاً إلا بعد تعبئة المصفوفة فعلياً.
+
+### 4. إعادة التحقق بعد التعديل
+بعد الموافقة والتنفيذ سأعيد التحقق من:
+- عدم وجود كسر في البناء أو TypeScript.
+- عدم تكرار/تعارض metadata بين root والصفحات.
+- بقاء Tailwind v4 يعمل من `src/styles.css` بدون الاعتماد على config قديم.
+- وضوح حالة التقدم في الخطة.
+
+---
+
+## نسبة التقدم الحالية
+
+| المسار | النسبة |
+|---|---:|
+| تنفيذ السبرنتات البرمجية | 100% |
+| الفحص الآلي/البصري السريع | 100% |
+| QA اليدوي الكامل حسب Runbook | لم يُغلق بعد — يحتاج 42 تمريرة موثقة |
+| جاهزية الإطلاق التقنية بعد معالجة الملاحظات | 95% تقريباً |
+
+## الخطوة التالية بعد الموافقة
+
+سأنفّذ تصحيح metadata وتوثيق حالة QA بدقة، مع الحفاظ على `tailwind.config.ts` كتوافق آمن فقط، ثم أقدّم تقريراً نهائياً يوضح ما تم تعديله وما تبقى من QA اليدوي قبل الإعلان التسويقي.
