@@ -3,6 +3,7 @@
  * محمية بفحص دور admin (RLS على ab_test_events يسمح للأدمن فقط بالقراءة).
  */
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { AdminGuard } from "@/components/admin-guard";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";

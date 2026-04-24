@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AdminGuard } from "@/components/admin-guard";
 import {
   Loader2,
   Crown,
