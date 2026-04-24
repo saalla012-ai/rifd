@@ -108,12 +108,18 @@ export const listAdminTopups = createServerFn({ method: "POST" })
       : { data: [] as { id: string; email: string | null; store_name: string | null }[] };
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
 
-    // إحصاءات إجمالية (كل الحالات بدون فلتر)
-    const { data: allRows } = await supabaseAdmin
-      .from("topup_purchases")
-      .select("status");
+    // إحصاءات إجمالية بـcount دقيق (بدون جلب الصفوف — يتفادى حد 1000)
+    const statusList = ["pending", "paid", "activated", "rejected", "refunded"] as const;
     const counts: Record<string, number> = { pending: 0, paid: 0, activated: 0, rejected: 0, refunded: 0 };
-    for (const r of allRows ?? []) counts[r.status] = (counts[r.status] ?? 0) + 1;
+    await Promise.all(
+      statusList.map(async (s) => {
+        const { count } = await supabaseAdmin
+          .from("topup_purchases")
+          .select("id", { count: "exact", head: true })
+          .eq("status", s);
+        counts[s] = count ?? 0;
+      })
+    );
 
     return {
       rows: (rows ?? []).map((r) => {
@@ -167,13 +173,17 @@ export const activateTopup = createServerFn({ method: "POST" })
     // فحص الحالة الحالية لـaudit + قواعد العمل
     const { data: current, error: cErr } = await supabaseAdmin
       .from("topup_purchases")
-      .select("id, user_id, status, credits, price_sar")
+      .select("id, user_id, status, credits, price_sar, receipt_path")
       .eq("id", data.purchaseId)
       .maybeSingle();
     if (cErr || !current) throw new Error("الطلب غير موجود");
     if (current.status === "activated") throw new Error("الطلب مفعَّل بالفعل");
     if (!["pending", "paid"].includes(current.status)) {
       throw new Error(`لا يمكن تفعيل طلب بحالة: ${current.status}`);
+    }
+    // فرض السيرفر: لا تفعيل بدون إيصال (UI يحجب لكن نحمي ضد bypass)
+    if (!current.receipt_path) {
+      throw new Error("لا يمكن التفعيل قبل رفع المستخدم لإيصال الدفع");
     }
 
     // استدعِ RPC المؤمَّنة (تفحص دور admin داخلياً + advisory lock)

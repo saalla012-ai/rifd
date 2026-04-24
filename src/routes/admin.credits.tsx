@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Loader2,
@@ -217,9 +217,14 @@ function AdminCreditsPage() {
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} /> تحديث
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <a href="/admin/credit-ledger">
+            <Link to="/admin/credit-ledger">
               <Settings2 className="h-4 w-4" /> دفتر النقاط
-            </a>
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/admin/reconcile">
+              <RefreshCw className="h-4 w-4" /> مزامنة الاستخدام
+            </Link>
           </Button>
         </div>
       </div>

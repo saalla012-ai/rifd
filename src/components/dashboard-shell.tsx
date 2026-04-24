@@ -20,6 +20,7 @@ import {
   Mail,
   Inbox,
   Coins,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -45,6 +46,7 @@ const ADMIN_NAV = [
   { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
   { to: "/admin/credits", label: "شحن النقاط", icon: Coins },
   { to: "/admin/credit-ledger", label: "دفتر النقاط", icon: BarChart3 },
+  { to: "/admin/reconcile", label: "مزامنة الاستخدام", icon: Database },
   { to: "/admin/contact-submissions", label: "رسائل التواصل", icon: Inbox, badgeKey: "contact" as const },
   { to: "/admin/email-monitor", label: "مراقبة البريد", icon: Mail },
 ] as const;
