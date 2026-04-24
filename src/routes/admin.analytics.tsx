@@ -42,8 +42,7 @@ function fmtUSD(n: number): string {
 }
 
 function AdminAnalyticsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  // الحماية والتحقق من الجلسة مضمونان عبر <AdminGuard>.
   const [data, setData] = useState<AdminAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,14 +91,9 @@ function AdminAnalyticsPage() {
   };
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      void navigate({ to: "/auth" });
-      return;
-    }
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
+  }, []);
 
   if (loading) {
     return (
