@@ -17,12 +17,13 @@
 
 import type { PostHog } from "posthog-js";
 
-const KEY =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_POSTHOG_KEY) ||
-  undefined;
-const HOST =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_POSTHOG_HOST) ||
-  "https://us.i.posthog.com";
+/**
+ * PostHog Project API Key — مفتاح علني للمتصفح (مصمَّم للنشر في bundle).
+ * الأمان يعتمد على CORS allowlist في إعدادات PostHog، لا على إخفاء المفتاح.
+ * المرجع: https://posthog.com/docs/privacy/security#api-keys
+ */
+const KEY = "phc_s8uwSfxBzpWVdtrTjARXYfYX449CoUPPbLDsFVvskaZL";
+const HOST = "https://us.i.posthog.com";
 
 let _client: PostHog | null = null;
 let _initialized = false;
