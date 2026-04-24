@@ -19,10 +19,12 @@ import {
   TrendingUp,
   Mail,
   Inbox,
+  Coins,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getNewContactCount } from "@/server/admin-contact-submissions";
+import { CreditsBar } from "@/components/credits-bar";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -33,6 +35,7 @@ const NAV = [
   { to: "/dashboard/library", label: "مكتبتي", icon: Library },
   { to: "/dashboard/store-profile", label: "ملف متجري", icon: Store },
   { to: "/dashboard/usage", label: "الاستخدام", icon: BarChart3 },
+  { to: "/dashboard/credits", label: "شحن النقاط", icon: Coins },
   { to: "/dashboard/billing", label: "الفواتير", icon: CreditCard },
   { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
 ] as const;
@@ -173,18 +176,29 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 overflow-x-hidden">
+        {/* Desktop top bar — يحوي شريط الرصيد */}
+        <header className="sticky top-0 z-10 hidden border-b border-border bg-background/80 backdrop-blur md:block">
+          <div className="flex items-center justify-end gap-3 px-6 py-3">
+            <CreditsBar />
+          </div>
+        </header>
+
+        {/* Mobile top bar */}
         <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur md:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center justify-between gap-2 px-4 py-3">
             <Link to="/" className="flex items-center gap-2 font-bold">
               <Sparkles className="h-4 w-4 text-primary" /> رِفد
             </Link>
-            <button
-              onClick={handleLogout}
-              aria-label="تسجيل الخروج"
-              className="rounded-md p-2 text-muted-foreground hover:bg-secondary"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <CreditsBar />
+              <button
+                onClick={handleLogout}
+                aria-label="تسجيل الخروج"
+                className="rounded-md p-2 text-muted-foreground hover:bg-secondary"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
           </div>
           <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2">
             {NAV.map((item) => (

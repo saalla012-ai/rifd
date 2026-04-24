@@ -1,12 +1,13 @@
 /**
- * Friendly upgrade dialog shown when a user hits their plan quota.
- * Detects "وصلت حدّ" or "متاح في الباقة الاحترافية" Arabic patterns
- * thrown by the AI server functions and converts the toast into a
- * call-to-action that routes the user to /dashboard/billing.
+ * نافذة موحَّدة للأخطاء عند نفاد الحصة/الرصيد.
+ * تُميّز بين 3 حالات:
+ *   1) text_quota_exceeded — استنفدت 200 توليدة نص يومية → CTA: ارجع غداً + ترقية
+ *   2) insufficient_credits — رصيد النقاط لا يكفي → CTA: شحن /dashboard/credits
+ *   3) plan_quota (legacy) — حد شهري في باقة قديمة → CTA: ترقية /dashboard/billing
  */
 
 import { Link } from "@tanstack/react-router";
-import { Crown, Sparkles, X } from "lucide-react";
+import { Crown, Sparkles, X, Coins, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,29 +16,121 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type Props = {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  /** "نص" أو "صورة" — للسياق في النص */
-  kind: "نص" | "صورة";
-  /** رسالة الخطأ الأصلية من السيرفر (اختيارية للعرض) */
-  reason?: string;
-};
+export type QuotaErrorKind = "text_quota" | "insufficient_credits" | "plan_quota" | "unknown";
 
-/**
- * Returns true when the given error message indicates a plan-quota limit
- * thrown by the server (Arabic). Used by callers to decide whether to
- * open the dialog instead of showing a regular toast.
- */
-export function isQuotaError(message: string): boolean {
-  return (
+export function detectQuotaError(message: string): QuotaErrorKind | null {
+  if (!message) return null;
+  // English error codes from server (credits.ts)
+  if (/text_quota_exceeded/i.test(message)) return "text_quota";
+  if (/insufficient_credits/i.test(message)) return "insufficient_credits";
+  // Arabic patterns from older flows
+  if (
+    message.includes("استنفدت توليدات النص") ||
+    message.includes("الحصة اليومية") ||
+    message.includes("نفدت حصة النصوص")
+  ) {
+    return "text_quota";
+  }
+  if (
+    message.includes("لا يكفي") ||
+    message.includes("رصيد النقاط") ||
+    message.includes("نقاطك")
+  ) {
+    return "insufficient_credits";
+  }
+  if (
     message.includes("وصلت حدّ") ||
     message.includes("الباقة الاحترافية فقط") ||
     message.includes("رقّ باقتك")
-  );
+  ) {
+    return "plan_quota";
+  }
+  return null;
+}
+
+/** للحفاظ على التوافق مع الاستدعاءات القديمة */
+export function isQuotaError(message: string): boolean {
+  return detectQuotaError(message) !== null;
+}
+
+type Props = {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  /** نوع التوليد للسياق */
+  kind: "نص" | "صورة";
+  /** رسالة الخطأ الأصلية من السيرفر */
+  reason?: string;
+};
+
+type Variant = {
+  icon: typeof Crown;
+  title: string;
+  subtitle: string;
+  badge: string;
+  cta: { label: string; to: "/dashboard/credits" | "/dashboard/billing" };
+  benefits: string[];
+};
+
+function getVariant(kindOfError: QuotaErrorKind, generationKind: "نص" | "صورة"): Variant {
+  if (kindOfError === "text_quota") {
+    return {
+      icon: Clock,
+      title: "وصلت حدّك اليومي للنصوص",
+      subtitle: "200 توليدة نصية / يوم — يتجدّد العدّاد تلقائياً عند منتصف الليل (توقيت الرياض)",
+      badge: "💡 احفظ القوالب المفضّلة في مكتبتك لاستخدامها لاحقاً",
+      cta: { label: "ترقية لباقة أعلى (حدود أكبر)", to: "/dashboard/billing" },
+      benefits: [
+        "200 توليدة نصية يومياً (كل الباقات)",
+        "صور احترافية بنماذج Flash + Pro",
+        "مكتبة قوالب موسّعة + حفظ المفضّلة",
+        "دعم واتساب مباشر",
+      ],
+    };
+  }
+
+  if (kindOfError === "insufficient_credits") {
+    return {
+      icon: Coins,
+      title: "رصيد النقاط لا يكفي",
+      subtitle:
+        generationKind === "صورة"
+          ? "صورة Flash تكلف 10 نقاط، وصورة Pro تكلف 25 نقطة. اشحن نقاط إضافية أو ارقَّ الباقة."
+          : "هذه العملية تحتاج نقاط إضافية. اشحن باقة سريعة أو ارقَّ الباقة.",
+      badge: "⚡ النقاط الإضافية لا تنتهي مع تجدّد الباقة الشهرية",
+      cta: { label: "شحن نقاط فوراً", to: "/dashboard/credits" },
+      benefits: [
+        "حزمة 500 نقطة بـ 29 ر.س",
+        "حزمة 1500 نقطة بـ 79 ر.س (الأفضل قيمة)",
+        "حزمة 5000 نقطة بـ 249 ر.س",
+        "تفعيل خلال 24 ساعة من رفع الإيصال",
+      ],
+    };
+  }
+
+  // plan_quota (legacy)
+  return {
+    icon: Crown,
+    title: "وصلت حدّ باقتك الحالية",
+    subtitle:
+      generationKind === "صورة"
+        ? "توليد الصور الاحترافية متاح في الباقات المدفوعة"
+        : `استنفدت توليدات ${generationKind} هذا الشهر`,
+    badge: "🔥 عرض المؤسسين: خصم 30% للأعضاء الـ 50 الأوائل",
+    cta: { label: "ترقّ باقتك الآن", to: "/dashboard/billing" },
+    benefits: [
+      "200 توليدة نصية يومياً + 50 صورة احترافية",
+      "نموذج Gemini Pro للجودة العالية",
+      "مكتبة قوالب كاملة + حفظ المفضلة",
+      "دعم واتساب مباشر مع المالك",
+    ],
+  };
 }
 
 export function QuotaExceededDialog({ open, onOpenChange, kind, reason }: Props) {
+  const errorKind = reason ? (detectQuotaError(reason) ?? "plan_quota") : "plan_quota";
+  const variant = getVariant(errorKind, kind);
+  const Icon = variant.icon;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md overflow-hidden p-0">
@@ -51,37 +144,31 @@ export function QuotaExceededDialog({ open, onOpenChange, kind, reason }: Props)
             <X className="h-4 w-4" />
           </button>
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary-foreground/15 backdrop-blur">
-            <Crown className="h-7 w-7" />
+            <Icon className="h-7 w-7" />
           </div>
-          <DialogTitle className="text-xl font-extrabold">
-            وصلت حدّ باقتك المجانية
-          </DialogTitle>
+          <DialogTitle className="text-xl font-extrabold">{variant.title}</DialogTitle>
           <DialogDescription className="mt-2 text-sm text-primary-foreground/90">
-            {kind === "صورة"
-              ? "توليد الصور الاحترافية متاح فقط في الباقات المدفوعة"
-              : `استنفدت توليدات ${kind} هذا الشهر`}
+            {variant.subtitle}
           </DialogDescription>
         </div>
 
         {/* Body */}
         <div className="px-6 pb-6 pt-5">
-          {reason && (
-            <div className="mb-4 rounded-lg bg-secondary/60 p-3 text-center text-xs text-muted-foreground">
-              {reason}
+          {reason && errorKind === "unknown" && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg bg-secondary/60 p-3 text-xs text-muted-foreground">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{reason}</span>
             </div>
           )}
 
           <ul className="space-y-2.5 text-sm">
-            <BenefitRow text="200 توليدة نصية شهرياً + 60 صورة احترافية" />
-            <BenefitRow text="نموذج Gemini Pro للجودة العالية" />
-            <BenefitRow text="مكتبة قوالب كاملة + حفظ المفضلة" />
-            <BenefitRow text="دعم واتساب مباشر مع المالك" />
+            {variant.benefits.map((b) => (
+              <BenefitRow key={b} text={b} />
+            ))}
           </ul>
 
           <div className="mt-5 rounded-lg border border-gold/30 bg-gold/5 p-3 text-center">
-            <p className="text-xs font-bold text-gold">
-              🔥 عرض المؤسسين: خصم 30% للأعضاء الـ 50 الأوائل
-            </p>
+            <p className="text-xs font-bold text-gold">{variant.badge}</p>
           </div>
 
           <div className="mt-5 flex flex-col gap-2">
@@ -90,9 +177,9 @@ export function QuotaExceededDialog({ open, onOpenChange, kind, reason }: Props)
               className="w-full gradient-primary text-primary-foreground shadow-elegant"
               onClick={() => onOpenChange(false)}
             >
-              <Link to="/dashboard/billing">
+              <Link to={variant.cta.to}>
                 <Sparkles className="h-4 w-4" />
-                احجز مقعدك الآن
+                {variant.cta.label}
               </Link>
             </Button>
             <button
