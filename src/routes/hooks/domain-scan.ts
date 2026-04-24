@@ -86,19 +86,51 @@ export const Route = createFileRoute("/hooks/domain-scan")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // ---- Auth: require a valid Supabase JWT belonging to an admin user ----
+        // (السابق كان يعتمد على anon key وهو مكشوف في الـ bundle — ثغرة HOOKS_ANON_KEY_AUTH)
         const authHeader = request.headers.get("authorization");
-        const token = authHeader?.replace("Bearer ", "");
-        const expectedAnon = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const token = authHeader?.replace(/^Bearer\s+/i, "").trim();
 
-        if (!token || token !== expectedAnon) {
+        if (!token) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
           });
         }
 
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
         const supabaseUrl = process.env.SUPABASE_URL!;
+        const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY!;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+        // نتحقق من JWT عبر anon client + global header (آمن ولا يكشف service key)
+        const supabaseUserCtx = createClient(supabaseUrl, anonKey, {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+          auth: { autoRefreshToken: false, persistSession: false },
+        });
+
+        const { data: claimsData, error: claimsErr } =
+          await supabaseUserCtx.auth.getClaims(token);
+        const userId = claimsData?.claims?.sub;
+        if (claimsErr || !userId) {
+          return new Response(JSON.stringify({ error: "unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+
+        // التحقق من دور admin عبر RPC has_role (SECURITY DEFINER آمنة)
+        const { data: isAdmin, error: roleErr } = await supabaseUserCtx.rpc(
+          "has_role",
+          { _user_id: userId, _role: "admin" }
+        );
+        if (roleErr || !isAdmin) {
+          return new Response(JSON.stringify({ error: "forbidden" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+
+        // الآن نُنشئ admin client لإجراء الفحص الفعلي
         const supabaseAdmin = createClient(supabaseUrl, serviceKey, {
           auth: { autoRefreshToken: false, persistSession: false },
         });
