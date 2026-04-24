@@ -52,6 +52,7 @@ import { Route as ApiTelegramDiscoverChatsRouteImport } from './routes/api.teleg
 import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminReconcileRouteImport } from './routes/admin.reconcile'
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
 import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
@@ -295,6 +296,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/admin/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReconcileRoute = AdminReconcileRouteImport.update({
+  id: '/admin/reconcile',
+  path: '/admin/reconcile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPlanLimitsRoute = AdminPlanLimitsRouteImport.update({
   id: '/admin/plan-limits',
   path: '/admin/plan-limits',
@@ -450,6 +456,7 @@ export interface FileRoutesByFullPath {
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
+  '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -517,6 +524,7 @@ export interface FileRoutesByTo {
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
+  '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -586,6 +594,7 @@ export interface FileRoutesById {
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
+  '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -656,6 +665,7 @@ export interface FileRouteTypes {
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
+    | '/admin/reconcile'
     | '/admin/subscriptions'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -723,6 +733,7 @@ export interface FileRouteTypes {
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
+    | '/admin/reconcile'
     | '/admin/subscriptions'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -791,6 +802,7 @@ export interface FileRouteTypes {
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
+    | '/admin/reconcile'
     | '/admin/subscriptions'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -860,6 +872,7 @@ export interface RootRouteChildren {
   AdminDomainScanRoute: typeof AdminDomainScanRoute
   AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
+  AdminReconcileRoute: typeof AdminReconcileRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
   ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
@@ -1188,6 +1201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/reconcile': {
+      id: '/admin/reconcile'
+      path: '/admin/reconcile'
+      fullPath: '/admin/reconcile'
+      preLoaderRoute: typeof AdminReconcileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/plan-limits': {
       id: '/admin/plan-limits'
       path: '/admin/plan-limits'
@@ -1418,6 +1438,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminDomainScanRoute: AdminDomainScanRoute,
   AdminEmailMonitorRoute: AdminEmailMonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
+  AdminReconcileRoute: AdminReconcileRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,
   ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,

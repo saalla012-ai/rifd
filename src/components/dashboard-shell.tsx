@@ -20,7 +20,7 @@ import {
   Mail,
   Inbox,
   Coins,
-} from "lucide-react";
+  Database,
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getNewContactCount } from "@/server/admin-contact-submissions";
