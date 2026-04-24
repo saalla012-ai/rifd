@@ -25,13 +25,14 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
  */
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://*.gstatic.com https://*.googleapis.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://*.gstatic.com https://*.googleapis.com https://*.posthog.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://*.supabase.co https://wubcgjuodozhrrigtngs.supabase.co https://*.gstatic.com https://*.googleusercontent.com",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://wubcgjuodozhrrigtngs.supabase.co https://accounts.google.com https://*.googleapis.com https://app.posthog.com https://*.posthog.com",
+  "img-src 'self' data: blob: https://*.supabase.co https://wubcgjuodozhrrigtngs.supabase.co https://*.gstatic.com https://*.googleusercontent.com https://*.posthog.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://wubcgjuodozhrrigtngs.supabase.co https://accounts.google.com https://*.googleapis.com https://*.posthog.com https://*.i.posthog.com",
   "frame-src 'self' https://accounts.google.com",
   "frame-ancestors 'none'",
+  "worker-src 'self' blob:",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
