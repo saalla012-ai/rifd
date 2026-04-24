@@ -54,6 +54,7 @@ import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscript
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
 import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
+import { Route as AdminDnsCheckRouteImport } from './routes/admin.dns-check'
 import { Route as AdminContactSubmissionsRouteImport } from './routes/admin.contact-submissions'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -301,6 +302,11 @@ const AdminDomainScanRoute = AdminDomainScanRouteImport.update({
   path: '/admin/domain-scan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDnsCheckRoute = AdminDnsCheckRouteImport.update({
+  id: '/admin/dns-check',
+  path: '/admin/dns-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminContactSubmissionsRoute = AdminContactSubmissionsRouteImport.update({
   id: '/admin/contact-submissions',
   path: '/admin/contact-submissions',
@@ -420,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
+  '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -483,6 +490,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
+  '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -548,6 +556,7 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
+  '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
@@ -614,6 +623,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/contact-submissions'
+    | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
@@ -677,6 +687,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/contact-submissions'
+    | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
@@ -741,6 +752,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/contact-submissions'
+    | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
     | '/admin/plan-limits'
@@ -806,6 +818,7 @@ export interface RootRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminContactSubmissionsRoute: typeof AdminContactSubmissionsRoute
+  AdminDnsCheckRoute: typeof AdminDnsCheckRoute
   AdminDomainScanRoute: typeof AdminDomainScanRoute
   AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
@@ -1151,6 +1164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDomainScanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/dns-check': {
+      id: '/admin/dns-check'
+      path: '/admin/dns-check'
+      fullPath: '/admin/dns-check'
+      preLoaderRoute: typeof AdminDnsCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/contact-submissions': {
       id: '/admin/contact-submissions'
       path: '/admin/contact-submissions'
@@ -1331,6 +1351,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminContactSubmissionsRoute: AdminContactSubmissionsRoute,
+  AdminDnsCheckRoute: AdminDnsCheckRoute,
   AdminDomainScanRoute: AdminDomainScanRoute,
   AdminEmailMonitorRoute: AdminEmailMonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
