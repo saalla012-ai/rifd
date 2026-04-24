@@ -173,13 +173,17 @@ export const activateTopup = createServerFn({ method: "POST" })
     // فحص الحالة الحالية لـaudit + قواعد العمل
     const { data: current, error: cErr } = await supabaseAdmin
       .from("topup_purchases")
-      .select("id, user_id, status, credits, price_sar")
+      .select("id, user_id, status, credits, price_sar, receipt_path")
       .eq("id", data.purchaseId)
       .maybeSingle();
     if (cErr || !current) throw new Error("الطلب غير موجود");
     if (current.status === "activated") throw new Error("الطلب مفعَّل بالفعل");
     if (!["pending", "paid"].includes(current.status)) {
       throw new Error(`لا يمكن تفعيل طلب بحالة: ${current.status}`);
+    }
+    // فرض السيرفر: لا تفعيل بدون إيصال (UI يحجب لكن نحمي ضد bypass)
+    if (!current.receipt_path) {
+      throw new Error("لا يمكن التفعيل قبل رفع المستخدم لإيصال الدفع");
     }
 
     // استدعِ RPC المؤمَّنة (تفحص دور admin داخلياً + advisory lock)
