@@ -201,7 +201,7 @@ export const activateTopup = createServerFn({ method: "POST" })
       metadata: { user_id: current.user_id, price_sar: current.price_sar, notes: data.adminNotes ?? null },
     });
 
-    const row = (rpcData as Array<{ topup_credits: number }>)?.[0];
+    const row = rpcData as { topup_credits: number } | null;
     return {
       ok: true,
       credits_added: current.credits,
