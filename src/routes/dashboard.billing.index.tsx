@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
   Crown,
+  Film,
+  Loader2,
+  MessageCircle,
   ShieldCheck,
   Sparkles,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  MessageCircle,
-  Loader2,
   Users,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics/posthog";
@@ -47,25 +49,36 @@ export const Route = createFileRoute("/dashboard/billing/")({
   component: BillingPage,
 });
 
-const PLAN_LABELS = {
-  free: "مجاني",
-  pro: "احترافي",
-  business: "أعمال",
-} as const;
+type PaidPlan = "starter" | "growth" | "pro" | "business";
+type PlanKey = "free" | PaidPlan;
 
-const PLAN_PRICES = {
-  pro: { monthly: 79, yearly: 790 },
-  business: { monthly: 199, yearly: 1990 },
-} as const;
+type PlanConfig = {
+  label: string;
+  monthly: number;
+  yearly: number;
+  credits: number;
+  fast: number;
+  quality: number;
+  note: string;
+  badge?: string;
+};
+
+const PLAN_CONFIG: Record<PaidPlan, PlanConfig> = {
+  starter: { label: "Starter", monthly: 149, yearly: 1490, credits: 3000, fast: 20, quality: 6, note: "لبداية الفيديو المنتظمة" },
+  growth: { label: "Growth", monthly: 249, yearly: 2490, credits: 6000, fast: 40, quality: 13, note: "الأكثر توازناً للمتاجر النشطة", badge: "الأكثر اختياراً" },
+  pro: { label: "Pro", monthly: 399, yearly: 3990, credits: 11000, fast: 73, quality: 24, note: "لإعلانات واختبارات أكثر" },
+  business: { label: "Business", monthly: 999, yearly: 9990, credits: 30000, fast: 200, quality: 66, note: "للفرق والوكالات الخفيفة" },
+};
+
+const PLAN_LABELS: Record<PlanKey, string> = {
+  free: "Free",
+  starter: "Starter",
+  growth: "Growth",
+  pro: "Pro",
+  business: "Business",
+};
 
 const FUTURE_INCREASE_PCT = 30;
-
-function priceAfterIncrease(price: number) {
-  return Math.round(price * (1 + FUTURE_INCREASE_PCT / 100));
-}
-
-const PRO_FUTURE_MONTHLY = priceAfterIncrease(79);
-const BUSINESS_FUTURE_MONTHLY = priceAfterIncrease(199);
 
 const STATUS_META: Record<
   string,
@@ -88,7 +101,7 @@ type Settings = {
 
 type RequestRow = {
   id: string;
-  plan: "pro" | "business";
+  plan: PaidPlan;
   billing_cycle: string;
   store_name: string | null;
   whatsapp: string;
@@ -103,17 +116,15 @@ function BillingPage() {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [seatsTaken, setSeatsTaken] = useState<number>(0);
+  const [seatsTaken, setSeatsTaken] = useState(0);
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
-  // Form state
-  const [plan, setPlan] = useState<"pro" | "business">("pro");
+  const [plan, setPlan] = useState<PaidPlan>("growth");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [storeName, setStoreName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<string>("bank_transfer_sa");
+  const [paymentMethod, setPaymentMethod] = useState("bank_transfer_sa");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -149,23 +160,18 @@ function BillingPage() {
 
   const seatsTotal = settings?.founding_total_seats ?? 1000;
   const seatsLeft = Math.max(0, seatsTotal - seatsTaken);
-  const seatsPct = (seatsTaken / seatsTotal) * 100;
+  const seatsPct = seatsTotal > 0 ? (seatsTaken / seatsTotal) * 100 : 0;
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
   const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
-
-  const price = PLAN_PRICES[plan][billingCycle];
+  const selected = PLAN_CONFIG[plan];
+  const price = selected[billingCycle];
   const futurePrice = Math.round(price * (1 + increasePct / 100));
-  const planLabel = PLAN_LABELS[plan];
-
   const pendingRequest = useMemo(
     () => requests.find((r) => r.status === "pending" || r.status === "contacted"),
     [requests]
   );
-
   const isPaidUser = Boolean(profile?.plan && profile.plan !== "free");
 
-  // Auto-redirect: لو في طلب pending → ننقله مباشرة لصفحة التأكيد
-  // (إلا لو مفعّل بالفعل — يبقى يشوف صفحة الفوترة)
   useEffect(() => {
     if (loading || !pendingRequest || isPaidUser) return;
     void navigate({
@@ -179,34 +185,27 @@ function BillingPage() {
   function buildWhatsappUrl(reqId?: string) {
     const lines = [
       "السلام عليكم 👋",
-      "أرغب بالاشتراك في برنامج الأعضاء المؤسسين لرِفد",
+      "أرغب بالاشتراك في رِفد بنظام نقاط الفيديو الجديد",
       "",
-      `📦 الباقة: ${planLabel} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
-      `💰 سعر المؤسسين المجمّد: ${price} ر.س (سيرتفع لـ ${futurePrice} ر.س بعد اكتمال 1000 عضو)`,
-      `🔒 سعرك ثابت مدى الحياة لن يتغير`,
+      `📦 الباقة: ${selected.label} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
+      `🎬 نقاط الفيديو: ${selected.credits.toLocaleString("ar-SA")} نقطة`,
+      `💰 السعر: ${price} ر.س (سيرتفع لـ ${futurePrice} ر.س بعد برنامج المؤسسين)`,
       storeName ? `🏪 المتجر: ${storeName}` : "",
       `📱 واتساب: ${whatsapp}`,
       `📧 البريد: ${user?.email ?? ""}`,
-      `💳 طريقة الدفع المفضلة: ${paymentMethodLabel(paymentMethod)}`,
+      `💳 طريقة الدفع: ${paymentMethodLabel(paymentMethod)}`,
       reqId ? `🔖 رقم الطلب: ${reqId.slice(0, 8)}` : "",
       notes ? `📝 ملاحظة: ${notes}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
+    ].filter(Boolean).join("\n");
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(lines)}`;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    if (!whatsapp.trim()) {
-      toast.error("الرجاء إدخال رقم الواتساب");
-      return;
-    }
-    if (!validateSaudiPhone(whatsapp)) {
-      toast.error(SAUDI_PHONE_ERROR);
-      return;
-    }
+    if (!whatsapp.trim()) return toast.error("الرجاء إدخال رقم الواتساب");
+    if (!validateSaudiPhone(whatsapp)) return toast.error(SAUDI_PHONE_ERROR);
+
     const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setSubmitting(true);
     const { data, error } = await supabase
@@ -227,203 +226,133 @@ function BillingPage() {
 
     if (error || !data) {
       const code = (error as { code?: string } | null)?.code;
-      if (code === "23505") {
-        toast.error("لديك طلب معلّق بالفعل لهذه الخطة — راجعه من الأسفل أو ألغِه قبل إنشاء طلب جديد.");
-      } else {
-        toast.error("فشل إرسال الطلب، حاول مرة أخرى");
-      }
+      toast.error(code === "23505" ? "لديك طلب معلّق بالفعل — افتح صفحة التأكيد أو انتظر التفعيل." : "فشل إرسال الطلب، حاول مرة أخرى");
       return;
     }
 
     toast.success("✅ تم استلام طلبك! ننتقل لصفحة التأكيد...");
     track("subscription_requested", { plan, billing_cycle: billingCycle, payment_method: paymentMethod });
     await refreshProfile();
-    // ننتقل لصفحة التأكيد المخصصة بدل فتح واتساب مباشرة
-    void navigate({
-      to: "/dashboard/billing/confirm/$requestId",
-      params: { requestId: data.id },
-    });
+    void navigate({ to: "/dashboard/billing/confirm/$requestId", params: { requestId: data.id } });
   }
-
-  const proFutureMonthly = PRO_FUTURE_MONTHLY;
-  const businessFutureMonthly = BUSINESS_FUTURE_MONTHLY;
 
   return (
     <DashboardShell>
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold">الفواتير والاشتراك</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          إدارة باقتك والاطلاع على طلباتك السابقة
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold">الفواتير والاشتراك</h1>
+          <p className="mt-1 text-sm text-muted-foreground">اختر باقة نقاط الفيديو المناسبة، والنصوص والصور تبقى ضمن سقوف يومية.</p>
+        </div>
+        <Button asChild variant="outline">
+          <Link to="/pricing">عرض صفحة الأسعار</Link>
+        </Button>
       </div>
 
-      {/* Current Plan Card */}
-      <div
-        className={cn(
-          "rounded-2xl border p-6 shadow-soft",
-          isPaidUser
-            ? "border-gold/40 bg-gradient-to-br from-gold/10 to-transparent"
-            : "border-border bg-card"
-        )}
-      >
+      <div className={cn("rounded-2xl border p-6 shadow-soft", isPaidUser ? "border-gold/40 bg-gradient-to-br from-gold/10 to-transparent" : "border-border bg-card")}>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               {isPaidUser && <Crown className="h-5 w-5 text-gold" />}
-              <h3 className="text-lg font-bold">
-                باقتك الحالية: {PLAN_LABELS[profile?.plan ?? "free"]}
-              </h3>
+              <h2 className="text-lg font-bold">باقتك الحالية: {PLAN_LABELS[(profile?.plan ?? "free") as PlanKey] ?? profile?.plan}</h2>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {isPaidUser
-                ? "✨ شكراً لكونك من الأعضاء المؤسسين! سعرك ثابت مدى الحياة."
-                : "ابدأ مجاناً واستكشف، ثم رقّ لما تحتاج توسع نشاطك."}
+              {isPaidUser ? "نقاطك الحالية مخصصة للفيديو فقط، والنصوص والصور لا تخصم منها." : "ابدأ مجاناً، ثم اختر باقة فيديو عندما تحتاج حملات إعلانية أكثر."}
             </p>
           </div>
-          <Button asChild variant="outline">
-            <Link to="/pricing">عرض كل الباقات</Link>
-          </Button>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+            <Film className="h-3.5 w-3.5" /> Fast 150 نقطة · Quality 450 نقطة
+          </div>
         </div>
       </div>
 
-      {/* Pending request banner */}
-      {pendingRequest && (
-        <PendingBanner
-          request={pendingRequest}
-          waUrl={buildWhatsappUrl(pendingRequest.id)}
-        />
-      )}
+      {pendingRequest && <PendingBanner request={pendingRequest} waUrl={buildWhatsappUrl(pendingRequest.id)} />}
 
-      {/* Founding members + Form */}
       {!isPaidUser && (
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
-          {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-soft"
-          >
-            <div className="mb-4 flex items-center gap-2">
+          <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2">
+            <div className="mb-5 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-bold">طلب الاشتراك</h2>
             </div>
-            <p className="mb-5 text-sm text-muted-foreground">
-              املأ المعلومات وسنفتح لك واتساب فوراً مع تأكيد لحظي للطلب — دعم سريع من المؤسس.
-            </p>
 
-            {/* Live subscribers counter — social proof */}
             <div className="mb-5">
               <SubscribersCounter />
             </div>
 
+            <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {(Object.entries(PLAN_CONFIG) as Array<[PaidPlan, PlanConfig]>).map(([key, p]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPlan(key)}
+                  className={cn("rounded-xl border p-4 text-right transition-colors", plan === key ? "border-primary bg-primary/10" : "border-border bg-secondary/20 hover:border-primary/40")}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-extrabold">{p.label}</span>
+                    {p.badge && <Badge className="text-[10px]">{p.badge}</Badge>}
+                  </div>
+                  <div className="mt-2 text-2xl font-extrabold">{p.monthly} <span className="text-xs font-normal text-muted-foreground">ر.س</span></div>
+                  <div className="mt-1 text-xs text-primary">{p.credits.toLocaleString("ar-SA")} نقطة فيديو</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{p.note}</div>
+                </button>
+              ))}
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label className="mb-1.5 block">الباقة</Label>
-                <Select value={plan} onValueChange={(v) => setPlan(v as "pro" | "business")}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pro">
-                      احترافي — {PLAN_PRICES.pro.monthly} ر.س/شهر · 🔥 الأكثر اختياراً
-                      <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {proFutureMonthly} لاحقاً)</span>
-                    </SelectItem>
-                    <SelectItem value="business">
-                      أعمال — {PLAN_PRICES.business.monthly} ر.س/شهر · 👑 الأفضل قيمة للوكالات
-                      <span className="ml-1 text-[10px] text-warning">(سيرتفع لـ {businessFutureMonthly} لاحقاً)</span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               <div>
                 <Label className="mb-1.5 block">الدورة</Label>
                 <Select value={billingCycle} onValueChange={(v) => setBillingCycle(v as "monthly" | "yearly")}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="monthly">شهري</SelectItem>
-                    <SelectItem value="yearly">سنوي (وفّر شهرين)</SelectItem>
+                    <SelectItem value="yearly">سنوي (شهران مجاناً)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="mb-1.5 block">اسم المتجر</Label>
-                <Input
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                  placeholder="مثال: متجر ندى للعطور"
-                />
+                <Input value={storeName} onChange={(e) => setStoreName(e.target.value)} placeholder="مثال: متجر ندى للعطور" />
               </div>
               <div>
                 <Label className="mb-1.5 block">رقم الواتساب *</Label>
-                <Input
-                  required
-                  dir="ltr"
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder={SAUDI_PHONE_PLACEHOLDER}
-                />
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  رقم جوال سعودي يبدأ بـ 5 — نتواصل معك من خلاله
-                </p>
+                <Input required dir="ltr" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder={SAUDI_PHONE_PLACEHOLDER} />
+                <p className="mt-1 text-[11px] text-muted-foreground">رقم جوال سعودي يبدأ بـ 5 — نتواصل معك من خلاله</p>
               </div>
-              <div className="sm:col-span-2">
+              <div>
                 <Label className="mb-1.5 block">طريقة الدفع المفضلة</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bank_transfer_sa">تحويل بنكي (بنك سعودي)</SelectItem>
-                    <SelectItem value="other">طريقة أخرى (نناقشها في واتساب)</SelectItem>
+                    <SelectItem value="bank_transfer_sa">تحويل بنكي سعودي</SelectItem>
+                    <SelectItem value="other">طريقة أخرى عبر واتساب</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="sm:col-span-2">
                 <Label className="mb-1.5 block">ملاحظة (اختياري)</Label>
-                <Textarea
-                  rows={3}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="أي تفاصيل إضافية تحب نعرفها قبل التواصل"
-                />
+                <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="أي تفاصيل إضافية تحب نعرفها قبل التواصل" />
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/30 bg-gradient-to-l from-gold/10 via-secondary/50 to-secondary/50 p-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[10px] font-bold text-gold">
-                    🔒 سعر المؤسسين — مجمّد مدى الحياة
-                  </span>
-                </div>
-                <div className="mt-1.5 flex items-baseline gap-2">
-                  <div className="text-2xl font-extrabold text-foreground">
-                    {price}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">
-                      ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}
-                    </span>
+            <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-extrabold text-primary">
+                    <Zap className="h-4 w-4" /> {selected.credits.toLocaleString("ar-SA")} نقطة فيديو
                   </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    تقريباً {selected.fast} فيديو Fast أو {selected.quality} فيديو Quality — الفيديو ليس غير محدود.
+                  </p>
+                  <p className="mt-2 text-2xl font-extrabold">
+                    {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
+                  </p>
+                  <p className="mt-1 text-[11px] font-medium text-warning">سيرتفع لـ {futurePrice} ر.س بعد برنامج المؤسسين</p>
                 </div>
-                <div className="mt-1 text-[11px] font-bold text-primary">
-                  {plan === "pro"
-                    ? "≈ 2.6 ر.س يومياً • أرخص من فنجان قهوة ☕"
-                    : "≈ 39.8 ر.س لكل متجر (5 ملفات) • يعادل موظف بـ4,000 ر.س"}
-                </div>
-                <div className="mt-1 text-[11px] font-medium text-warning">
-                  ⚠️ سيرتفع لـ {futurePrice} ر.س بعد اكتمال 1000 عضو
-                </div>
-                <div className="mt-0.5 text-[11px] font-medium text-success">
-                  ✓ سعرك ثابت مدى الحياة — لن يتأثر بأي زيادة مستقبلية
-                </div>
+                <Button type="submit" size="lg" disabled={submitting} className="gradient-primary text-primary-foreground shadow-elegant">
+                  {submitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="ml-2 h-4 w-4" />}
+                  إرسال الطلب وعرض بيانات التحويل
+                </Button>
               </div>
-              <Button
-                type="submit"
-                size="lg"
-                disabled={submitting}
-                className="gradient-primary text-primary-foreground shadow-elegant"
-              >
-                {submitting ? (
-                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="ml-2 h-4 w-4" />
-                )}
-                إرسال الطلب وعرض بيانات التحويل
-              </Button>
             </div>
 
             <div className="mt-4 rounded-xl border border-success/20 bg-success/5 p-3">
@@ -431,49 +360,26 @@ function BillingPage() {
             </div>
           </form>
 
-          {/* Right column: Founder card + Steps + Founding members */}
           <div className="space-y-5">
             <FounderCard whatsappNumber={whatsappNumber} />
             <ActivationSteps />
-
             <aside className="rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent p-6 shadow-gold">
               <div className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-gold" />
-                <span className="text-xs font-bold uppercase tracking-wide text-gold">
-                  الأعضاء المؤسسين
-                </span>
+                <span className="text-xs font-bold uppercase tracking-wide text-gold">الأعضاء المؤسسين</span>
               </div>
-              <h3 className="mt-3 text-xl font-extrabold">
-                احجز سعرك قبل الزيادة — أول 1000 عضو
-              </h3>
-
+              <h3 className="mt-3 text-xl font-extrabold">احجز سعرك قبل الزيادة</h3>
               <div className="mt-5 rounded-xl bg-card/50 p-4 backdrop-blur">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Users className="h-4 w-4 text-gold" /> المقاعد المتبقية
-                  </span>
-                  <span className="font-extrabold text-gold">
-                    {loading ? "..." : `${seatsLeft.toLocaleString("ar-SA")} / ${seatsTotal.toLocaleString("ar-SA")}`}
-                  </span>
+                  <span className="flex items-center gap-1.5 font-medium"><Users className="h-4 w-4 text-gold" /> المقاعد المتبقية</span>
+                  <span className="font-extrabold text-gold">{loading ? "..." : `${seatsLeft.toLocaleString("ar-SA")} / ${seatsTotal.toLocaleString("ar-SA")}`}</span>
                 </div>
                 <Progress value={seatsPct} className="mt-2 h-2" />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  بعد اكتمال {seatsTotal.toLocaleString("ar-SA")} عضو سترتفع الأسعار {increasePct}%
-                </p>
+                <p className="mt-2 text-xs text-muted-foreground">بعد اكتمال المقاعد سترتفع الأسعار {increasePct}%</p>
               </div>
-
               <ul className="mt-5 space-y-2.5 text-sm">
-                {[
-                  `🔒 سعرك مجمّد مدى الحياة — لن يرتفع أبداً حتى لو ارتفعت الأسعار`,
-                  "💬 دعم مباشر من المؤسس عبر واتساب — رد سريع",
-                  "⚡ تأكيد فوري للطلب — بدون قوائم انتظار",
-                  "🎯 تأثيرك على خارطة الطريق (تقترح ميزات نطورها)",
-                  "🧾 فاتورة ضريبية رسمية بعد كل دفعة",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                    <span>{item}</span>
-                  </li>
+                {["نقاط فيديو واضحة دون رسوم مخفية", "النصوص والصور لا تخصم من نقاط الفيديو", "تأكيد فوري للطلب وتفعيل خلال 24 ساعة", "فاتورة ضريبية رسمية بعد كل دفعة"].map((item) => (
+                  <li key={item} className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" /><span>{item}</span></li>
                 ))}
               </ul>
             </aside>
@@ -481,24 +387,14 @@ function BillingPage() {
         </div>
       )}
 
-      {/* Trust badges grid — visible to everyone */}
-      {!isPaidUser && (
-        <div className="mt-6">
-          <TrustBadges items={6} />
-        </div>
-      )}
+      {!isPaidUser && <div className="mt-6"><TrustBadges items={6} /></div>}
 
-      {/* Requests history */}
       <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
         <h3 className="mb-4 text-base font-bold">طلباتك السابقة</h3>
         {loading ? (
-          <div className="flex justify-center py-6">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
+          <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : requests.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            ما عندك أي طلبات سابقة. ابدأ بإرسال طلب من النموذج أعلاه.
-          </p>
+          <p className="py-6 text-center text-sm text-muted-foreground">ما عندك أي طلبات سابقة. ابدأ بإرسال طلب من النموذج أعلاه.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -516,18 +412,10 @@ function BillingPage() {
                   const Icon = meta.icon;
                   return (
                     <tr key={r.id} className="border-b border-border/50 last:border-0">
-                      <td className="px-2 py-3 text-xs text-muted-foreground">
-                        {new Date(r.created_at).toLocaleDateString("ar-SA")}
-                      </td>
+                      <td className="px-2 py-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar-SA")}</td>
                       <td className="px-2 py-3 font-medium">{PLAN_LABELS[r.plan]}</td>
-                      <td className="px-2 py-3 text-xs text-muted-foreground">
-                        {r.billing_cycle === "yearly" ? "سنوي" : "شهري"}
-                      </td>
-                      <td className="px-2 py-3">
-                        <Badge variant={toneToVariant(meta.tone)} className="gap-1">
-                          <Icon className="h-3 w-3" /> {meta.label}
-                        </Badge>
-                      </td>
+                      <td className="px-2 py-3 text-xs text-muted-foreground">{r.billing_cycle === "yearly" ? "سنوي" : "شهري"}</td>
+                      <td className="px-2 py-3"><Badge variant={toneToVariant(meta.tone)} className="gap-1"><Icon className="h-3 w-3" /> {meta.label}</Badge></td>
                     </tr>
                   );
                 })}
@@ -541,26 +429,17 @@ function BillingPage() {
 }
 
 function paymentMethodLabel(method: string) {
-  if (method === "bank_transfer_sa") return "تحويل بنكي سعودي";
-  return "أخرى";
+  return method === "bank_transfer_sa" ? "تحويل بنكي سعودي" : "أخرى";
 }
 
-function toneToVariant(
-  tone: "warning" | "info" | "success" | "danger" | "muted"
-): "default" | "secondary" | "destructive" | "outline" {
+function toneToVariant(tone: "warning" | "info" | "success" | "danger" | "muted"): "default" | "secondary" | "destructive" | "outline" {
   if (tone === "success") return "default";
   if (tone === "danger") return "destructive";
   if (tone === "warning" || tone === "info") return "secondary";
   return "outline";
 }
 
-function PendingBanner({
-  request,
-  waUrl,
-}: {
-  request: RequestRow;
-  waUrl: string;
-}) {
+function PendingBanner({ request, waUrl }: { request: RequestRow; waUrl: string }) {
   const meta = STATUS_META[request.status];
   return (
     <div className="mt-6 rounded-2xl border-2 border-warning/40 bg-gradient-to-br from-warning/10 to-transparent p-5 shadow-soft">
@@ -570,13 +449,9 @@ function PendingBanner({
           <div>
             <h3 className="font-bold">عندك طلب نشط: {meta.label}</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              {PLAN_LABELS[request.plan]} • {request.billing_cycle === "yearly" ? "سنوي" : "شهري"} •
-              {" "}
-              أُرسل في {new Date(request.created_at).toLocaleDateString("ar-SA")}
+              {PLAN_LABELS[request.plan]} • {request.billing_cycle === "yearly" ? "سنوي" : "شهري"} • أُرسل في {new Date(request.created_at).toLocaleDateString("ar-SA")}
             </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              افتح صفحة التأكيد لرفع إيصال التحويل ومتابعة الحالة لحظياً.
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">افتح صفحة التأكيد لرفع إيصال التحويل ومتابعة الحالة.</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -586,9 +461,7 @@ function PendingBanner({
             </Link>
           </Button>
           <Button asChild variant="outline" className="border-success text-success hover:bg-success/10">
-            <a href={waUrl} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="ml-2 h-4 w-4" /> واتساب
-            </a>
+            <a href={waUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="ml-2 h-4 w-4" /> واتساب</a>
           </Button>
         </div>
       </div>

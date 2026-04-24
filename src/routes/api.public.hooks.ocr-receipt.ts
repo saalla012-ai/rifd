@@ -14,8 +14,10 @@ import { createClient } from "@supabase/supabase-js";
 import { extractReceiptInsights, buildOcrAdminNote } from "@/server/receipt-ocr";
 
 const PLAN_PRICES: Record<string, Record<string, number>> = {
-  pro: { monthly: 79, yearly: 790 },
-  business: { monthly: 199, yearly: 1990 },
+  starter: { monthly: 149, yearly: 1490 },
+  growth: { monthly: 249, yearly: 2490 },
+  pro: { monthly: 399, yearly: 3990 },
+  business: { monthly: 999, yearly: 9990 },
 };
 
 const RECEIPT_BUCKET = "payment-receipts";
