@@ -2,13 +2,14 @@
  * Admin A/B Test Results — لوحة بسيطة لعرض نتائج تجارب A/B.
  * محمية بفحص دور admin (RLS على ab_test_events يسمح للأدمن فقط بالقراءة).
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, MousePointerClick, Wand2 } from "lucide-react";
+import { Loader2, TrendingUp, Users, MousePointerClick, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/ab-tests")({
   component: AbTestsPage,
