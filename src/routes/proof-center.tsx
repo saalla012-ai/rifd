@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -267,7 +268,7 @@ const decisionPaths = [
   },
 ];
 
-function InternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+function InternalLink({ href, children }: { href: string; children: ReactNode }) {
   return <Link to={href as "/onboarding"}>{children}</Link>;
 }
 
