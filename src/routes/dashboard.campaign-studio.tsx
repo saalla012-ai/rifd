@@ -269,7 +269,7 @@ function OutputStep({ icon: Icon, title, desc, to, payload }: {
           <Copy className="h-3.5 w-3.5" /> نسخ
         </Button>
         <Button asChild size="sm" className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
-          <Link to={to}>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></Link>
+          <Link to={to} search={{ prompt: payload }}>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></Link>
         </Button>
       </div>
     </div>
