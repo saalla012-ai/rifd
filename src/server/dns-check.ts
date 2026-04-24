@@ -269,5 +269,5 @@ export const checkEmailDns = createServerFn({ method: "POST" })
       overall,
       records,
       summary,
-    } satisfies DnsCheckResult;
+    };
   });
