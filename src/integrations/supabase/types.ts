@@ -765,6 +765,42 @@ export type Database = {
           user_id: string
         }[]
       }
+      record_generation: {
+        Args: {
+          _completion_tokens?: number
+          _estimated_cost_usd?: number
+          _metadata?: Json
+          _model_used?: string
+          _prompt: string
+          _prompt_tokens?: number
+          _result: string
+          _template?: string
+          _total_tokens?: number
+          _type: Database["public"]["Enums"]["generation_type"]
+        }
+        Returns: {
+          completion_tokens: number | null
+          created_at: string
+          estimated_cost_usd: number | null
+          id: string
+          is_favorite: boolean
+          metadata: Json | null
+          model_used: string | null
+          prompt: string
+          prompt_tokens: number | null
+          result: string | null
+          template: string | null
+          total_tokens: number | null
+          type: Database["public"]["Enums"]["generation_type"]
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "generations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
