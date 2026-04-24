@@ -291,6 +291,10 @@ function InternalLink({ href, children }: { href: InternalRoute; children: React
   return <Link to={href}>{children}</Link>;
 }
 
+function isInternalRoute(href: InternalRoute | "#operational-proof"): href is InternalRoute {
+  return !href.startsWith("#");
+}
+
 export const Route = createFileRoute("/proof-center")({
   head: () => ({
     meta: [
@@ -437,10 +441,10 @@ function ProofCenterPage() {
                     <span className="font-extrabold text-primary">الخطوة المنطقية التالية:</span> {item.next}
                   </div>
                   <Button asChild variant="outline" className="mt-4 w-full">
-                    {item.href.startsWith("#") ? (
-                      <a href={item.href}>{item.ctaLabel}</a>
-                    ) : (
+                    {isInternalRoute(item.href) ? (
                       <InternalLink href={item.href}>{item.ctaLabel}</InternalLink>
+                    ) : (
+                      <a href={item.href}>{item.ctaLabel}</a>
                     )}
                   </Button>
                 </article>
