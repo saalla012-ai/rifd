@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Clapperboard, Crown, Download, Film, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Zap } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import { track } from "@/lib/analytics/posthog";
 type VideoQuality = "fast" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
+type VideoSearch = { prompt?: string };
 
 const QUALITY = {
   fast: { label: "Fast", cost: 150, icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
@@ -30,18 +31,22 @@ const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
 
 export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
+  validateSearch: (s: Record<string, unknown>): VideoSearch => ({
+    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+  }),
   component: GenerateVideoPage,
 });
 
 function GenerateVideoPage() {
   const router = useRouter();
+  const search = useSearch({ from: "/dashboard/generate-video" });
   const generateVideoFn = useServerFn(generateVideo);
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
   const [quality, setQuality] = useState<VideoQuality>("fast");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [startingFrameUrl, setStartingFrameUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<VideoJob[]>([]);
