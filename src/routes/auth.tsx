@@ -72,6 +72,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        track("signup_completed", { method: "email" });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
         // welcome سيُرسل تلقائياً من useEffect عند تحديث user
       } else {
