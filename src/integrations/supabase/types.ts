@@ -1224,7 +1224,7 @@ export type Database = {
         | "rejected"
         | "expired"
       topup_status: "pending" | "paid" | "activated" | "rejected" | "refunded"
-      user_plan: "free" | "pro" | "business"
+      user_plan: "free" | "pro" | "business" | "starter" | "growth"
       video_job_status:
         | "pending"
         | "processing"
@@ -1380,7 +1380,7 @@ export const Constants = {
         "expired",
       ],
       topup_status: ["pending", "paid", "activated", "rejected", "refunded"],
-      user_plan: ["free", "pro", "business"],
+      user_plan: ["free", "pro", "business", "starter", "growth"],
       video_job_status: [
         "pending",
         "processing",
