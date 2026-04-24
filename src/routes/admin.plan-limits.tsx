@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import { Loader2, Save, RefreshCw, ArrowLeft, History } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-auth";
+// useAuth removed — protection handled by <AdminGuard>
 import { supabase } from "@/integrations/supabase/client";
 import {
   listPlanLimits,

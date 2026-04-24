@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import { Loader2, RefreshCw, ArrowLeft, Filter, X, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useAuth } from "@/hooks/use-auth";
+// useAuth removed — protection handled by <AdminGuard>
 import { supabase } from "@/integrations/supabase/client";
 import {
   listAdminAudit,
