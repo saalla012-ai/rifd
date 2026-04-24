@@ -126,20 +126,20 @@ export const generateText = createServerFn({ method: "POST" })
 
     const cost = estimateTextCost(modelName, aiUsage);
 
-    // Sequential to avoid race: insert first (DB trigger enforces quota again),
-    // then bump usage_logs only if insert succeeded.
-    const { error: insErr } = await supabase.from("generations").insert({
-      user_id: userId,
-      type: "text",
-      prompt: data.prompt,
-      result,
-      template: data.templateId,
-      model_used: modelName,
-      prompt_tokens: aiUsage.prompt_tokens,
-      completion_tokens: aiUsage.completion_tokens,
-      total_tokens: aiUsage.total_tokens,
-      estimated_cost_usd: cost,
-      metadata: { template_title: data.templateTitle },
+    // SECURITY: نستخدم RPC record_generation (SECURITY DEFINER) بدل INSERT المباشر
+    // لتفعيل سياق "trusted" الذي يسمح بكتابة cost/tokens/model الحقيقية.
+    // الإدراج المباشر من العميل سيُصفّر هذه الحقول تلقائياً عبر trigger.
+    const { error: insErr } = await supabase.rpc("record_generation", {
+      _type: "text",
+      _prompt: data.prompt,
+      _result: result,
+      _template: data.templateId ?? null,
+      _model_used: modelName,
+      _prompt_tokens: aiUsage.prompt_tokens,
+      _completion_tokens: aiUsage.completion_tokens,
+      _total_tokens: aiUsage.total_tokens,
+      _estimated_cost_usd: cost,
+      _metadata: { template_title: data.templateTitle },
     });
     if (insErr) {
       if (/quota_exceeded/i.test(insErr.message)) {
@@ -233,15 +233,14 @@ export const generateImage = createServerFn({ method: "POST" })
 
     const cost = estimateImageCost(model);
 
-    const { error: insErr } = await supabase.from("generations").insert({
-      user_id: userId,
-      type: "image",
-      prompt: data.prompt,
-      result: publicUrl,
-      template: data.templateId,
-      model_used: model,
-      estimated_cost_usd: cost,
-      metadata: { template_title: data.templateTitle, quality: data.quality, storage_path: filename },
+    const { error: insErr } = await supabase.rpc("record_generation", {
+      _type: "image",
+      _prompt: data.prompt,
+      _result: publicUrl,
+      _template: data.templateId ?? null,
+      _model_used: model,
+      _estimated_cost_usd: cost,
+      _metadata: { template_title: data.templateTitle, quality: data.quality, storage_path: filename },
     });
     if (insErr) {
       // Cleanup: remove the uploaded image to avoid orphan storage object
@@ -352,15 +351,14 @@ export const editImage = createServerFn({ method: "POST" })
 
     const editCost = estimateImageCost(model);
 
-    const { error: insErr } = await supabase.from("generations").insert({
-      user_id: userId,
-      type: "image_enhance",
-      prompt: data.prompt,
-      result: publicUrl,
-      template: data.templateId,
-      model_used: model,
-      estimated_cost_usd: editCost,
-      metadata: {
+    const { error: insErr } = await supabase.rpc("record_generation", {
+      _type: "image_enhance",
+      _prompt: data.prompt,
+      _result: publicUrl,
+      _template: data.templateId ?? null,
+      _model_used: model,
+      _estimated_cost_usd: editCost,
+      _metadata: {
         template_title: data.templateTitle,
         storage_path: filename,
       },
