@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import {
   BarChart,
@@ -20,7 +20,6 @@ import { Loader2, Users, Sparkles, DollarSign, TrendingUp, RefreshCw, ArrowLeft,
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { getAdminAnalytics, type AdminAnalytics } from "@/server/admin-analytics";
 import { reconcileUsageLogs, type ReconcileResult } from "@/server/admin-reconcile";
@@ -42,8 +41,7 @@ function fmtUSD(n: number): string {
 }
 
 function AdminAnalyticsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  // الحماية والتحقق من الجلسة مضمونان عبر <AdminGuard>.
   const [data, setData] = useState<AdminAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,14 +90,9 @@ function AdminAnalyticsPage() {
   };
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      void navigate({ to: "/auth" });
-      return;
-    }
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
+  }, []);
 
   if (loading) {
     return (

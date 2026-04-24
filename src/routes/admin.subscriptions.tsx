@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import {
   Loader2,
   Crown,
-  ShieldAlert,
   CheckCircle2,
   XCircle,
   MessageCircle,
@@ -88,28 +87,16 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function AdminSubscriptionsPage() {
-  const { user, isAdmin, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  // الحماية مضمونة عبر <AdminGuard> — نقرأ user فقط لتسجيل audit log.
+  const { user } = useAuth();
   const [requests, setRequests] = useState<Req[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [savingId, setSavingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      void navigate({ to: "/auth" });
-      return;
-    }
-    // ننتظر تحديد دور الأدمن (يأتي من AuthContext، استعلام واحد فقط لكل جلسة)
-    if (isAdmin === null) return;
-    if (isAdmin) {
-      void loadRequests();
-    } else {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, authLoading, isAdmin]);
+    void loadRequests();
+  }, []);
 
   async function loadRequests() {
     setLoading(true);
@@ -230,25 +217,11 @@ function AdminSubscriptionsPage() {
     await loadRequests();
   }
 
-  if (authLoading || isAdmin === null) {
+  if (loading) {
     return (
       <DashboardShell>
         <div className="flex justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      </DashboardShell>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <DashboardShell>
-        <div className="mx-auto max-w-md rounded-2xl border border-destructive/40 bg-destructive/5 p-8 text-center">
-          <ShieldAlert className="mx-auto h-10 w-10 text-destructive" />
-          <h2 className="mt-3 text-xl font-bold">صلاحيات غير كافية</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            هذه الصفحة مخصصة لمدراء النظام فقط.
-          </p>
         </div>
       </DashboardShell>
     );

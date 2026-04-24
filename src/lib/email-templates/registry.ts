@@ -21,6 +21,7 @@ import { template as paymentReceipt } from './payment-receipt'
 import { template as paymentFailed } from './payment-failed'
 import { template as quotaWarning80 } from './quota-warning-80pct'
 import { template as quotaExceeded } from './quota-exceeded'
+import { template as contactConfirmation } from './contact-confirmation'
 
 /**
  * Template registry — maps template names to their React Email components.
@@ -39,4 +40,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-failed': paymentFailed,
   'quota-warning-80pct': quotaWarning80,
   'quota-exceeded': quotaExceeded,
+  'contact-confirmation': contactConfirmation,
 }

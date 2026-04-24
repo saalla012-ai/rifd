@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import { Loader2, Save, RefreshCw, ArrowLeft, History } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-auth";
+// useAuth removed — protection handled by <AdminGuard>
 import { supabase } from "@/integrations/supabase/client";
 import {
   listPlanLimits,
@@ -35,8 +35,7 @@ const PLAN_LABEL: Record<Plan, string> = { free: "مجاني", pro: "محترف"
 const KIND_LABEL: Record<Kind, string> = { text: "نصوص", image: "صور" };
 
 function AdminPlanLimitsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  // الحماية مضمونة عبر <AdminGuard>.
   const [rows, setRows] = useState<PlanLimitRow[]>([]);
   const [audit, setAudit] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,11 +71,9 @@ function AdminPlanLimitsPage() {
   };
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) { void navigate({ to: "/auth" }); return; }
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
+  }, []);
 
   const onSave = async (plan: Plan, kind: Kind) => {
     const k = keyOf(plan, kind);

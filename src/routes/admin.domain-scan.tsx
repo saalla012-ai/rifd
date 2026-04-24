@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminGuard } from "@/components/admin-guard";
 import { Loader2, RefreshCw, ArrowLeft, Shield, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,6 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
 type ScanRow = {
@@ -30,34 +29,14 @@ export const Route = createFileRoute("/admin/domain-scan")({
 });
 
 function DomainScanPage() {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  // الحماية مضمونة عبر <AdminGuard> في تعريف الـRoute — لا حاجة لإعادة الفحص هنا.
   const [rows, setRows] = useState<ScanRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      navigate({ to: "/auth" });
-      return;
-    }
-    (async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (!data) {
-        navigate({ to: "/dashboard" });
-        return;
-      }
-      setIsAdmin(true);
-      await loadRows();
-    })();
-  }, [user, authLoading]);
+    void loadRows();
+  }, []);
 
   async function loadRows() {
     setLoading(true);
@@ -104,16 +83,6 @@ function DomainScanPage() {
     } finally {
       setRunning(false);
     }
-  }
-
-  if (authLoading || !isAdmin) {
-    return (
-      <DashboardShell>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </div>
-      </DashboardShell>
-    );
   }
 
   const lastScan = rows[0];
