@@ -1,5 +1,5 @@
 /**
- * Phase 3: صفحة شحن النقاط الإضافية (Top-up).
+ * صفحة شحن نقاط الفيديو الإضافية (Top-up).
  * تتيح للمستخدم:
  *  1) رؤية رصيده الحالي (من useCreditsSummary)
  *  2) اختيار باقة شحن من topup_packages
@@ -37,7 +37,7 @@ import { listTopupPackages } from "@/server/credits";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/credits")({
-  head: () => ({ meta: [{ title: "شحن النقاط — رِفد" }] }),
+  head: () => ({ meta: [{ title: "شحن نقاط الفيديو — رِفد" }] }),
   component: CreditsPage,
 });
 
@@ -200,7 +200,7 @@ function CreditsPage() {
       toast.error(`فشل تحديث الحالة: ${updErr.message}`);
       return;
     }
-    toast.success("✅ تم رفع الإيصال — سنفعّل النقاط خلال 24 ساعة");
+    toast.success("✅ تم رفع الإيصال — سنفعّل نقاط الفيديو خلال 24 ساعة");
     await loadAll();
     void refreshCredits();
   }
@@ -228,10 +228,10 @@ function CreditsPage() {
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold flex items-center gap-2">
-            <Coins className="h-6 w-6 text-gold" /> شحن النقاط
+            <Coins className="h-6 w-6 text-gold" /> شحن نقاط الفيديو
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            باقات إضافية — لا تنتهي مع تجدّد الباقة الشهرية
+            باقات إضافية للفيديو — لا تنتهي مع تجدّد الباقة الشهرية
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -248,7 +248,7 @@ function CreditsPage() {
           <div>
             <p className="text-xs opacity-80">رصيدك الحالي</p>
             <p className="mt-1 text-3xl font-extrabold tabular-nums">
-              {fmt(total)} <span className="text-base font-medium opacity-80">نقطة</span>
+              {fmt(total)} <span className="text-base font-medium opacity-80">نقطة فيديو</span>
             </p>
           </div>
           <div className="hidden rounded-full bg-primary-foreground/15 p-4 sm:block">
@@ -277,7 +277,7 @@ function CreditsPage() {
                 لديك طلب شحن {pendingPurchase.status === "pending" ? "بانتظار رفع إيصال" : "بانتظار تأكيد الأدمن"}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {fmt(pendingPurchase.credits)} نقطة بسعر {fmt(pendingPurchase.price_sar)} ر.س
+                {fmt(pendingPurchase.credits)} نقطة فيديو بسعر {fmt(pendingPurchase.price_sar)} ر.س
               </p>
               {pendingPurchase.status === "pending" && (
                 <Button
@@ -337,14 +337,14 @@ function CreditsPage() {
                     <div>
                       <p className="text-sm font-bold">{pkg.display_name}</p>
                       <p className="text-[10px] text-muted-foreground">
-                        ~{pricePerCredit.toFixed(1)} هللة / 1000 نقطة
+                        ~{pricePerCredit.toFixed(1)} هللة / 1000 نقطة فيديو
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-4 flex items-baseline gap-1">
                     <span className="text-3xl font-extrabold tabular-nums">{fmt(pkg.credits)}</span>
-                    <span className="text-sm text-muted-foreground">نقطة</span>
+                    <span className="text-sm text-muted-foreground">نقطة فيديو</span>
                   </div>
                   <div className="mt-1 text-sm">
                     <span className="font-bold text-primary">{fmt(pkg.price_sar)} ر.س</span>{" "}
@@ -386,7 +386,7 @@ function CreditsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Coins className="h-4 w-4 text-gold" />
-                        <span className="font-bold tabular-nums">{fmt(p.credits)} نقطة</span>
+                        <span className="font-bold tabular-nums">{fmt(p.credits)} نقطة فيديو</span>
                         <span className="text-xs text-muted-foreground">
                           · {fmt(p.price_sar)} ر.س
                         </span>
@@ -415,7 +415,7 @@ function CreditsPage() {
       <div className="mt-8 rounded-xl border border-border bg-secondary/30 p-4 text-center">
         <Crown className="mx-auto h-5 w-5 text-gold" />
         <p className="mt-2 text-xs text-muted-foreground">
-          النقاط الإضافية لا تنتهي مع تجدّد الباقة · يتم التفعيل خلال 24 ساعة
+          نقاط الفيديو الإضافية لا تنتهي مع تجدّد الباقة · يتم التفعيل خلال 24 ساعة
         </p>
       </div>
     </DashboardShell>

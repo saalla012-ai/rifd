@@ -1,6 +1,6 @@
 /**
  * شريط الرصيد — يظهر في رأس الداشبورد.
- * يعرض: إجمالي النقاط (plan + topup) + الحصة اليومية للنص + CTA للشحن.
+ * يعرض: إجمالي نقاط الفيديو (plan + topup) + حصص النص والصورة اليومية + CTA للشحن.
  *
  * متجاوب:
  * - Desktop: شريط أفقي مع تفاصيل كاملة.
@@ -60,7 +60,7 @@ export function CreditsBar() {
     <Popover>
       <PopoverTrigger asChild>
         <button
-          aria-label="رصيد النقاط"
+          aria-label="رصيد نقاط الفيديو"
           className={cn(
             "flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-1.5 text-xs font-bold transition hover:border-primary/50 hover:bg-secondary",
             lowCredits && "border-destructive/40 bg-destructive/5 text-destructive",
@@ -69,7 +69,7 @@ export function CreditsBar() {
         >
           <Coins className="h-3.5 w-3.5" />
           <span className="tabular-nums">{formatNum(total)}</span>
-          <span className="hidden text-muted-foreground sm:inline">نقطة</span>
+          <span className="hidden text-muted-foreground sm:inline">نقطة فيديو</span>
           {(lowCredits || textNearLimit) && (
             <AlertTriangle className="h-3.5 w-3.5 text-warning" />
           )}
@@ -87,7 +87,7 @@ export function CreditsBar() {
           </div>
           <div className="mt-1 text-2xl font-extrabold tabular-nums">
             {formatNum(total)}{" "}
-            <span className="text-sm font-medium opacity-80">نقطة</span>
+            <span className="text-sm font-medium opacity-80">نقطة فيديو</span>
           </div>
         </div>
 
@@ -133,12 +133,27 @@ export function CreditsBar() {
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-muted-foreground">حصة الصور اليومية</span>
+              <span className="font-bold tabular-nums text-foreground">
+                {formatNum(data.dailyImageUsed)} / {formatNum(data.dailyImageCap)}
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${pct(data.dailyImageUsed, data.dailyImageCap)}%` }}
+              />
+            </div>
+          </div>
+
           {/* Costs hint */}
           <div className="flex items-start gap-1.5 rounded-md bg-muted/40 p-2 text-[10px] text-muted-foreground">
             <Info className="mt-0.5 h-3 w-3 shrink-0" />
             <span>
-              صورة Flash: {data.costs.image_flash} نقاط · صورة Pro:{" "}
-              {data.costs.image_pro} نقطة · النصوص لا تخصم نقاط
+              فيديو Fast: {data.costs.video_fast} نقطة · فيديو Quality:{" "}
+              {data.costs.video_quality} نقطة · النصوص والصور لا تخصم نقاط فيديو
             </span>
           </div>
 

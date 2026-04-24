@@ -1,16 +1,11 @@
 /**
- * Server functions for AI generation (Phase 2 — Credits-aware)
+ * Server functions for AI generation (Phase 2 — quota-aware)
  * ─────────────────────────────────────────────────────────────
  * - generateText: نص — يستهلك حصة يومية فقط (consume_text_quota)
- * - generateImage / editImage: يستهلك نقاط من المحفظة قبل الاستدعاء، ويرد عند الفشل
- *
- * تدفق النقاط (للصور):
- *   1) consume(amount, 'consume_image') → يحجز النقاط ويُرجع ledgerId
- *   2) استدعاء AI + رفع للتخزين
- *   3) عند الفشل في أي خطوة → refund(ledgerId)
+ * - generateImage / editImage: يستهلك حصة صور يومية فقط، بدون خصم نقاط
  *
  * IMPORTANT: نُبقي bump_usage و usage_logs للتوافق مع لوحة الإدارة وتقارير الكلفة.
- * النقاط هي مصدر الحقيقة للحجب — usage_logs للقياس فقط.
+ * الحصص اليومية هي مصدر الحقيقة للنصوص والصور — usage_logs للقياس فقط.
  */
 
 import { createServerFn } from "@tanstack/react-start";
@@ -22,11 +17,10 @@ import { estimateTextCost, estimateImageCost } from "./cost";
 import { buildTextSystemPrompt, buildImagePrompt, type StoreContext } from "./prompts";
 import { currentRiyadhMonth } from "@/lib/usage-month";
 import {
-  consume,
-  refund,
+  consumeImageQuota,
   consumeTextQuota,
-  imageCost,
   InsufficientCreditsError,
+  ImageQuotaExceededError,
   TextQuotaExceededError,
 } from "./credits";
 
@@ -68,6 +62,11 @@ function creditError(e: unknown): Error {
   if (e instanceof TextQuotaExceededError) {
     return new Error(
       `TEXT_QUOTA_EXCEEDED: وصلت حدّ ${e.cap} نص يومياً (${e.used}/${e.cap}). يتجدّد العداد بعد منتصف الليل بتوقيت الرياض.`
+    );
+  }
+  if (e instanceof ImageQuotaExceededError) {
+    return new Error(
+      `IMAGE_QUOTA_EXCEEDED: وصلت حدّ ${e.cap} صورة يومياً (${e.used}/${e.cap}). يتجدّد العداد بعد منتصف الليل بتوقيت الرياض.`
     );
   }
   return e instanceof Error ? e : new Error(String(e));
@@ -152,7 +151,7 @@ export const generateText = createServerFn({ method: "POST" })
   });
 
 // ============================================================
-// generateImage — يستهلك نقاط (Flash=10 / Pro=25)
+// generateImage — حصة صور يومية بدون نقاط
 // ============================================================
 export const generateImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -171,23 +170,14 @@ export const generateImage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    const cost = imageCost(data.quality);
 
-    // 1) خصم النقاط أولاً (يرفع InsufficientCreditsError إذا الرصيد ناقص)
-    let ledgerId: string;
-    let remainingTotal: number;
+    let quota: { used: number; cap: number };
     try {
-      const r = await consume(supabase, cost, "consume_image", {
-        quality: data.quality,
-        template_id: data.templateId,
-      });
-      ledgerId = r.ledgerId;
-      remainingTotal = r.remainingTotal;
+      quota = await consumeImageQuota(supabase);
     } catch (e) {
       throw creditError(e);
     }
 
-    // 2) من هنا فصاعداً: أي فشل يستوجب refund
     try {
       const profile = await loadProfile(supabase, userId);
       const ctx: StoreContext = profile ?? {};
@@ -245,8 +235,8 @@ export const generateImage = createServerFn({ method: "POST" })
           template_title: data.templateTitle,
           quality: data.quality,
           storage_path: filename,
-          credits_charged: cost,
-          ledger_id: ledgerId,
+          credits_charged: 0,
+          billing_scope: "daily_image_quota",
         },
       });
       if (insErr) {
@@ -259,18 +249,18 @@ export const generateImage = createServerFn({ method: "POST" })
 
       return {
         url: publicUrl,
-        creditsCharged: cost,
-        remainingCredits: remainingTotal,
+        creditsCharged: 0,
+        remainingDaily: quota.cap - quota.used,
+        dailyUsed: quota.used,
+        dailyCap: quota.cap,
       };
     } catch (e) {
-      // 3) فشل بعد الخصم → ردّ النقاط
-      await refund(supabase, ledgerId, "image_generation_failed");
       throw e;
     }
   });
 
 // ============================================================
-// editImage — يستهلك نفس تكلفة Flash (10 نقاط)
+// editImage — حصة صور يومية بدون نقاط
 // ============================================================
 export const editImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -294,17 +284,10 @@ export const editImage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    const cost = imageCost("flash"); // التعديل دائماً Flash
 
-    let ledgerId: string;
-    let remainingTotal: number;
+    let quota: { used: number; cap: number };
     try {
-      const r = await consume(supabase, cost, "consume_image", {
-        operation: "edit",
-        template_id: data.templateId,
-      });
-      ledgerId = r.ledgerId;
-      remainingTotal = r.remainingTotal;
+      quota = await consumeImageQuota(supabase);
     } catch (e) {
       throw creditError(e);
     }
@@ -372,8 +355,8 @@ export const editImage = createServerFn({ method: "POST" })
         _metadata: {
           template_title: data.templateTitle,
           storage_path: filename,
-          credits_charged: cost,
-          ledger_id: ledgerId,
+          credits_charged: 0,
+          billing_scope: "daily_image_quota",
         },
       });
       if (insErr) {
@@ -385,11 +368,12 @@ export const editImage = createServerFn({ method: "POST" })
 
       return {
         url: publicUrl,
-        creditsCharged: cost,
-        remainingCredits: remainingTotal,
+        creditsCharged: 0,
+        remainingDaily: quota.cap - quota.used,
+        dailyUsed: quota.used,
+        dailyCap: quota.cap,
       };
     } catch (e) {
-      await refund(supabase, ledgerId, "image_edit_failed");
       throw e;
     }
   });

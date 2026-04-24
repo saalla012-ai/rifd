@@ -1,8 +1,8 @@
 /**
  * Credits Layer (Phase 2)
  * ─────────────────────────────────────────────────────────────
- * مصدر الحقيقة الوحيد لتكلفة النقاط في كل النظام.
- * كل دوال التوليد تمر من هنا → consume → عمل AI → refund عند الفشل.
+ * مصدر الحقيقة الوحيد لتكلفة نقاط الفيديو في كل النظام.
+ * النصوص والصور مجانية بسقوف حماية يومية، والنقاط تُستهلك للفيديو فقط.
  *
  * ⚠️ غيّر الأرقام هنا فقط — لا تكرّرها في ملفات أخرى.
  */
@@ -18,18 +18,11 @@ type DbClient = SupabaseClient<Database>;
 // تكلفة النقاط (مصدر الحقيقة)
 // ============================================================
 export const CREDIT_COSTS = {
-  image_flash: 10,
-  image_pro: 25,
-  video_fast: 300,
-  video_quality: 900,
+  video_fast: 150,
+  video_quality: 450,
 } as const;
 
-export type ImageQuality = "flash" | "pro";
 export type VideoQuality = "fast" | "quality";
-
-export function imageCost(q: ImageQuality): number {
-  return q === "pro" ? CREDIT_COSTS.image_pro : CREDIT_COSTS.image_flash;
-}
 
 export function videoCost(q: VideoQuality): number {
   return q === "quality" ? CREDIT_COSTS.video_quality : CREDIT_COSTS.video_fast;
@@ -58,6 +51,17 @@ export class TextQuotaExceededError extends Error {
   }
 }
 
+export class ImageQuotaExceededError extends Error {
+  used: number;
+  cap: number;
+  constructor(used: number, cap: number) {
+    super(`image_quota_exceeded: used=${used} cap=${cap}`);
+    this.name = "ImageQuotaExceededError";
+    this.used = used;
+    this.cap = cap;
+  }
+}
+
 // ============================================================
 // Helpers يستدعيها ai-functions داخل handler واحد
 // ============================================================
@@ -70,7 +74,7 @@ export class TextQuotaExceededError extends Error {
 export async function consume(
   db: DbClient,
   amount: number,
-  txnType: "consume_image" | "consume_video",
+  txnType: "consume_video",
   metadata: Record<string, unknown> = {}
 ): Promise<{ ledgerId: string; remainingTotal: number; remainingPlan: number; remainingTopup: number }> {
   const { data, error } = await db.rpc("consume_credits", {
@@ -135,6 +139,21 @@ export async function consumeTextQuota(db: DbClient): Promise<{ used: number; ca
   if (!row) throw new Error("استجابة فارغة من الحصة");
 
   if (!row.allowed) throw new TextQuotaExceededError(row.used, row.daily_cap);
+  return { used: row.used, cap: row.daily_cap };
+}
+
+/**
+ * يستهلك محاولة واحدة من حصة الصور اليومية.
+ * الصور لا تخصم نقاط فيديو — تستخدم عدّاد حماية منفصل.
+ */
+export async function consumeImageQuota(db: DbClient): Promise<{ used: number; cap: number }> {
+  const { data, error } = await db.rpc("consume_image_quota");
+  if (error) throw new Error(`فشل التحقق من حصة الصور: ${error.message}`);
+
+  const row = (data as Array<{ allowed: boolean; used: number; daily_cap: number }>)?.[0];
+  if (!row) throw new Error("استجابة فارغة من حصة الصور");
+
+  if (!row.allowed) throw new ImageQuotaExceededError(row.used, row.daily_cap);
   return { used: row.used, cap: row.daily_cap };
 }
 
