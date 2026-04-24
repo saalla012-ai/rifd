@@ -14,7 +14,7 @@
 | **نموذج /contact** (P2) | 100% | end-to-end يعمل (DB + بريد + Telegram + Inbox) |
 | **QA Runbook** (P3) | 100% (وثائق) | 7 سيناريوهات × 6 تشكيلات موثَّقة — التنفيذ اليدوي post-launch |
 | **PostHog Analytics** (P4) | 100% | 5 أحداث + identify + pageviews + CSP |
-| **الإطلاق** (P5) | 100% | DNS + بريد verified + runbook كامل |
+| **الإطلاق** (P5) | 100% | DNS + بريد `send.rifd.site` verified + runbook كامل |
 
 ---
 
@@ -33,15 +33,15 @@
 
 ```text
 أمان:    [x] 0 critical/high في security scan
-         [x] 0 errors في supabase linter
-         [x] كل RLS مُراجعة يدوياً
+         [x] 0 errors في Lovable Cloud linter
+         [x] كل سياسات الوصول مُراجعة يدوياً
          [x] Security Headers + CSP فعّالة (src/start.ts)
 
 وظيفة:   [x] بريد التفعيل < 60 ثانية (مؤكَّد عبر S5)
          [x] Telegram يعمل
          [x] التوليد يخصم من usage_logs (trigger مفعَّل)
          [x] /contact يعمل end-to-end
-         [x] نطاق البريد rifd.site verified
+         [x] نطاق البريد send.rifd.site verified
 
 تجربة:   [ ] 0 console errors على 5 صفحات (يدوي post-launch)
          [ ] Lighthouse ≥ 80 موبايل (يدوي post-launch)
@@ -97,7 +97,7 @@
 راجع `.lovable/launch-day-runbook.md` للتفاصيل الكاملة. الملخص:
 - **يومياً 9ص:** Telegram + `/admin/email-monitor` + `/admin/subscriptions?status=pending` + `/admin/contact-submissions?status=new`
 - **يومياً 9م:** PostHog Dashboard + funnel signup→onboarding + `/admin/audit`
-- **أسبوعياً:** `supabase--linter` + KPI weekly + شحن Lovable AI credits
+- **أسبوعياً:** Lovable Cloud linter + KPI weekly + شحن Lovable AI credits
 
 ---
 

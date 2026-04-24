@@ -17,8 +17,8 @@
 - مراجعة باقي مسارات `admin.*` (analytics, audit, plan-limits, subscriptions, email-monitor, domain-scan) للتأكد من وجود نفس الحماية
 
 **P1.2 — تشغيل الفحوصات الآلية**
-- `security--run_security_scan` → توثيق النتائج وإصلاح كل critical/high
-- `supabase--linter` → إصلاح كل warning
+- فحص الأمان → توثيق النتائج وإصلاح كل critical/high
+- Lovable Cloud linter → إصلاح كل warning
 
 **P1.3 — مراجعة RLS يدوياً**
 - `subscription_requests`، `payment_settings`، `internal_config`، `profiles`، `contact_submissions`
@@ -132,7 +132,7 @@
 
 **P5.1** Publish + التحقق من DNS لـ `rifd.site` و `www.rifd.site`
 **P5.2** اختبار بريد production: signup حقيقي → welcome وصل، contact form → confirmation وصل
-**P5.3** التحقق من sender domain `send.rifd.site` يعمل (المرسل `noreply@notify.send.rifd.site` — راجع `mem://constraints/email-domain-name`) ✅ النطاق Verified
+**P5.3** التحقق من نطاق البريد المفوّض `send.rifd.site` يعمل ✅ النطاق Verified
 **P5.4** تحديث `.lovable/launch-checklist.md` → 100/100
 **P5.5** كتابة `.lovable/launch-day-runbook.md`:
 - معايير نجاح أول أسبوع: 100 زائر / 10 تسجيلات / 1-3 طلبات اشتراك
