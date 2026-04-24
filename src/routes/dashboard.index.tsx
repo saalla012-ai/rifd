@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wand2, Image as ImageIcon, ImagePlus, Sparkles, TrendingUp, Clock, Star, FileText, ArrowLeft, Phone, Pencil, Clapperboard, Megaphone } from "lucide-react";
+import { Wand2, Image as ImageIcon, Sparkles, TrendingUp, Clock, Star, FileText, ArrowLeft, Phone, Pencil, Clapperboard, Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -227,7 +227,8 @@ function DashboardPage() {
               { to: "/dashboard/generate-text" as const, label: "📱 منشور إنستقرام" },
               { to: "/dashboard/generate-text" as const, label: "🛍️ وصف منتج" },
               { to: "/dashboard/generate-image" as const, label: "🎨 بوستر إعلاني" },
-              { to: "/dashboard/generate-image" as const, label: "📸 صورة منتج" },
+              { to: "/dashboard/campaign-studio" as const, label: "📣 حملة كاملة" },
+              { to: "/dashboard/generate-video" as const, label: "🎬 فيديو قصير" },
             ].map((q, i) => (
               <Button key={i} asChild variant="outline" className="justify-start">
                 <Link to={q.to}>{q.label}</Link>
