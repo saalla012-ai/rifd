@@ -1,26 +1,26 @@
 ---
 name: Email domain naming rule
-description: تاريخ المحاولات الفاشلة + الحل الصحيح
+description: قاعدة كتابة اسم نطاق البريد + سجل المحاولات
 type: constraint
 ---
 
-## الوضع الحالي (24 أبريل 2026)
-**لا يوجد نطاق بريد فعّال.** الكود مُحدَّث لـ `mail.rifd.site` لكنه لم يُضَف في Lovable.
+## الوضع الحالي
+**النطاق الفعّال:** `notify.rifd.site` (status: pending DNS verification).
+الكود في الملفات الخمسة يستخدمه الآن.
 
-## سجل المحاولات (كلها فاشلة حالياً)
+## القاعدة الذهبية
+عند إضافة نطاق بريد في Lovable، **اكتب الجذر فقط** (`rifd.site`).
+Lovable يضيف `notify.` تلقائياً — تكرارها ينتج `notify.notify.rifd.site` وهو مكسور.
+
+## سجل المحاولات
 | المحاولة | النتيجة | السبب |
 |---|---|---|
-| `notify.rifd.site` | ❌ Failed | `DOMAIN_OWNED_BY_ANOTHER_ACCOUNT` في Mailgun |
-| `rifd.site` (الجذر) | ❌ Failed | نفس المشكلة — مملوك لحساب Mailgun آخر |
-| `mail.rifd.site` | ⏳ لم يُجرَّب | يجب إضافته يدوياً في Lovable |
+| `notify.rifd.site` (المحاولة الأولى) | ❌ Failed | `DOMAIN_OWNED_BY_ANOTHER_ACCOUNT` |
+| `rifd.site` (الجذر) | ❌ Failed | نفس المشكلة |
+| `mail.rifd.site` | ⏳ لم يُجرَّب | غير ضروري الآن |
+| **`rifd.site` → `notify.rifd.site` (إعادة محاولة)** | ✅ **Pending DNS** | نجح بعد إعادة الإضافة |
 
-## الحل الصحيح
-1. في Lovable Cloud → Emails → اضغط `+ Add a new email domain`
-2. أدخل: `mail.rifd.site`
-3. إذا فشل أيضاً → جرب `send.rifd.site` أو `email.rifd.site`
-4. إذا فشلت كل المحاولات → تواصل مع دعم Lovable لتحرير ملكية `rifd.site` من Mailgun
-
-## الملفات (تستخدم mail.rifd.site الآن)
+## الملفات المُحدَّثة (تستخدم notify.rifd.site)
 1. `src/routes/lovable/email/auth/webhook.ts`
 2. `src/routes/lovable/email/transactional/send.ts`
 3. `src/routes/hooks/onboarding-emails.ts`
@@ -28,4 +28,4 @@ type: constraint
 5. `src/server/send-welcome.ts`
 
 ## درس مستفاد
-لا تثق بالصور المعروضة في حوارات الإعداد كدليل على النجاح — تحقق دائماً عبر `email_domain--check_email_domain_status`.
+أحياناً إعادة إضافة نفس النطاق بعد فترة تنجح — Mailgun قد يحرر الملكية تلقائياً.

@@ -4,7 +4,7 @@ Updated: today
 # Project Memory
 
 ## Core
-نطاق البريد المُخطَّط: `mail.rifd.site` — لكنه **لم يُضَف بعد فعلياً في Lovable Emails**. النطاقان `notify.rifd.site` و `rifd.site` (الجذر) فاشلان بسبب `DOMAIN_OWNED_BY_ANOTHER_ACCOUNT` في Mailgun. المستخدم يحتاج إضافة `mail.rifd.site` يدوياً عبر "Add a new email domain".
+نطاق البريد الفعّال: `notify.rifd.site` (الجذر `rifd.site`، يضيف Lovable `notify.` تلقائياً). الحالة: ⏳ Pending DNS verification (April 2026). الكود في الملفات الخمسة يستخدمه الآن. عند الإضافة يدوياً: اكتب الجذر `rifd.site` فقط — لا تكرر `notify`.
 
 ## Memories
-- [Email domain naming](mem://constraints/email-domain-name) — تاريخ المحاولات الفاشلة + الحل المقترح
+- [Email domain naming](mem://constraints/email-domain-name) — تاريخ المحاولات + قاعدة كتابة الاسم

@@ -1,6 +1,10 @@
 import { sendLovableEmail } from '@lovable.dev/email-js'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
+
+// Loose client alias to avoid generic type friction when this file is shared
+// across helpers; runtime behaviour is identical to the strongly-typed client.
+type LooseSupabase = SupabaseClient<any, any, any, any, any>
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -37,21 +41,20 @@ function getRetryAfterSeconds(error: unknown): number {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: LooseSupabase,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
+  msg: { msg_id: number; message: Record<string, any> },
   reason: string
 ): Promise<void> {
-  const payload = msg.message as Record<string, unknown>
+  const payload = msg.message
   await supabase.from('email_send_log').insert({
-    message_id: payload.message_id as string | undefined,
+    message_id: payload.message_id,
     template_name: (payload.label || queue) as string,
-    recipient_email: payload.to as string,
+    recipient_email: payload.to,
     status: 'dlq',
     error_message: reason,
-  })
-  const { error } = await supabase.rpc('move_to_dlq', {
+  } as any)
+  const { error } = await (supabase.rpc as any)('move_to_dlq', {
     source_queue: queue,
     dlq_name: `${queue}_dlq`,
     message_id: msg.msg_id,
@@ -90,7 +93,7 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
 
-        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        const supabase = createClient(supabaseUrl, supabaseServiceKey) as LooseSupabase
 
         // 1. Check rate-limit cooldown and read queue config
         const { data: state } = await supabase
