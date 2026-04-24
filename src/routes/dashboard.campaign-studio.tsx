@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, Image as ImageIcon, LayoutTemplate, Megaphone, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
@@ -78,6 +78,14 @@ function CampaignStudioPage() {
   const [product, setProduct] = useState(search.product ?? "");
   const [audience, setAudience] = useState(search.audience ?? "");
   const [offer, setOffer] = useState(search.offer ?? "");
+
+  useEffect(() => {
+    if (search.goal) setGoal(search.goal);
+    if (search.channel) setChannel(search.channel);
+    if (search.product !== undefined) setProduct(search.product);
+    if (search.audience !== undefined) setAudience(search.audience);
+    if (search.offer !== undefined) setOffer(search.offer);
+  }, [search.audience, search.channel, search.goal, search.offer, search.product]);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? GOALS[0];
   const selectedChannel = CHANNELS.find((item) => item.value === channel) ?? CHANNELS[0];

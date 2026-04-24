@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -16,6 +17,17 @@ import {
 import { MarketingLayout } from "@/components/marketing-layout";
 import { ProofCenterOperationalProof } from "@/components/proof-center-operational-proof";
 import { Button } from "@/components/ui/button";
+
+type InternalRoute =
+  | "/onboarding"
+  | "/pricing"
+  | "/business-solutions"
+  | "/for-perfumes-beauty"
+  | "/for-abayas-fashion"
+  | "/for-gifts-sweets-coffee"
+  | "/for-electronics-accessories"
+  | "/for-kids-baby"
+  | "/for-home-decor";
 
 const decisionFramework = [
   {
@@ -57,7 +69,7 @@ const proofPackets: Array<{
   problem: string;
   output: string;
   outcome: string;
-  href: string;
+  href: InternalRoute;
   icon: typeof Sparkles;
 }> = [
   {
@@ -125,7 +137,15 @@ const proofPackets: Array<{
   },
 ];
 
-const objections = [
+const objections: Array<{
+  title: string;
+  proof: string;
+  answer: string;
+  decisionSignal: string;
+  next: string;
+  ctaLabel: string;
+  href: InternalRoute | "#operational-proof";
+}> = [
   {
     title: "هل الناتج مجرد نص عام؟",
     proof: "الإثبات هنا لا يعرض منشوراً معزولاً، بل يربطه بهوك وصورة وفكرة Reel وCTA ضمن نفس الحزمة.",
@@ -133,7 +153,7 @@ const objections = [
     decisionSignal: "إذا لاحظت أن أكبر مشكلتك اليوم هي تكرار نصوص عامة لا تُترجم إلى زاوية بيع واحدة، فهذا الاعتراض محسوم لصالح التجربة.",
     next: "ابدأ التجربة المجانية ثم قارن أول مخرج بما تكتبه عادة بنفسك، لأن الفرق الحقيقي يظهر في ترابط الحزمة لا في طول النص فقط.",
     ctaLabel: "ابدأ التجربة المجانية",
-    href: "/onboarding",
+    href: "/onboarding" as const,
   },
   {
     title: "هل يصلح فعلاً للسوق السعودي؟",
@@ -142,7 +162,7 @@ const objections = [
     decisionSignal: "إذا كنت لا تريد وعوداً عامة، فالحكم الصحيح هنا يكون من الصفحة القطاعية الأقرب لسوقك لا من الصفحة الرئيسية وحدها.",
     next: "انتقل إلى الصفحة القطاعية الأقرب لمتجرك، لأن الحكم الأدق يكون من منطق سوقك لا من مثال بعيد عنك.",
     ctaLabel: "شاهد المثال القطاعي",
-    href: "/for-perfumes-beauty",
+    href: "/for-perfumes-beauty" as const,
   },
   {
     title: "هل يوفّر وقتاً حقيقياً؟",
@@ -151,7 +171,7 @@ const objections = [
     decisionSignal: "إذا كان عنق الزجاجة عندك هو بدء الحملة كل أسبوع من الصفر، فهنا يظهر الأثر التشغيلي الحقيقي لا مجرد فرق في سرعة الكتابة.",
     next: "راجع طبقة الإثبات التشغيلي بالأسفل لتعرف ما الذي يجب أن تراه فعلياً في أول أسبوع، وكيف تنتقل بعدها إلى الباقة المناسبة.",
     ctaLabel: "تابع إلى الإثبات التشغيلي",
-    href: "#operational-proof",
+    href: "#operational-proof" as const,
   },
   {
     title: "هل يناسب الفرق والوكالات؟",
@@ -160,7 +180,7 @@ const objections = [
     decisionSignal: "إذا كان قرارك يتضمن فريقاً أو أكثر من عميل أو أكثر من متجر، فالمقارنة الصحيحة تصبح بين مسارين تشغيليين لا بين باقتين فقط.",
     next: "إذا كنت تدير فريقاً أو عدة حسابات، فالمسار الصحيح هو رِفد للأعمال لأن قرارك تشغيلي قبل أن يكون مجرد قرار تجربة.",
     ctaLabel: "اذهب إلى رِفد للأعمال",
-    href: "/business-solutions",
+    href: "/business-solutions" as const,
   },
 ];
 
@@ -198,7 +218,7 @@ const fitGuidance = [
   },
 ];
 
-const subscriptionPaths = [
+const subscriptionPaths: Array<{ title: string; description: string; proof: string; href: InternalRoute; label: string }> = [
   {
     title: "ابدأ مجاناً إذا كان هدفك إثبات الفكرة",
     description: "هذا هو المسار الأنسب عندما تريد اختبار منطق رِفد على متجر واحد والتأكد أن المخرج أوضح من طريقتك الحالية قبل أي التزام.",
@@ -240,7 +260,7 @@ const proofRoutes = [
   },
 ];
 
-const decisionPaths = [
+const decisionPaths: Array<{ title: string; description: string; href: InternalRoute; label: string }> = [
   {
     title: "عندي متجر وأريد إثباتاً سريعاً",
     description: "ابدأ بالتجربة المجانية ثم ارجع إلى هذه الصفحة إذا أردت مقارنة النتيجة بما رأيته هنا.",
@@ -266,6 +286,14 @@ const decisionPaths = [
     label: "اذهب إلى رِفد للأعمال",
   },
 ];
+
+function InternalLink({ href, children }: { href: InternalRoute; children: ReactNode }) {
+  return <Link to={href}>{children}</Link>;
+}
+
+function isInternalRoute(href: InternalRoute | "#operational-proof"): href is InternalRoute {
+  return !href.startsWith("#");
+}
 
 export const Route = createFileRoute("/proof-center")({
   head: () => ({
@@ -384,7 +412,7 @@ function ProofCenterPage() {
                   <p><span className="font-bold text-foreground">ما الذي يتغير فعلياً:</span> {item.outcome}</p>
                 </div>
                 <Button asChild variant="outline" className="mt-4 w-full">
-                  <Link to={item.href as never}>شاهد المثال الأقرب</Link>
+                  <InternalLink href={item.href}>شاهد المثال الأقرب</InternalLink>
                 </Button>
                 <Button asChild className="mt-2 w-full gradient-primary text-primary-foreground shadow-elegant">
                   <Link to="/dashboard/campaign-studio" search={item.studio}>حوّله إلى حملة جاهزة</Link>
@@ -413,10 +441,10 @@ function ProofCenterPage() {
                     <span className="font-extrabold text-primary">الخطوة المنطقية التالية:</span> {item.next}
                   </div>
                   <Button asChild variant="outline" className="mt-4 w-full">
-                    {item.href.startsWith("#") ? (
-                      <a href={item.href}>{item.ctaLabel}</a>
+                    {isInternalRoute(item.href) ? (
+                      <InternalLink href={item.href}>{item.ctaLabel}</InternalLink>
                     ) : (
-                      <Link to={item.href as never}>{item.ctaLabel}</Link>
+                      <a href={item.href}>{item.ctaLabel}</a>
                     )}
                   </Button>
                 </article>
@@ -474,7 +502,7 @@ function ProofCenterPage() {
                   <span className="font-extrabold text-primary">لماذا هذا هو المسار الصحيح:</span> {item.proof}
                 </div>
                 <Button asChild className="mt-4 w-full" variant="outline">
-                  <Link to={item.href as never}>{item.label}</Link>
+                  <InternalLink href={item.href}>{item.label}</InternalLink>
                 </Button>
               </article>
             ))}
@@ -491,7 +519,7 @@ function ProofCenterPage() {
                   <h3 className="text-base font-extrabold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
                   <Button asChild variant="outline" className="mt-4 w-full">
-                    <Link to={item.href as never}>{item.label}</Link>
+                    <InternalLink href={item.href}>{item.label}</InternalLink>
                   </Button>
                 </article>
               ))}
