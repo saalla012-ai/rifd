@@ -14,32 +14,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { assertAdmin, type DbClient } from "@/server/admin-auth";
-import type { Database } from "@/integrations/supabase/types";
-
-async function logAudit(params: {
-  adminId: string;
-  action: string;
-  table: string;
-  targetId: string | null;
-  before?: unknown;
-  after?: unknown;
-  metadata?: Record<string, unknown>;
-}): Promise<void> {
-  try {
-    await supabaseAdmin.from("admin_audit_log").insert({
-      admin_user_id: params.adminId,
-      action: params.action,
-      target_table: params.table,
-      target_id: params.targetId,
-      before_value: (params.before ?? null) as never,
-      after_value: (params.after ?? null) as never,
-      metadata: (params.metadata ?? {}) as never,
-    });
-  } catch (e) {
-    console.error("[admin-credits] audit log failed:", e);
-  }
-}
+import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 // ============================================================
 // 1) قائمة طلبات الشحن (مع فلترة + إحصاءات)
