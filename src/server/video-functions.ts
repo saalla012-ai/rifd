@@ -294,16 +294,17 @@ export const generateVideo = createServerFn({ method: "POST" })
       };
     } catch (e) {
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
+      const effectiveRefundLedgerId = refundLedgerId ?? (ledgerId ? await getRefundLedgerId(supabaseAdmin, ledgerId) : null);
       if (dailyQuotaConsumed && (!ledgerId || refundLedgerId)) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
         await markProcessingJobRefunded({
           jobId,
-          refundLedgerId,
+          refundLedgerId: effectiveRefundLedgerId,
           errorMessage: publicVideoError(e).message,
           metadata: {
             failure_stage: "generate_video",
             original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
-            refund_ledger_id: refundLedgerId,
+            refund_ledger_id: effectiveRefundLedgerId,
           },
         });
       }
