@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard } from "lucide-react";
+import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { listVideoJobs } from "@/server/video-functions";
+import { listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 
 export const Route = createFileRoute("/dashboard/library")({
   head: () => ({ meta: [{ title: "مكتبتي — رِفد" }] }),
@@ -39,8 +39,10 @@ const VIDEO_STATUS_LABEL: Record<string, string> = {
 function LibraryPage() {
   const { user, loading: authLoading } = useAuth();
   const listVideoJobsFn = useServerFn(listVideoJobs);
+  const refreshVideoJobFn = useServerFn(refreshVideoJob);
   const [items, setItems] = useState<Generation[]>([]);
   const [videoJobs, setVideoJobs] = useState<VideoJob[]>([]);
+  const [refreshingJobId, setRefreshingJobId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "text" | "image" | "video" | "fav">("all");
 
