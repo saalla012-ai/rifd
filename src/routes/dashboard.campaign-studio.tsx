@@ -259,9 +259,9 @@ function CampaignStudioPage() {
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-extrabold">مخرجات الحملة</h2>
             <div className="mt-4 space-y-3">
-              <OutputStep icon={Wand2} title="نص الحملة" desc="منشور، CTA، ونسخة واتساب" to="/dashboard/generate-text" payload={textPrompt} />
-              <OutputStep icon={ImageIcon} title="الصورة الإعلانية" desc="بوستر أو صورة منتج متوافقة مع الزاوية" to="/dashboard/generate-image" payload={imagePrompt} />
-              <OutputStep icon={Clapperboard} title="الفيديو القصير" desc="Prompt جاهز لـFast أو Quality" to="/dashboard/generate-video" payload={videoPrompt} />
+              <OutputStep icon={Wand2} title="نص الحملة" desc="منشور، CTA، ونسخة واتساب" to="/dashboard/generate-text" payload={textPrompt} campaignPackId={activePackId} />
+              <OutputStep icon={ImageIcon} title="الصورة الإعلانية" desc="بوستر أو صورة منتج متوافقة مع الزاوية" to="/dashboard/generate-image" payload={imagePrompt} campaignPackId={activePackId} />
+              <OutputStep icon={Clapperboard} title="الفيديو القصير" desc="Prompt جاهز لـFast أو Quality" to="/dashboard/generate-video" payload={videoPrompt} campaignPackId={activePackId} />
             </div>
           </section>
 
@@ -321,7 +321,7 @@ function SavedPacksSection({ packs, loading, activePackId, onOpen, onArchive }: 
   );
 }
 
-function OutputStep({ icon: Icon, title, desc, to, payload }: { icon: typeof Wand2; title: string; desc: string; to: "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video"; payload: string }) {
+function OutputStep({ icon: Icon, title, desc, to, payload, campaignPackId }: { icon: typeof Wand2; title: string; desc: string; to: "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video"; payload: string; campaignPackId?: string }) {
   const copy = async () => {
     await navigator.clipboard.writeText(payload);
     toast.success(`تم نسخ ${title}`);
@@ -335,7 +335,7 @@ function OutputStep({ icon: Icon, title, desc, to, payload }: { icon: typeof Wan
       </div>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Button type="button" variant="outline" size="sm" onClick={copy} className="flex-1 gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
-        <Button asChild size="sm" className="flex-1 gradient-primary text-primary-foreground shadow-elegant"><Link to={to} search={{ prompt: payload }}>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></Link></Button>
+        <Button asChild size="sm" className="flex-1 gradient-primary text-primary-foreground shadow-elegant"><Link to={to} search={{ prompt: payload, campaignPackId }}>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></Link></Button>
       </div>
     </div>
   );

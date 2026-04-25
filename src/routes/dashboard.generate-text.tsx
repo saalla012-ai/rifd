@@ -18,13 +18,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
 
-type TextSearch = { template?: string; prompt?: string };
+type TextSearch = { template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "توليد نص — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): TextSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+    campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
   }),
   component: GenerateTextPage,
 });
@@ -60,7 +61,7 @@ function GenerateTextPage() {
       if (!session) throw new Error("سجّل الدخول أولاً");
 
       const out = await generateText({
-        data: { prompt: topic, templateTitle: template.title, templateId: template.id },
+        data: { prompt: topic, templateTitle: template.title, templateId: template.id, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setResult(out.result);
