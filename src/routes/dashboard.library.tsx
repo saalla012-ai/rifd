@@ -229,6 +229,11 @@ function VideoJobsSection({ jobs }: { jobs: VideoJob[] }) {
                 {job.result_url ? <video src={job.result_url} controls className="h-full w-full object-cover" /> : <Clapperboard className="h-7 w-7 text-primary" />}
               </div>
               <div className="space-y-2 p-3 text-xs">
+                {(job.metadata as { campaign_pack_id?: string; campaign_product?: string; campaign_channel?: string } | null)?.campaign_pack_id && (
+                  <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-bold text-primary">
+                    من حملة: {(job.metadata as { campaign_product?: string; campaign_channel?: string }).campaign_product || "Campaign Pack"} · {(job.metadata as { campaign_channel?: string }).campaign_channel || "قناة"}
+                  </div>
+                )}
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{job.quality === "quality" ? "Quality" : "Fast"}</span>
                   <span className="rounded-full bg-background px-2 py-0.5 font-bold">{VIDEO_STATUS_LABEL[job.status] ?? job.status}</span>
