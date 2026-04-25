@@ -53,6 +53,8 @@ export function CreditsBar() {
   const lowCredits = total < 50;
   const textPct = pct(data.dailyTextUsed, data.dailyTextCap);
   const textNearLimit = textPct >= 80;
+  const videoPct = pct(data.dailyVideoUsed, data.dailyVideoCap);
+  const videoNearLimit = videoPct >= 80;
   const planLabel = PLAN_LABEL[data.plan] ?? data.plan;
 
   // ---- Trigger (mobile/tablet/desktop) ----
@@ -70,7 +72,7 @@ export function CreditsBar() {
           <Coins className="h-3.5 w-3.5" />
           <span className="tabular-nums">{formatNum(total)}</span>
           <span className="hidden text-muted-foreground sm:inline">نقطة فيديو</span>
-          {(lowCredits || textNearLimit) && (
+          {(lowCredits || textNearLimit || videoNearLimit) && (
             <AlertTriangle className="h-3.5 w-3.5 text-warning" />
           )}
         </button>
@@ -145,6 +147,18 @@ export function CreditsBar() {
                 className="h-full rounded-full bg-primary transition-all"
                 style={{ width: `${pct(data.dailyImageUsed, data.dailyImageCap)}%` }}
               />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-muted-foreground">حد الفيديو اليومي</span>
+              <span className={cn("font-bold tabular-nums", videoNearLimit ? "text-warning-foreground" : "text-foreground")}>
+                {formatNum(data.dailyVideoUsed)} / {formatNum(data.dailyVideoCap)}
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+              <div className={cn("h-full rounded-full transition-all", videoNearLimit ? "bg-warning" : "bg-primary")} style={{ width: `${videoPct}%` }} />
             </div>
           </div>
 

@@ -20,9 +20,9 @@ type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
 type VideoSearch = { prompt?: string };
 
 const QUALITY = {
-  fast: { label: "Fast", cost: 150, icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
-  quality: { label: "Quality", cost: 450, icon: Crown, note: "للإعلانات المدفوعة واللقطات النهائية" },
-} satisfies Record<VideoQuality, { label: string; cost: number; icon: typeof Zap; note: string }>;
+  fast: { label: "Fast", costKey: "video_fast", icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
+  quality: { label: "Quality", costKey: "video_quality", icon: Crown, note: "للإعلانات المدفوعة واللقطات النهائية" },
+} satisfies Record<VideoQuality, { label: string; costKey: "video_fast" | "video_quality"; icon: typeof Zap; note: string }>;
 
 const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
   { value: "9:16", label: "Reels / TikTok", hint: "عمودي" },
@@ -52,7 +52,7 @@ function GenerateVideoPage() {
   const generateVideoFn = useServerFn(generateVideo);
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
-  const { data: credits, refresh: refreshCredits } = useCreditsSummary();
+  const { data: credits, loading: creditsLoading, refresh: refreshCredits } = useCreditsSummary();
   const [quality, setQuality] = useState<VideoQuality>("fast");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
@@ -64,8 +64,11 @@ function GenerateVideoPage() {
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
 
   const selectedQuality = QUALITY[quality];
-  const selectedCost = selectedQuality.cost;
+  const selectedCost = credits?.costs[selectedQuality.costKey] ?? 0;
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
+  const dailyVideoUsed = credits?.dailyVideoUsed ?? 0;
+  const dailyVideoCap = credits?.dailyVideoCap ?? 1;
+  const reachedDailyVideoLimit = credits ? dailyVideoUsed >= dailyVideoCap : false;
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
 
@@ -98,6 +101,10 @@ function GenerateVideoPage() {
     }
     if (!hasEnoughCredits) {
       setQuotaDialog({ open: true, reason: `INSUFFICIENT_CREDITS: رصيد نقاط الفيديو لا يكفي (تحتاج ${selectedCost} نقطة فيديو).` });
+      return;
+    }
+    if (reachedDailyVideoLimit) {
+      setQuotaDialog({ open: true, reason: `VIDEO_DAILY_LIMIT: وصلت إلى حد توليد الفيديو اليومي (${dailyVideoUsed}/${dailyVideoCap}).` });
       return;
     }
     setLoading(true);
@@ -178,7 +185,7 @@ function GenerateVideoPage() {
                     <Icon className={cn("mb-2 h-5 w-5", key === "quality" ? "text-gold" : "text-primary")} />
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-extrabold">{option.label}</span>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">{option.cost} نقطة</span>
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">{(credits?.costs[option.costKey] ?? 0).toLocaleString("ar-SA")} نقطة</span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{option.note}</p>
                   </button>
@@ -257,9 +264,10 @@ function GenerateVideoPage() {
               <span className="font-bold text-foreground">سيتم خصم {selectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
               <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? "يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم" : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
+            <p className={cn("mt-2 text-xs", reachedDailyVideoLimit ? "font-bold text-destructive" : "text-muted-foreground")}>حد الفيديو اليومي: {dailyVideoUsed.toLocaleString("ar-SA")} / {dailyVideoCap.toLocaleString("ar-SA")}</p>
           </div>
 
-          <Button onClick={generate} disabled={loading || !hasEnoughCredits} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || reachedDailyVideoLimit} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
