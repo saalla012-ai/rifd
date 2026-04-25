@@ -271,7 +271,7 @@ function CampaignStudioPage() {
             <div className="mt-4 space-y-3">
               <OutputStep icon={Wand2} title="نص الحملة" desc="منشور، CTA، ونسخة واتساب" to="/dashboard/generate-text" payload={textPrompt} saving={saving} onOpen={openOutputTool} />
               <OutputStep icon={ImageIcon} title="الصورة الإعلانية" desc="بوستر أو صورة منتج متوافقة مع الزاوية" to="/dashboard/generate-image" payload={imagePrompt} saving={saving} onOpen={openOutputTool} />
-              <OutputStep icon={Clapperboard} title="الفيديو القصير" desc="Prompt جاهز لـFast أو Quality" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} onOpen={openOutputTool} />
+              <OutputStep icon={Clapperboard} title="الفيديو القصير" desc="Prompt جاهز للفيديو السريع أو الاحترافي" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} onOpen={openOutputTool} />
             </div>
           </section>
 
