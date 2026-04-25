@@ -172,16 +172,19 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
     }
 
     for (const [uid, rows] of videosByUser) {
+      const profile = profileFor(profileMap, uid);
+      const plan = planFor(profile);
       const processing = rows.filter((row) => row.status === "processing").length;
       const failedOrRefunded = rows.filter((row) => row.status === "failed" || row.status === "refunded").length;
       const created = rows.length;
       const last = rows[0]?.updated_at ?? rows[0]?.created_at ?? since;
+      const dailyCapWindow = Math.max(plan.dailyVideoCap, 1) * Math.max(1, Math.ceil(data.windowHours / 24));
 
       if (processing >= 2) {
         signals.push(signal({ id: `video-concurrency-${uid}`, user_id: uid, severity: "high", category: "video", title: "وصول حد مهام الفيديو المتزامنة", details: "الحساب يلامس حد المعالجة المتزامنة وقد يسبب ضغط تكلفة أو انتظار طويل.", metric: `${processing} قيد المعالجة`, action_hint: "انتظر اكتمال المهام وافحص مدة المعالجة قبل رفع الحدود.", last_seen_at: last }, profileMap));
       }
-      if (created >= 8) {
-        signals.push(signal({ id: `video-volume-${uid}`, user_id: uid, severity: created >= 15 ? "high" : "medium", category: "video", title: "عدد فيديوهات مرتفع", details: `تم إنشاء ${created} مهام فيديو خلال النافذة المحددة.`, metric: `${created} فيديو`, action_hint: "راجع ملاءمة الباقة وتحقق من عدم وجود أتمتة غير مقصودة.", last_seen_at: last }, profileMap));
+      if (created > dailyCapWindow) {
+        signals.push(signal({ id: `video-volume-${uid}`, user_id: uid, severity: created >= dailyCapWindow * 2 ? "high" : "medium", category: "video", title: "عدد فيديوهات أعلى من نمط الباقة", details: `تم إنشاء ${created} مهام فيديو خلال النافذة المحددة مقابل سقف تشغيلي متوقع ${dailyCapWindow} لباقته.`, metric: `${created} فيديو`, action_hint: "راجع ملاءمة الباقة وتحقق من عدم وجود أتمتة غير مقصودة.", last_seen_at: last }, profileMap));
       }
       if (failedOrRefunded >= 3) {
         signals.push(signal({ id: `video-failures-${uid}`, user_id: uid, severity: "medium", category: "video", title: "فشل/استرداد فيديو متكرر", details: "نسبة الفشل قد تعني Prompt غير مناسب أو مشكلة مزود أو استخدام تجريبي مكثف.", metric: `${failedOrRefunded} حالة`, action_hint: "افتح إدارة الفيديو وراجع error_message وآخر prompt قبل أي إجراء.", last_seen_at: last }, profileMap));
@@ -189,9 +192,13 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
     }
 
     for (const row of usageRows) {
-      if (row.text_count >= 180 || row.image_count >= 45) {
-        const severity: Severity = row.text_count >= 240 || row.image_count >= 65 ? "high" : "medium";
-        signals.push(signal({ id: `daily-quota-${row.user_id}`, user_id: row.user_id, severity, category: "quota", title: "اقتراب أو تجاوز استخدام يومي كثيف", details: "الاستخدام اليومي يقترب من حدود الخطة أو يتجاوز النمط الطبيعي.", metric: `${row.text_count} نص / ${row.image_count} صورة`, action_hint: "راجع الخطة الحالية ونمط الجلسة قبل اعتبارها إساءة.", last_seen_at: row.updated_at }, profileMap));
+      const profile = profileFor(profileMap, row.user_id);
+      const plan = planFor(profile);
+      const textRatio = plan.dailyTextCap > 0 ? row.text_count / plan.dailyTextCap : 0;
+      const imageRatio = plan.dailyImageCap > 0 ? row.image_count / plan.dailyImageCap : 0;
+      if (textRatio >= 0.85 || imageRatio >= 0.85) {
+        const severity: Severity = textRatio >= 1 || imageRatio >= 1 ? "high" : "medium";
+        signals.push(signal({ id: `daily-quota-${row.user_id}`, user_id: row.user_id, severity, category: "quota", title: "اقتراب أو تجاوز استخدام يومي كثيف", details: `الاستخدام اليومي يقترب من حدود باقة ${plan.name} أو يتجاوز النمط الطبيعي.`, metric: `${row.text_count}/${plan.dailyTextCap} نص · ${row.image_count}/${plan.dailyImageCap} صورة`, action_hint: "راجع الخطة الحالية ونمط الجلسة قبل اعتبارها إساءة.", last_seen_at: row.updated_at }, profileMap));
       }
     }
 
