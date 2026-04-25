@@ -13,6 +13,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { VIDEO_CREDIT_COSTS, videoCreditCost, type VideoDuration, type VideoQuality } from "@/lib/plan-catalog";
 
+export type { VideoDuration, VideoQuality } from "@/lib/plan-catalog";
+
 type DbClient = SupabaseClient<Database>;
 
 // ============================================================
