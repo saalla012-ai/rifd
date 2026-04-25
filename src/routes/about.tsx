@@ -25,16 +25,16 @@ export const Route = createFileRoute("/about")({
 function AboutPage() {
   return (
     <MarketingLayout>
-      <section className="gradient-hero min-h-[22rem] py-16 sm:min-h-[24rem] sm:py-20">
+      <section className="gradient-hero min-h-[28rem] py-16 sm:min-h-[24rem] sm:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
           <div className="inline-flex min-h-7 items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
             <Sparkles className="h-3.5 w-3.5" />
             صُنع في الرياض
           </div>
-          <h1 className="mt-4 min-h-[6.5rem] text-4xl font-extrabold leading-[1.28] sm:min-h-[4.5rem] sm:text-5xl sm:leading-[1.18]">
+          <h1 className="mt-4 min-h-[9rem] text-4xl font-extrabold leading-[1.28] sm:min-h-[4.5rem] sm:text-5xl sm:leading-[1.18]">
               نحن <span className="text-gradient-primary">رِفد للتقنية</span>
           </h1>
-          <p className="mt-5 min-h-[5.5rem] text-lg leading-8 text-muted-foreground sm:min-h-[4rem]">
+          <p className="mt-5 min-h-[7rem] text-lg leading-8 text-muted-foreground sm:min-h-[4rem]">
             نؤمن إن كل صاحب متجر سعودي يستحق أدوات ذكاء اصطناعي مصممة بعنايته
             ولهجته — لا أدوات عالمية مترجمة بشكل ركيك.
           </p>
@@ -57,7 +57,7 @@ function AboutPage() {
             </p>
             <p>
               نحن لسنا منافس لـChatGPT — نحن طبقة محلية ذكية فوقه، نعطيك نتائج بنبرة
-              سعودية أصيلة وبسعر بالريال السعودي، مع فاتورة ضريبية رسمية.
+              سعودية أصيلة وبسعر واضح بالريال السعودي ومسار فوترة موضح داخل المنتج.
             </p>
             <p>
               وعندما يتجاوز الاحتياج اشتراك الأداة نفسها إلى تشخيص، تنفيذ، وتأهيل فرق

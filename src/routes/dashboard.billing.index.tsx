@@ -354,7 +354,7 @@ function BillingPage() {
                 <p className="mt-2 text-xs text-muted-foreground">بعد اكتمال المقاعد سترتفع الأسعار {increasePct}%</p>
               </div>
               <ul className="mt-5 space-y-2.5 text-sm">
-                {["نقاط فيديو واضحة دون رسوم مخفية", "النصوص والصور لا تخصم من نقاط الفيديو", "تأكيد فوري للطلب وتفعيل خلال 24 ساعة", "فاتورة ضريبية رسمية بعد كل دفعة"].map((item) => (
+                {["نقاط فيديو واضحة دون رسوم مخفية", "النصوص والصور لا تخصم من نقاط الفيديو", "تأكيد فوري للطلب وتفعيل خلال 24 ساعة", "تفاصيل فوترة واضحة بعد كل دفعة"].map((item) => (
                   <li key={item} className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" /><span>{item}</span></li>
                 ))}
               </ul>
