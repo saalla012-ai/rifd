@@ -113,90 +113,22 @@ function AdminSubscriptionsPage() {
 
   async function updateStatus(req: Req, newStatus: Req["status"], adminNotes?: string) {
     setSavingId(req.id);
-    const updates: {
-      status: Req["status"];
-      admin_notes?: string | null;
-      activated_at?: string;
-      activated_until?: string;
-    } = { status: newStatus };
-    if (adminNotes !== undefined) updates.admin_notes = adminNotes;
-
-    if (newStatus === "activated") {
-      const now = new Date();
-      const until = new Date(now);
-      if (req.billing_cycle === "yearly") until.setFullYear(until.getFullYear() + 1);
-      else until.setMonth(until.getMonth() + 1);
-      updates.activated_at = now.toISOString();
-      updates.activated_until = until.toISOString();
-    }
-
-    // التقاط القيمة قبل التحديث للـaudit
-    const beforeSnapshot = {
-      status: req.status,
-      admin_notes: req.admin_notes,
-      activated_at: req.activated_at,
-      activated_until: req.activated_until,
-    };
-
-    const { error: reqErr } = await supabase
-      .from("subscription_requests")
-      .update(updates)
-      .eq("id", req.id);
-
-    if (reqErr) {
-      toast.error("فشل تحديث الطلب");
+    let result: { activated_until: string | null };
+    try {
+      result = await updateRequestStatus({ data: { id: req.id, status: newStatus, adminNotes } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "فشل تحديث الطلب");
       setSavingId(null);
       return;
     }
 
-    // تسجيل audit log
-    if (user) {
-      const action =
-        newStatus === "activated"
-          ? "activate_subscription"
-          : newStatus === "rejected"
-            ? "reject_subscription"
-            : newStatus === "contacted"
-              ? "contact_subscription"
-              : "update_subscription_status";
-      await supabase.from("admin_audit_log").insert({
-        admin_user_id: user.id,
-        action,
-        target_table: "subscription_requests",
-        target_id: req.id,
-        before_value: beforeSnapshot,
-        after_value: { ...beforeSnapshot, ...updates },
-        metadata: {
-          email: req.email,
-          plan: req.plan,
-          billing_cycle: req.billing_cycle,
-        },
-      });
-    }
-
     if (newStatus === "activated") {
-      const { error: profileErr } = await supabase
-        .from("profiles")
-        .update({ plan: req.plan })
-        .eq("id", req.user_id);
-      if (profileErr) {
-        toast.error("تم تحديث الطلب لكن فشل ترقية الباقة في الملف");
-      } else {
-        const { error: creditsErr } = await supabase.rpc("reset_monthly_credits", {
-          _user_id: req.user_id,
-          _plan: req.plan,
-        });
-        if (creditsErr) {
-          toast.error("تم تفعيل الباقة لكن فشل منح نقاط الفيديو الشهرية");
-        } else {
-          toast.success(`تم تفعيل باقة ${PLAN_LABELS[req.plan]} ومنح نقاط الفيديو للمستخدم ✨`);
-        }
-      }
+      toast.success(`تم تفعيل باقة ${PLAN_LABELS[req.plan]} ومنح نقاط الفيديو للمستخدم ✨`);
 
       // إرسال بريد إشعار التفعيل للعميل (لا يكسر التدفق إن فشل)
       try {
-        const activatedUntilDate = updates.activated_until
-          ? new Date(updates.activated_until).toLocaleDateString("ar-SA", {
+        const activatedUntilDate = result.activated_until
+          ? new Date(result.activated_until).toLocaleDateString("ar-SA", {
               year: "numeric",
               month: "long",
               day: "numeric",
