@@ -286,7 +286,7 @@
 | **DLQ** | ⚠️ 2 رسائل قديمة | رسالتا welcome من قبل تأكيد النطاق (`saalla012@gmail.com`, `a6439875542@gmail.com`) — يمكن تجاهلها أو إعادة إرسالها يدوياً |
 | **Recovery emails (آخر ساعة)** | ✅ 4 رسائل تُعالج | كلها بحالة `pending` تنتظر cron (تأكدنا أن المستخدم استلمها) |
 | **مسارات الإدارة** | ✅ 9 مسارات محمية | جميعها تستخدم `<AdminGuard>` أو `requireSupabaseAuth` + `has_role` |
-| **Triggers الحماية** | ✅ نشطة | `trg_enforce_generation_quota`, `trg_enforce_generation_integrity` |
+| **Triggers الحماية** | ✅ نشطة | `trg_enforce_generation_integrity`, `trg_protect_profile_plan_change`, `trg_enforce_video_processing_limit`, وتريجرات تفعيل الاشتراك دون تكرار |
 | **Security Headers** | ✅ مُفعّلة عبر `src/start.ts` | CSP, HSTS, X-Frame-Options: DENY, Permissions-Policy |
 | **QA اليدوي الكامل** | ⏳ غير مغلق | يتطلب 84 تمريرة موثقة على Mobile/Tablet/Desktop وChrome/Safari |
 
