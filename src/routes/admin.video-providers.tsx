@@ -135,6 +135,9 @@ function AdminVideoProvidersPage() {
           <p className="mt-1 text-sm text-muted-foreground">تحكم داخلي بالمزودين، الأولوية، الصحة، والتفعيل دون كشف أي اسم تقني للمستخدم.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="default" size="sm" onClick={() => void testRouterPath()} disabled={loading || testingRouter}>
+            {testingRouter ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار الراوتر
+          </Button>
           <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} /> تحديث
           </Button>
@@ -148,6 +151,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          {routerResult && <RouterResultPanel result={routerResult} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
           </div>
@@ -232,6 +236,31 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
       <p className="mt-2 text-xs text-muted-foreground">نجاح: {attempt.success.toLocaleString("ar-SA")} · فشل: {attempt.failed.toLocaleString("ar-SA")} · متوسط: {attempt.avgLatencyMs ? `${attempt.avgLatencyMs.toLocaleString("ar-SA")}ms` : "—"}</p>
       <p className="mt-1 truncate text-xs text-muted-foreground">آخر حالة: {attempt.lastStatus ?? "—"} · {fmtDate(attempt.lastAt)}</p>
     </div>
+  );
+}
+
+function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">نتيجة اختبار الراوتر</h2>
+          <p className="mt-1 text-xs text-muted-foreground">مسار آمن: سريع · 9:16 · 5ث · بدون إنشاء فيديو أو خصم نقاط</p>
+        </div>
+        <Badge className={cn(result.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{result.ok ? `المختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل"}</Badge>
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {result.candidates.map((candidate) => (
+          <div key={candidate.providerKey} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-bold">{candidate.displayName}</span>
+              <Badge variant="secondary">#{candidate.priority}</Badge>
+            </div>
+            <p className="mt-1 text-muted-foreground">{candidate.mode} · {candidate.reason}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
