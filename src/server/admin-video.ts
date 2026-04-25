@@ -417,10 +417,10 @@ export const testVideoRouterDryRun = createServerFn({ method: "POST" })
       .order("priority", { ascending: true });
     if (error) throw new Error(`فشل اختبار الراوتر: ${error.message}`);
 
-    const providers = ((rows as AdminVideoProviderConfig[] | null) ?? []).sort((a, b) => a.priority - b.priority);
+    const providers = ((rows as AdminVideoProviderConfig[] | null) ?? []).sort((a, b) => providerPriorityScore(a) - providerPriorityScore(b));
     const candidates = providers.map((provider) => {
       const readiness = providerEligibleForInput(provider, data);
-      return { providerKey: provider.provider_key, displayName: provider.display_name_admin, priority: provider.priority, mode: provider.mode, eligible: readiness.eligible, reason: readiness.reason };
+      return { providerKey: provider.provider_key, displayName: provider.display_name_admin, priority: provider.priority, effectivePriority: providerPriorityScore(provider), mode: provider.mode, eligible: readiness.eligible, reason: readiness.reason };
     });
     const selected = candidates.find((candidate) => candidate.eligible) ?? null;
     const result = { ok: Boolean(selected), selectedProvider: selected?.providerKey ?? null, checkedAt: new Date().toISOString(), candidates };
