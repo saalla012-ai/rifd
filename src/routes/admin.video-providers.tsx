@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, ArrowUpDown, Clapperboard, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { Activity, AlertTriangle, ArrowUpDown, Clapperboard, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { cn } from "@/lib/utils";
-import { listVideoProviderConfigs, updateVideoProviderConfig, type AdminVideoProviderConfig } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -46,8 +46,10 @@ function fmtDate(value: string | null) {
 
 function AdminVideoProvidersPage() {
   const fetchProviders = useServerFn(listVideoProviderConfigs);
+  const fetchAttempts = useServerFn(listVideoProviderAttemptSummary);
   const updateProvider = useServerFn(updateVideoProviderConfig);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
+  const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
 
@@ -61,8 +63,9 @@ function AdminVideoProvidersPage() {
     setLoading(true);
     try {
       const headers = await authHeaders();
-      const result = await fetchProviders({ headers });
-      setProviders(result.providers);
+      const [providerResult, attemptResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers })]);
+      setProviders(providerResult.providers);
+      setAttempts(attemptResult.attempts);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تحميل مزودي الفيديو");
     } finally {
@@ -110,6 +113,10 @@ function AdminVideoProvidersPage() {
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
+        <>
+        <div className="mb-4 grid gap-3 md:grid-cols-3">
+          {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
+        </div>
         <div className="grid gap-4 xl:grid-cols-2">
           {providers.map((provider) => {
             const saving = savingKey === provider.provider_key;
@@ -167,8 +174,24 @@ function AdminVideoProvidersPage() {
             );
           })}
         </div>
+        </>
       )}
     </DashboardShell>
+  );
+}
+
+function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary }) {
+  const successRate = attempt.total > 0 ? Math.round((attempt.success / attempt.total) * 100) : 0;
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 shadow-soft">
+      <p className="truncate text-xs font-bold text-muted-foreground">{attempt.provider}</p>
+      <div className="mt-2 flex items-end justify-between gap-3">
+        <p className="text-2xl font-extrabold tabular-nums">{successRate}%</p>
+        <Badge variant="secondary">{attempt.total.toLocaleString("ar-SA")} محاولة</Badge>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">نجاح: {attempt.success.toLocaleString("ar-SA")} · فشل: {attempt.failed.toLocaleString("ar-SA")} · متوسط: {attempt.avgLatencyMs ? `${attempt.avgLatencyMs.toLocaleString("ar-SA")}ms` : "—"}</p>
+      <p className="mt-1 truncate text-xs text-muted-foreground">آخر حالة: {attempt.lastStatus ?? "—"} · {fmtDate(attempt.lastAt)}</p>
+    </div>
   );
 }
 
