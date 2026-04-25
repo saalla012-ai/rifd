@@ -225,16 +225,16 @@ function AdminVideoProvidersPage() {
 }
 
 function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary }) {
-  const successRate = attempt.total > 0 ? Math.round((attempt.success / attempt.total) * 100) : 0;
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-soft">
       <p className="truncate text-xs font-bold text-muted-foreground">{attempt.provider}</p>
       <div className="mt-2 flex items-end justify-between gap-3">
-        <p className="text-2xl font-extrabold tabular-nums">{successRate}%</p>
+        <p className="text-2xl font-extrabold tabular-nums">{attempt.successRate}%</p>
         <Badge variant="secondary">{attempt.total.toLocaleString("ar-SA")} محاولة</Badge>
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">نجاح: {attempt.success.toLocaleString("ar-SA")} · فشل: {attempt.failed.toLocaleString("ar-SA")} · متوسط: {attempt.avgLatencyMs ? `${attempt.avgLatencyMs.toLocaleString("ar-SA")}ms` : "—"}</p>
+      <p className="mt-2 text-xs text-muted-foreground">نجاح: {attempt.success.toLocaleString("ar-SA")} · فشل: {attempt.failed.toLocaleString("ar-SA")} ({attempt.failureRate}%) · متوسط: {attempt.avgLatencyMs ? `${attempt.avgLatencyMs.toLocaleString("ar-SA")}ms` : "—"}</p>
       <p className="mt-1 truncate text-xs text-muted-foreground">آخر حالة: {attempt.lastStatus ?? "—"} · {fmtDate(attempt.lastAt)}</p>
+      {attempt.topError && <p className="mt-1 line-clamp-1 text-xs text-destructive">أكثر خطأ: {attempt.topError}</p>}
     </div>
   );
 }
@@ -254,7 +254,7 @@ function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
           <div key={candidate.providerKey} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
             <div className="flex items-center justify-between gap-2">
               <span className="font-bold">{candidate.displayName}</span>
-              <Badge variant="secondary">#{candidate.priority}</Badge>
+              <Badge variant="secondary">#{candidate.effectivePriority === candidate.priority ? candidate.priority : `${candidate.priority}→${candidate.effectivePriority}`}</Badge>
             </div>
             <p className="mt-1 text-muted-foreground">{candidate.mode} · {candidate.reason}</p>
           </div>
