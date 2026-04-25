@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { currentRiyadhMonth } from "@/lib/usage-month";
 import { getMemoryCoverage, getMemorySignals, getWeeklyRecommendation } from "@/lib/memory-insights";
 import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
@@ -49,7 +50,8 @@ function timeAgo(iso: string) {
 
 function DashboardPage() {
   const { user, profile } = useAuth();
-  const [stats, setStats] = useState<{ text: number; image: number; favs: number } | null>(null);
+  const { data: creditsSummary } = useCreditsSummary({ enabled: Boolean(user?.id) });
+  const [stats, setStats] = useState<{ favs: number } | null>(null);
   const [recent, setRecent] = useState<RecentItem[]>([]);
 
   // نستخدم user.id (string) كـdependency بدل كائن user (يتغيّر مرجعه عند كل auth event)
@@ -59,14 +61,7 @@ function DashboardPage() {
     if (!userId) return;
     let cancelled = false;
     (async () => {
-      const month = currentMonth();
-      const [usageRes, favsRes, recentRes] = await Promise.all([
-        supabase
-          .from("usage_logs")
-          .select("text_count, image_count")
-          .eq("user_id", userId)
-          .eq("month", month)
-          .maybeSingle(),
+      const [favsRes, recentRes] = await Promise.all([
         supabase
           .from("generations")
           .select("id", { count: "exact", head: true })
@@ -81,8 +76,6 @@ function DashboardPage() {
       ]);
       if (cancelled) return;
       setStats({
-        text: usageRes.data?.text_count ?? 0,
-        image: usageRes.data?.image_count ?? 0,
         favs: favsRes.count ?? 0,
       });
       setRecent((recentRes.data as RecentItem[] | null) ?? []);
@@ -95,10 +88,12 @@ function DashboardPage() {
   const plan = (profile?.plan ?? "free") as PlanId;
   const planInfo = PLAN_BY_ID[plan] ?? PLAN_BY_ID.free;
   const limits = {
-    text: planInfo.dailyTextCap,
-    image: planInfo.dailyImageCap,
+    text: creditsSummary?.dailyTextCap ?? planInfo.dailyTextCap,
+    image: creditsSummary?.dailyImageCap ?? planInfo.dailyImageCap,
     label: PLAN_LABELS[planInfo.id],
   };
+  const dailyTextUsed = creditsSummary?.dailyTextUsed ?? 0;
+  const dailyImageUsed = creditsSummary?.dailyImageUsed ?? 0;
   const completionPct = getMemoryCoverage(profile);
   const memorySignals = getMemorySignals(profile);
   const weeklyRecommendation = getWeeklyRecommendation(profile);
