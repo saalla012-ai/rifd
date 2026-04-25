@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { Sparkles, Mail, Lock, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
@@ -20,11 +20,17 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديداً لتجربة توليد محتوى متجرك ضمن حدود بداية واضحة وبدون بطاقة." },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" && search.redirect.startsWith("/")
+      ? search.redirect
+      : "/dashboard",
+  }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/auth" });
   const { user, profile, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
@@ -53,10 +59,10 @@ function AuthPage() {
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else {
-        void navigate({ to: "/dashboard" });
+        void navigate({ to: search.redirect as never });
       }
     }
-  }, [authLoading, user, profile, navigate]);
+  }, [authLoading, user, profile, navigate, search.redirect]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
