@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, testVideoProviderConnection, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -49,11 +49,14 @@ function AdminVideoProvidersPage() {
   const fetchAttempts = useServerFn(listVideoProviderAttemptSummary);
   const updateProvider = useServerFn(updateVideoProviderConfig);
   const testProvider = useServerFn(testVideoProviderConnection);
+  const testRouter = useServerFn(testVideoRouterDryRun);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
+  const [routerResult, setRouterResult] = useState<AdminVideoRouterTestResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
+  const [testingRouter, setTestingRouter] = useState(false);
 
   async function authHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -100,6 +103,20 @@ function AdminVideoProvidersPage() {
       toast.error(error instanceof Error ? error.message : "فشل اختبار اتصال المزود");
     } finally {
       setTestingKey(null);
+    }
+  }
+
+  async function testRouterPath() {
+    setTestingRouter(true);
+    try {
+      const headers = await authHeaders();
+      const result = await testRouter({ data: { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false }, headers });
+      setRouterResult(result);
+      toast[result.ok ? "success" : "error"](result.ok ? `الراوتر اختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل لهذا المسار");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل اختبار الراوتر");
+    } finally {
+      setTestingRouter(false);
     }
   }
 
