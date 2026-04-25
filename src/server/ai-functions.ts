@@ -19,6 +19,8 @@ import { currentRiyadhMonth } from "@/lib/usage-month";
 import {
   consumeImageQuota,
   consumeTextQuota,
+  operationalSwitchEnabled,
+  releaseImageDailyQuota,
   InsufficientCreditsError,
   ImageQuotaExceededError,
   TextQuotaExceededError,
@@ -199,8 +201,13 @@ export const generateImage = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
 
     let quota: { used: number; cap: number };
+    let quotaConsumed = false;
     try {
+      if (data.quality === "pro" && !(await operationalSwitchEnabled(supabase, "image_pro_enabled"))) {
+        throw new Error("image_pro_not_allowed");
+      }
       quota = await consumeImageQuota(supabase, data.quality);
+      quotaConsumed = true;
     } catch (e) {
       throw creditError(e);
     }
@@ -285,6 +292,7 @@ export const generateImage = createServerFn({ method: "POST" })
         dailyCap: quota.cap,
       };
     } catch (e) {
+      if (quotaConsumed) await releaseImageDailyQuota(supabase, userId);
       throw e;
     }
   });
