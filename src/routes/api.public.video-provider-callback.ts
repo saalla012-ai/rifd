@@ -68,7 +68,7 @@ export const Route = createFileRoute("/api/public/video-provider-callback")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CALLBACK_HEADERS }),
       POST: async ({ request }) => {
         const rawBody = await request.text();
-        if (!verifySignature(rawBody, request.headers.get("x-video-callback-signature"))) {
+        if (!verifySignature(rawBody, request.headers.get("x-video-callback-signature"), request.headers.get("x-video-callback-timestamp"))) {
           return json(401, { error: "unauthorized" });
         }
 
@@ -88,6 +88,7 @@ export const Route = createFileRoute("/api/public/video-provider-callback")({
         if (readError) return json(500, { error: "read_failed" });
         if (!job) return json(404, { error: "job_not_found" });
         if (job.status !== "processing") return json(200, { ok: true, ignored: true, status: job.status });
+        if (!isCallbackAllowed(job) || (parsed.data.providerKey && parsed.data.providerKey !== job.provider)) return json(403, { error: "callback_not_allowed_for_job" });
 
         const metadataBase = (job.metadata as Record<string, unknown> | null) ?? {};
         const metadata = {
