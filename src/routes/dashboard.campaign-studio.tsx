@@ -331,7 +331,7 @@ function SavedPacksSection({ packs, loading, activePackId, onOpen, onArchive }: 
   );
 }
 
-function OutputStep({ icon: Icon, title, desc, to, payload, campaignPackId }: { icon: typeof Wand2; title: string; desc: string; to: "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video"; payload: string; campaignPackId?: string }) {
+function OutputStep({ icon: Icon, title, desc, to, payload, saving, onOpen }: { icon: typeof Wand2; title: string; desc: string; to: OutputToolRoute; payload: string; saving: boolean; onOpen: (to: OutputToolRoute, payload: string) => Promise<void> }) {
   const copy = async () => {
     await navigator.clipboard.writeText(payload);
     toast.success(`تم نسخ ${title}`);
@@ -345,7 +345,9 @@ function OutputStep({ icon: Icon, title, desc, to, payload, campaignPackId }: { 
       </div>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Button type="button" variant="outline" size="sm" onClick={copy} className="flex-1 gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
-        <Button asChild size="sm" className="flex-1 gradient-primary text-primary-foreground shadow-elegant"><Link to={to} search={{ prompt: payload, campaignPackId }}>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></Link></Button>
+        <Button type="button" size="sm" disabled={saving} onClick={() => void onOpen(to, payload)} className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></>}
+        </Button>
       </div>
     </div>
   );
