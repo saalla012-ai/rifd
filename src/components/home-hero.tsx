@@ -106,7 +106,7 @@ export function HomeHero() {
             </Link>
           </div>
           <div className="grid w-full max-w-[18rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-xl sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
-            <span>✓ 5 توليدات نص + 2 صورة</span>
+            <span>✓ بداية مجانية بحدود واضحة</span>
             <span>✓ بدون بطاقة ائتمان</span>
             <span>✓ بداية سريعة خلال ثوانٍ</span>
           </div>
