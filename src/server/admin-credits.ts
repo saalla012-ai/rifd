@@ -14,32 +14,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { assertAdmin, type DbClient } from "@/server/admin-auth";
-import type { Database } from "@/integrations/supabase/types";
-
-async function logAudit(params: {
-  adminId: string;
-  action: string;
-  table: string;
-  targetId: string | null;
-  before?: unknown;
-  after?: unknown;
-  metadata?: Record<string, unknown>;
-}): Promise<void> {
-  try {
-    await supabaseAdmin.from("admin_audit_log").insert({
-      admin_user_id: params.adminId,
-      action: params.action,
-      target_table: params.table,
-      target_id: params.targetId,
-      before_value: (params.before ?? null) as never,
-      after_value: (params.after ?? null) as never,
-      metadata: (params.metadata ?? {}) as never,
-    });
-  } catch (e) {
-    console.error("[admin-credits] audit log failed:", e);
-  }
-}
+import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 // ============================================================
 // 1) قائمة طلبات الشحن (مع فلترة + إحصاءات)
@@ -188,10 +164,10 @@ export const activateTopup = createServerFn({ method: "POST" })
         .eq("id", data.purchaseId);
     }
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: "activate_topup",
-      table: "topup_purchases",
+      targetTable: "topup_purchases",
       targetId: data.purchaseId,
       before: { status: current.status },
       after: { status: "activated", credits: current.credits },
@@ -235,10 +211,10 @@ export const rejectTopup = createServerFn({ method: "POST" })
       .eq("id", data.purchaseId);
     if (error) throw new Error(`فشل الرفض: ${error.message}`);
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: "reject_topup",
-      table: "topup_purchases",
+      targetTable: "topup_purchases",
       targetId: data.purchaseId,
       before: { status: current.status },
       after: { status: "rejected" },
@@ -377,10 +353,10 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
       .single();
     if (lErr || !ledgerRow) throw new Error(`فشل تسجيل الحركة: ${lErr?.message}`);
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: data.amount > 0 ? "admin_grant_credits" : "admin_deduct_credits",
-      table: "user_credits",
+      targetTable: "user_credits",
       targetId: data.userId,
       before: { plan_credits: cur.plan_credits, topup_credits: cur.topup_credits },
       after: { plan_credits: newPlan, topup_credits: newTopup },
@@ -457,10 +433,10 @@ export const updateTopupPackage = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(`فشل التحديث: ${error.message}`);
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: "update_topup_package",
-      table: "topup_packages",
+      targetTable: "topup_packages",
       targetId: data.id,
       before,
       after: { ...before, ...patch },

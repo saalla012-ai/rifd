@@ -8,7 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { assertAdmin, type DbClient } from "@/server/admin-auth";
+import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import { z } from "zod";
 
 // ───────────────── Types ─────────────────
@@ -112,20 +112,15 @@ export const updateContactStatus = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(`فشل التحديث: ${error.message}`);
 
-    // Audit log (best-effort)
-    try {
-      await supabaseAdmin.from("admin_audit_log").insert({
-        admin_user_id: userId,
-        action: "update_contact_status",
-        target_table: "contact_submissions",
-        target_id: data.id,
-        before_value: { status: before.status },
-        after_value: { status: data.status },
-        metadata: { changed: before.status !== data.status },
-      });
-    } catch {
-      // ignore
-    }
+    await logAdminAudit({
+      adminId: userId,
+      action: "update_contact_status",
+      targetTable: "contact_submissions",
+      targetId: data.id,
+      before: { status: before.status },
+      after: { status: data.status },
+      metadata: { changed: before.status !== data.status },
+    });
 
     return { ok: true as const };
   });

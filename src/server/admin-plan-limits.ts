@@ -5,7 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertAdmin, type DbClient } from "@/server/admin-auth";
+import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 
 export type PlanLimitRow = {
   plan: "free" | "starter" | "growth" | "pro" | "business";
@@ -77,13 +77,13 @@ export const updatePlanLimit = createServerFn({ method: "POST" })
       );
     if (upErr) throw new Error(`فشل التحديث: ${upErr.message}`);
 
-    const { error: logErr } = await supabase.from("admin_audit_log").insert({
-      admin_user_id: userId,
+    await logAdminAudit({
+      adminId: userId,
       action: before ? "update_plan_limit" : "create_plan_limit",
-      target_table: "plan_limits",
-      target_id: `${data.plan}:${data.kind}`,
-      before_value: before ?? null,
-      after_value: { ...data },
+      targetTable: "plan_limits",
+      targetId: `${data.plan}:${data.kind}`,
+      before: before ?? null,
+      after: { ...data },
       metadata: {
         plan: data.plan,
         kind: data.kind,
@@ -91,10 +91,6 @@ export const updatePlanLimit = createServerFn({ method: "POST" })
         new_limit: data.monthly_limit,
       },
     });
-    if (logErr) {
-      // عدم الفشل التام، لكن سجّل تحذير
-      console.warn("[admin] audit log insert failed:", logErr.message);
-    }
 
     return { ok: true };
   });
