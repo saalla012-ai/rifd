@@ -50,7 +50,14 @@ export const Route = createFileRoute("/api/public/video-provider-callback")({
           return json(401, { error: "unauthorized" });
         }
 
-        const parsed = CallbackSchema.safeParse(JSON.parse(rawBody));
+        let body: unknown;
+        try {
+          body = JSON.parse(rawBody);
+        } catch {
+          return json(400, { error: "invalid_json" });
+        }
+
+        const parsed = CallbackSchema.safeParse(body);
         if (!parsed.success) return json(400, { error: "validation_failed", issues: parsed.error.issues.map((issue) => issue.path.join(".")) });
         if (parsed.data.status === "completed" && !parsed.data.resultUrl) return json(400, { error: "result_url_required" });
         if (parsed.data.status === "failed" && !parsed.data.errorMessage) return json(400, { error: "error_message_required" });
