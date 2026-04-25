@@ -4,16 +4,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-async function assertAdmin(supabase: any, userId: string) {
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (!data) throw new Error("Forbidden: admin role required");
-}
+import { assertAdmin, type DbClient } from "@/server/admin-auth";
 
 export type AbStats = {
   views: number;
@@ -73,7 +64,7 @@ export const getAbTestResults = createServerFn({ method: "POST" })
         : "hero_hook",
   }))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
     const { data: rows, error } = await supabase
