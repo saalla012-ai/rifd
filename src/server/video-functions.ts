@@ -230,8 +230,8 @@ export const generateVideo = createServerFn({ method: "POST" })
         pending: finalStatus === "processing",
       };
     } catch (e) {
-      const refundLedgerId = ledgerId ? await refund(supabase, ledgerId, "video_generation_failed") : null;
-      if (dailyQuotaConsumed) await releaseVideoDailyQuota(supabase, userId);
+      const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
+      if (dailyQuotaConsumed && refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
         await supabaseAdmin
           .from("video_jobs")
@@ -283,8 +283,8 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     const createdAt = new Date(row.created_at).getTime();
     const isStale = Number.isFinite(createdAt) && Date.now() - createdAt > MAX_PROCESSING_MINUTES * 60_000;
     if (isStale) {
-      const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_timeout") : null;
-      if (refundLedgerId) await releaseVideoDailyQuota(supabase, userId);
+      const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_timeout") : null;
+      if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
         .update({
@@ -322,8 +322,8 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
         .eq("id", row.id);
     }
     if (prediction.status === "failed" || prediction.status === "canceled") {
-      const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_failed") : null;
-      if (refundLedgerId) await releaseVideoDailyQuota(supabase, userId);
+      const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_failed") : null;
+      if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
         .update({ status: "refunded", refund_ledger_id: refundLedgerId, error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
