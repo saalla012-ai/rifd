@@ -255,11 +255,11 @@ function GenerateVideoPage() {
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-foreground">سيتم خصم {selectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
-              <span className="text-xs text-muted-foreground">يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم</span>
+              <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? "يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم" : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
           </div>
 
-          <Button onClick={generate} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || !hasEnoughCredits} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
@@ -320,9 +320,10 @@ function GenerateVideoPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold">{job.quality === "quality" ? "Quality" : "Fast"}</span>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{job.status}</span>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{STATUS_LABEL[job.status] ?? job.status}</span>
                     </div>
                     <p className="mt-1 line-clamp-2 text-muted-foreground">{job.prompt}</p>
+                  {job.error_message && <p className="mt-1 line-clamp-2 text-[10px] font-medium text-destructive">{job.error_message}</p>}
                     <p className="mt-2 text-[10px] text-muted-foreground">{new Date(job.created_at).toLocaleDateString("ar-SA")} · {job.credits_charged} نقطة</p>
                   </button>
                 ))}
