@@ -12,6 +12,7 @@ import { generateImage } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
 
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/dashboard/generate-image")({
 
 function GenerateImagePage() {
   const { profile } = useAuth();
+  const { data: credits, loading: creditsLoading, refresh: refreshCredits } = useCreditsSummary();
   const search = useSearch({ from: "/dashboard/generate-image" });
   const initial = search.template && IMAGE_PROMPTS.some((p) => p.id === search.template)
     ? search.template
@@ -45,9 +47,14 @@ function GenerateImagePage() {
   const template = IMAGE_PROMPTS.find((p) => p.id === templateId) ?? IMAGE_PROMPTS[0];
   const smartSuggestions = getSmartPromptSuggestions(profile, "image");
   const memorySignals = getMemorySignals(profile).slice(0, 4);
+  const proAllowed = credits?.imageProAllowed ?? true;
 
   const go = async () => {
     if (!prompt.trim()) { toast.error("اكتب وصف الصورة أولاً"); return; }
+    if (quality === "pro" && !proAllowed) {
+      setQuotaDialog({ open: true, reason: "IMAGE_PRO_NOT_ALLOWED: صور Pro متاحة في باقات Growth وما فوق. استخدم Flash أو رقّ الباقة." });
+      return;
+    }
     setLoading(true);
     setImageUrl(null);
     try {
@@ -59,6 +66,7 @@ function GenerateImagePage() {
       });
       setImageUrl(out.url);
       setRemaining(out.remainingDaily);
+      void refreshCredits();
       track("generation_created", { kind: "image", template: template.id, quality });
       toast.success("تم توليد الصورة ✨");
       router.invalidate();
@@ -109,12 +117,14 @@ function GenerateImagePage() {
               </button>
               <button
                 onClick={() => setQuality("pro")}
+                disabled={!proAllowed}
                 className={cn("rounded-lg border p-3 text-right text-sm",
-                  quality === "pro" ? "border-primary bg-primary/10" : "border-border")}
+                  quality === "pro" ? "border-primary bg-primary/10" : "border-border",
+                  !proAllowed && "cursor-not-allowed opacity-55")}
               >
                 <Crown className="mb-1 h-4 w-4 text-gold" />
                 <div className="font-bold">جودة عالية (Pro)</div>
-                <div className="text-xs text-muted-foreground">~30 ث • للإعلانات الممولة</div>
+                <div className="text-xs text-muted-foreground">{proAllowed ? "~30 ث • للإعلانات الممولة" : "متاحة من Growth"}</div>
               </button>
             </div>
           </div>
@@ -159,7 +169,7 @@ function GenerateImagePage() {
             )}
           </div>
 
-          <Button onClick={go} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={go} disabled={loading || creditsLoading || (quality === "pro" && !proAllowed)} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري التوليد...</> : <><ImageIcon className="h-4 w-4" /> ولّد الصورة</>}
           </Button>
         </div>

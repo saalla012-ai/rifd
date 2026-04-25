@@ -163,8 +163,10 @@ export async function consumeTextQuota(db: DbClient): Promise<{ used: number; ca
  * يستهلك محاولة واحدة من حصة الصور اليومية.
  * الصور لا تخصم نقاط فيديو — تستخدم عدّاد حماية منفصل.
  */
-export async function consumeImageQuota(db: DbClient): Promise<{ used: number; cap: number }> {
-  const { data, error } = await db.rpc("consume_image_quota");
+export async function consumeImageQuota(db: DbClient, quality: "flash" | "pro" = "flash"): Promise<{ used: number; cap: number }> {
+  const { data, error } = await (db as unknown as { rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> }).rpc("consume_image_quota", {
+    _quality: quality,
+  });
   if (error) throw new Error(`فشل التحقق من حصة الصور: ${error.message}`);
 
   const row = (data as Array<{ allowed: boolean; used: number; daily_cap: number }>)?.[0];
@@ -174,8 +176,11 @@ export async function consumeImageQuota(db: DbClient): Promise<{ used: number; c
   return { used: row.used, cap: row.daily_cap };
 }
 
-export async function consumeVideoDailyQuota(db: DbClient): Promise<{ used: number; cap: number }> {
-  const { data, error } = await db.rpc("consume_video_daily_quota");
+export async function consumeVideoDailyQuota(db: DbClient, quality: VideoQuality = "fast", duration: VideoDuration = 5): Promise<{ used: number; cap: number }> {
+  const { data, error } = await (db as unknown as { rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> }).rpc("consume_video_daily_quota", {
+    _quality: quality,
+    _duration_seconds: duration,
+  });
   if (error) throw new Error(`فشل التحقق من حد الفيديو اليومي: ${error.message}`);
 
   const row = (data as Array<{ allowed: boolean; used: number; daily_cap: number }>)?.[0];
@@ -212,6 +217,10 @@ export const getCreditsSummary = createServerFn({ method: "POST" })
       daily_video_used: number;
       daily_video_cap: number;
       plan: "free" | "starter" | "growth" | "pro" | "business";
+      image_pro_allowed?: boolean;
+      video_fast_allowed?: boolean;
+      video_quality_allowed?: boolean;
+      max_video_duration_seconds?: number;
     }>)?.[0];
 
     if (!row) {
@@ -221,12 +230,16 @@ export const getCreditsSummary = createServerFn({ method: "POST" })
         totalCredits: 0,
         cycleEndsAt: null,
         dailyTextUsed: 0,
-        dailyTextCap: 200,
+        dailyTextCap: 10,
         dailyImageUsed: 0,
-        dailyImageCap: 50,
+        dailyImageCap: 2,
         dailyVideoUsed: 0,
-        dailyVideoCap: 1,
+        dailyVideoCap: 0,
         plan: "free" as const,
+        imageProAllowed: false,
+        videoFastAllowed: false,
+        videoQualityAllowed: false,
+        maxVideoDurationSeconds: 5,
         costs: CREDIT_COSTS,
       };
     }
@@ -243,6 +256,10 @@ export const getCreditsSummary = createServerFn({ method: "POST" })
       dailyVideoUsed: row.daily_video_used,
       dailyVideoCap: row.daily_video_cap,
       plan: row.plan,
+      imageProAllowed: row.image_pro_allowed ?? false,
+      videoFastAllowed: row.video_fast_allowed ?? true,
+      videoQualityAllowed: row.video_quality_allowed ?? false,
+      maxVideoDurationSeconds: row.max_video_duration_seconds ?? 5,
       costs: CREDIT_COSTS,
     };
   });

@@ -580,6 +580,54 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_entitlements: {
+        Row: {
+          active: boolean
+          daily_image_cap: number
+          daily_text_cap: number
+          daily_video_cap: number
+          image_pro_allowed: boolean
+          max_video_duration_seconds: number
+          monthly_credits: number
+          monthly_price_sar: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          updated_at: string
+          video_fast_allowed: boolean
+          video_quality_allowed: boolean
+          yearly_price_sar: number
+        }
+        Insert: {
+          active?: boolean
+          daily_image_cap?: number
+          daily_text_cap?: number
+          daily_video_cap?: number
+          image_pro_allowed?: boolean
+          max_video_duration_seconds?: number
+          monthly_credits?: number
+          monthly_price_sar?: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          updated_at?: string
+          video_fast_allowed?: boolean
+          video_quality_allowed?: boolean
+          yearly_price_sar?: number
+        }
+        Update: {
+          active?: boolean
+          daily_image_cap?: number
+          daily_text_cap?: number
+          daily_video_cap?: number
+          image_pro_allowed?: boolean
+          max_video_duration_seconds?: number
+          monthly_credits?: number
+          monthly_price_sar?: number
+          plan?: Database["public"]["Enums"]["user_plan"]
+          updated_at?: string
+          video_fast_allowed?: boolean
+          video_quality_allowed?: boolean
+          yearly_price_sar?: number
+        }
+        Relationships: []
+      }
       plan_limits: {
         Row: {
           kind: string
@@ -1119,7 +1167,7 @@ export type Database = {
         }[]
       }
       consume_image_quota: {
-        Args: never
+        Args: { _quality?: string }
         Returns: {
           allowed: boolean
           daily_cap: number
@@ -1135,7 +1183,7 @@ export type Database = {
         }[]
       }
       consume_video_daily_quota: {
-        Args: never
+        Args: { _duration_seconds?: number; _quality?: string }
         Returns: {
           allowed: boolean
           daily_cap: number
@@ -1193,10 +1241,14 @@ export type Database = {
           daily_text_used: number
           daily_video_cap: number
           daily_video_used: number
+          image_pro_allowed: boolean
+          max_video_duration_seconds: number
           plan: Database["public"]["Enums"]["user_plan"]
           plan_credits: number
           topup_credits: number
           total_credits: number
+          video_fast_allowed: boolean
+          video_quality_allowed: boolean
         }[]
       }
       has_role: {
@@ -1214,6 +1266,30 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      plan_entitlement_for_user: {
+        Args: { _user_id?: string }
+        Returns: {
+          active: boolean
+          daily_image_cap: number
+          daily_text_cap: number
+          daily_video_cap: number
+          image_pro_allowed: boolean
+          max_video_duration_seconds: number
+          monthly_credits: number
+          monthly_price_sar: number
+          plan: Database["public"]["Enums"]["user_plan"]
+          updated_at: string
+          video_fast_allowed: boolean
+          video_quality_allowed: boolean
+          yearly_price_sar: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "plan_entitlements"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }

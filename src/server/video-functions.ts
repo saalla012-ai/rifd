@@ -62,6 +62,9 @@ function videoCreditError(e: unknown): Error {
 
 function publicVideoError(e: unknown): Error {
   const msg = e instanceof Error ? e.message : String(e);
+  if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
+  if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: جودة Quality متاحة في باقات Growth وما فوق.");
+  if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (e instanceof VideoDailyQuotaExceededError || /video_daily_quota_exceeded/i.test(msg)) return new Error("VIDEO_DAILY_LIMIT: وصلت إلى حد توليد الفيديو اليومي في باقتك. جرّب غداً أو رقّ الباقة.");
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
@@ -153,7 +156,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
 
-      const dailyQuota = await consumeVideoDailyQuota(supabase);
+      const dailyQuota = await consumeVideoDailyQuota(supabase, data.quality, data.durationSeconds);
       dailyQuotaConsumed = true;
 
       const charge = await consume(supabase, cost, "consume_video", {

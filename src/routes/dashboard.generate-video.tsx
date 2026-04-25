@@ -20,9 +20,9 @@ type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
 type VideoSearch = { prompt?: string; campaignPackId?: string };
 
 const QUALITY = {
-  fast: { label: "Fast", costKey: "video_fast", icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
-  quality: { label: "Quality", costKey: "video_quality", icon: Crown, note: "للإعلانات المدفوعة واللقطات النهائية" },
-} satisfies Record<VideoQuality, { label: string; costKey: "video_fast" | "video_quality"; icon: typeof Zap; note: string }>;
+  fast: { label: "Fast", icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
+  quality: { label: "Quality", icon: Crown, note: "للإعلانات المدفوعة واللقطات النهائية" },
+} satisfies Record<VideoQuality, { label: string; icon: typeof Zap; note: string }>;
 
 const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
   { value: "9:16", label: "Reels / TikTok", hint: "عمودي" },
@@ -65,7 +65,10 @@ function GenerateVideoPage() {
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
 
   const selectedQuality = QUALITY[quality];
-  const selectedCost = credits?.costs[selectedQuality.costKey] ?? 0;
+  const costKey = `${quality === "quality" ? "video_quality" : "video_fast"}${durationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
+  const selectedCost = credits?.costs[costKey] ?? 0;
+  const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
+  const selectedDurationAllowed = durationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
   const dailyVideoUsed = credits?.dailyVideoUsed ?? 0;
   const dailyVideoCap = credits?.dailyVideoCap ?? 1;
@@ -102,6 +105,10 @@ function GenerateVideoPage() {
     }
     if (!hasEnoughCredits) {
       setQuotaDialog({ open: true, reason: `INSUFFICIENT_CREDITS: رصيد نقاط الفيديو لا يكفي (تحتاج ${selectedCost} نقطة فيديو).` });
+      return;
+    }
+    if (!selectedQualityAllowed || !selectedDurationAllowed) {
+      setQuotaDialog({ open: true, reason: !selectedQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: جودة الفيديو غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
       return;
     }
     if (reachedDailyVideoLimit) {
@@ -186,7 +193,7 @@ function GenerateVideoPage() {
                     <Icon className={cn("mb-2 h-5 w-5", key === "quality" ? "text-gold" : "text-primary")} />
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-extrabold">{option.label}</span>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">{(credits?.costs[option.costKey] ?? 0).toLocaleString("ar-SA")} نقطة</span>
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">{(credits?.costs[key === "quality" ? "video_quality" : "video_fast"] ?? 0).toLocaleString("ar-SA")} نقطة من 5ث</span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{option.note}</p>
                   </button>
@@ -268,7 +275,7 @@ function GenerateVideoPage() {
             <p className={cn("mt-2 text-xs", reachedDailyVideoLimit ? "font-bold text-destructive" : "text-muted-foreground")}>حد الفيديو اليومي: {dailyVideoUsed.toLocaleString("ar-SA")} / {dailyVideoCap.toLocaleString("ar-SA")}</p>
           </div>
 
-          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || reachedDailyVideoLimit} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || reachedDailyVideoLimit || !selectedQualityAllowed || !selectedDurationAllowed} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
