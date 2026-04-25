@@ -31,6 +31,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
+  const redirectPath = search.redirect ?? "/dashboard";
   const { user, profile, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
@@ -59,10 +60,10 @@ function AuthPage() {
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else {
-        void navigate({ to: (search.redirect ?? "/dashboard") as never });
+        void navigate({ to: redirectPath as never });
       }
     }
-  }, [authLoading, user, profile, navigate, search.redirect]);
+  }, [authLoading, user, profile, navigate, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,8 +112,11 @@ function AuthPage() {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     try {
+      const authReturnPath = redirectPath === "/dashboard"
+        ? "/auth"
+        : `/auth?redirect=${encodeURIComponent(redirectPath)}`;
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}${authReturnPath}`,
       });
       if (result.error) {
         console.warn("[auth] google oauth rejected", result.error.message);
