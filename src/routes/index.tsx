@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
@@ -5,18 +6,19 @@ import { MarketingLayout } from "@/components/marketing-layout";
 import { HomeHero } from "@/components/home-hero";
 import { StickyMobileCta } from "@/components/sticky-mobile-cta";
 import { BrandStrip } from "@/components/brand-strip";
-import { BusinessSolutionsTeaser } from "@/components/business-solutions-teaser";
-import { HeroProofFilm } from "@/components/hero-proof-film";
-import { SavingsCounter } from "@/components/savings-counter";
-import { BeforeAfter } from "@/components/before-after";
-import { HowItWorks } from "@/components/how-it-works";
-import { ComparisonTable } from "@/components/comparison-table";
-import { VisionSection } from "@/components/vision-section";
-import { HomeFeatures } from "@/components/home-features";
-import { ProofCenterPreview } from "@/components/proof-center-preview";
 import { Button } from "@/components/ui/button";
 import { CATEGORIES, PROMPTS } from "@/lib/prompts-data";
 import ogHomeImage from "@/assets/og-home.jpg";
+
+const HeroProofFilm = lazy(() => import("@/components/hero-proof-film").then((m) => ({ default: m.HeroProofFilm })));
+const SavingsCounter = lazy(() => import("@/components/savings-counter").then((m) => ({ default: m.SavingsCounter })));
+const BeforeAfter = lazy(() => import("@/components/before-after").then((m) => ({ default: m.BeforeAfter })));
+const HowItWorks = lazy(() => import("@/components/how-it-works").then((m) => ({ default: m.HowItWorks })));
+const ProofCenterPreview = lazy(() => import("@/components/proof-center-preview").then((m) => ({ default: m.ProofCenterPreview })));
+const ComparisonTable = lazy(() => import("@/components/comparison-table").then((m) => ({ default: m.ComparisonTable })));
+const VisionSection = lazy(() => import("@/components/vision-section").then((m) => ({ default: m.VisionSection })));
+const BusinessSolutionsTeaser = lazy(() => import("@/components/business-solutions-teaser").then((m) => ({ default: m.BusinessSolutionsTeaser })));
+const HomeFeatures = lazy(() => import("@/components/home-features").then((m) => ({ default: m.HomeFeatures })));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,17 +53,21 @@ function HomePage() {
     <MarketingLayout>
       <HomeHero />
 
-      <HeroProofFilm />
+      <Suspense fallback={null}>
+        <HeroProofFilm />
+      </Suspense>
 
       <BrandStrip />
 
-      <SavingsCounter />
+      <Suspense fallback={null}>
+        <SavingsCounter />
 
-      <BeforeAfter />
+        <BeforeAfter />
 
-      <HowItWorks />
+        <HowItWorks />
 
-      <ProofCenterPreview />
+        <ProofCenterPreview />
+      </Suspense>
 
       <section className="border-t border-border bg-secondary/30 py-16">
         <div className="mx-auto max-w-7xl px-4">
@@ -75,16 +81,20 @@ function HomePage() {
             </p>
           </div>
           <div className="mx-auto mt-8 max-w-4xl">
-            <ComparisonTable compact />
+            <Suspense fallback={null}>
+              <ComparisonTable compact />
+            </Suspense>
           </div>
         </div>
       </section>
 
-      <VisionSection />
+      <Suspense fallback={null}>
+        <VisionSection />
 
-      <BusinessSolutionsTeaser />
+        <BusinessSolutionsTeaser />
 
-      <HomeFeatures />
+        <HomeFeatures />
+      </Suspense>
 
       <section className="border-t border-border bg-background py-16">
         <div className="mx-auto max-w-7xl px-4">
