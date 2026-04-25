@@ -53,17 +53,21 @@ function HomePage() {
     <MarketingLayout>
       <HomeHero />
 
-      <HeroProofFilm />
+      <Suspense fallback={null}>
+        <HeroProofFilm />
+      </Suspense>
 
       <BrandStrip />
 
-      <SavingsCounter />
+      <Suspense fallback={null}>
+        <SavingsCounter />
 
-      <BeforeAfter />
+        <BeforeAfter />
 
-      <HowItWorks />
+        <HowItWorks />
 
-      <ProofCenterPreview />
+        <ProofCenterPreview />
+      </Suspense>
 
       <section className="border-t border-border bg-secondary/30 py-16">
         <div className="mx-auto max-w-7xl px-4">
@@ -77,16 +81,20 @@ function HomePage() {
             </p>
           </div>
           <div className="mx-auto mt-8 max-w-4xl">
-            <ComparisonTable compact />
+            <Suspense fallback={null}>
+              <ComparisonTable compact />
+            </Suspense>
           </div>
         </div>
       </section>
 
-      <VisionSection />
+      <Suspense fallback={null}>
+        <VisionSection />
 
-      <BusinessSolutionsTeaser />
+        <BusinessSolutionsTeaser />
 
-      <HomeFeatures />
+        <HomeFeatures />
+      </Suspense>
 
       <section className="border-t border-border bg-background py-16">
         <div className="mx-auto max-w-7xl px-4">
