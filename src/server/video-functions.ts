@@ -294,7 +294,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       };
     } catch (e) {
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
-      if (dailyQuotaConsumed && refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
+      if (dailyQuotaConsumed && (!ledgerId || refundLedgerId)) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
         await markProcessingJobRefunded({
           jobId,
