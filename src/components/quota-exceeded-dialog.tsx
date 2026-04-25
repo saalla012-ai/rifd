@@ -25,6 +25,7 @@ export function detectQuotaError(message: string): QuotaErrorKind | null {
   // كودات السيرفر (credits.ts + RPC)
   if (/text_quota_exceeded/i.test(message)) return "text_quota";
   if (/image_quota_exceeded/i.test(message)) return "image_quota";
+  if (/video_daily_limit|video_daily_quota_exceeded/i.test(message)) return "plan_quota";
   if (/insufficient_credits/i.test(message)) return "insufficient_credits";
   // quota_exceeded من enforce_generation_quota trigger (legacy)
   if (/quota_exceeded:\s*plan=.*kind=text/i.test(message)) return "text_quota";
