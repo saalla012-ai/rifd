@@ -38,7 +38,10 @@ export const Route = createFileRoute("/dashboard")({
       authTimeout(),
     ]);
     if (!session) {
-      throw redirect({ to: "/auth" });
+      throw redirect({
+        to: "/auth",
+        search: { redirect: window.location.pathname + window.location.search } as never,
+      });
     }
   },
   component: DashboardLayout,
