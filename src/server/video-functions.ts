@@ -237,12 +237,36 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     const row = job as VideoJobRow;
     if (!row.provider_job_id || row.status !== "processing") return { job: row };
 
-    const prediction = await getReplicatePrediction(row.provider_job_id);
-    if (prediction.status === "failed" || prediction.status === "canceled") {
-      if (row.ledger_id) await refund(supabase, row.ledger_id, "video_generation_failed");
+    const createdAt = new Date(row.created_at).getTime();
+    const isStale = Number.isFinite(createdAt) && Date.now() - createdAt > MAX_PROCESSING_MINUTES * 60_000;
+    if (isStale) {
+      const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_timeout") : null;
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
-        .update({ status: "refunded", error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
+        .update({
+          status: "refunded",
+          refund_ledger_id: refundLedgerId,
+          error_message: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً.",
+        })
+        .eq("id", row.id)
+        .select("*")
+        .single();
+      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
+      return { job: updated as VideoJobRow };
+    }
+
+    const prediction = await getReplicatePrediction(row.provider_job_id);
+    if (!TERMINAL_PROVIDER_STATUSES.has(prediction.status)) {
+      await supabaseAdmin
+        .from("video_jobs")
+        .update({ metadata: { ...(row.metadata as Record<string, unknown> | null), provider_status: prediction.status, last_checked_at: new Date().toISOString() } })
+        .eq("id", row.id);
+    }
+    if (prediction.status === "failed" || prediction.status === "canceled") {
+      const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_failed") : null;
+      const { data: updated, error: updateError } = await supabaseAdmin
+        .from("video_jobs")
+        .update({ status: "refunded", refund_ledger_id: refundLedgerId, error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
         .eq("id", row.id)
         .select("*")
         .single();
