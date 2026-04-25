@@ -192,6 +192,13 @@ export const generateVideo = createServerFn({ method: "POST" })
       jobId = job.id;
 
       const prediction = await createReplicatePrediction(data);
+      if (prediction.status === "failed" || prediction.status === "canceled") {
+        throw new Error("فشل مزوّد الفيديو أثناء إنشاء المهمة");
+      }
+      if (prediction.status === "succeeded" && !prediction.resultUrl) {
+        throw new Error("فشل مزوّد الفيديو: لم يتم إرجاع رابط الفيديو النهائي");
+      }
+
       const finalStatus = prediction.resultUrl ? "completed" : "processing";
       const finalUrl = prediction.resultUrl;
 
