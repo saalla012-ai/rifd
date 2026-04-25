@@ -37,7 +37,7 @@ const VIDEO_STATUS_LABEL: Record<string, string> = {
 };
 
 function LibraryPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const [items, setItems] = useState<Generation[]>([]);
   const [videoJobs, setVideoJobs] = useState<VideoJob[]>([]);
@@ -45,9 +45,13 @@ function LibraryPage() {
   const [filter, setFilter] = useState<"all" | "text" | "image" | "video" | "fav">("all");
 
   useEffect(() => {
-    if (!user) return;
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     void load();
-  }, [user]);
+  }, [authLoading, user]);
 
   const load = async () => {
     if (!user) return;
