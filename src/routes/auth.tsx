@@ -20,11 +20,11 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديداً لتجربة توليد محتوى متجرك ضمن حدود بداية واضحة وبدون بطاقة." },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === "string" && search.redirect.startsWith("/")
-      ? search.redirect
-      : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => (
+    typeof search.redirect === "string" && search.redirect.startsWith("/")
+      ? { redirect: search.redirect }
+      : {}
+  ),
   component: AuthPage,
 });
 
