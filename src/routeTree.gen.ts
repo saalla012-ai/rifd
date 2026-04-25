@@ -66,6 +66,7 @@ import { Route as AdminContactSubmissionsRouteImport } from './routes/admin.cont
 import { Route as AdminCampaignPacksRouteImport } from './routes/admin.campaign-packs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as AdminAbuseMonitorRouteImport } from './routes/admin.abuse-monitor'
 import { Route as AdminAbTestsRouteImport } from './routes/admin.ab-tests'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -370,6 +371,11 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/admin/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAbuseMonitorRoute = AdminAbuseMonitorRouteImport.update({
+  id: '/admin/abuse-monitor',
+  path: '/admin/abuse-monitor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAbTestsRoute = AdminAbTestsRouteImport.update({
   id: '/admin/ab-tests',
   path: '/admin/ab-tests',
@@ -471,6 +477,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
+  '/admin/abuse-monitor': typeof AdminAbuseMonitorRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/campaign-packs': typeof AdminCampaignPacksRoute
@@ -543,6 +550,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
+  '/admin/abuse-monitor': typeof AdminAbuseMonitorRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/campaign-packs': typeof AdminCampaignPacksRoute
@@ -617,6 +625,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
+  '/admin/abuse-monitor': typeof AdminAbuseMonitorRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/campaign-packs': typeof AdminCampaignPacksRoute
@@ -692,6 +701,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
+    | '/admin/abuse-monitor'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/campaign-packs'
@@ -764,6 +774,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
+    | '/admin/abuse-monitor'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/campaign-packs'
@@ -837,6 +848,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
+    | '/admin/abuse-monitor'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/campaign-packs'
@@ -911,6 +923,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   VsChatgptRoute: typeof VsChatgptRoute
   AdminAbTestsRoute: typeof AdminAbTestsRoute
+  AdminAbuseMonitorRoute: typeof AdminAbuseMonitorRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminCampaignPacksRoute: typeof AdminCampaignPacksRoute
@@ -1349,6 +1362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/abuse-monitor': {
+      id: '/admin/abuse-monitor'
+      path: '/admin/abuse-monitor'
+      fullPath: '/admin/abuse-monitor'
+      preLoaderRoute: typeof AdminAbuseMonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/ab-tests': {
       id: '/admin/ab-tests'
       path: '/admin/ab-tests'
@@ -1511,6 +1531,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   VsChatgptRoute: VsChatgptRoute,
   AdminAbTestsRoute: AdminAbTestsRoute,
+  AdminAbuseMonitorRoute: AdminAbuseMonitorRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminCampaignPacksRoute: AdminCampaignPacksRoute,
