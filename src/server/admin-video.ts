@@ -17,7 +17,18 @@ const ProviderUpdateInput = z.object({
   priority: z.number().int().min(1).max(1000).optional(),
 });
 
+const CompleteManualVideoJobInput = z.object({
+  jobId: z.string().uuid(),
+  resultUrl: z.string().trim().url().max(2000),
+});
+
+const RefundVideoJobInput = z.object({
+  jobId: z.string().uuid(),
+  reason: z.string().trim().min(3).max(240).default("تعذر تنفيذ مهمة الفيديو يدوياً"),
+});
+
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
+type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
 
 export type AdminVideoJob = {
   id: string;
@@ -37,6 +48,7 @@ export type AdminVideoJob = {
   estimated_cost_usd: number | null;
   ledger_id: string | null;
   refund_ledger_id: string | null;
+  metadata: Json | null;
   created_at: string;
   completed_at: string | null;
 };
@@ -73,6 +85,16 @@ export type AdminVideoProviderConfig = {
   updated_at: string;
 };
 
+function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
+  return {
+    ...row,
+    quality: row.quality as "fast" | "quality",
+    estimated_cost_usd: row.estimated_cost_usd === null ? null : Number(row.estimated_cost_usd),
+    user_email: profile?.email ?? null,
+    user_store: profile?.store_name ?? null,
+  };
+}
+
 export const listAdminVideoJobs = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ListAdminVideoJobsInput.parse(input ?? {}))
   .middleware([requireSupabaseAuth])
@@ -82,7 +104,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("video_jobs")
-      .select("id, user_id, prompt, quality, aspect_ratio, duration_seconds, status, provider, provider_job_id, result_url, error_message, credits_charged, estimated_cost_usd, ledger_id, refund_ledger_id, created_at, completed_at")
+      .select("id, user_id, prompt, quality, aspect_ratio, duration_seconds, status, provider, provider_job_id, result_url, error_message, credits_charged, estimated_cost_usd, ledger_id, refund_ledger_id, metadata, created_at, completed_at")
       .order("created_at", { ascending: false })
       .limit(data.limit);
 
@@ -120,16 +142,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
 
     return {
       stats,
-      rows: statsRows.map((r) => {
-        const p = profMap.get(r.user_id);
-        return {
-          ...r,
-          quality: r.quality as "fast" | "quality",
-          estimated_cost_usd: r.estimated_cost_usd === null ? null : Number(r.estimated_cost_usd),
-          user_email: p?.email ?? null,
-          user_store: p?.store_name ?? null,
-        };
-      }),
+      rows: statsRows.map((r) => toAdminVideoJob(r as VideoJobRow, profMap.get(r.user_id))),
     };
   });
 
@@ -181,4 +194,76 @@ export const updateVideoProviderConfig = createServerFn({ method: "POST" })
       after: patch as Json,
     });
     return { provider: updated as AdminVideoProviderConfig };
+  });
+
+export const completeManualVideoJob = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => CompleteManualVideoJobInput.parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<{ job: AdminVideoJob }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data: current, error: readError } = await supabaseAdmin
+      .from("video_jobs")
+      .select("*")
+      .eq("id", data.jobId)
+      .single();
+    if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
+    if (current.status !== "processing") throw new Error("لا يمكن إكمال مهمة ليست قيد المعالجة");
+
+    const metadata = {
+      ...((current.metadata as Record<string, unknown> | null) ?? {}),
+      manual_completed_by: userId,
+      manual_completed_at: new Date().toISOString(),
+      provider_status: "succeeded",
+    };
+
+    const { data: updated, error } = await supabaseAdmin
+      .from("video_jobs")
+      .update({ status: "completed", result_url: data.resultUrl, completed_at: new Date().toISOString(), error_message: null, metadata: metadata as Json })
+      .eq("id", data.jobId)
+      .eq("status", "processing")
+      .select("*")
+      .single();
+
+    if (error || !updated) throw new Error(`فشل إكمال مهمة الفيديو: ${error?.message ?? "استجابة فارغة"}`);
+    await logAdminAudit({ adminId: userId, action: "complete_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { result_url: data.resultUrl } as Json });
+    return { job: toAdminVideoJob(updated as VideoJobRow) };
+  });
+
+export const refundManualVideoJob = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => RefundVideoJobInput.parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<{ job: AdminVideoJob }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data: current, error: readError } = await supabaseAdmin.from("video_jobs").select("*").eq("id", data.jobId).single();
+    if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
+    if (current.status !== "processing") throw new Error("لا يمكن رد نقاط مهمة ليست قيد المعالجة");
+
+    const { data: refundId, error: refundError } = current.ledger_id
+      ? await supabaseAdmin.rpc("refund_credits", { _ledger_id: current.ledger_id, _reason: "manual_video_refund" })
+      : { data: null, error: null };
+    if (refundError && !/already_refunded/i.test(refundError.message)) throw new Error(`فشل رد النقاط: ${refundError.message}`);
+
+    await supabaseAdmin.rpc("release_video_daily_quota", { _user_id: current.user_id });
+
+    const metadata = {
+      ...((current.metadata as Record<string, unknown> | null) ?? {}),
+      manual_refunded_by: userId,
+      manual_refunded_at: new Date().toISOString(),
+      manual_refund_reason: data.reason,
+    };
+
+    const { data: updated, error } = await supabaseAdmin
+      .from("video_jobs")
+      .update({ status: "refunded", refund_ledger_id: (refundId as string | null) ?? current.refund_ledger_id, error_message: data.reason, metadata: metadata as Json })
+      .eq("id", data.jobId)
+      .select("*")
+      .single();
+
+    if (error || !updated) throw new Error(`فشل تحديث المهمة بعد رد النقاط: ${error?.message ?? "استجابة فارغة"}`);
+    await logAdminAudit({ adminId: userId, action: "refund_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { reason: data.reason, refund_ledger_id: refundId } as Json });
+    return { job: toAdminVideoJob(updated as VideoJobRow) };
   });

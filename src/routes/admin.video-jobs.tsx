@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, Clapperboard, Coins, DollarSign, Loader2, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clapperboard, Coins, Copy, DollarSign, ExternalLink, Loader2, RefreshCw, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
-import { listAdminVideoJobs, type AdminVideoJob, type AdminVideoStats } from "@/server/admin-video";
+import { completeManualVideoJob, listAdminVideoJobs, refundManualVideoJob, type AdminVideoJob, type AdminVideoStats } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-jobs")({
   beforeLoad: adminBeforeLoad,
@@ -51,20 +51,29 @@ function fmtDate(s: string) {
 
 function AdminVideoJobsPage() {
   const fetchJobs = useServerFn(listAdminVideoJobs);
+  const completeJob = useServerFn(completeManualVideoJob);
+  const refundJob = useServerFn(refundManualVideoJob);
   const [rows, setRows] = useState<AdminVideoJob[]>([]);
   const [stats, setStats] = useState<AdminVideoStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savingJobId, setSavingJobId] = useState<string | null>(null);
+  const [resultUrls, setResultUrls] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"all" | "pending" | "processing" | "completed" | "failed" | "refunded">("all");
   const [search, setSearch] = useState("");
+
+  async function authHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("لا توجد جلسة");
+    return { Authorization: `Bearer ${session.access_token}` };
+  }
 
   async function load() {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("لا توجد جلسة");
+      const headers = await authHeaders();
       const r = await fetchJobs({
         data: { status, limit: 150 },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers,
       });
       setRows(r.rows);
       setStats(r.stats);
@@ -85,6 +94,43 @@ function AdminVideoJobsPage() {
     const s = search.toLowerCase();
     return row.user_email?.toLowerCase().includes(s) || row.user_store?.toLowerCase().includes(s) || row.id.toLowerCase().includes(s) || row.prompt.toLowerCase().includes(s);
   });
+
+  async function copyPrompt(prompt: string) {
+    await navigator.clipboard.writeText(prompt);
+    toast.success("تم نسخ وصف الفيديو");
+  }
+
+  function patchRow(job: AdminVideoJob) {
+    setRows((current) => current.map((row) => row.id === job.id ? { ...row, ...job, user_email: row.user_email, user_store: row.user_store } : row));
+  }
+
+  async function completeManual(jobId: string) {
+    setSavingJobId(jobId);
+    try {
+      const headers = await authHeaders();
+      const result = await completeJob({ data: { jobId, resultUrl: resultUrls[jobId]?.trim() }, headers });
+      patchRow(result.job);
+      toast.success("تم إكمال مهمة الفيديو");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل إكمال المهمة");
+    } finally {
+      setSavingJobId(null);
+    }
+  }
+
+  async function refundManual(jobId: string) {
+    setSavingJobId(jobId);
+    try {
+      const headers = await authHeaders();
+      const result = await refundJob({ data: { jobId, reason: "تعذر تنفيذ مهمة الفيديو يدوياً" }, headers });
+      patchRow(result.job);
+      toast.success("تم رد نقاط المهمة");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل رد النقاط");
+    } finally {
+      setSavingJobId(null);
+    }
+  }
 
   return (
     <DashboardShell>
@@ -152,6 +198,38 @@ function AdminVideoJobsPage() {
                     <span>{fmtDate(job.created_at)}</span>
                     {job.provider && <span className="mx-1">· {job.provider}</span>}
                   </div>
+                  {job.status === "processing" && Boolean((job.metadata as { manual_required?: boolean } | null)?.manual_required) && (
+                    <div className="mt-3 rounded-lg border border-border bg-secondary/30 p-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-xs font-bold text-foreground">تنفيذ يدوي مطلوب</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button type="button" variant="outline" size="sm" onClick={() => void copyPrompt(job.prompt)}>
+                            <Copy className="h-4 w-4" /> نسخ الوصف
+                          </Button>
+                          <Button type="button" variant="outline" size="sm" asChild>
+                            <a href="https://labs.google/fx/ar/tools/flow" target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> فتح Flow</a>
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+                        <Input
+                          dir="ltr"
+                          inputMode="url"
+                          value={resultUrls[job.id] ?? ""}
+                          onChange={(event) => setResultUrls((current) => ({ ...current, [job.id]: event.target.value }))}
+                          placeholder="https://..."
+                          className="h-9 text-left"
+                          disabled={savingJobId === job.id}
+                        />
+                        <Button type="button" size="sm" onClick={() => void completeManual(job.id)} disabled={savingJobId === job.id || !resultUrls[job.id]?.trim()}>
+                          {savingJobId === job.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} حفظ النتيجة
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => void refundManual(job.id)} disabled={savingJobId === job.id}>
+                          <RotateCcw className="h-4 w-4" /> رد النقاط
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 lg:grid-cols-2">
                   <MiniMetric label="نقاط" value={fmt(job.credits_charged)} />
