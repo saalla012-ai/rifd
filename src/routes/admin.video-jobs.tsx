@@ -294,3 +294,24 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function ProviderAttemptsPanel({ attempts }: { attempts: ReturnType<typeof providerAttempts> }) {
+  if (attempts.length === 0) return null;
+
+  return (
+    <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      {attempts.map((attempt, index) => (
+        <div key={`${attempt.provider ?? "provider"}-${index}`} className={cn("rounded-lg border border-border bg-secondary/30 p-2 text-xs", attempt.ok === false && "border-destructive/30 bg-destructive/10", attempt.ok === true && "border-success/30 bg-success/10")}>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate font-bold">{attempt.provider ?? "provider"}</p>
+            <Badge variant="secondary">{attempt.status ?? (attempt.ok ? "ok" : "failed")}</Badge>
+          </div>
+          <p className="mt-1 text-muted-foreground">{attempt.mode ?? "—"} · {typeof attempt.latency_ms === "number" ? `${attempt.latency_ms.toLocaleString("ar-SA")}ms` : "—"}</p>
+          {attempt.reason && <p className="mt-1 truncate text-muted-foreground">{attempt.reason}</p>}
+          {attempt.error && <p className="mt-1 line-clamp-2 text-destructive">{attempt.error}</p>}
+          <p className="mt-1 text-muted-foreground">{fmtDate(attempt.finished_at)}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
