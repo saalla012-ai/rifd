@@ -12,6 +12,7 @@ import { generateVideo, listVideoJobs, refreshVideoJob } from "@/server/video-fu
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
+import { useCreditsSummary } from "@/hooks/use-credits-summary";
 
 type VideoQuality = "fast" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
@@ -29,6 +30,14 @@ const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
   { value: "16:9", label: "YouTube", hint: "أفقي" },
 ];
 
+const STATUS_LABEL: Record<string, string> = {
+  pending: "بانتظار المعالجة",
+  processing: "قيد المعالجة",
+  completed: "مكتمل",
+  failed: "فشل",
+  refunded: "تم رد النقاط",
+};
+
 export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
@@ -43,6 +52,7 @@ function GenerateVideoPage() {
   const generateVideoFn = useServerFn(generateVideo);
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
+  const { data: credits, refresh: refreshCredits } = useCreditsSummary();
   const [quality, setQuality] = useState<VideoQuality>("fast");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
@@ -55,6 +65,7 @@ function GenerateVideoPage() {
 
   const selectedQuality = QUALITY[quality];
   const selectedCost = selectedQuality.cost;
+  const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
 
@@ -74,9 +85,19 @@ function GenerateVideoPage() {
     void loadJobs();
   }, []);
 
+  useEffect(() => {
+    if (activeJob?.status !== "processing") return;
+    const id = window.setInterval(() => void refreshActiveJob(false), 8_000);
+    return () => window.clearInterval(id);
+  }, [activeJob?.id, activeJob?.status]);
+
   const generate = async () => {
     if (prompt.trim().length < 10) {
       toast.error("اكتب وصف فيديو أوضح");
+      return;
+    }
+    if (!hasEnoughCredits) {
+      setQuotaDialog({ open: true, reason: `INSUFFICIENT_CREDITS: رصيد نقاط الفيديو لا يكفي (تحتاج ${selectedCost} نقطة فيديو).` });
       return;
     }
     setLoading(true);
@@ -92,6 +113,7 @@ function GenerateVideoPage() {
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
       track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged });
       toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
+      void refreshCredits();
       router.invalidate();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "فشل توليد الفيديو";
@@ -105,7 +127,7 @@ function GenerateVideoPage() {
     }
   };
 
-  const refreshActiveJob = async () => {
+  const refreshActiveJob = async (showToast = true) => {
     if (!activeJob) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -116,7 +138,8 @@ function GenerateVideoPage() {
       });
       setActiveJob(out.job);
       setJobs((current) => current.map((job) => job.id === out.job.id ? out.job : job));
-      toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
+      if (out.job.status !== "processing") void refreshCredits();
+      if (showToast) toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
     }
@@ -232,11 +255,11 @@ function GenerateVideoPage() {
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-foreground">سيتم خصم {selectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
-              <span className="text-xs text-muted-foreground">يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم</span>
+              <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? "يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم" : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
           </div>
 
-          <Button onClick={generate} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || !hasEnoughCredits} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
@@ -246,7 +269,7 @@ function GenerateVideoPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
               {activeJob?.status === "processing" && (
-                <button type="button" onClick={refreshActiveJob} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
                   <RefreshCw className="h-3 w-3" /> تحديث
                 </button>
               )}
@@ -297,9 +320,10 @@ function GenerateVideoPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold">{job.quality === "quality" ? "Quality" : "Fast"}</span>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{job.status}</span>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{STATUS_LABEL[job.status] ?? job.status}</span>
                     </div>
                     <p className="mt-1 line-clamp-2 text-muted-foreground">{job.prompt}</p>
+                  {job.error_message && <p className="mt-1 line-clamp-2 text-[10px] font-medium text-destructive">{job.error_message}</p>}
                     <p className="mt-2 text-[10px] text-muted-foreground">{new Date(job.created_at).toLocaleDateString("ar-SA")} · {job.credits_charged} نقطة</p>
                   </button>
                 ))}

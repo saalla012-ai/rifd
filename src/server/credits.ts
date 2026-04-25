@@ -115,16 +115,18 @@ export async function refund(
   db: DbClient,
   ledgerId: string,
   reason = "generation_failed"
-): Promise<void> {
-  const { error } = await db.rpc("refund_credits", {
+): Promise<string | null> {
+  const { data, error } = await db.rpc("refund_credits", {
     _ledger_id: ledgerId,
     _reason: reason,
   });
   if (error) {
-    if (/already_refunded/i.test(error.message)) return;
+    if (/already_refunded/i.test(error.message)) return null;
     // لا نرفع — فشل الـrefund لا يجب أن يحجب رسالة الخطأ الأصلية للعميل
     console.error(`refund_credits failed: ${error.message}`);
+    return null;
   }
+  return typeof data === "string" ? data : null;
 }
 
 /**

@@ -16,6 +16,11 @@ const VIDEO_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
   quality: 1.5,
 };
 
+const MAX_PROCESSING_MINUTES = 20;
+const PROCESSING_LIMIT_PER_USER = 2;
+
+const TERMINAL_PROVIDER_STATUSES = new Set(["succeeded", "failed", "canceled"]);
+
 type DbClient = SupabaseClient<Database>;
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
 
@@ -34,6 +39,25 @@ function videoCreditError(e: unknown): Error {
     );
   }
   return e instanceof Error ? e : new Error(String(e));
+}
+
+function publicVideoError(e: unknown): Error {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
+  if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
+  if (/إعداد مزوّد الفيديو غير مكتمل/i.test(msg)) return new Error("خدمة الفيديو غير جاهزة حالياً. جرّب لاحقاً أو تواصل مع الدعم.");
+  if (/فشل مزوّد الفيديو|Replicate|provider|prediction|fetch failed/i.test(msg)) return new Error("تعذر الاتصال بخدمة الفيديو حالياً. تم حفظ الحالة ورد النقاط عند الحاجة.");
+  return e instanceof Error ? e : new Error("فشل تنفيذ عملية الفيديو");
+}
+
+async function countProcessingJobs(userId: string) {
+  const { count, error } = await supabaseAdmin
+    .from("video_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("status", "processing");
+  if (error) throw new Error(`فشل التحقق من المهام النشطة: ${error.message}`);
+  return count ?? 0;
 }
 
 async function createReplicatePrediction(input: z.infer<typeof videoInputSchema>) {
@@ -104,6 +128,9 @@ export const generateVideo = createServerFn({ method: "POST" })
     let jobId: string | null = null;
 
     try {
+      const processingCount = await countProcessingJobs(userId);
+      if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
+
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
         aspect_ratio: data.aspectRatio,
@@ -165,14 +192,19 @@ export const generateVideo = createServerFn({ method: "POST" })
         pending: finalStatus === "processing",
       };
     } catch (e) {
-      if (ledgerId) await refund(supabase, ledgerId, "video_generation_failed");
+      const refundLedgerId = ledgerId ? await refund(supabase, ledgerId, "video_generation_failed") : null;
       if (jobId) {
         await supabaseAdmin
           .from("video_jobs")
-          .update({ status: "refunded", error_message: e instanceof Error ? e.message : String(e) })
+          .update({
+            status: "refunded",
+            refund_ledger_id: refundLedgerId,
+            error_message: publicVideoError(e).message,
+            metadata: { failure_stage: "generate_video", original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500) },
+          })
           .eq("id", jobId);
       }
-      throw videoCreditError(e);
+      throw publicVideoError(e);
     }
   });
 
@@ -205,12 +237,36 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     const row = job as VideoJobRow;
     if (!row.provider_job_id || row.status !== "processing") return { job: row };
 
-    const prediction = await getReplicatePrediction(row.provider_job_id);
-    if (prediction.status === "failed" || prediction.status === "canceled") {
-      if (row.ledger_id) await refund(supabase, row.ledger_id, "video_generation_failed");
+    const createdAt = new Date(row.created_at).getTime();
+    const isStale = Number.isFinite(createdAt) && Date.now() - createdAt > MAX_PROCESSING_MINUTES * 60_000;
+    if (isStale) {
+      const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_timeout") : null;
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
-        .update({ status: "refunded", error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
+        .update({
+          status: "refunded",
+          refund_ledger_id: refundLedgerId,
+          error_message: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً.",
+        })
+        .eq("id", row.id)
+        .select("*")
+        .single();
+      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
+      return { job: updated as VideoJobRow };
+    }
+
+    const prediction = await getReplicatePrediction(row.provider_job_id);
+    if (!TERMINAL_PROVIDER_STATUSES.has(prediction.status)) {
+      await supabaseAdmin
+        .from("video_jobs")
+        .update({ metadata: { ...(row.metadata as Record<string, unknown> | null), provider_status: prediction.status, last_checked_at: new Date().toISOString() } })
+        .eq("id", row.id);
+    }
+    if (prediction.status === "failed" || prediction.status === "canceled") {
+      const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_failed") : null;
+      const { data: updated, error: updateError } = await supabaseAdmin
+        .from("video_jobs")
+        .update({ status: "refunded", refund_ledger_id: refundLedgerId, error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
         .eq("id", row.id)
         .select("*")
         .single();
