@@ -202,35 +202,37 @@ function PricingPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
             <Film className="h-3.5 w-3.5" /> نظام جديد: نقاط للفيديو فقط
           </div>
-          <h1 className="mt-4 text-3xl font-extrabold sm:text-5xl">
+          <h1 className="mx-auto mt-4 min-h-[5.75rem] max-w-3xl text-3xl font-extrabold leading-[1.28] sm:min-h-[7.75rem] sm:text-5xl sm:leading-[1.18]">
             نصوص وصور يومية، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+          <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
             اختر باقتك حسب عدد فيديوهاتك الشهرية. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: Fast بـ150 نقطة وQuality بـ450 نقطة.
           </p>
 
-          <div className="mx-auto mt-5 max-w-md">
-            <Suspense fallback={null}>
+          <div className="mx-auto mt-5 flex min-h-[3.75rem] max-w-md items-center justify-center">
+            <Suspense fallback={<div className="h-12 w-full rounded-xl border border-border bg-card/70" aria-hidden="true" />}>
               <SubscribersCounter />
             </Suspense>
           </div>
 
-          {seatsLeft !== null && seatsLeft > 0 && (
-            <div className="mx-auto mt-4 max-w-md rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-1.5 font-bold text-gold">
-                  <Users className="h-4 w-4" /> المقاعد المتبقية بسعر المؤسسين
-                </span>
-                <span className="font-extrabold text-gold">
-                  {seatsLeft.toLocaleString("ar-SA")} / {seatsTotal.toLocaleString("ar-SA")}
-                </span>
+          <div className="mx-auto mt-4 min-h-[6.75rem] max-w-md">
+            {seatsLeft !== null && seatsLeft > 0 && (
+              <div className="rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-1.5 font-bold text-gold">
+                    <Users className="h-4 w-4" /> المقاعد المتبقية بسعر المؤسسين
+                  </span>
+                  <span className="font-extrabold text-gold">
+                    {seatsLeft.toLocaleString("ar-SA")} / {seatsTotal.toLocaleString("ar-SA")}
+                  </span>
+                </div>
+                <Progress value={((seatsTotal - seatsLeft) / seatsTotal) * 100} className="mt-2 h-2" />
+                <p className="mt-2 text-xs text-muted-foreground">
+                  سعرك مجمّد مدى الحياة — سترتفع الأسعار {discountPct}% بعد اكتمال برنامج المؤسسين
+                </p>
               </div>
-              <Progress value={((seatsTotal - seatsLeft) / seatsTotal) * 100} className="mt-2 h-2" />
-              <p className="mt-2 text-xs text-muted-foreground">
-                سعرك مجمّد مدى الحياة — سترتفع الأسعار {discountPct}% بعد اكتمال برنامج المؤسسين
-              </p>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-card p-1.5">
             <button
