@@ -26,15 +26,15 @@ const OnboardingDay7Email = ({
         خصم <span style={discount}>20%</span> على خطة Pro
       </Text>
       <Text style={offerSubtext}>
-        توليد <strong>غير محدود</strong> للنصوص + 200 صورة شهرياً
+        سقف يومي أعلى للنصوص والصور + نقاط فيديو أكبر للحملات
       </Text>
     </Section>
     <InfoCard variant="highlight">
-      <Text style={featureItem}>✅ توليد نصوص بلا حدود يومية</Text>
-      <Text style={featureItem}>✅ 200 صورة احترافية شهرياً</Text>
-      <Text style={featureItem}>✅ حفظ ملفات تعريف لعدة متاجر</Text>
-      <Text style={featureItem}>✅ دعم أولوية عبر واتساب</Text>
-      <Text style={featureItem}>✅ قوالب حصرية للمواسم السعودية</Text>
+      <Text style={featureItem}>✅ حتى 600 نص يومياً ضمن سقف حماية عادل</Text>
+      <Text style={featureItem}>✅ حتى 100 صورة يومياً تشمل Pro</Text>
+      <Text style={featureItem}>✅ 11,000 نقطة فيديو شهرياً</Text>
+      <Text style={featureItem}>✅ Fast وQuality حتى 8 ثوانٍ حسب النقاط</Text>
+      <Text style={featureItem}>✅ قوالب موسمية مناسبة للسوق السعودي</Text>
     </InfoCard>
     <div style={{ textAlign: "center", margin: `${spacing.lg} 0` }}>
       <PrimaryButton href={pricingUrl}>احصل على الخصم الآن</PrimaryButton>
@@ -46,7 +46,7 @@ const OnboardingDay7Email = ({
       </Text>
     </InfoCard>
     <Text style={muted}>
-      مستمر في الخطة المجانية؟ لا مشكلة — استفد من 10 توليدات شهرياً مجاناً دائماً.
+      مستمر في الخطة المجانية؟ لا مشكلة — استفد من السقوف اليومية التجريبية، وعند الحاجة للفيديو يمكنك الترقية أو شحن نقاط إضافية.
       <br />
       فريق {SITE_NAME}
     </Text>
