@@ -387,19 +387,12 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     }
 
     if (prediction.status === "succeeded" && prediction.resultUrl) {
-      const { data: updated, error: updateError } = await supabaseAdmin
-        .from("video_jobs")
-        .update({
-          status: "completed",
-          result_url: prediction.resultUrl,
-          completed_at: new Date().toISOString(),
-          metadata: { ...(row.metadata as Record<string, unknown> | null), provider_status: prediction.status },
-        })
-        .eq("id", row.id)
-        .select("*")
-        .single();
-      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
-      return { job: updated as VideoJobRow };
+      const updated = await markProcessingJobCompleted({
+        jobId: row.id,
+        resultUrl: prediction.resultUrl,
+        metadata: { ...(row.metadata as Record<string, unknown> | null), provider_status: prediction.status },
+      });
+      return { job: updated };
     }
 
     return { job: row };
