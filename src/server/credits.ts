@@ -138,6 +138,19 @@ export async function refund(
   return typeof data === "string" ? data : null;
 }
 
+export async function getRefundLedgerId(db: DbClient, ledgerId: string): Promise<string | null> {
+  const { data, error } = await db
+    .from("credit_ledger")
+    .select("refund_ledger_id")
+    .eq("id", ledgerId)
+    .maybeSingle();
+  if (error) {
+    console.error(`get refund ledger failed: ${error.message}`);
+    return null;
+  }
+  return typeof data?.refund_ledger_id === "string" ? data.refund_ledger_id : null;
+}
+
 /**
  * يستهلك محاولة واحدة من حصة النص اليومية حسب الباقة.
  * النصوص لا تخصم نقاط — تستخدم عدّاد منفصل.

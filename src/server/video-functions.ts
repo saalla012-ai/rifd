@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { consume, consumeVideoDailyQuota, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, type VideoDuration, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
+import { consume, consumeVideoDailyQuota, getRefundLedgerId, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, type VideoDuration, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
 
 const VIDEO_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "google/veo-3-fast",
@@ -294,7 +294,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       };
     } catch (e) {
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
-      if (dailyQuotaConsumed && refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
+      if (dailyQuotaConsumed && (!ledgerId || refundLedgerId)) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
         await markProcessingJobRefunded({
           jobId,
@@ -344,10 +344,11 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     const isStale = Number.isFinite(createdAt) && Date.now() - createdAt > MAX_PROCESSING_MINUTES * 60_000;
     if (isStale) {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_timeout") : null;
+      const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
       if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       const updated = await markProcessingJobRefunded({
         jobId: row.id,
-        refundLedgerId,
+        refundLedgerId: effectiveRefundLedgerId,
         errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً.",
       });
       return { job: updated };
@@ -377,10 +378,11 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     }
     if (prediction.status === "failed" || prediction.status === "canceled") {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_failed") : null;
+      const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
       if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       const updated = await markProcessingJobRefunded({
         jobId: row.id,
-        refundLedgerId,
+        refundLedgerId: effectiveRefundLedgerId,
         errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود",
       });
       return { job: updated };
