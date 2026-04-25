@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard } from "lucide-react";
+import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { listVideoJobs } from "@/server/video-functions";
+import { listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 
 export const Route = createFileRoute("/dashboard/library")({
   head: () => ({ meta: [{ title: "مكتبتي — رِفد" }] }),
@@ -39,8 +39,10 @@ const VIDEO_STATUS_LABEL: Record<string, string> = {
 function LibraryPage() {
   const { user, loading: authLoading } = useAuth();
   const listVideoJobsFn = useServerFn(listVideoJobs);
+  const refreshVideoJobFn = useServerFn(refreshVideoJob);
   const [items, setItems] = useState<Generation[]>([]);
   const [videoJobs, setVideoJobs] = useState<VideoJob[]>([]);
+  const [refreshingJobId, setRefreshingJobId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "text" | "image" | "video" | "fav">("all");
 
@@ -106,6 +108,21 @@ function LibraryPage() {
     }
   };
 
+  const refreshVideo = async (jobId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return toast.error("سجّل الدخول لتحديث حالة الفيديو");
+    setRefreshingJobId(jobId);
+    try {
+      const out = await refreshVideoJobFn({ data: { jobId }, headers: { Authorization: `Bearer ${session.access_token}` } });
+      setVideoJobs((jobs) => jobs.map((job) => (job.id === out.job.id ? out.job : job)));
+      toast.success(out.job.status === "completed" ? "اكتمل الفيديو" : "تم تحديث الحالة");
+    } catch {
+      toast.error("تعذر تحديث حالة الفيديو مؤقتاً");
+    } finally {
+      setRefreshingJobId(null);
+    }
+  };
+
   const filtered = items.filter((i) => {
     if (filter === "all") return true;
     if (filter === "fav") return i.is_favorite;
@@ -167,7 +184,7 @@ function LibraryPage() {
         </div>
       ) : (
         <>
-        {(filter === "all" || filter === "video") && <VideoJobsSection jobs={videoJobs} />}
+        {(filter === "all" || filter === "video") && <VideoJobsSection jobs={videoJobs} refreshingJobId={refreshingJobId} onRefresh={refreshVideo} />}
         {filter !== "video" && <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((g) => (
             <article key={g.id} className="rounded-xl border border-border bg-card p-4 shadow-soft">
@@ -222,7 +239,7 @@ function LibraryPage() {
   );
 }
 
-function VideoJobsSection({ jobs }: { jobs: VideoJob[] }) {
+function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob[]; refreshingJobId: string | null; onRefresh: (jobId: string) => void }) {
   return (
     <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -259,6 +276,18 @@ function VideoJobsSection({ jobs }: { jobs: VideoJob[] }) {
                   <span>{new Date(job.created_at).toLocaleDateString("ar-SA")}</span>
                   <span>{job.credits_charged.toLocaleString("ar-SA")} نقطة</span>
                 </div>
+                {job.status === "processing" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 w-full gap-2 text-xs"
+                    disabled={refreshingJobId === job.id}
+                    onClick={() => onRefresh(job.id)}
+                  >
+                    <RefreshCw className={cn("h-3 w-3", refreshingJobId === job.id && "animate-spin")} />
+                    تحديث الحالة
+                  </Button>
+                )}
               </div>
             </article>
           ))}
