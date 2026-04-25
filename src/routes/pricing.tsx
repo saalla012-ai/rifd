@@ -19,7 +19,6 @@ import { SubscribersCounter } from "@/components/subscribers-counter";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/pricing")({
@@ -179,7 +178,6 @@ const FAQS = [
 
 function PricingPage() {
   const [yearly, setYearly] = useState(false);
-  const { user } = useAuth();
   const [seatsLeft, setSeatsLeft] = useState<number | null>(null);
   const [seatsTotal, setSeatsTotal] = useState(1000);
   const [discountPct, setDiscountPct] = useState(30);
@@ -194,7 +192,7 @@ function PricingPage() {
     })();
   }, []);
 
-  const ctaTarget = user ? "/dashboard/billing" : "/auth";
+  const ctaTarget = "/dashboard/billing";
 
   return (
     <MarketingLayout>
