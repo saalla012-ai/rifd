@@ -95,6 +95,21 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
   };
 }
 
+function isManualBridgeJob(row: VideoJobRow): boolean {
+  const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+  return row.provider === "google_flow_bridge" || metadata.manual_required === true;
+}
+
+async function refundVideoCreditsOnce(ledgerId: string | null) {
+  if (!ledgerId) return { refundId: null as string | null, newlyRefunded: false };
+  const { data: refundId, error } = await supabaseAdmin.rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
+  if (!error) return { refundId: refundId as string, newlyRefunded: true };
+  if (!/already_refunded/i.test(error.message)) throw new Error(`فشل رد النقاط: ${error.message}`);
+
+  const { data: ledger } = await supabaseAdmin.from("credit_ledger").select("refund_ledger_id").eq("id", ledgerId).maybeSingle();
+  return { refundId: ledger?.refund_ledger_id ?? null, newlyRefunded: false };
+}
+
 export const listAdminVideoJobs = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ListAdminVideoJobsInput.parse(input ?? {}))
   .middleware([requireSupabaseAuth])
@@ -210,6 +225,7 @@ export const completeManualVideoJob = createServerFn({ method: "POST" })
       .single();
     if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
     if (current.status !== "processing") throw new Error("لا يمكن إكمال مهمة ليست قيد المعالجة");
+    if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
 
     const metadata = {
       ...((current.metadata as Record<string, unknown> | null) ?? {}),
@@ -241,13 +257,10 @@ export const refundManualVideoJob = createServerFn({ method: "POST" })
     const { data: current, error: readError } = await supabaseAdmin.from("video_jobs").select("*").eq("id", data.jobId).single();
     if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
     if (current.status !== "processing") throw new Error("لا يمكن رد نقاط مهمة ليست قيد المعالجة");
+    if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
 
-    const { data: refundId, error: refundError } = current.ledger_id
-      ? await supabaseAdmin.rpc("refund_credits", { _ledger_id: current.ledger_id, _reason: "manual_video_refund" })
-      : { data: null, error: null };
-    if (refundError && !/already_refunded/i.test(refundError.message)) throw new Error(`فشل رد النقاط: ${refundError.message}`);
-
-    await supabaseAdmin.rpc("release_video_daily_quota", { _user_id: current.user_id });
+    const { refundId, newlyRefunded } = await refundVideoCreditsOnce(current.ledger_id);
+    if (newlyRefunded) await supabaseAdmin.rpc("release_video_daily_quota", { _user_id: current.user_id });
 
     const metadata = {
       ...((current.metadata as Record<string, unknown> | null) ?? {}),
@@ -258,7 +271,7 @@ export const refundManualVideoJob = createServerFn({ method: "POST" })
 
     const { data: updated, error } = await supabaseAdmin
       .from("video_jobs")
-      .update({ status: "refunded", refund_ledger_id: (refundId as string | null) ?? current.refund_ledger_id, error_message: data.reason, metadata: metadata as Json })
+      .update({ status: "refunded", refund_ledger_id: refundId ?? current.refund_ledger_id, error_message: data.reason, metadata: metadata as Json })
       .eq("id", data.jobId)
       .select("*")
       .single();
