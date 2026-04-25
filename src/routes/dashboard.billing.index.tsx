@@ -36,6 +36,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { PAID_PLANS, PLAN_BY_ID, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
 import {
   formatSaudiPhoneDisplay,
   normalizeSaudiPhone,
@@ -49,34 +50,7 @@ export const Route = createFileRoute("/dashboard/billing/")({
   component: BillingPage,
 });
 
-type PaidPlan = "starter" | "growth" | "pro" | "business";
-type PlanKey = "free" | PaidPlan;
-
-type PlanConfig = {
-  label: string;
-  monthly: number;
-  yearly: number;
-  credits: number;
-  fast: number;
-  quality: number;
-  note: string;
-  badge?: string;
-};
-
-const PLAN_CONFIG: Record<PaidPlan, PlanConfig> = {
-  starter: { label: "Starter", monthly: 149, yearly: 1490, credits: 3000, fast: 20, quality: 6, note: "لبداية الفيديو المنتظمة" },
-  growth: { label: "Growth", monthly: 249, yearly: 2490, credits: 6000, fast: 40, quality: 13, note: "الأكثر توازناً للمتاجر النشطة", badge: "الأكثر اختياراً" },
-  pro: { label: "Pro", monthly: 399, yearly: 3990, credits: 11000, fast: 73, quality: 24, note: "لإعلانات واختبارات أكثر" },
-  business: { label: "Business", monthly: 999, yearly: 9990, credits: 30000, fast: 200, quality: 66, note: "للفرق والوكالات الخفيفة" },
-};
-
-const PLAN_LABELS: Record<PlanKey, string> = {
-  free: "Free",
-  starter: "Starter",
-  growth: "Growth",
-  pro: "Pro",
-  business: "Business",
-};
+const PLAN_LABELS: Record<PlanId, string> = Object.fromEntries(Object.entries(PLAN_BY_ID).map(([key, value]) => [key, value.name])) as Record<PlanId, string>;
 
 const FUTURE_INCREASE_PCT = 30;
 
@@ -101,7 +75,7 @@ type Settings = {
 
 type RequestRow = {
   id: string;
-  plan: PaidPlan;
+  plan: PaidPlanId;
   billing_cycle: string;
   store_name: string | null;
   whatsapp: string;
@@ -120,7 +94,7 @@ function BillingPage() {
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [plan, setPlan] = useState<PaidPlan>("growth");
+  const [plan, setPlan] = useState<PaidPlanId>("growth");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [storeName, setStoreName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -163,9 +137,11 @@ function BillingPage() {
   const seatsPct = seatsTotal > 0 ? (seatsTaken / seatsTotal) * 100 : 0;
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
   const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
-  const selected = PLAN_CONFIG[plan];
-  const price = selected[billingCycle];
+  const selected = PLAN_BY_ID[plan];
+  const price = billingCycle === "yearly" ? selected.yearlyPriceSar : selected.monthlyPriceSar;
   const futurePrice = Math.round(price * (1 + increasePct / 100));
+  const selectedFastVideos = estimateVideoCount(selected.monthlyCredits, "fast", 5);
+  const selectedQualityVideos = selected.videoQualityAllowed ? estimateVideoCount(selected.monthlyCredits, "quality", 5) : 0;
   const pendingRequest = useMemo(
     () => requests.find((r) => r.status === "pending" || r.status === "contacted"),
     [requests]
@@ -187,8 +163,8 @@ function BillingPage() {
       "السلام عليكم 👋",
       "أرغب بالاشتراك في رِفد بنظام نقاط الفيديو الجديد",
       "",
-      `📦 الباقة: ${selected.label} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
-      `🎬 نقاط الفيديو: ${selected.credits.toLocaleString("ar-SA")} نقطة`,
+      `📦 الباقة: ${selected.name} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
+      `🎬 نقاط الفيديو: ${formatPlanNumber(selected.monthlyCredits)} نقطة`,
       `💰 السعر: ${price} ر.س (سيرتفع لـ ${futurePrice} ر.س بعد برنامج المؤسسين)`,
       storeName ? `🏪 المتجر: ${storeName}` : "",
       `📱 واتساب: ${whatsapp}`,
@@ -253,14 +229,14 @@ function BillingPage() {
           <div>
             <div className="flex items-center gap-2">
               {isPaidUser && <Crown className="h-5 w-5 text-gold" />}
-              <h2 className="text-lg font-bold">باقتك الحالية: {PLAN_LABELS[(profile?.plan ?? "free") as PlanKey] ?? profile?.plan}</h2>
+              <h2 className="text-lg font-bold">باقتك الحالية: {PLAN_LABELS[(profile?.plan ?? "free") as PlanId] ?? profile?.plan}</h2>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {isPaidUser ? "نقاطك الحالية مخصصة للفيديو فقط، والنصوص والصور لا تخصم منها." : "ابدأ مجاناً، ثم اختر باقة فيديو عندما تحتاج حملات إعلانية أكثر."}
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Film className="h-3.5 w-3.5" /> Fast 150 نقطة · Quality 450 نقطة
+            <Film className="h-3.5 w-3.5" /> Fast {videoCreditCost("fast", 5)} نقطة · Quality {videoCreditCost("quality", 5)} نقطة
           </div>
         </div>
       </div>
@@ -280,20 +256,20 @@ function BillingPage() {
             </div>
 
             <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {(Object.entries(PLAN_CONFIG) as Array<[PaidPlan, PlanConfig]>).map(([key, p]) => (
+              {PAID_PLANS.map((p) => (
                 <button
-                  key={key}
+                  key={p.id}
                   type="button"
-                  onClick={() => setPlan(key)}
-                  className={cn("rounded-xl border p-4 text-right transition-colors", plan === key ? "border-primary bg-primary/10" : "border-border bg-secondary/20 hover:border-primary/40")}
+                  onClick={() => setPlan(p.id as PaidPlanId)}
+                  className={cn("rounded-xl border p-4 text-right transition-colors", plan === p.id ? "border-primary bg-primary/10" : "border-border bg-secondary/20 hover:border-primary/40")}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-extrabold">{p.label}</span>
+                    <span className="font-extrabold">{p.name}</span>
                     {p.badge && <Badge className="text-[10px]">{p.badge}</Badge>}
                   </div>
-                  <div className="mt-2 text-2xl font-extrabold">{p.monthly} <span className="text-xs font-normal text-muted-foreground">ر.س</span></div>
-                  <div className="mt-1 text-xs text-primary">{p.credits.toLocaleString("ar-SA")} نقطة فيديو</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{p.note}</div>
+                  <div className="mt-2 text-2xl font-extrabold">{p.monthlyPriceSar} <span className="text-xs font-normal text-muted-foreground">ر.س</span></div>
+                  <div className="mt-1 text-xs text-primary">{formatPlanNumber(p.monthlyCredits)} نقطة فيديو</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{p.tagline}</div>
                 </button>
               ))}
             </div>
@@ -338,10 +314,10 @@ function BillingPage() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 text-sm font-extrabold text-primary">
-                    <Zap className="h-4 w-4" /> {selected.credits.toLocaleString("ar-SA")} نقطة فيديو
+                    <Zap className="h-4 w-4" /> {formatPlanNumber(selected.monthlyCredits)} نقطة فيديو
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    تقريباً {selected.fast} فيديو Fast أو {selected.quality} فيديو Quality — الفيديو ليس غير محدود.
+                    تقريباً {formatPlanNumber(selectedFastVideos)} فيديو Fast أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو Quality` : "Quality غير متاح"} — الفيديو ليس غير محدود.
                   </p>
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
