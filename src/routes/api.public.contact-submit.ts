@@ -4,7 +4,7 @@
  * نقطة استقبال نموذج "تواصل معنا" — عامة (بدون تسجيل دخول).
  *
  * طبقات الحماية:
- *  1. Honeypot field (`website`) — إذا مُلئ → 200 صامت بدون أي فعل (لتضليل البوت).
+ *  1. Honeypot field (`website`) — إذا مُلئ → 400 بدون أي تخزين أو تنبيه.
  *  2. Zod validation صارمة (طول، صيغة، تنظيف) — لمنع DoS وحقن.
  *  3. Rate limit بحدّ 5 رسائل/ساعة لكل IP عبر `demo_rate_limits` (مُعاد استخدامها).
  *  4. تخزين في `contact_submissions` بـ `supabaseAdmin` (RLS تسمح للـservice_role فقط).
@@ -225,10 +225,10 @@ export const Route = createFileRoute("/api/public/contact-submit")({
 
         const data = parsed.data;
 
-        // 1. Honeypot — إذا الحقل المخفي مُلئ، نُعيد success صامت
+        // 1. Honeypot — إذا الحقل المخفي مُلئ، نرفض الطلب حسب معيار QA V9
         if (data.website && data.website.length > 0) {
           console.warn("[contact-submit] honeypot tripped", { ip: getClientIp(request) });
-          return respond(200, { ok: true, id: "honeypot" });
+          return respond(400, { error: "bot_detected" });
         }
 
         // 2. Rate limit
