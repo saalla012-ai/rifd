@@ -63,6 +63,7 @@ import { Route as AdminDnsCheckRouteImport } from './routes/admin.dns-check'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
 import { Route as AdminCreditLedgerRouteImport } from './routes/admin.credit-ledger'
 import { Route as AdminContactSubmissionsRouteImport } from './routes/admin.contact-submissions'
+import { Route as AdminCampaignPacksRouteImport } from './routes/admin.campaign-packs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminAbTestsRouteImport } from './routes/admin.ab-tests'
@@ -354,6 +355,11 @@ const AdminContactSubmissionsRoute = AdminContactSubmissionsRouteImport.update({
   path: '/admin/contact-submissions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCampaignPacksRoute = AdminCampaignPacksRouteImport.update({
+  id: '/admin/campaign-packs',
+  path: '/admin/campaign-packs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/admin/audit',
   path: '/admin/audit',
@@ -467,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/campaign-packs': typeof AdminCampaignPacksRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
   '/admin/credit-ledger': typeof AdminCreditLedgerRoute
   '/admin/credits': typeof AdminCreditsRoute
@@ -538,6 +545,7 @@ export interface FileRoutesByTo {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/campaign-packs': typeof AdminCampaignPacksRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
   '/admin/credit-ledger': typeof AdminCreditLedgerRoute
   '/admin/credits': typeof AdminCreditsRoute
@@ -611,6 +619,7 @@ export interface FileRoutesById {
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/campaign-packs': typeof AdminCampaignPacksRoute
   '/admin/contact-submissions': typeof AdminContactSubmissionsRoute
   '/admin/credit-ledger': typeof AdminCreditLedgerRoute
   '/admin/credits': typeof AdminCreditsRoute
@@ -685,6 +694,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/campaign-packs'
     | '/admin/contact-submissions'
     | '/admin/credit-ledger'
     | '/admin/credits'
@@ -756,6 +766,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/campaign-packs'
     | '/admin/contact-submissions'
     | '/admin/credit-ledger'
     | '/admin/credits'
@@ -828,6 +839,7 @@ export interface FileRouteTypes {
     | '/admin/ab-tests'
     | '/admin/analytics'
     | '/admin/audit'
+    | '/admin/campaign-packs'
     | '/admin/contact-submissions'
     | '/admin/credit-ledger'
     | '/admin/credits'
@@ -901,6 +913,7 @@ export interface RootRouteChildren {
   AdminAbTestsRoute: typeof AdminAbTestsRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminCampaignPacksRoute: typeof AdminCampaignPacksRoute
   AdminContactSubmissionsRoute: typeof AdminContactSubmissionsRoute
   AdminCreditLedgerRoute: typeof AdminCreditLedgerRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
@@ -1315,6 +1328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminContactSubmissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/campaign-packs': {
+      id: '/admin/campaign-packs'
+      path: '/admin/campaign-packs'
+      fullPath: '/admin/campaign-packs'
+      preLoaderRoute: typeof AdminCampaignPacksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/audit': {
       id: '/admin/audit'
       path: '/admin/audit'
@@ -1493,6 +1513,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAbTestsRoute: AdminAbTestsRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
+  AdminCampaignPacksRoute: AdminCampaignPacksRoute,
   AdminContactSubmissionsRoute: AdminContactSubmissionsRoute,
   AdminCreditLedgerRoute: AdminCreditLedgerRoute,
   AdminCreditsRoute: AdminCreditsRoute,
