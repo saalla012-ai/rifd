@@ -19,13 +19,17 @@ type DbClient = SupabaseClient<Database>;
 // ============================================================
 export const CREDIT_COSTS = {
   video_fast: 150,
+  video_fast_8s: 240,
   video_quality: 450,
+  video_quality_8s: 900,
 } as const;
 
 export type VideoQuality = "fast" | "quality";
+export type VideoDuration = 5 | 8;
 
-export function videoCost(q: VideoQuality): number {
-  return q === "quality" ? CREDIT_COSTS.video_quality : CREDIT_COSTS.video_fast;
+export function videoCost(q: VideoQuality, duration: VideoDuration = 5): number {
+  if (q === "quality") return duration === 8 ? CREDIT_COSTS.video_quality_8s : CREDIT_COSTS.video_quality;
+  return duration === 8 ? CREDIT_COSTS.video_fast_8s : CREDIT_COSTS.video_fast;
 }
 
 // ============================================================
