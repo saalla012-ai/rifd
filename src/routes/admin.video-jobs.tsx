@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, Clapperboard, Coins, DollarSign, Loader2, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { listAdminVideoJobs, type AdminVideoJob, type AdminVideoStats } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-jobs")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "إدارة الفيديو والتكلفة — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل إدارة الفيديو…">

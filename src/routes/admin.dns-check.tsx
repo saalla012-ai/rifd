@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ import { checkEmailDns, type DnsCheckResult, type RecordCheck } from "@/server/d
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/dns-check")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "فحص DNS للبريد — لوحة الأدمن" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل أداة فحص DNS…">

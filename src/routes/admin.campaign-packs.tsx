@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { BarChart3, Copy, FolderKanban, Loader2, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { listAdminCampaignPacks, type AdminCampaignPack } from "@/server/campaign-packs";
 
 export const Route = createFileRoute("/admin/campaign-packs")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "إدارة Campaign Packs — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل إدارة الحملات…">

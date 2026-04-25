@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import {
   BarChart,
   Bar,
@@ -26,6 +26,7 @@ import { reconcileUsageLogs, type ReconcileResult } from "@/server/admin-reconci
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/analytics")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "تحليلات الأدمن — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل لوحة التحليلات…">

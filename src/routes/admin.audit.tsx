@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { Loader2, RefreshCw, ArrowLeft, Filter, X, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -78,6 +78,7 @@ function JsonBlock({ label, value }: { label: string; value: unknown }) {
 }
 
 export const Route = createFileRoute("/admin/audit")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "سجل تعديلات الأدمن — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل سجل التعديلات…">

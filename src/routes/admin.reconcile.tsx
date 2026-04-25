@@ -17,7 +17,7 @@ import {
   History,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import { reconcileUsageLogs, type ReconcileResult } from "@/server/admin-reconci
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/reconcile")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "مزامنة عدّادات الاستخدام — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل أداة المزامنة…">

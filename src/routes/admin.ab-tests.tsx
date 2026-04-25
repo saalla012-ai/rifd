@@ -5,7 +5,7 @@
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { useEffect, useState } from "react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { getAbTestResults, type AbStats } from "@/server/admin-ab-tests";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/ab-tests")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "نتائج اختبارات A/B — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل نتائج التجارب…">

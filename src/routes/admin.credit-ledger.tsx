@@ -20,7 +20,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/credit-ledger")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "دفتر نقاط الفيديو — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل الدفتر…">
