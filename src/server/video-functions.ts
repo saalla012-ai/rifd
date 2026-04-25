@@ -338,8 +338,14 @@ async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId:
 
     try {
       const result = await provider.createJob(input, config);
-      if (result.status === "failed" || result.status === "canceled") throw new Error("فشل مزوّد الفيديو أثناء إنشاء المهمة");
-      if (result.status === "succeeded" && !result.resultUrl) throw new Error("فشل مزوّد الفيديو: لم يتم إرجاع رابط الفيديو النهائي");
+      if (result.status === "failed" || result.status === "canceled") {
+        const message = "فشل مزوّد الفيديو أثناء إنشاء المهمة";
+        throw result.providerJobId ? new ProviderCommittedFailure(message) : new Error(message);
+      }
+      if (result.status === "succeeded" && !result.resultUrl) {
+        const message = "فشل مزوّد الفيديو: لم يتم إرجاع رابط الفيديو النهائي";
+        throw result.providerJobId ? new ProviderCommittedFailure(message) : new Error(message);
+      }
       await markProviderSuccess(config.provider_key);
       const finishedAt = new Date();
       return {
