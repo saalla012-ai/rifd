@@ -348,7 +348,7 @@ function CreditsPage() {
                   </div>
                   <div className="mt-1 text-sm">
                     <span className="font-bold text-primary">{fmt(pkg.price_sar)} ر.س</span>{" "}
-                    <span className="text-xs text-muted-foreground">شامل الضريبة</span>
+                    <span className="text-xs text-muted-foreground">تفاصيل الفوترة تظهر عند التفعيل</span>
                   </div>
 
                   <Button
