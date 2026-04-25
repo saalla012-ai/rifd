@@ -60,9 +60,10 @@ function DashboardLayout() {
     if (loading) return;
     if (!user) {
       // حماية إضافية لو فات beforeLoad (مثلاً جلسة انتهت بعد التحميل)
+      const redirectPath = window.location.pathname + window.location.search + window.location.hash;
       void navigate({
         to: "/auth",
-        search: { redirect: window.location.pathname + window.location.search },
+        search: { redirect: redirectPath },
       });
       return;
     }

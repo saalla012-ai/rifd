@@ -13,6 +13,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 
+function sanitizeRedirectPath(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  if (!value.startsWith("/") || value.startsWith("//")) return undefined;
+  if (value.includes("://")) return undefined;
+  return value;
+}
+
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
@@ -20,11 +27,10 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديداً لتجربة توليد محتوى متجرك ضمن حدود بداية واضحة وبدون بطاقة." },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => (
-    typeof search.redirect === "string" && search.redirect.startsWith("/")
-      ? { redirect: search.redirect }
-      : {}
-  ),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    const redirect = sanitizeRedirectPath(search.redirect);
+    return redirect ? { redirect } : {};
+  },
   component: AuthPage,
 });
 
