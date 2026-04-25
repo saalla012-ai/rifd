@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouter } from "@tanstack/react-router";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
@@ -78,23 +78,32 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function AnalyticsBridge() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
+  const [analyticsReady, setAnalyticsReady] = useState(false);
 
-  // تهيئة + اشتراك بتغييرات الـrouter
+  // تهيئة مؤجلة: التحليلات لا يجب أن تنافس أول رسم/LCP على صفحات التسويق.
   useEffect(() => {
-    void initAnalytics().then((ph) => {
-      if (!ph) return;
-      // pageview الأول
-      trackPageview(window.location.pathname + window.location.search);
-    });
+    const start = () => {
+      void initAnalytics().then((ph) => {
+        if (!ph) return;
+        trackPageview(window.location.pathname + window.location.search);
+        setAnalyticsReady(true);
+      });
+    };
+
+    const timeoutId = window.setTimeout(start, 3_500);
 
     const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
       trackPageview(toLocation.pathname + (toLocation.searchStr || ""));
     });
-    return () => unsubscribe();
+    return () => {
+      window.clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, [router]);
 
   // ربط/فك ربط المستخدم
   useEffect(() => {
+    if (!analyticsReady) return;
     if (loading) return;
     if (user) {
       identifyUser(user.id, {
@@ -104,7 +113,7 @@ function AnalyticsBridge() {
     } else {
       resetAnalytics();
     }
-  }, [user, profile, loading]);
+  }, [analyticsReady, user, profile, loading]);
 
   return null;
 }
