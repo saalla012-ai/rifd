@@ -36,6 +36,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { PAID_PLANS, PLAN_BY_ID, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
 import {
   formatSaudiPhoneDisplay,
   normalizeSaudiPhone,
@@ -49,34 +50,7 @@ export const Route = createFileRoute("/dashboard/billing/")({
   component: BillingPage,
 });
 
-type PaidPlan = "starter" | "growth" | "pro" | "business";
-type PlanKey = "free" | PaidPlan;
-
-type PlanConfig = {
-  label: string;
-  monthly: number;
-  yearly: number;
-  credits: number;
-  fast: number;
-  quality: number;
-  note: string;
-  badge?: string;
-};
-
-const PLAN_CONFIG: Record<PaidPlan, PlanConfig> = {
-  starter: { label: "Starter", monthly: 149, yearly: 1490, credits: 3000, fast: 20, quality: 6, note: "لبداية الفيديو المنتظمة" },
-  growth: { label: "Growth", monthly: 249, yearly: 2490, credits: 6000, fast: 40, quality: 13, note: "الأكثر توازناً للمتاجر النشطة", badge: "الأكثر اختياراً" },
-  pro: { label: "Pro", monthly: 399, yearly: 3990, credits: 11000, fast: 73, quality: 24, note: "لإعلانات واختبارات أكثر" },
-  business: { label: "Business", monthly: 999, yearly: 9990, credits: 30000, fast: 200, quality: 66, note: "للفرق والوكالات الخفيفة" },
-};
-
-const PLAN_LABELS: Record<PlanKey, string> = {
-  free: "Free",
-  starter: "Starter",
-  growth: "Growth",
-  pro: "Pro",
-  business: "Business",
-};
+const PLAN_LABELS: Record<PlanId, string> = Object.fromEntries(Object.entries(PLAN_BY_ID).map(([key, value]) => [key, value.name])) as Record<PlanId, string>;
 
 const FUTURE_INCREASE_PCT = 30;
 
@@ -101,7 +75,7 @@ type Settings = {
 
 type RequestRow = {
   id: string;
-  plan: PaidPlan;
+  plan: PaidPlanId;
   billing_cycle: string;
   store_name: string | null;
   whatsapp: string;
