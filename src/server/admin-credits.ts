@@ -164,10 +164,10 @@ export const activateTopup = createServerFn({ method: "POST" })
         .eq("id", data.purchaseId);
     }
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: "activate_topup",
-      table: "topup_purchases",
+      targetTable: "topup_purchases",
       targetId: data.purchaseId,
       before: { status: current.status },
       after: { status: "activated", credits: current.credits },
@@ -211,10 +211,10 @@ export const rejectTopup = createServerFn({ method: "POST" })
       .eq("id", data.purchaseId);
     if (error) throw new Error(`فشل الرفض: ${error.message}`);
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: "reject_topup",
-      table: "topup_purchases",
+      targetTable: "topup_purchases",
       targetId: data.purchaseId,
       before: { status: current.status },
       after: { status: "rejected" },
