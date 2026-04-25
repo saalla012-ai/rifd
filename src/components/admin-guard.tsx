@@ -1,8 +1,8 @@
 /**
  * AdminGuard — حارس موحّد لجميع صفحات /admin/*
  *
- * يعتمد على `useAuth().isAdmin` المركزي (يُحمَّل مرة واحدة لكل جلسة)
- * بدلاً من تكرار استعلامات user_roles في كل صفحة.
+ * يضيف طبقتين: `adminBeforeLoad` يمنع تحميل صفحات الأدمن قبل التحقق،
+ * و`AdminGuard` يحافظ على تجربة عرض نظيفة داخل الصفحة بعد التحميل.
  *
  * ⚠️ هذا الحارس واجهة فقط — الحماية الحقيقية على الـserver functions
  * عبر `requireSupabaseAuth + assertAdmin`. الهدف هنا منع flicker وتجربة
@@ -23,6 +23,19 @@ function authTimeout() {
   });
 }
 
+async function hasAdminRole(userId: string) {
+  const roleQuery = supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle()
+    .then(({ data, error }) => (error ? false : data?.role === "admin"))
+    .catch(() => false);
+
+  return Promise.race([roleQuery, authTimeout().then(() => false)]);
+}
+
 export async function adminBeforeLoad({ location }: { location: ParsedLocation }) {
   if (typeof window === "undefined") return;
   const session = await Promise.race([
@@ -34,14 +47,8 @@ export async function adminBeforeLoad({ location }: { location: ParsedLocation }
     throw redirect({ to: "/auth", search: { redirect: location.href } });
   }
 
-  const { data, error } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", session.user.id)
-    .eq("role", "admin")
-    .maybeSingle();
-
-  if (error || data?.role !== "admin") {
+  const isAdmin = await hasAdminRole(session.user.id);
+  if (!isAdmin) {
     throw redirect({ to: "/dashboard" });
   }
 }
