@@ -306,6 +306,60 @@ export const updateVideoProviderConfig = createServerFn({ method: "POST" })
     return { provider: updated as AdminVideoProviderConfig };
   });
 
+export const testVideoProviderConnection = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => TestProviderInput.parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<{ provider: AdminVideoProviderConfig; result: AdminVideoProviderTestResult }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data: current, error: readError } = await (supabaseAdmin as unknown as {
+      from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } };
+    })
+      .from("video_provider_configs")
+      .select("provider_key, display_name_admin, enabled, public_enabled, supported_qualities, priority, cost_5s, cost_8s, supports_9_16, supports_1_1, supports_16_9, supports_starting_frame, mode, health_status, last_success_at, last_error_at, last_error_message, metadata, updated_at")
+      .eq("provider_key", data.providerKey)
+      .single();
+    if (readError || !current) throw new Error(`فشل جلب المزود: ${readError?.message ?? "غير موجود"}`);
+
+    const provider = current as AdminVideoProviderConfig;
+    const startedAt = Date.now();
+    const checkedAt = new Date().toISOString();
+    let result: AdminVideoProviderTestResult;
+
+    if (!provider.enabled) {
+      result = { providerKey: provider.provider_key, ok: false, status: "unhealthy", latencyMs: Date.now() - startedAt, message: "المزود متوقف داخلياً", checkedAt };
+    } else if (provider.mode === "manual" || provider.mode === "bridge") {
+      result = { providerKey: provider.provider_key, ok: true, status: "manual_required", latencyMs: Date.now() - startedAt, message: "الجسر اليدوي جاهز ويحتاج تنفيذ بشري عند الطلب", checkedAt };
+    } else if (provider.provider_key === "replicate") {
+      const tokenReady = Boolean(process.env.REPLICATE_API_TOKEN);
+      result = { providerKey: provider.provider_key, ok: tokenReady, status: tokenReady ? "active" : "unhealthy", latencyMs: Date.now() - startedAt, message: tokenReady ? "مفتاح المزود موجود والراوتر قادر على استخدامه" : "مفتاح المزود غير متوفر", checkedAt };
+    } else {
+      result = { providerKey: provider.provider_key, ok: false, status: "unhealthy", latencyMs: Date.now() - startedAt, message: "المزود غير موصول براوتر التنفيذ بعد", checkedAt };
+    }
+
+    const patch = {
+      health_status: result.status,
+      last_success_at: result.ok ? result.checkedAt : provider.last_success_at,
+      last_error_at: result.ok ? null : result.checkedAt,
+      last_error_message: result.ok ? null : result.message,
+      metadata: appendConnectionTest(provider.metadata, result),
+    };
+
+    const { data: updated, error } = await (supabaseAdmin as unknown as {
+      from: (table: string) => { update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => { select: (columns: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } } };
+    })
+      .from("video_provider_configs")
+      .update(patch)
+      .eq("provider_key", provider.provider_key)
+      .select("provider_key, display_name_admin, enabled, public_enabled, supported_qualities, priority, cost_5s, cost_8s, supports_9_16, supports_1_1, supports_16_9, supports_starting_frame, mode, health_status, last_success_at, last_error_at, last_error_message, metadata, updated_at")
+      .single();
+    if (error || !updated) throw new Error(`فشل حفظ نتيجة الاختبار: ${error?.message ?? "استجابة فارغة"}`);
+
+    await logAdminAudit({ adminId: userId, action: "test_video_provider_connection", targetTable: "video_provider_configs", targetId: provider.provider_key, after: result as unknown as Json });
+    return { provider: updated as AdminVideoProviderConfig, result };
+  });
+
 export const completeManualVideoJob = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => CompleteManualVideoJobInput.parse(input))
   .middleware([requireSupabaseAuth])
