@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, Clapperboard, Coins, DollarSign, Loader2, RefreshCw, Search } from "lucide-react";
+import { AlertTriangle, Clapperboard, Coins, DollarSign, Loader2, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { listAdminVideoJobs, type AdminVideoJob, type AdminVideoStats } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-jobs")({
@@ -99,6 +100,9 @@ function AdminVideoJobsPage() {
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} /> تحديث
           </Button>
           <Button variant="outline" size="sm" asChild>
+            <Link to="/admin/video-providers"><SlidersHorizontal className="h-4 w-4" /> مزودو الفيديو</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link to="/admin/credit-ledger"><Coins className="h-4 w-4" /> دفتر النقاط</Link>
           </Button>
         </div>
@@ -137,7 +141,7 @@ function AdminVideoJobsPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className={cn(STATUS_TONE[job.status] ?? "bg-muted")}>{STATUS_LABEL[job.status] ?? job.status}</Badge>
-                    <span className="text-sm font-bold">{job.quality === "quality" ? "Quality" : "Fast"}</span>
+                    <span className="text-sm font-bold">{VIDEO_QUALITY_LABELS[job.quality]}</span>
                     <span className="text-xs text-muted-foreground">{job.aspect_ratio} · {job.duration_seconds}ث</span>
                   </div>
                   <p className="mt-2 line-clamp-2 text-sm text-foreground">{job.prompt}</p>
@@ -146,7 +150,7 @@ function AdminVideoJobsPage() {
                     <span className="font-medium text-foreground">{job.user_store || job.user_email || job.user_id.slice(0, 8)}</span>
                     <span className="mx-1">·</span>
                     <span>{fmtDate(job.created_at)}</span>
-                    {job.provider_job_id && <span className="mx-1">· provider: {job.provider_job_id.slice(0, 10)}</span>}
+                    {job.provider && <span className="mx-1">· {job.provider}</span>}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 lg:grid-cols-2">

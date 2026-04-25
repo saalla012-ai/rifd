@@ -24,6 +24,7 @@ import {
   Coins,
   Database,
   Video,
+  SlidersHorizontal,
   FolderKanban,
   ShieldAlert,
 } from "lucide-react";
@@ -52,6 +53,7 @@ const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
   { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
   { to: "/admin/video-jobs", label: "إدارة الفيديو", icon: Video },
+  { to: "/admin/video-providers", label: "مزودو الفيديو", icon: SlidersHorizontal },
   { to: "/admin/campaign-packs", label: "إدارة الحملات", icon: FolderKanban },
   { to: "/admin/abuse-monitor", label: "مراقبة الإساءة", icon: ShieldAlert },
   { to: "/admin/credits", label: "شحن نقاط الفيديو", icon: Coins },

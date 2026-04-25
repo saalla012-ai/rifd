@@ -1,0 +1,185 @@
+import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { Activity, AlertTriangle, ArrowUpDown, Clapperboard, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { supabase } from "@/integrations/supabase/client";
+import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
+import { cn } from "@/lib/utils";
+import { listVideoProviderConfigs, updateVideoProviderConfig, type AdminVideoProviderConfig } from "@/server/admin-video";
+
+export const Route = createFileRoute("/admin/video-providers")({
+  beforeLoad: adminBeforeLoad,
+  head: () => ({ meta: [{ title: "مزودو الفيديو — رِفد" }] }),
+  component: () => (
+    <AdminGuard loadingLabel="جاري تحميل مركز مزودي الفيديو…">
+      <AdminVideoProvidersPage />
+    </AdminGuard>
+  ),
+});
+
+const HEALTH_LABEL: Record<string, string> = {
+  active: "نشط",
+  inactive: "متوقف",
+  testing: "تجربة",
+  manual_required: "يحتاج تدخل يدوي",
+  unhealthy: "غير صحي",
+};
+
+const HEALTH_TONE: Record<string, string> = {
+  active: "bg-success/15 text-success",
+  inactive: "bg-muted text-muted-foreground",
+  testing: "bg-primary/15 text-primary",
+  manual_required: "bg-gold/15 text-gold",
+  unhealthy: "bg-destructive/15 text-destructive",
+};
+
+function fmtDate(value: string | null) {
+  return value ? new Date(value).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "—";
+}
+
+function AdminVideoProvidersPage() {
+  const fetchProviders = useServerFn(listVideoProviderConfigs);
+  const updateProvider = useServerFn(updateVideoProviderConfig);
+  const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+
+  async function authHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("لا توجد جلسة");
+    return { Authorization: `Bearer ${session.access_token}` };
+  }
+
+  async function load() {
+    setLoading(true);
+    try {
+      const headers = await authHeaders();
+      const result = await fetchProviders({ headers });
+      setProviders(result.providers);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تحميل مزودي الفيديو");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function save(providerKey: string, patch: { enabled?: boolean; publicEnabled?: boolean; priority?: number }) {
+    setSavingKey(providerKey);
+    try {
+      const headers = await authHeaders();
+      const result = await updateProvider({ data: { providerKey, ...patch }, headers });
+      setProviders((current) => current.map((provider) => provider.provider_key === providerKey ? result.provider : provider).sort((a, b) => a.priority - b.priority));
+      toast.success("تم حفظ إعدادات المزود");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل حفظ إعدادات المزود");
+    } finally {
+      setSavingKey(null);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  return (
+    <DashboardShell>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-extrabold">
+            <Clapperboard className="h-6 w-6 text-primary" /> مركز مزودي الفيديو
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">تحكم داخلي بالمزودين، الأولوية، الصحة، والتفعيل دون كشف أي اسم تقني للمستخدم.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} /> تحديث
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/admin/video-jobs"><Activity className="h-4 w-4" /> مهام الفيديو</Link>
+          </Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-2">
+          {providers.map((provider) => {
+            const saving = savingKey === provider.provider_key;
+            return (
+              <article key={provider.provider_key} className="rounded-xl border border-border bg-card p-4 shadow-soft">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="font-extrabold">{provider.display_name_admin}</h2>
+                      <Badge className={cn(HEALTH_TONE[provider.health_status] ?? "bg-muted")}>{HEALTH_LABEL[provider.health_status] ?? provider.health_status}</Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{provider.provider_key} · {provider.mode === "manual" ? "جسر يدوي" : provider.mode === "bridge" ? "جسر شبه آلي" : "API"}</p>
+                  </div>
+                  {saving && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <ControlRow label="تفعيل المزود" hint="يدخل ضمن الراوتر الداخلي">
+                    <Switch checked={provider.enabled} disabled={saving} onCheckedChange={(checked) => void save(provider.provider_key, { enabled: checked })} />
+                  </ControlRow>
+                  <ControlRow label="متاح للطلبات" hint="إيقافه يمنع استخدامه للمستخدمين">
+                    <Switch checked={provider.public_enabled} disabled={saving || !provider.enabled} onCheckedChange={(checked) => void save(provider.provider_key, { publicEnabled: checked })} />
+                  </ControlRow>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-[140px_1fr]">
+                  <div>
+                    <label className="text-xs font-bold text-muted-foreground">الأولوية</label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        min={1}
+                        max={1000}
+                        value={provider.priority}
+                        disabled={saving}
+                        onChange={(event) => setProviders((current) => current.map((item) => item.provider_key === provider.provider_key ? { ...item, priority: Number(event.target.value) } : item))}
+                        onBlur={(event) => void save(provider.provider_key, { priority: Number(event.target.value) })}
+                        className="h-9"
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs leading-6 text-muted-foreground">
+                    <div className="flex flex-wrap gap-2">
+                      {provider.supported_qualities.map((quality) => (
+                        <Badge key={quality} variant="secondary">{quality === "quality" || quality === "fast" ? VIDEO_QUALITY_LABELS[quality] : "متوازن"}</Badge>
+                      ))}
+                    </div>
+                    <p className="mt-2">5ث: <strong>{provider.cost_5s.toLocaleString("ar-SA")}</strong> نقطة · 8ث: <strong>{provider.cost_8s.toLocaleString("ar-SA")}</strong> نقطة</p>
+                    <p>آخر نجاح: {fmtDate(provider.last_success_at)} · آخر خطأ: {fmtDate(provider.last_error_at)}</p>
+                    {provider.last_error_message && <p className="mt-1 flex items-start gap-1 text-destructive"><AlertTriangle className="mt-1 h-3.5 w-3.5" /> {provider.last_error_message}</p>}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </DashboardShell>
+  );
+}
+
+function ControlRow({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary/30 p-3">
+      <div>
+        <p className="text-sm font-bold">{label}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+}

@@ -2,15 +2,22 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { assertAdmin, type DbClient } from "@/server/admin-auth";
-import type { Database } from "@/integrations/supabase/types";
-
-type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
+import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
   limit: z.number().int().min(1).max(300).default(100),
 });
+
+const ProviderUpdateInput = z.object({
+  providerKey: z.string().min(2).max(80),
+  enabled: z.boolean().optional(),
+  publicEnabled: z.boolean().optional(),
+  priority: z.number().int().min(1).max(1000).optional(),
+});
+
+type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
 
 export type AdminVideoJob = {
   id: string;
@@ -44,6 +51,28 @@ export type AdminVideoStats = {
   estimatedCostUsd: number;
 };
 
+export type AdminVideoProviderConfig = {
+  provider_key: string;
+  display_name_admin: string;
+  enabled: boolean;
+  public_enabled: boolean;
+  supported_qualities: string[];
+  priority: number;
+  cost_5s: number;
+  cost_8s: number;
+  supports_9_16: boolean;
+  supports_1_1: boolean;
+  supports_16_9: boolean;
+  supports_starting_frame: boolean;
+  mode: "api" | "bridge" | "manual";
+  health_status: "active" | "inactive" | "testing" | "manual_required" | "unhealthy";
+  last_success_at: string | null;
+  last_error_at: string | null;
+  last_error_message: string | null;
+  metadata: Json;
+  updated_at: string;
+};
+
 export const listAdminVideoJobs = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ListAdminVideoJobsInput.parse(input ?? {}))
   .middleware([requireSupabaseAuth])
@@ -72,18 +101,12 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const counts: Record<string, number> = { processing: 0, completed: 0, refunded: 0, failed: 0 };
     await Promise.all(
       statusList.map(async (status) => {
-        const { count } = await supabaseAdmin
-          .from("video_jobs")
-          .select("id", { count: "exact", head: true })
-          .eq("status", status);
+        const { count } = await supabaseAdmin.from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
         counts[status] = count ?? 0;
       })
     );
 
-    const { count: totalCount } = await supabaseAdmin
-      .from("video_jobs")
-      .select("id", { count: "exact", head: true });
-
+    const { count: totalCount } = await supabaseAdmin.from("video_jobs").select("id", { count: "exact", head: true });
     const statsRows = rows ?? [];
     const stats: AdminVideoStats = {
       total: totalCount ?? statsRows.length,
@@ -108,4 +131,54 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
         };
       }),
     };
+  });
+
+export const listVideoProviderConfigs = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ providers: AdminVideoProviderConfig[] }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data, error } = await (supabaseAdmin as unknown as {
+      from: (table: string) => { select: (columns: string) => { order: (column: string, opts: { ascending: boolean }) => Promise<{ data: unknown; error: { message: string } | null }> } };
+    })
+      .from("video_provider_configs")
+      .select("provider_key, display_name_admin, enabled, public_enabled, supported_qualities, priority, cost_5s, cost_8s, supports_9_16, supports_1_1, supports_16_9, supports_starting_frame, mode, health_status, last_success_at, last_error_at, last_error_message, metadata, updated_at")
+      .order("priority", { ascending: true });
+
+    if (error) throw new Error(`فشل جلب إعدادات مزودي الفيديو: ${error.message}`);
+    return { providers: (data as AdminVideoProviderConfig[] | null) ?? [] };
+  });
+
+export const updateVideoProviderConfig = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => ProviderUpdateInput.parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<{ provider: AdminVideoProviderConfig }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const patch: Record<string, unknown> = {};
+    if (typeof data.enabled === "boolean") patch.enabled = data.enabled;
+    if (typeof data.publicEnabled === "boolean") patch.public_enabled = data.publicEnabled;
+    if (typeof data.priority === "number") patch.priority = data.priority;
+    if (Object.keys(patch).length === 0) throw new Error("لا توجد تغييرات للحفظ");
+
+    const { data: updated, error } = await (supabaseAdmin as unknown as {
+      from: (table: string) => { update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => { select: (columns: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } } };
+    })
+      .from("video_provider_configs")
+      .update(patch)
+      .eq("provider_key", data.providerKey)
+      .select("provider_key, display_name_admin, enabled, public_enabled, supported_qualities, priority, cost_5s, cost_8s, supports_9_16, supports_1_1, supports_16_9, supports_starting_frame, mode, health_status, last_success_at, last_error_at, last_error_message, metadata, updated_at")
+      .single();
+
+    if (error || !updated) throw new Error(`فشل حفظ إعدادات المزود: ${error?.message ?? "استجابة فارغة"}`);
+    await logAdminAudit({
+      adminId: userId,
+      action: "update_video_provider_config",
+      targetTable: "video_provider_configs",
+      targetId: data.providerKey,
+      after: patch as Json,
+    });
+    return { provider: updated as AdminVideoProviderConfig };
   });
