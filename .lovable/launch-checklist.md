@@ -1,144 +1,97 @@
-# Launch Checklist — رِفد للتقنية
+# Launch Checklist V9 — رِفد للتقنية
 
-آخر تحديث: 25 أبريل 2026 — **الجاهزية: 97/100** ✅
+آخر تحديث: 25 أبريل 2026 — **الجاهزية الكلية: 88/100** ⏳
 
-> **قرار الإطلاق:** المنتج جاهز فنياً للإطلاق التسويقي، لكن اعتماد QA اليدوي النهائي لا يُغلق إلا بعد تنفيذ مصفوفة الـ42 تمريرة وتعبئة سجل الاعتماد في `.lovable/qa-signoff.md`.
+> **قرار الإطلاق:** الخطة V9 معتمدة للبناء والتنفيذ، لكن الإطلاق العام غير معتمد حتى اكتمال تحصين توليد الفيديو، استوديو الحملات، نظام النقاط، لوحة الإدارة، وتوثيق 84 تمريرة QA في `.lovable/qa-signoff.md`.
 
 ---
 
-## 🟢 خلاصة الجاهزية
+## خلاصة الجاهزية
 
 | المحور | النسبة | الحالة |
-|---|---|---|
-| **الأمان** (P1) | 100% | RLS + Headers + Triggers + Linter نظيف |
-| **نموذج /contact** (P2) | 100% | end-to-end يعمل (DB + بريد + Telegram + Inbox) |
-| **QA Runbook + Sign-off** (P3) | 100% (وثائق) / 0% اعتماد يدوي | سجل الاعتماد `.lovable/qa-signoff.md` جاهز للتعبئة — التنفيذ اليدوي ما زال مفتوحاً |
-| **PostHog Analytics** (P4) | 100% | 5 أحداث + identify + pageviews + CSP |
-| **الإطلاق** (P5) | 100% | DNS + بريد `send.rifd.site` verified + runbook كامل |
+|---|---:|---|
+| المنتج الأساسي قبل الفيديو والحملات | 97% | مستقر فنياً، QA اليدوي الأساسي كان مفتوحاً |
+| خطة V9 الرسمية | 100% | محفوظة في `.lovable/saas-launch-roadmap-v9.md` |
+| توليد الفيديو | 72% | يحتاج تحصين حالات الفشل، polling، refund، والمكتبة |
+| استوديو الحملات | 68% | يحتاج Campaign Packs محفوظة ومترابطة |
+| نظام النقاط للمميزات المكلفة | 75% | يحتاج حدود يومية وتزامن وتدقيق ledger |
+| إدارة المميزات الجديدة | 60% | تحتاج صفحات Admin للفيديو والحملات والتكلفة |
+| QA اليدوي V9 | 0% | 0/84 تمريرة موثقة |
+| الجاهزية الكلية | 88% | معتمد للبناء، غير معتمد للإعلان العام |
 
 ---
 
-## ✅ موجة الإطلاق V8 (P1→P5)
-
-- [x] **P1 — الأمان:** AdminGuard مركزي + RLS مُراجعة + Security Headers + CSP + triggers الحماية
-- [x] **P2 — نموذج /contact:** schema + server route + UI + email template + Telegram + honeypot + rate-limit
-- [x] **P3 — Admin Inbox:** جدول رسائل التواصل + sidebar badge + تحديث الحالة
-- [x] **P3 — QA Runbook:** `.lovable/qa-runbook.md` بـ7 سيناريوهات × 3 مقاسات × 2 متصفح، مع بقاء التنفيذ اليدوي الكامل مفتوحاً
-- [x] **P4 — PostHog Analytics:** posthog-js + 5 events + AnalyticsBridge SSR-safe + CSP محدَّث
-- [x] **P5 — الإطلاق:** publish + DNS verified + linter clean + `launch-day-runbook.md` + بريد `send.rifd.site` ✅
-
----
-
-## ✅ بوابة قبول P5 (تعريف "جاهز فنياً للإطلاق")
+## بوابة قبول V9
 
 ```text
-أمان:    [x] 0 critical/high في security scan
-         [x] 0 errors في Lovable Cloud linter
-         [x] كل سياسات الوصول مُراجعة يدوياً
-         [x] Security Headers + CSP فعّالة (src/start.ts)
+توثيق:   [x] اعتماد خطة V9
+         [x] حفظ الخطة كوثيقة تنفيذ مركزية
+         [ ] تحديث كل التقارير بعد كل مرحلة
 
-وظيفة:   [x] بريد التفعيل < 60 ثانية (مؤكَّد عبر S5)
-         [x] Telegram يعمل
-         [x] التوليد يخصم من usage_logs (trigger مفعَّل)
-         [x] /contact يعمل end-to-end
-         [x] نطاق البريد send.rifd.site verified
+فيديو:   [ ] توحيد المدد والجودة بين UI والخادم والبيانات
+         [ ] polling واضح لحالات processing
+         [ ] refund تلقائي وموثق عند الفشل
+         [ ] ظهور الفيديو الناتج في المكتبة
 
-تجربة:   [ ] 0 console errors على 5 صفحات (يدوي post-launch)
-         [ ] Lighthouse ≥ 80 موبايل (يدوي post-launch)
-         [ ] iOS Safari + Android Chrome (يدوي post-launch)
+نقاط:    [ ] الأسعار من الخادم فقط
+         [ ] منع الخصم المكرر
+         [ ] حدود يومية وحد مهام متزامنة
+         [ ] ledger واضح للاستهلاك والاسترداد
 
-تشغيل:   [x] DLQ فارغ
-         [x] cron jobs تعمل (6 jobs active)
-         [x] خطة استجابة موثقة (launch-day-runbook.md)
-         [x] تحليلات تعمل (PostHog + 5 events)
+حملات:   [ ] Campaign Pack محفوظ
+         [ ] ربط الحملة بالنص والصورة والفيديو
+         [ ] حالات draft/generated/archived
+         [ ] تجربة Mobile/Tablet/Desktop مستقرة
+
+إدارة:   [ ] Admin Video Jobs
+         [ ] Admin Campaigns
+         [ ] Admin Cost Overview
+         [ ] Audit log للإجراءات المهمة
+
+أمان:    [ ] مراجعة سياسات الوصول للجداول الجديدة
+         [ ] لا تسريب بيانات بين المستخدمين
+         [ ] لا صلاحيات Admin من الواجهة فقط
+
+QA:      [ ] 84 تمريرة موثقة
+         [ ] Lighthouse للصفحات الأساسية والجديدة
+         [ ] 0 console errors حرجة
 ```
 
-> لا تُستخدم هذه القائمة لإعلان إغلاق QA اليدوي الكامل؛ مرجع الإغلاق النهائي هو تعبئة `.lovable/qa-signoff.md` بناءً على سيناريوهات `.lovable/qa-runbook.md`.
+---
+
+## مراحل التنفيذ الرسمية
+
+| المرحلة | الوصف | الحالة |
+|---:|---|---|
+| 0 | توحيد مصدر الحقيقة والتوثيق | جارٍ |
+| 1 | تحصين توليد الفيديو | لم يبدأ |
+| 2 | ضبط نظام النقاط والتكلفة والاسترداد | لم يبدأ |
+| 3 | تحويل استوديو الحملات إلى Campaign Packs | لم يبدأ |
+| 4 | بناء لوحة إدارة قوية للمميزات الجديدة | لم يبدأ |
+| 5 | مراجعة الأمان والصلاحيات | لم يبدأ |
+| 6 | QA موسع على المنتج الكامل | لم يبدأ |
+| 7 | الأداء، SEO، والمراقبة التشغيلية | لم يبدأ |
+| 8 | Soft Launch محدود | لم يبدأ |
+| 9 | Beta Launch مضبوط | لم يبدأ |
+| 10 | General Availability | غير معتمد |
 
 ---
 
-## ✅ الموجة 5 — رد على تقرير ChatGPT (57/100)
-- [x] توحيد عدد القوالب: حذف "40 قالب" الثابت → "مكتبة قوالب" + `PROMPTS.length` ديناميكي + "45+" في meta.
-- [x] حذف "78%" من بطاقة احترافي + "اختيار الوكالات +50 منتج" من بطاقة الأعمال.
-- [x] حذف "أرخص بـ70%" من index و about → "أنسب وأذكى" + "سعر بالريال السعودي".
-- [x] حذف "وفّر 800 ر.س" من Hero → "وفّر ساعات".
-- [x] حذف "آلاف الأمثلة المحلية" من about.
-- [x] إعادة صياغة "أول 1000 عضو" → "برنامج المؤسسين محدود".
-- [x] "تأكيد فوري" → "تأكيد فوري للطلب + تفعيل خلال 24 ساعة".
-- [x] "ضمان بدون أسئلة بدون شروط" → "وفق سياسة الاسترجاع".
-- [x] "API + Meta/Google Ads" في باقة الأعمال → موسومة "(قريباً)".
-- [x] "سجل تجاري سعودي / جهة موثوقة" في trust-badges → "متوافق مع PDPL".
-- [x] فوتر "السجل التجاري قيد الإصدار" → "مسجَّلة في المملكة العربية السعودية".
-- [x] "رد مباشر من المؤسس خلال دقائق" → "رد سريع خلال ساعات العمل".
+## ما تم إنجازه سابقاً في V8
 
-## ✅ الموجة 1 — الإصلاحات الحرجة
-- [x] توسعة `legal/privacy` لتغطي PDPL.
-- [x] توسعة `legal/terms` (التعريف، التسجيل، الفوترة، الملكية الفكرية، الاستخدام المقبول، التعليق، إخلاء المسؤولية، حلّ النزاعات في الرياض).
-- [x] توسعة `legal/refund` بتفاصيل الاستثناءات.
-- [x] PDPL badge في الفوتر.
-- [x] `SubscribersCounter`: skeleton ثابت + fallback عند فشل RPC.
-
-## ✅ الموجة 2 — توحيد الهوية
-- [x] og:image + canonical + twitter:image على الصفحات التسويقية الأساسية؛ لا توجد صورة مشاركة أو canonical عام مفروض من الجذر.
-- [x] `sitemap.xml` و `robots.txt` على `rifd.site`.
-- [x] إخفاء Lovable badge.
-- [x] استبدال جميع ادعاءات "24/7" بصياغات صادقة.
-
-## ✅ الموجة 3 — قنوات الدعم
-- [x] صفحة `/contact` (واتساب + بريد + ساعات عمل + قنوات متخصصة).
-- [x] `site-footer`: واتساب + /contact.
-- [x] `about.tsx`: 3 قنوات تواصل.
-
-## ✅ الموجة 4 — التحقق
-- [x] عدد القوالب الفعلي = 49 (يتجاوز 40 المُعلَن).
-- [x] `tsc --noEmit` يمر بدون أخطاء.
+- [x] P1 — الأمان الأساسي: AdminGuard مركزي + RLS مُراجعة + Security Headers + CSP + triggers حماية.
+- [x] P2 — نموذج `/contact`: DB + بريد + Telegram + Admin Inbox + honeypot + rate-limit.
+- [x] P3 — QA Runbook أساسي: 7 سيناريوهات × 3 مقاسات × 2 متصفح.
+- [x] P4 — PostHog Analytics: أحداث رئيسية + pageviews + CSP.
+- [x] P5 — الإطلاق التقني الأساسي: DNS + بريد `send.rifd.site` verified + runbook.
 
 ---
 
-## 📋 SOP لما بعد الإطلاق
-راجع `.lovable/launch-day-runbook.md` للتفاصيل الكاملة. الملخص:
-- **يومياً 9ص:** Telegram + `/admin/email-monitor` + `/admin/subscriptions?status=pending` + `/admin/contact-submissions?status=new`
-- **يومياً 9م:** PostHog Dashboard + funnel signup→onboarding + `/admin/audit`
-- **أسبوعياً:** Lovable Cloud linter + KPI weekly + شحن Lovable AI credits
+## الخطوات النهائية قبل الإعلان التسويقي
 
----
-
-## 🛡️ تقرير الفحص الأمني النهائي (24 أبريل 2026)
-
-**Security Scan:** 6 نتائج مفحوصة يدوياً:
-
-| # | المستوى | البند | الحالة |
-|---|---|---|---|
-| 1 | error (false positive) | PRIVILEGE_ESCALATION_RISK في `user_roles` | ✅ آمن — RESTRICTIVE policy `Block non-admin role mutations` تحجب أي insert من غير admin (مفحوصة في `pg_policy`) |
-| 2 | warn | `email_unsubscribe_tokens` بدون SELECT للأدمن | ✅ مقبول — التوكنات entropy عالية (gen_random_uuid) ولا يوجد سيناريو enumeration |
-| 3 | warn | `suppressed_emails` بدون admin SELECT | ✅ **مُصلَح** — أُضيفت سياسة `Admins can view suppressed emails` |
-| 4 | warn | CSP `unsafe-eval` | ✅ مقبول — لازم لـVite hydration و PostHog session recording |
-| 5 | warn | CSP `unsafe-inline` للسكربتات | ✅ مقبول — لازم لـTanStack SSR hydration (لا nonce-based دعم بعد) |
-| 6 | warn | OAuth state غير ظاهر | ✅ مُدار داخلياً — `lovable.auth.signInWithOAuth` يولّد state تلقائياً |
-
-**الخلاصة:** 0 critical فعلي، 1 إصلاح مُطبَّق، 5 تحذيرات مقبولة موثَّقة.
-
----
-
-## 🚀 ما تأجَّل عمداً (post-launch)
-
-| المؤجَّل | الشرط لتفعيله |
-|---|---|
-| Memory 2.0 + Video Generator | ≥ 10 مشتركين مدفوعين |
-| Plausible كنسخة احتياطية | ≥ 50 مستخدم نشط |
-| OCR auto-activation للإيصالات | ≥ 100 طلب اشتراك شهرياً |
-| Playwright E2E | بعد أول 1000 مستخدم |
-| Lighthouse CI في GitHub Actions | بعد أول إطلاق ناجح |
-| مراجعة محامٍ سعودي للوثائق | عند تجاوز 100 مشترك مدفوع |
-| مراقبة 72 ساعة المكثفة | تم تجاوزها بقرار المالك؛ تُستبدل بمتابعة تشغيلية عند البلاغات والمؤشرات غير الطبيعية |
-
----
-
-## 🎯 الخطوات النهائية قبل الإعلان التسويقي
-
-1. **يدوي**: تنفيذ مصفوفة `qa-runbook.md` كاملة وتعبئة `qa-signoff.md`: 7 سيناريوهات × Mobile/Tablet/Desktop × Chrome/Safari = 42 تمريرة موثقة.
-2. **يدوي**: تشغيل Lighthouse على 5 صفحات والتأكد من ≥ 80 Performance و≥ 90 Accessibility وBest Practices.
-3. **يدوي**: تأكيد iOS Safari وAndroid Chrome لا يكسران المسارات الحرجة، خصوصاً `/auth` و`/onboarding` و`/dashboard/billing`.
-4. **جاهز**: خطة إعلان القنوات الأولى موثقة في `launch-day-runbook.md` بعد إغلاق البنود اليدوية أعلاه.
-5. **بعد القبول**: نشر إعلان X + LinkedIn + WhatsApp Business
-6. **متجاوز بقرار المالك**: مراقبة 72 ساعة متواصلة — البديل متابعة تشغيلية مباشرة حسب البلاغات والمؤشرات
+1. إنهاء مراحل V9 من 0 إلى 7.
+2. تنفيذ QA: 14 سيناريو × 3 مقاسات × 2 متصفح = 84 تمريرة.
+3. تنفيذ Soft Launch محدود ومراقبة التكلفة والفشل.
+4. تنفيذ Beta Launch مضبوط.
+5. تحديث `.lovable/final-release-report.md` و`.lovable/qa-signoff.md`.
+6. عند تحقق كل البنود فقط: رفع الجاهزية الرسمية إلى 100% واعتماد الإعلان العام.
