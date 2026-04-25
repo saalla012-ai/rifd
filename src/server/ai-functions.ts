@@ -25,6 +25,7 @@ import {
 } from "./credits";
 
 type DbClient = SupabaseClient<Database>;
+type CampaignMeta = { campaignPackId?: string };
 
 function currentMonth(): string {
   return currentRiyadhMonth();
@@ -37,6 +38,24 @@ async function loadProfile(db: DbClient, userId: string) {
     .eq("id", userId)
     .maybeSingle();
   return profile;
+}
+
+async function assertCampaignPackOwner(db: DbClient, userId: string, campaignPackId?: string) {
+  if (!campaignPackId) return null;
+  const { data, error } = await db
+    .from("campaign_packs")
+    .select("id, product, goal, channel")
+    .eq("id", campaignPackId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error || !data) throw new Error("حزمة الحملة غير موجودة أو لا تملك صلاحية استخدامها");
+  return data;
+}
+
+function campaignMetadata(pack: Awaited<ReturnType<typeof assertCampaignPackOwner>>): CampaignMeta & Record<string, unknown> {
+  return pack
+    ? { campaign_pack_id: pack.id, campaign_product: pack.product, campaign_goal: pack.goal, campaign_channel: pack.channel }
+    : {};
 }
 
 async function bumpUsage(
@@ -78,9 +97,10 @@ function creditError(e: unknown): Error {
 export const generateText = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { prompt: string; templateTitle: string; templateId: string }) => {
+    (input: { prompt: string; templateTitle: string; templateId: string; campaignPackId?: string }) => {
       if (!input.prompt?.trim()) throw new Error("الموضوع مطلوب");
       if (input.prompt.length > 2000) throw new Error("الموضوع طويل جداً");
+      if (input.campaignPackId && !/^[0-9a-f-]{36}$/i.test(input.campaignPackId)) throw new Error("معرّف الحملة غير صحيح");
       return input;
     }
   )
@@ -96,6 +116,7 @@ export const generateText = createServerFn({ method: "POST" })
     }
 
     const profile = await loadProfile(supabase, userId);
+    const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
     const ctx: StoreContext = profile ?? {};
     const system = buildTextSystemPrompt(ctx, data.templateTitle);
 
@@ -136,7 +157,7 @@ export const generateText = createServerFn({ method: "POST" })
       _completion_tokens: aiUsage.completion_tokens ?? undefined,
       _total_tokens: aiUsage.total_tokens ?? undefined,
       _estimated_cost_usd: cost,
-      _metadata: { template_title: data.templateTitle },
+      _metadata: { template_title: data.templateTitle, source: campaignPack ? "campaign_studio" : "generate_text", ...campaignMetadata(campaignPack) },
     });
     if (insErr) throw new Error(`فشل حفظ التوليدة: ${insErr.message}`);
 
