@@ -24,6 +24,7 @@ import {
   Coins,
   Database,
   Video,
+  FolderKanban,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -50,6 +51,7 @@ const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
   { to: "/admin/subscriptions", label: "إدارة الاشتراكات", icon: ShieldCheck },
   { to: "/admin/video-jobs", label: "إدارة الفيديو", icon: Video },
+  { to: "/admin/campaign-packs", label: "إدارة الحملات", icon: FolderKanban },
   { to: "/admin/credits", label: "شحن نقاط الفيديو", icon: Coins },
   { to: "/admin/credit-ledger", label: "دفتر نقاط الفيديو", icon: BarChart3 },
   { to: "/admin/reconcile", label: "مزامنة الاستخدام", icon: Database },

@@ -110,6 +110,57 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_packs: {
+        Row: {
+          audience: string
+          brief: string
+          channel: string
+          created_at: string
+          goal: string
+          id: string
+          image_prompt: string
+          offer: string
+          product: string
+          status: string
+          text_prompt: string
+          updated_at: string
+          user_id: string
+          video_prompt: string
+        }
+        Insert: {
+          audience?: string
+          brief?: string
+          channel?: string
+          created_at?: string
+          goal?: string
+          id?: string
+          image_prompt?: string
+          offer?: string
+          product?: string
+          status?: string
+          text_prompt?: string
+          updated_at?: string
+          user_id: string
+          video_prompt?: string
+        }
+        Update: {
+          audience?: string
+          brief?: string
+          channel?: string
+          created_at?: string
+          goal?: string
+          id?: string
+          image_prompt?: string
+          offer?: string
+          product?: string
+          status?: string
+          text_prompt?: string
+          updated_at?: string
+          user_id?: string
+          video_prompt?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
