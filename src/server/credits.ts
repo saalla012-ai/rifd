@@ -202,6 +202,20 @@ export async function releaseVideoDailyQuota(db: DbClient, userId?: string): Pro
   if (error) console.error(`release_video_daily_quota failed: ${error.message}`);
 }
 
+export async function releaseImageDailyQuota(db: DbClient, userId?: string): Promise<void> {
+  const { error } = await (db as unknown as { rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ error: { message: string } | null }> }).rpc("release_image_daily_quota", { _user_id: userId });
+  if (error) console.error(`release_image_daily_quota failed: ${error.message}`);
+}
+
+export async function operationalSwitchEnabled(db: DbClient, key: "video_enabled" | "video_quality_enabled" | "image_pro_enabled" | "ocr_receipt_enabled"): Promise<boolean> {
+  const { data, error } = await (db as unknown as { rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> }).rpc("operational_switch_enabled", { _key: key });
+  if (error) {
+    console.error(`operational_switch_enabled(${key}) failed: ${error.message}`);
+    return true;
+  }
+  return data !== false;
+}
+
 // ============================================================
 // Server Function: ملخص النقاط للواجهة (شريط الرصيد)
 // ============================================================

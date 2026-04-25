@@ -200,9 +200,10 @@ function ConfirmRequestPage() {
       await markSubscriptionReceiptUploaded({ data: { requestId: request.id, path } });
 
       // Fire-and-forget OCR check (admin-side note only, never blocks user)
+      const { data: { session } } = await supabase.auth.getSession();
       void fetch("/api/public/hooks/ocr-receipt", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
         body: JSON.stringify({ request_id: request.id }),
       }).catch(() => {});
 

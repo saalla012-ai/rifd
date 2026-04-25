@@ -7,14 +7,8 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 import { extractReceiptInsights, buildOcrAdminNote } from "@/server/receipt-ocr";
-
-const PLAN_PRICES: Record<string, Record<string, number>> = {
-  starter: { monthly: 149, yearly: 1490 },
-  growth: { monthly: 249, yearly: 2490 },
-  pro: { monthly: 399, yearly: 3990 },
-  business: { monthly: 999, yearly: 9990 },
-};
 
 const RECEIPT_BUCKET = "payment-receipts";
 const SIGNED_URL_TTL_SECONDS = 300; // 5 دقائق فقط — كافٍ لاستدعاء AI
@@ -50,6 +44,14 @@ export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
             auth: { autoRefreshToken: false, persistSession: false },
           });
 
+          const { data: switchEnabled } = await admin.rpc("operational_switch_enabled", { _key: "ocr_receipt_enabled" });
+          if (switchEnabled === false) {
+            return new Response(JSON.stringify({ ok: false, reason: "ocr_disabled" }), {
+              status: 202,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
           const authHeader = request.headers.get("authorization") ?? "";
           const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
           if (!token) {
@@ -72,7 +74,7 @@ export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
           const { data: req, error: reqErr } = await admin
             .from("subscription_requests")
             .select(
-              "id, user_id, plan, billing_cycle, receipt_path, admin_notes, status"
+              "id, user_id, plan, billing_cycle, receipt_path, admin_notes, status, ocr_processed_at, ocr_receipt_path"
             )
             .eq("id", requestId)
             .eq("user_id", callerId)
@@ -89,7 +91,7 @@ export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
           }
 
           // 2. لا تكرّر OCR إن كانت النتيجة موجودة
-          if (req.admin_notes && req.admin_notes.includes("[OCR ")) {
+          if (req.ocr_processed_at && req.ocr_receipt_path === req.receipt_path) {
             return new Response(
               JSON.stringify({ ok: true, reason: "already_processed" }),
               {
@@ -133,7 +135,9 @@ export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
 
           // 6. احسب السعر المتوقّع
           const expected =
-            PLAN_PRICES[req.plan]?.[req.billing_cycle] ?? 0;
+            req.billing_cycle === "yearly"
+              ? PLAN_BY_ID[req.plan as PlanId]?.yearlyPriceSar ?? 0
+              : PLAN_BY_ID[req.plan as PlanId]?.monthlyPriceSar ?? 0;
 
           // 7. اكتب الملاحظة (Append إن وُجدت ملاحظة سابقة)
           const newNote = buildOcrAdminNote(insights, expected);
@@ -143,7 +147,7 @@ export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
 
           await admin
             .from("subscription_requests")
-            .update({ admin_notes: finalNotes })
+            .update({ admin_notes: finalNotes, ocr_processed_at: new Date().toISOString(), ocr_receipt_path: req.receipt_path, ocr_status: insights.ok ? "processed" : "review_needed", ocr_error: insights.ok ? null : insights.error ?? "ocr_uncertain" })
             .eq("id", requestId);
 
           return new Response(

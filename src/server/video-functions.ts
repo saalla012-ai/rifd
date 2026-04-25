@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { consume, consumeVideoDailyQuota, getRefundLedgerId, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, type VideoDuration, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
+import { consume, consumeVideoDailyQuota, getRefundLedgerId, operationalSwitchEnabled, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, type VideoDuration, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
 
 const VIDEO_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "google/veo-3-fast",
@@ -63,7 +63,7 @@ function videoCreditError(e: unknown): Error {
 function publicVideoError(e: unknown): Error {
   const msg = e instanceof Error ? e.message : String(e);
   if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
-  if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: جودة Quality متاحة في باقات Growth وما فوق.");
+  if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية متاحة في باقات Growth وما فوق.");
   if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (e instanceof VideoDailyQuotaExceededError || /video_daily_quota_exceeded/i.test(msg)) return new Error("VIDEO_DAILY_LIMIT: وصلت إلى حد توليد الفيديو اليومي في باقتك. جرّب غداً أو رقّ الباقة.");
@@ -215,6 +215,8 @@ export const generateVideo = createServerFn({ method: "POST" })
     let dailyQuotaConsumed = false;
 
     try {
+      if (!(await operationalSwitchEnabled(supabase, "video_enabled"))) throw new Error("video_fast_not_allowed");
+      if (data.quality === "quality" && !(await operationalSwitchEnabled(supabase, "video_quality_enabled"))) throw new Error("video_quality_not_allowed");
       const processingCount = await countProcessingJobs(userId);
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);

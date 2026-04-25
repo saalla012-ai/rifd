@@ -532,6 +532,30 @@ export type Database = {
         }
         Relationships: []
       }
+      operational_switches: {
+        Row: {
+          enabled: boolean
+          key: string
+          reason: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          key: string
+          reason?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          reason?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       payment_settings: {
         Row: {
           bank_account_holder: string | null
@@ -758,6 +782,10 @@ export type Database = {
           email: string
           id: string
           notes: string | null
+          ocr_error: string | null
+          ocr_processed_at: string | null
+          ocr_receipt_path: string | null
+          ocr_status: string | null
           payment_method: string | null
           plan: Database["public"]["Enums"]["user_plan"]
           receipt_path: string | null
@@ -777,6 +805,10 @@ export type Database = {
           email: string
           id?: string
           notes?: string | null
+          ocr_error?: string | null
+          ocr_processed_at?: string | null
+          ocr_receipt_path?: string | null
+          ocr_status?: string | null
           payment_method?: string | null
           plan: Database["public"]["Enums"]["user_plan"]
           receipt_path?: string | null
@@ -796,6 +828,10 @@ export type Database = {
           email?: string
           id?: string
           notes?: string | null
+          ocr_error?: string | null
+          ocr_processed_at?: string | null
+          ocr_receipt_path?: string | null
+          ocr_status?: string | null
           payment_method?: string | null
           plan?: Database["public"]["Enums"]["user_plan"]
           receipt_path?: string | null
@@ -1267,6 +1303,7 @@ export type Database = {
         }
         Returns: number
       }
+      operational_switch_enabled: { Args: { _key: string }; Returns: boolean }
       plan_entitlement_for_user: {
         Args: { _user_id?: string }
         Returns: {
@@ -1351,6 +1388,10 @@ export type Database = {
       refund_credits: {
         Args: { _ledger_id: string; _reason?: string }
         Returns: string
+      }
+      release_image_daily_quota: {
+        Args: { _user_id?: string }
+        Returns: undefined
       }
       release_video_daily_quota: {
         Args: { _user_id?: string }

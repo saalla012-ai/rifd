@@ -20,8 +20,8 @@ type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
 type VideoSearch = { prompt?: string; campaignPackId?: string };
 
 const QUALITY = {
-  fast: { label: "Fast", icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
-  quality: { label: "Quality", icon: Crown, note: "للإعلانات المدفوعة واللقطات النهائية" },
+  fast: { label: "سريع", icon: Zap, note: "للتجربة والمحتوى اليومي بتكلفة أقل" },
+  quality: { label: "احترافي", icon: Crown, note: "للقطات النهائية والإعلانات المدفوعة" },
 } satisfies Record<VideoQuality, { label: string; icon: typeof Zap; note: string }>;
 
 const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
@@ -108,7 +108,7 @@ function GenerateVideoPage() {
       return;
     }
     if (!selectedQualityAllowed || !selectedDurationAllowed) {
-      setQuotaDialog({ open: true, reason: !selectedQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: جودة الفيديو غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
+      setQuotaDialog({ open: true, reason: !selectedQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
       return;
     }
     if (reachedDailyVideoLimit) {
@@ -335,7 +335,7 @@ function GenerateVideoPage() {
                     )}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold">{job.quality === "quality" ? "Quality" : "Fast"}</span>
+                      <span className="font-bold">{job.quality === "quality" ? "احترافي" : "سريع"}</span>
                     <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{STATUS_LABEL[job.status] ?? job.status}</span>
                     </div>
                     <p className="mt-1 line-clamp-2 text-muted-foreground">{job.prompt}</p>
