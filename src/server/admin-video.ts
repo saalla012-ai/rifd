@@ -17,6 +17,16 @@ const ProviderUpdateInput = z.object({
   priority: z.number().int().min(1).max(1000).optional(),
 });
 
+const CompleteManualVideoJobInput = z.object({
+  jobId: z.string().uuid(),
+  resultUrl: z.string().trim().url().max(2000),
+});
+
+const RefundVideoJobInput = z.object({
+  jobId: z.string().uuid(),
+  reason: z.string().trim().min(3).max(240).default("تعذر تنفيذ مهمة الفيديو يدوياً"),
+});
+
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
 
 export type AdminVideoJob = {
@@ -37,6 +47,7 @@ export type AdminVideoJob = {
   estimated_cost_usd: number | null;
   ledger_id: string | null;
   refund_ledger_id: string | null;
+  metadata: Json | null;
   created_at: string;
   completed_at: string | null;
 };
