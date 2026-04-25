@@ -52,7 +52,7 @@ function GenerateVideoPage() {
   const generateVideoFn = useServerFn(generateVideo);
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
-  const { data: credits, refresh: refreshCredits } = useCreditsSummary();
+  const { data: credits, loading: creditsLoading, refresh: refreshCredits } = useCreditsSummary();
   const [quality, setQuality] = useState<VideoQuality>("fast");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
@@ -267,7 +267,7 @@ function GenerateVideoPage() {
             <p className={cn("mt-2 text-xs", reachedDailyVideoLimit ? "font-bold text-destructive" : "text-muted-foreground")}>حد الفيديو اليومي: {dailyVideoUsed.toLocaleString("ar-SA")} / {dailyVideoCap.toLocaleString("ar-SA")}</p>
           </div>
 
-          <Button onClick={generate} disabled={loading || !hasEnoughCredits || reachedDailyVideoLimit} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || reachedDailyVideoLimit} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
