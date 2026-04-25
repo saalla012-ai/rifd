@@ -2,10 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { assertAdmin, type DbClient } from "@/server/admin-auth";
 import type { Database } from "@/integrations/supabase/types";
 
-type DbClient = SupabaseClient<Database>;
 type Severity = "critical" | "high" | "medium" | "low";
 type SignalCategory = "credits" | "video" | "quota" | "campaigns";
 
@@ -38,9 +37,9 @@ export type AbuseMonitorStats = {
   medium: number;
   low: number;
   usersFlagged: number;
-  creditsConsumed24h: number;
-  videosCreated24h: number;
-  refunds24h: number;
+  creditsConsumed: number;
+  videosCreated: number;
+  refunds: number;
 };
 
 const inputSchema = z.object({
@@ -48,17 +47,6 @@ const inputSchema = z.object({
   severity: z.enum(["all", "critical", "high", "medium", "low"]).default("all"),
   limit: z.number().int().min(10).max(200).default(100),
 });
-
-async function assertAdmin(db: DbClient, userId: string): Promise<void> {
-  const { data, error } = await db
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error) throw new Error(`فشل التحقق من الصلاحيات: ${error.message}`);
-  if (!data) throw new Error("هذه الصفحة للأدمن فقط");
-}
 
 function severityRank(severity: Severity) {
   return { critical: 4, high: 3, medium: 2, low: 1 }[severity];
