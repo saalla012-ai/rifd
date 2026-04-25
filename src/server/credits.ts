@@ -121,7 +121,7 @@ export async function refund(
     _reason: reason,
   });
   if (error) {
-    if (/already_refunded/i.test(error.message)) return;
+    if (/already_refunded/i.test(error.message)) return null;
     // لا نرفع — فشل الـrefund لا يجب أن يحجب رسالة الخطأ الأصلية للعميل
     console.error(`refund_credits failed: ${error.message}`);
     return null;
