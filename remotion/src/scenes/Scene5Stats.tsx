@@ -5,9 +5,27 @@ import { COLORS } from "../theme";
 const { fontFamily } = loadFont("normal", { weights: ["400", "700", "900"], subsets: ["arabic"] });
 
 const STATS = [
-  { glyph: "صورة", value: "1", label: "معاينة بصرية فورية", note: "تظهر من نفس الوصف بدل انتظار مصمم أو إعادة شرح", color: COLORS.gold },
-  { glyph: "حملة", value: "4", label: "مخرجات مترابطة", note: "نسخة + هوكات + صورة + Reel ضمن نفس المنطق", color: COLORS.green },
-  { glyph: "جاهز", value: "1", label: "بداية إعلان واضحة", note: "أقرب للنشر من نصوص عامة متفرقة", color: COLORS.greenDeep },
+  {
+    glyph: "صورة",
+    value: "1",
+    label: "معاينة بصرية فورية",
+    note: "تظهر من نفس الوصف بدل انتظار مصمم أو إعادة شرح",
+    color: COLORS.gold,
+  },
+  {
+    glyph: "حملة",
+    value: "4",
+    label: "مخرجات مترابطة",
+    note: "نسخة + هوكات + صورة + Reel ضمن نفس المنطق",
+    color: COLORS.green,
+  },
+  {
+    glyph: "جاهز",
+    value: "1",
+    label: "بداية إعلان واضحة",
+    note: "أقرب للنشر من نصوص عامة متفرقة",
+    color: COLORS.greenDeep,
+  },
 ];
 
 const StatBlock: React.FC<{ index: number; delay: number }> = ({ index, delay }) => {
@@ -51,10 +69,14 @@ const StatBlock: React.FC<{ index: number; delay: number }> = ({ index, delay })
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-          <div style={{ fontSize: 116, fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+          <div style={{ fontSize: 116, fontWeight: 900, color: stat.color, lineHeight: 1 }}>
+            {stat.value}
+          </div>
           <div style={{ fontSize: 34, fontWeight: 800, color: COLORS.ink }}>{stat.label}</div>
         </div>
-        <div style={{ fontSize: 26, fontWeight: 500, color: COLORS.ink, opacity: 0.78, marginTop: 10 }}>
+        <div
+          style={{ fontSize: 26, fontWeight: 500, color: COLORS.ink, opacity: 0.78, marginTop: 10 }}
+        >
           {stat.note}
         </div>
       </div>
@@ -87,7 +109,7 @@ export const Scene5Stats: React.FC = () => {
           transform: `translateY(${interpolate(titleIn, [0, 1], [-28, 0])}px)`,
         }}
       >
-          ما الذي يظهر فوراً بعد كتابة الوصف؟
+        ما الذي يظهر فوراً بعد كتابة الوصف؟
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
