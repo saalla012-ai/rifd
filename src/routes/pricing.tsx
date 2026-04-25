@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -14,12 +14,13 @@ import {
   Zap,
 } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
-import { TrustBadges } from "@/components/trust-badges";
-import { SubscribersCounter } from "@/components/subscribers-counter";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+
+const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
+const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -209,7 +210,9 @@ function PricingPage() {
           </p>
 
           <div className="mx-auto mt-5 max-w-md">
-            <SubscribersCounter />
+            <Suspense fallback={null}>
+              <SubscribersCounter />
+            </Suspense>
           </div>
 
           {seatsLeft !== null && seatsLeft > 0 && (
@@ -342,7 +345,9 @@ function PricingPage() {
           </div>
 
           <div className="mt-10">
-            <TrustBadges items={6} />
+            <Suspense fallback={null}>
+              <TrustBadges items={6} />
+            </Suspense>
           </div>
         </div>
       </section>
