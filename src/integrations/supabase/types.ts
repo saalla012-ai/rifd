@@ -283,6 +283,27 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_video_usage: {
+        Row: {
+          day: string
+          updated_at: string
+          user_id: string
+          video_count: number
+        }
+        Insert: {
+          day: string
+          updated_at?: string
+          user_id: string
+          video_count?: number
+        }
+        Update: {
+          day?: string
+          updated_at?: string
+          user_id?: string
+          video_count?: number
+        }
+        Relationships: []
+      }
       demo_rate_limits: {
         Row: {
           count: number
@@ -1113,6 +1134,14 @@ export type Database = {
           used: number
         }[]
       }
+      consume_video_daily_quota: {
+        Args: never
+        Returns: {
+          allowed: boolean
+          daily_cap: number
+          used: number
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1245,6 +1274,10 @@ export type Database = {
         Args: { _ledger_id: string; _reason?: string }
         Returns: string
       }
+      release_video_daily_quota: {
+        Args: { _user_id?: string }
+        Returns: undefined
+      }
       reset_monthly_credits: {
         Args: {
           _plan: Database["public"]["Enums"]["user_plan"]
@@ -1264,6 +1297,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      video_daily_cap_for_plan: {
+        Args: { _plan: Database["public"]["Enums"]["user_plan"] }
+        Returns: number
       }
     }
     Enums: {
