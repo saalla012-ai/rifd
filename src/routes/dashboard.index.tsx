@@ -50,7 +50,7 @@ function DashboardPage() {
   const [recent, setRecent] = useState<RecentItem[]>([]);
 
   // نستخدم user.id (string) كـdependency بدل كائن user (يتغيّر مرجعه عند كل auth event)
-  // لتفادي تكرار الاستعلامات على usage_logs و generations عند re-renders.
+  // لتفادي تكرار استعلامات المفضلة وآخر التوليدات عند re-renders.
   const userId = user?.id;
   useEffect(() => {
     if (!userId) return;
