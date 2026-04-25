@@ -40,6 +40,15 @@ function verifySignature(rawBody: string, signature: string | null) {
   return Boolean(normalized) && safeEqual(normalized, expected);
 }
 
+function appendCallbackAttempt(metadata: Record<string, unknown>, params: { provider: string; ok: boolean; status: string; error?: string }) {
+  const attempts = Array.isArray(metadata.provider_attempts) ? metadata.provider_attempts : [];
+  return {
+    ...metadata,
+    provider_attempts: [...attempts, { ...params, finished_at: new Date().toISOString(), source: "provider_callback" }],
+    last_attempt_at: new Date().toISOString(),
+  };
+}
+
 export const Route = createFileRoute("/api/public/video-provider-callback")({
   server: {
     handlers: {
@@ -67,8 +76,14 @@ export const Route = createFileRoute("/api/public/video-provider-callback")({
         if (!job) return json(404, { error: "job_not_found" });
         if (job.status !== "processing") return json(200, { ok: true, ignored: true, status: job.status });
 
+        const metadataBase = (job.metadata as Record<string, unknown> | null) ?? {};
         const metadata = {
-          ...((job.metadata as Record<string, unknown> | null) ?? {}),
+          ...appendCallbackAttempt(metadataBase, {
+            provider: job.provider,
+            ok: parsed.data.status === "completed",
+            status: `callback_${parsed.data.status}`,
+            error: parsed.data.errorMessage,
+          }),
           callback_received_at: new Date().toISOString(),
           callback_status: parsed.data.status,
         };
