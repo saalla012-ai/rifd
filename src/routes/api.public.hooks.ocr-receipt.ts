@@ -1,11 +1,7 @@
 /**
- * OCR Receipt Hook (Public, fire-and-forget)
+ * OCR Receipt Hook (authenticated fire-and-forget)
  *
- * يُستدعى من واجهة العميل بعد رفع الإيصال — لكنه آمن لأنه:
- * 1. يعمل فقط على طلبات لها `receipt_path` (تم رفعه فعلاً)
- * 2. يستخدم service-role لتحديث `admin_notes` فقط
- * 3. لا يكشف أي PII في الاستجابة
- * 4. يحدّ من حجم الإدخال (request_id فقط)
+ * يُستدعى من واجهة العميل بعد رفع الإيصال، ويشترط JWT صالحاً وملكية الطلب.
  *
  * النتيجة تُكتب في `subscription_requests.admin_notes` لمراجعة الأدمن.
  */
@@ -54,13 +50,32 @@ export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
             auth: { autoRefreshToken: false, persistSession: false },
           });
 
-          // 1. اقرأ الطلب
+          const authHeader = request.headers.get("authorization") ?? "";
+          const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+          if (!token) {
+            return new Response(JSON.stringify({ error: "unauthorized" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          const { data: authData, error: authError } = await admin.auth.getUser(token);
+          const callerId = authData.user?.id;
+          if (authError || !callerId) {
+            return new Response(JSON.stringify({ error: "unauthorized" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          // 1. اقرأ الطلب وتأكد من ملكيته قبل تشغيل OCR
           const { data: req, error: reqErr } = await admin
             .from("subscription_requests")
             .select(
-              "id, plan, billing_cycle, receipt_path, admin_notes, status"
+              "id, user_id, plan, billing_cycle, receipt_path, admin_notes, status"
             )
             .eq("id", requestId)
+            .eq("user_id", callerId)
             .maybeSingle();
 
           if (reqErr || !req || !req.receipt_path) {
