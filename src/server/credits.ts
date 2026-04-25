@@ -11,25 +11,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { VIDEO_CREDIT_COSTS, videoCreditCost, type VideoDuration, type VideoQuality } from "@/lib/plan-catalog";
 
 type DbClient = SupabaseClient<Database>;
 
 // ============================================================
 // تكلفة النقاط (مصدر الحقيقة)
 // ============================================================
-export const CREDIT_COSTS = {
-  video_fast: 150,
-  video_fast_8s: 240,
-  video_quality: 450,
-  video_quality_8s: 900,
-} as const;
-
-export type VideoQuality = "fast" | "quality";
-export type VideoDuration = 5 | 8;
+export const CREDIT_COSTS = VIDEO_CREDIT_COSTS;
 
 export function videoCost(q: VideoQuality, duration: VideoDuration = 5): number {
-  if (q === "quality") return duration === 8 ? CREDIT_COSTS.video_quality_8s : CREDIT_COSTS.video_quality;
-  return duration === 8 ? CREDIT_COSTS.video_fast_8s : CREDIT_COSTS.video_fast;
+  return videoCreditCost(q, duration);
 }
 
 // ============================================================
@@ -145,7 +137,7 @@ export async function refund(
 }
 
 /**
- * يستهلك نقطة واحدة من حصة النص اليومية (200/يوم).
+ * يستهلك محاولة واحدة من حصة النص اليومية حسب الباقة.
  * النصوص لا تخصم نقاط — تستخدم عدّاد منفصل.
  */
 export async function consumeTextQuota(db: DbClient): Promise<{ used: number; cap: number }> {
