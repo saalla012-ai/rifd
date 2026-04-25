@@ -17,7 +17,7 @@ import { useCreditsSummary } from "@/hooks/use-credits-summary";
 type VideoQuality = "fast" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
-type VideoSearch = { prompt?: string };
+type VideoSearch = { prompt?: string; campaignPackId?: string };
 
 const QUALITY = {
   fast: { label: "Fast", costKey: "video_fast", icon: Zap, note: "للاختبار السريع والمحتوى اليومي" },
@@ -42,6 +42,7 @@ export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+    campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
   }),
   component: GenerateVideoPage,
 });
@@ -113,7 +114,7 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim() },
+        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
