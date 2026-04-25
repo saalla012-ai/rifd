@@ -63,6 +63,15 @@ export type AdminVideoStats = {
   estimatedCostUsd: number;
 };
 
+type ProviderAttempt = {
+  provider?: string;
+  ok?: boolean;
+  status?: string;
+  latency_ms?: number;
+  error?: string;
+  reason?: string;
+};
+
 export type AdminVideoProviderConfig = {
   provider_key: string;
   display_name_admin: string;
@@ -98,6 +107,16 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
 function isManualBridgeJob(row: VideoJobRow): boolean {
   const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
   return row.provider === "google_flow_bridge" || metadata.manual_required === true;
+}
+
+function appendProviderAttempt(metadata: Json | null, attempt: ProviderAttempt) {
+  const base = (metadata as Record<string, unknown> | null) ?? {};
+  const attempts = Array.isArray(base.provider_attempts) ? base.provider_attempts : [];
+  return {
+    ...base,
+    provider_attempts: [...attempts, { ...attempt, finished_at: new Date().toISOString() }],
+    last_attempt_at: new Date().toISOString(),
+  } as Json;
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
