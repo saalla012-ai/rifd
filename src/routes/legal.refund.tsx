@@ -9,7 +9,7 @@ export const Route = createFileRoute("/legal/refund")({
       {
         name: "description",
         content:
-          "ضمان استرجاع 7 أيام كامل على باقات رِفد للتقنية. شروط الاسترجاع، الاستثناءات، وكيفية تقديم الطلب.",
+          "ضمان استرجاع 14 يوماً على الاشتراك المدفوع الأول في رِفد للتقنية. شروط الاسترجاع، الاستثناءات، وكيفية تقديم الطلب.",
       },
     ],
   }),
@@ -18,14 +18,14 @@ export const Route = createFileRoute("/legal/refund")({
       <article className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
         <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center">
           <ShieldCheck className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-3 text-3xl font-extrabold">ضمان الاسترجاع 7 أيام</h1>
-          <p className="mt-2 text-muted-foreground">جرّب رِفد بدون مخاطرة</p>
+          <h1 className="mt-3 text-3xl font-extrabold">ضمان الاسترجاع 14 يوماً</h1>
+          <p className="mt-2 text-muted-foreground">تجربة أولى واضحة بشروط عادلة</p>
         </div>
 
         <div className="mt-8 space-y-6 text-[15px] leading-[1.85] text-muted-foreground">
           <p className="text-foreground">
-            إذا لم تعجبك تجربة رِفد خلال أول <strong>7 أيام</strong> من تاريخ تفعيل
-            اشتراكك المدفوع، نُعيد لك المبلغ كاملاً بدون أسئلة وبدون تعقيد.
+            إذا لم تكن تجربة رِفد مناسبة لاحتياجك خلال أول <strong>14 يوماً</strong> من تاريخ تفعيل
+            أول اشتراك مدفوع، يمكنك طلب مراجعة الاسترجاع وفق الشروط أدناه.
           </p>
 
           <section>
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/legal/refund")({
           <section>
             <h2 className="mb-3 text-xl font-bold text-foreground">شروط الاستحقاق</h2>
             <ul className="list-disc space-y-1 pr-5">
-              <li>أن يكون الطلب خلال 7 أيام من تاريخ تفعيل أول اشتراك مدفوع.</li>
+              <li>أن يكون الطلب خلال 14 يوماً من تاريخ تفعيل أول اشتراك مدفوع.</li>
               <li>أن يكون من نفس البريد المسجَّل في الحساب.</li>
               <li>أن لا يكون الحساب موقوفاً بسبب انتهاك شروط الاستخدام.</li>
             </ul>
@@ -55,8 +55,8 @@ export const Route = createFileRoute("/legal/refund")({
                   ضماناً للعدالة بين جميع المستخدمين، لا يشمل الاسترجاع الحالات التالية:
                 </p>
                 <ul className="mt-2 list-disc space-y-1 pr-5 text-sm">
-                  <li>الباقات الإضافية للصور (Add-ons) — لاستهلاكها الفوري للمصادر.</li>
-                  <li>التجديدات التلقائية بعد المدة الأولى (يمكن إلغاؤها قبل التجديد).</li>
+                  <li>باقات شحن نقاط الفيديو الإضافية بعد استخدامها أو تفعيلها.</li>
+                  <li>التجديدات أو الاشتراكات اللاحقة بعد الاشتراك الأول.</li>
                   <li>الحسابات التي تجاوزت 70% من الحصة الشهرية للاستخدام.</li>
                   <li>طلبات الاسترجاع المتكررة من نفس المستخدم خلال 12 شهراً.</li>
                 </ul>
