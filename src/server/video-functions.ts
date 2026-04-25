@@ -4,16 +4,16 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { consume, consumeVideoDailyQuota, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
+import { consume, consumeVideoDailyQuota, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, type VideoDuration, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
 
 const VIDEO_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "google/veo-3-fast",
   quality: "google/veo-3",
 };
 
-const VIDEO_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
-  fast: 0.5,
-  quality: 1.5,
+const VIDEO_ESTIMATED_COST_USD: Record<VideoQuality, Record<VideoDuration, number>> = {
+  fast: { 5: 0.5, 8: 0.8 },
+  quality: { 5: 2.0, 8: 3.2 },
 };
 
 const MAX_PROCESSING_MINUTES = 20;
@@ -143,7 +143,7 @@ export const generateVideo = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => videoInputSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    const cost = videoCost(data.quality);
+    const cost = videoCost(data.quality, data.durationSeconds);
     let ledgerId: string | null = null;
     let jobId: string | null = null;
     let dailyQuotaConsumed = false;
@@ -181,8 +181,8 @@ export const generateVideo = createServerFn({ method: "POST" })
           ledger_id: ledgerId,
           status: "processing",
           provider: "replicate",
-          estimated_cost_usd: VIDEO_ESTIMATED_COST_USD[data.quality],
-          metadata: { ...campaignMetadata(campaignPack), model: VIDEO_MODEL_BY_QUALITY[data.quality] },
+          estimated_cost_usd: VIDEO_ESTIMATED_COST_USD[data.quality][data.durationSeconds],
+          metadata: { ...campaignMetadata(campaignPack), model: VIDEO_MODEL_BY_QUALITY[data.quality], duration_aware_pricing: true },
         })
         .select("*")
         .single();

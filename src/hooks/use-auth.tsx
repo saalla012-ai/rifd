@@ -29,7 +29,7 @@ export type Profile = {
   seasonal_priorities: string[] | null;
   compliance_notes: string | null;
   whatsapp: string | null;
-  plan: "free" | "pro" | "business";
+  plan: "free" | "starter" | "growth" | "pro" | "business";
   onboarded: boolean;
 };
 
