@@ -239,7 +239,7 @@ function LibraryPage() {
   );
 }
 
-function VideoJobsSection({ jobs }: { jobs: VideoJob[] }) {
+function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob[]; refreshingJobId: string | null; onRefresh: (jobId: string) => void }) {
   return (
     <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -276,6 +276,18 @@ function VideoJobsSection({ jobs }: { jobs: VideoJob[] }) {
                   <span>{new Date(job.created_at).toLocaleDateString("ar-SA")}</span>
                   <span>{job.credits_charged.toLocaleString("ar-SA")} نقطة</span>
                 </div>
+                {job.status === "processing" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 w-full gap-2 text-xs"
+                    disabled={refreshingJobId === job.id}
+                    onClick={() => onRefresh(job.id)}
+                  >
+                    <RefreshCw className={cn("h-3 w-3", refreshingJobId === job.id && "animate-spin")} />
+                    تحديث الحالة
+                  </Button>
+                )}
               </div>
             </article>
           ))}
