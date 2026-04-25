@@ -269,7 +269,7 @@ function GenerateVideoPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
               {activeJob?.status === "processing" && (
-                <button type="button" onClick={refreshActiveJob} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
                   <RefreshCw className="h-3 w-3" /> تحديث
                 </button>
               )}
