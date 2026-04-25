@@ -166,6 +166,8 @@ function PricingPage() {
               const isPaid = price > 0;
               const isPopular = plan.tier === "popular";
               const isPremium = plan.tier === "premium" || plan.tier === "scale";
+              const badge = "badge" in plan ? plan.badge : undefined;
+              const cta = plan.id === "free" ? "ابدأ مجاناً" : `اشترك في ${plan.name}`;
               const fastVideos = estimateVideoCount(plan.monthlyCredits, "fast", 5);
               const qualityVideos = plan.videoQualityAllowed ? estimateVideoCount(plan.monthlyCredits, "quality", 5) : 0;
               return (
@@ -177,9 +179,9 @@ function PricingPage() {
                     isPremium && "border-gold/50 bg-gradient-to-br from-gold/10 via-card to-card"
                   )}
                 >
-                  {plan.badge && (
+                  {badge && (
                     <div className={cn("absolute -top-3 right-4 rounded-full px-3 py-1 text-[11px] font-extrabold", isPopular ? "gradient-primary text-primary-foreground" : "gradient-gold text-gold-foreground")}>
-                      {plan.badge}
+                      {badge}
                     </div>
                   )}
                   <div className="flex items-start justify-between gap-2">
@@ -227,7 +229,7 @@ function PricingPage() {
                     variant={plan.id === "free" ? "outline" : "default"}
                   >
                     <Link to={plan.id === "free" ? "/onboarding" : ctaTarget}>
-                      {plan.cta} <ArrowLeft className="mr-1 h-4 w-4" />
+                      {cta} <ArrowLeft className="mr-1 h-4 w-4" />
                     </Link>
                   </Button>
                 </article>
