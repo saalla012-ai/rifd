@@ -79,18 +79,24 @@ function AnalyticsBridge() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
 
-  // تهيئة + اشتراك بتغييرات الـrouter
+  // تهيئة مؤجلة: التحليلات لا يجب أن تنافس أول رسم/LCP على صفحات التسويق.
   useEffect(() => {
-    void initAnalytics().then((ph) => {
-      if (!ph) return;
-      // pageview الأول
-      trackPageview(window.location.pathname + window.location.search);
-    });
+    const start = () => {
+      void initAnalytics().then((ph) => {
+        if (!ph) return;
+        trackPageview(window.location.pathname + window.location.search);
+      });
+    };
+
+    const timeoutId = window.setTimeout(start, 3_500);
 
     const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
       trackPageview(toLocation.pathname + (toLocation.searchStr || ""));
     });
-    return () => unsubscribe();
+    return () => {
+      window.clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, [router]);
 
   // ربط/فك ربط المستخدم
