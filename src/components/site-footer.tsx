@@ -18,7 +18,7 @@ export function SiteFooter() {
 
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/5 px-3 py-1.5 text-[11px] font-bold text-success">
               <ShieldCheck className="h-3.5 w-3.5" />
-              متوافق مع نظام حماية البيانات الشخصية السعودي (PDPL)
+              خصوصية واضحة وسياسات وصول محددة
             </div>
           </div>
 
