@@ -29,7 +29,7 @@
 
 ---
 
-## ✅ بوابة قبول P5 (تعريف "تم الإطلاق")
+## ✅ بوابة قبول P5 (تعريف "جاهز فنياً للإطلاق")
 
 ```text
 أمان:    [x] 0 critical/high في security scan
@@ -52,6 +52,8 @@
          [x] خطة استجابة موثقة (launch-day-runbook.md)
          [x] تحليلات تعمل (PostHog + 5 events)
 ```
+
+> لا تُستخدم هذه القائمة لإعلان إغلاق QA اليدوي الكامل؛ مرجع الإغلاق النهائي هو تعبئة مصفوفة `.lovable/qa-runbook.md` عبر Chrome/Safari على Mobile/Tablet/Desktop.
 
 ---
 
