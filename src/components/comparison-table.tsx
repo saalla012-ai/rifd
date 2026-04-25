@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Check, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PLAN_BY_ID } from "@/lib/plan-catalog";
 
 const ROWS = [
-  { label: "السعر الشهري", chatgpt: "$20 (~75 ر.س)", gemini: "$20 (~75 ر.س)", rifd: "149 ر.س" },
+  { label: "السعر الشهري", chatgpt: "$20 (~75 ر.س)", gemini: "$20 (~75 ر.س)", rifd: `${PLAN_BY_ID.starter.monthlyPriceSar} ر.س` },
   { label: "العامية السعودية", chatgpt: false, gemini: false, rifd: true },
   { label: "ذاكرة متجر دائمة", chatgpt: false, gemini: false, rifd: true },
   { label: "مكتبة قوالب سعودية جاهزة", chatgpt: false, gemini: false, rifd: true },
