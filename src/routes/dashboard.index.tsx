@@ -9,16 +9,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { currentRiyadhMonth } from "@/lib/usage-month";
 import { getMemoryCoverage, getMemorySignals, getWeeklyRecommendation } from "@/lib/memory-insights";
+import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({ meta: [{ title: "لوحة التحكم — رِفد" }] }),
   component: DashboardPage,
 });
 
-const LIMITS = {
-  free: { text: 5, image: 2, label: "مجاني" },
-  pro: { text: 1000, image: 60, label: "احترافي" },
-  business: { text: 5000, image: 300, label: "أعمال" },
+const PLAN_LABELS: Record<PlanId, string> = {
+  free: "مجاني",
+  starter: "بداية",
+  growth: "نمو",
+  pro: "احترافي",
+  business: "أعمال",
 };
 
 function currentMonth() {
@@ -89,8 +92,13 @@ function DashboardPage() {
     };
   }, [userId]);
 
-  const plan = (profile?.plan ?? "free") as keyof typeof LIMITS;
-  const limits = LIMITS[plan];
+  const plan = (profile?.plan ?? "free") as PlanId;
+  const planInfo = PLAN_BY_ID[plan] ?? PLAN_BY_ID.free;
+  const limits = {
+    text: planInfo.dailyTextCap,
+    image: planInfo.dailyImageCap,
+    label: PLAN_LABELS[planInfo.id],
+  };
   const completionPct = getMemoryCoverage(profile);
   const memorySignals = getMemorySignals(profile);
   const weeklyRecommendation = getWeeklyRecommendation(profile);
