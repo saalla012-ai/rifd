@@ -43,10 +43,7 @@ export function HomeHero() {
           </span>
         </div>
 
-        <h1
-          className="mt-4 text-center text-[1.48rem] font-black leading-[1.14] tracking-tight sm:mt-6 sm:text-[2.75rem] sm:leading-[1.1] lg:text-[3.5rem] animate-fade-in"
-          style={{ animationDelay: "60ms" }}
-        >
+        <h1 className="mt-4 min-h-[12.25rem] text-center text-[1.48rem] font-black leading-[1.14] tracking-tight sm:mt-6 sm:min-h-[12.5rem] sm:text-[2.75rem] sm:leading-[1.1] lg:min-h-[13rem] lg:text-[3.5rem]">
           <span className="block text-[0.66em] font-bold text-muted-foreground sm:text-[0.42em]">
             {HERO_HOOKS[variant].eyebrow}
           </span>
@@ -73,10 +70,7 @@ export function HomeHero() {
           </span>
         </h1>
 
-        <div
-          className="mx-auto mt-5 flex max-w-[17rem] items-center justify-center gap-2 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg animate-fade-in"
-          style={{ animationDelay: "180ms" }}
-        >
+        <div className="mx-auto mt-5 flex max-w-[17rem] items-center justify-center gap-2 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1.5 text-destructive line-through decoration-2">
             5 ساعات
           </span>
@@ -86,10 +80,7 @@ export function HomeHero() {
           </span>
         </div>
 
-        <div
-          className="mt-7 flex flex-col items-center gap-4 animate-fade-in"
-          style={{ animationDelay: "260ms" }}
-        >
+        <div className="mt-7 flex flex-col items-center gap-4">
           <Button
             asChild
             size="lg"
@@ -121,10 +112,7 @@ export function HomeHero() {
           </div>
         </div>
 
-        <div
-          className="mx-auto mt-7 max-w-3xl animate-fade-in"
-          style={{ animationDelay: "420ms" }}
-        >
+        <div className="mx-auto mt-7 max-w-3xl">
           <div className="mb-3 text-center text-xs font-bold text-muted-foreground sm:text-sm">
             ماذا ستحسم في أول ثوانٍ؟ الوعد، الفرق، والثقة — قبل أن تنزل لباقي الصفحة.
           </div>
