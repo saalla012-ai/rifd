@@ -21,6 +21,13 @@ const TestProviderInput = z.object({
   providerKey: z.string().min(2).max(80),
 });
 
+const TestVideoRouterInput = z.object({
+  quality: z.enum(["fast", "quality"]).default("fast"),
+  aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
+  durationSeconds: z.union([z.literal(5), z.literal(8)]).default(5),
+  hasStartingFrame: z.boolean().default(false),
+});
+
 const CompleteManualVideoJobInput = z.object({
   jobId: z.string().uuid(),
   resultUrl: z.string().trim().url().max(2000),
@@ -118,6 +125,13 @@ export type AdminVideoProviderTestResult = {
   checkedAt: string;
 };
 
+export type AdminVideoRouterTestResult = {
+  ok: boolean;
+  selectedProvider: string | null;
+  checkedAt: string;
+  candidates: Array<{ providerKey: string; displayName: string; priority: number; mode: string; eligible: boolean; reason: string }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -147,6 +161,19 @@ function appendConnectionTest(metadata: Json | null, result: AdminVideoProviderT
   const base = (metadata as Record<string, unknown> | null) ?? {};
   const tests = Array.isArray(base.connection_tests) ? base.connection_tests.slice(-9) : [];
   return { ...base, connection_tests: [...tests, result], last_connection_test_at: result.checkedAt } as Json;
+}
+
+function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.infer<typeof TestVideoRouterInput>) {
+  if (!provider.enabled) return { eligible: false, reason: "متوقف داخلياً" };
+  if (!provider.public_enabled) return { eligible: false, reason: "غير متاح للطلبات" };
+  if (!provider.supported_qualities.includes(input.quality)) return { eligible: false, reason: "الجودة غير مدعومة" };
+  if (input.aspectRatio === "9:16" && !provider.supports_9_16) return { eligible: false, reason: "مقاس 9:16 غير مدعوم" };
+  if (input.aspectRatio === "1:1" && !provider.supports_1_1) return { eligible: false, reason: "مقاس 1:1 غير مدعوم" };
+  if (input.aspectRatio === "16:9" && !provider.supports_16_9) return { eligible: false, reason: "مقاس 16:9 غير مدعوم" };
+  if (input.hasStartingFrame && !provider.supports_starting_frame) return { eligible: false, reason: "صورة البداية غير مدعومة" };
+  const cost = input.durationSeconds === 8 ? provider.cost_8s : provider.cost_5s;
+  if (cost <= 0) return { eligible: false, reason: "تكلفة المدة غير مضبوطة" };
+  return { eligible: true, reason: "جاهز للراوتر" };
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
