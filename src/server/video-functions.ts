@@ -71,6 +71,21 @@ type ProviderRefreshResult = {
   metadata?: Record<string, unknown>;
 };
 
+type ProviderAttempt = {
+  provider: string;
+  ok: boolean;
+  status?: ProviderStatus | "skipped";
+  mode?: VideoProviderMode;
+  priority?: number;
+  started_at: string;
+  finished_at: string;
+  latency_ms: number;
+  provider_job_id?: string | null;
+  manual_required?: boolean;
+  error?: string;
+  reason?: string;
+};
+
 type VideoProvider = {
   key: string;
   createJob(input: z.infer<typeof videoInputSchema>, config: VideoProviderConfig): Promise<ProviderCreateResult>;
@@ -122,6 +137,14 @@ function publicVideoError(e: unknown): Error {
   if (/no_video_provider_available|إعداد مزوّد الفيديو غير مكتمل/i.test(msg)) return new Error("خدمة الفيديو غير جاهزة حالياً. جرّب لاحقاً أو تواصل مع الدعم.");
   if (/فشل مزوّد الفيديو|provider|prediction|fetch failed/i.test(msg)) return new Error("تعذر الاتصال بخدمة الفيديو حالياً. تم حفظ الحالة ورد النقاط عند الحاجة.");
   return e instanceof Error ? e : new Error("فشل تنفيذ عملية الفيديو");
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
+}
+
+function mergeMetadata(current: Json | null | undefined, patch?: Record<string, unknown>) {
+  return { ...((current as Record<string, unknown> | null) ?? {}), ...(patch ?? {}) } as Json;
 }
 
 async function countProcessingJobs(userId: string) {
@@ -278,12 +301,23 @@ const PROVIDERS: Record<string, VideoProvider> = {
 
 async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId: string) {
   const configs = await loadProviderConfigs(input);
-  const attempts: Array<Record<string, unknown>> = [];
+  const attempts: ProviderAttempt[] = [];
 
   for (const config of configs) {
+    const startedAt = new Date();
     const provider = PROVIDERS[config.provider_key];
     if (!provider) {
-      attempts.push({ provider: config.provider_key, skipped: true, reason: "provider_not_implemented" });
+      attempts.push({
+        provider: config.provider_key,
+        ok: false,
+        status: "skipped",
+        mode: config.mode,
+        priority: config.priority,
+        started_at: startedAt.toISOString(),
+        finished_at: new Date().toISOString(),
+        latency_ms: 0,
+        reason: "provider_not_implemented",
+      });
       continue;
     }
 
@@ -292,11 +326,42 @@ async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId:
       if (result.status === "failed" || result.status === "canceled") throw new Error("فشل مزوّد الفيديو أثناء إنشاء المهمة");
       if (result.status === "succeeded" && !result.resultUrl) throw new Error("فشل مزوّد الفيديو: لم يتم إرجاع رابط الفيديو النهائي");
       await markProviderSuccess(config.provider_key);
-      return { config, result, attempts: [...attempts, { provider: config.provider_key, ok: true, status: result.status }] };
+      const finishedAt = new Date();
+      return {
+        config,
+        result,
+        attempts: [
+          ...attempts,
+          {
+            provider: config.provider_key,
+            ok: true,
+            status: result.status,
+            mode: config.mode,
+            priority: config.priority,
+            started_at: startedAt.toISOString(),
+            finished_at: finishedAt.toISOString(),
+            latency_ms: finishedAt.getTime() - startedAt.getTime(),
+            provider_job_id: result.providerJobId,
+            manual_required: result.manualRequired === true,
+          },
+        ],
+      };
     } catch (error) {
-      attempts.push({ provider: config.provider_key, ok: false, error: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500) });
+      const finishedAt = new Date();
+      attempts.push({
+        provider: config.provider_key,
+        ok: false,
+        status: "failed",
+        mode: config.mode,
+        priority: config.priority,
+        started_at: startedAt.toISOString(),
+        finished_at: finishedAt.toISOString(),
+        latency_ms: finishedAt.getTime() - startedAt.getTime(),
+        error: errorMessage(error),
+      });
       await markProviderFailure(config.provider_key, error);
-      await supabaseAdmin.from("video_jobs").update({ metadata: { provider_attempts: attempts, last_attempt_at: new Date().toISOString() } as Json }).eq("id", jobId);
+      const { data: current } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
+      await supabaseAdmin.from("video_jobs").update({ metadata: mergeMetadata(current?.metadata, { provider_attempts: attempts, last_attempt_at: finishedAt.toISOString() }) }).eq("id", jobId);
     }
   }
 
@@ -304,11 +369,12 @@ async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId:
 }
 
 async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId: string | null; errorMessage: string; metadata?: Record<string, unknown> }) {
+  const { data: currentMetadataRow } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
   const updatePayload: Database["public"]["Tables"]["video_jobs"]["Update"] = {
     status: "refunded",
     error_message: params.errorMessage,
     ...(params.refundLedgerId ? { refund_ledger_id: params.refundLedgerId } : {}),
-    ...(params.metadata ? { metadata: params.metadata as Json } : {}),
+    metadata: mergeMetadata(currentMetadataRow?.metadata, params.metadata),
   };
 
   const { data, error } = await supabaseAdmin.from("video_jobs").update(updatePayload).eq("id", params.jobId).eq("status", "processing").select("*").maybeSingle();
@@ -321,9 +387,10 @@ async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId
 }
 
 async function markProcessingJobCompleted(params: { jobId: string; resultUrl: string; metadata?: Record<string, unknown> }) {
+  const { data: currentMetadataRow } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
   const { data, error } = await supabaseAdmin
     .from("video_jobs")
-    .update({ status: "completed", result_url: params.resultUrl, completed_at: new Date().toISOString(), ...(params.metadata ? { metadata: params.metadata as Json } : {}) })
+    .update({ status: "completed", result_url: params.resultUrl, completed_at: new Date().toISOString(), metadata: mergeMetadata(currentMetadataRow?.metadata, params.metadata) })
     .eq("id", params.jobId)
     .eq("status", "processing")
     .select("*")
@@ -426,13 +493,15 @@ export const generateVideo = createServerFn({ method: "POST" })
       const effectiveRefundLedgerId = refundLedgerId ?? (ledgerId ? await getRefundLedgerId(supabaseAdmin, ledgerId) : null);
       if (dailyQuotaConsumed && (!ledgerId || refundLedgerId)) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
+        const { data: failedJob } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
         await markProcessingJobRefunded({
           jobId,
           refundLedgerId: effectiveRefundLedgerId,
           errorMessage: publicVideoError(e).message,
           metadata: {
+            ...((failedJob?.metadata as Record<string, unknown> | null) ?? {}),
             failure_stage: "generate_video",
-            original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
+            original_error: errorMessage(e),
             refund_ledger_id: effectiveRefundLedgerId,
           },
         });
@@ -480,7 +549,7 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
       await markProviderFailure(row.provider, e);
       await supabaseAdmin
         .from("video_jobs")
-        .update({ metadata: { ...(row.metadata as Record<string, unknown> | null), last_check_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500), last_checked_at: new Date().toISOString() } as Json })
+        .update({ metadata: mergeMetadata(row.metadata, { last_check_error: errorMessage(e), last_checked_at: new Date().toISOString() }) })
         .eq("id", row.id);
       throw publicVideoError(e);
     }
@@ -488,7 +557,7 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (!TERMINAL_PROVIDER_STATUSES.has(prediction.status)) {
       await supabaseAdmin
         .from("video_jobs")
-        .update({ metadata: { ...(row.metadata as Record<string, unknown> | null), ...(prediction.metadata ?? {}), provider_status: prediction.status, last_checked_at: new Date().toISOString() } as Json })
+        .update({ metadata: mergeMetadata(row.metadata, { ...(prediction.metadata ?? {}), provider_status: prediction.status, last_checked_at: new Date().toISOString() }) })
         .eq("id", row.id);
     }
 

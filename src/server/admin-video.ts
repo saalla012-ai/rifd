@@ -63,6 +63,16 @@ export type AdminVideoStats = {
   estimatedCostUsd: number;
 };
 
+type ProviderAttempt = {
+  provider?: string;
+  ok?: boolean;
+  status?: string;
+  latency_ms?: number;
+  finished_at?: string;
+  error?: string;
+  reason?: string;
+};
+
 export type AdminVideoProviderConfig = {
   provider_key: string;
   display_name_admin: string;
@@ -85,6 +95,16 @@ export type AdminVideoProviderConfig = {
   updated_at: string;
 };
 
+export type AdminVideoProviderAttemptSummary = {
+  provider: string;
+  total: number;
+  success: number;
+  failed: number;
+  avgLatencyMs: number | null;
+  lastStatus: string | null;
+  lastAt: string | null;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -98,6 +118,16 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
 function isManualBridgeJob(row: VideoJobRow): boolean {
   const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
   return row.provider === "google_flow_bridge" || metadata.manual_required === true;
+}
+
+function appendProviderAttempt(metadata: Json | null, attempt: ProviderAttempt) {
+  const base = (metadata as Record<string, unknown> | null) ?? {};
+  const attempts = Array.isArray(base.provider_attempts) ? base.provider_attempts : [];
+  return {
+    ...base,
+    provider_attempts: [...attempts, { ...attempt, finished_at: new Date().toISOString() }],
+    last_attempt_at: new Date().toISOString(),
+  } as Json;
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
@@ -178,6 +208,52 @@ export const listVideoProviderConfigs = createServerFn({ method: "POST" })
     return { providers: (data as AdminVideoProviderConfig[] | null) ?? [] };
   });
 
+export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ attempts: AdminVideoProviderAttemptSummary[] }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data, error } = await supabaseAdmin
+      .from("video_jobs")
+      .select("provider, metadata, created_at")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (error) throw new Error(`فشل جلب سجل محاولات المزودين: ${error.message}`);
+
+    const byProvider = new Map<string, { total: number; success: number; failed: number; latency: number[]; lastStatus: string | null; lastAt: string | null }>();
+    for (const row of data ?? []) {
+      const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+      const attempts = Array.isArray(metadata.provider_attempts) ? metadata.provider_attempts as ProviderAttempt[] : [{ provider: row.provider, ok: undefined, status: String(metadata.provider_status ?? "unknown"), finished_at: row.created_at }];
+      for (const attempt of attempts) {
+        const key = attempt.provider || row.provider || "unknown";
+        const current = byProvider.get(key) ?? { total: 0, success: 0, failed: 0, latency: [], lastStatus: null, lastAt: null };
+        current.total += 1;
+        if (attempt.ok === true) current.success += 1;
+        if (attempt.ok === false) current.failed += 1;
+        if (typeof attempt.latency_ms === "number" && Number.isFinite(attempt.latency_ms)) current.latency.push(attempt.latency_ms);
+        const finishedAt = attempt.finished_at ?? row.created_at;
+        if (!current.lastAt || new Date(finishedAt).getTime() > new Date(current.lastAt).getTime()) {
+          current.lastAt = finishedAt;
+          current.lastStatus = attempt.status ?? null;
+        }
+        byProvider.set(key, current);
+      }
+    }
+
+    return {
+      attempts: Array.from(byProvider.entries()).map(([provider, item]) => ({
+        provider,
+        total: item.total,
+        success: item.success,
+        failed: item.failed,
+        avgLatencyMs: item.latency.length ? Math.round(item.latency.reduce((sum, value) => sum + value, 0) / item.latency.length) : null,
+        lastStatus: item.lastStatus,
+        lastAt: item.lastAt,
+      })).sort((a, b) => b.total - a.total),
+    };
+  });
+
 export const updateVideoProviderConfig = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ProviderUpdateInput.parse(input))
   .middleware([requireSupabaseAuth])
@@ -228,7 +304,7 @@ export const completeManualVideoJob = createServerFn({ method: "POST" })
     if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
 
     const metadata = {
-      ...((current.metadata as Record<string, unknown> | null) ?? {}),
+      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: true, status: "manual_completed" }) as Record<string, unknown>),
       manual_completed_by: userId,
       manual_completed_at: new Date().toISOString(),
       provider_status: "succeeded",
@@ -263,7 +339,7 @@ export const refundManualVideoJob = createServerFn({ method: "POST" })
     if (newlyRefunded) await supabaseAdmin.rpc("release_video_daily_quota", { _user_id: current.user_id });
 
     const metadata = {
-      ...((current.metadata as Record<string, unknown> | null) ?? {}),
+      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: false, status: "manual_refunded", error: data.reason }) as Record<string, unknown>),
       manual_refunded_by: userId,
       manual_refunded_at: new Date().toISOString(),
       manual_refund_reason: data.reason,

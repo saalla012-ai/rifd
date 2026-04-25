@@ -49,6 +49,11 @@ function fmtDate(s: string) {
   return new Date(s).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" });
 }
 
+function providerAttempts(metadata: AdminVideoJob["metadata"]) {
+  const attempts = (metadata as { provider_attempts?: Array<{ provider?: string; ok?: boolean; status?: string; error?: string }> } | null)?.provider_attempts;
+  return Array.isArray(attempts) ? attempts.slice(-3) : [];
+}
+
 function AdminVideoJobsPage() {
   const fetchJobs = useServerFn(listAdminVideoJobs);
   const completeJob = useServerFn(completeManualVideoJob);
@@ -198,6 +203,15 @@ function AdminVideoJobsPage() {
                     <span>{fmtDate(job.created_at)}</span>
                     {job.provider && <span className="mx-1">· {job.provider}</span>}
                   </div>
+                  {providerAttempts(job.metadata).length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {providerAttempts(job.metadata).map((attempt, index) => (
+                        <Badge key={`${job.id}-${index}`} variant="secondary" className={cn("max-w-full truncate", attempt.ok === false && "bg-destructive/15 text-destructive", attempt.ok === true && "bg-success/15 text-success")}>
+                          {attempt.provider ?? "provider"}: {attempt.status ?? (attempt.ok ? "ok" : "failed")}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                   {job.status === "processing" && Boolean((job.metadata as { manual_required?: boolean } | null)?.manual_required) && (
                     <div className="mt-3 rounded-lg border border-border bg-secondary/30 p-3">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
