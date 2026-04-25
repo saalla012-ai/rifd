@@ -21,6 +21,7 @@ function writeConsent(value: Consent) {
   try {
     window.localStorage.setItem(STORAGE_KEY, value);
   } catch {
+    return;
   }
 }
 
