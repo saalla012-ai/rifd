@@ -92,6 +92,13 @@ type VideoProvider = {
   refreshJob(providerJobId: string, row: VideoJobRow): Promise<ProviderRefreshResult>;
 };
 
+class ProviderCommittedFailure extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProviderCommittedFailure";
+  }
+}
+
 const videoInputSchema = z.object({
   prompt: z.string().trim().min(10, "اكتب وصف فيديو أوضح").max(1800, "وصف الفيديو طويل جداً"),
   quality: z.enum(["fast", "quality"]),
@@ -164,7 +171,13 @@ function providerSupports(config: VideoProviderConfig, input: z.infer<typeof vid
     (input.aspectRatio === "1:1" && config.supports_1_1) ||
     (input.aspectRatio === "16:9" && config.supports_16_9);
   const supportsFrame = !input.startingFrameUrl || config.supports_starting_frame;
-  return config.enabled && config.public_enabled && supportsQuality && supportsAspect && supportsFrame;
+  const cost = input.durationSeconds === 8 ? config.cost_8s : config.cost_5s;
+  return config.enabled && config.public_enabled && supportsQuality && supportsAspect && supportsFrame && cost > 0;
+}
+
+function providerPriorityScore(config: VideoProviderConfig) {
+  const healthPenalty = config.health_status === "unhealthy" ? 10_000 : config.health_status === "inactive" ? 20_000 : 0;
+  return config.priority + healthPenalty;
 }
 
 async function loadProviderConfigs(input: z.infer<typeof videoInputSchema>) {
@@ -183,7 +196,9 @@ async function loadProviderConfigs(input: z.infer<typeof videoInputSchema>) {
     return [defaultReplicateConfig()];
   }
 
-  const rows = ((data as VideoProviderConfig[] | null) ?? []).filter((config) => providerSupports(config, input));
+  const rows = ((data as VideoProviderConfig[] | null) ?? [])
+    .filter((config) => providerSupports(config, input))
+    .sort((a, b) => providerPriorityScore(a) - providerPriorityScore(b));
   return rows.length > 0 ? rows : [defaultReplicateConfig()].filter((config) => providerSupports(config, input));
 }
 
