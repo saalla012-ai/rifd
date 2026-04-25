@@ -369,12 +369,12 @@ async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId:
 }
 
 async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId: string | null; errorMessage: string; metadata?: Record<string, unknown> }) {
-  const { data: current } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
+  const { data: currentMetadataRow } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
   const updatePayload: Database["public"]["Tables"]["video_jobs"]["Update"] = {
     status: "refunded",
     error_message: params.errorMessage,
     ...(params.refundLedgerId ? { refund_ledger_id: params.refundLedgerId } : {}),
-    metadata: mergeMetadata(current?.metadata, params.metadata),
+    metadata: mergeMetadata(currentMetadataRow?.metadata, params.metadata),
   };
 
   const { data, error } = await supabaseAdmin.from("video_jobs").update(updatePayload).eq("id", params.jobId).eq("status", "processing").select("*").maybeSingle();
@@ -387,10 +387,10 @@ async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId
 }
 
 async function markProcessingJobCompleted(params: { jobId: string; resultUrl: string; metadata?: Record<string, unknown> }) {
-  const { data: current } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
+  const { data: currentMetadataRow } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
   const { data, error } = await supabaseAdmin
     .from("video_jobs")
-    .update({ status: "completed", result_url: params.resultUrl, completed_at: new Date().toISOString(), metadata: mergeMetadata(current?.metadata, params.metadata) })
+    .update({ status: "completed", result_url: params.resultUrl, completed_at: new Date().toISOString(), metadata: mergeMetadata(currentMetadataRow?.metadata, params.metadata) })
     .eq("id", params.jobId)
     .eq("status", "processing")
     .select("*")
