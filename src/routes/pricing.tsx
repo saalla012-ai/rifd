@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { PLAN_CATALOG, estimateVideoCount, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
+import { PLAN_CATALOG, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
 
 const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
 const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
@@ -36,13 +36,13 @@ export const Route = createFileRoute("/pricing")({
       {
         property: "og:description",
         content:
-          "Starter 149ر، Growth 249ر، Pro 399ر، Business 999ر — فيديوهات بالنقاط دون وعود غير محدودة.",
+          `Starter ${PLAN_CATALOG[1].monthlyPriceSar}ر، Growth ${PLAN_CATALOG[2].monthlyPriceSar}ر، Pro ${PLAN_CATALOG[3].monthlyPriceSar}ر، Business ${PLAN_CATALOG[4].monthlyPriceSar}ر — فيديوهات بالنقاط دون وعود غير محدودة.`,
       },
       { name: "twitter:title", content: "أسعار رِفد — نقاط فيديو واضحة" },
       {
         name: "twitter:description",
         content:
-          "اختر باقتك حسب عدد فيديوهاتك الشهرية: Fast من 150 نقطة وQuality من 450 نقطة.",
+          `اختر باقتك حسب عدد فيديوهاتك الشهرية: ${VIDEO_QUALITY_LABELS.fast} من ${videoCreditCost("fast", 5)} نقطة و${VIDEO_QUALITY_LABELS.quality} من ${videoCreditCost("quality", 5)} نقطة.`,
       },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/pricing" }],
@@ -55,14 +55,14 @@ function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
     `${formatPlanNumber(plan.dailyTextCap)} نص يومياً`,
     `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
     plan.dailyVideoCap > 0 ? `${formatPlanNumber(plan.dailyVideoCap)} فيديو يومياً حتى ${plan.maxVideoDurationSeconds} ث` : "الفيديو غير متاح في المجاني",
-    plan.videoQualityAllowed ? "Fast وQuality حسب النقاط" : "Fast فقط حسب النقاط",
+    plan.videoQualityAllowed ? "سريع واحترافي حسب النقاط" : "سريع فقط حسب النقاط",
   ];
 }
 
 const FAQS = [
   {
     q: "هل الفيديوهات غير محدودة؟",
-    a: `لا. الفيديوهات تعمل بنقاط فيديو واضحة حتى يبقى السعر عادلاً والنتيجة قابلة للتنبؤ. تكلفة 5ث: Fast ${videoCreditCost("fast", 5)} نقطة وQuality ${videoCreditCost("quality", 5)} نقطة، ومدة 8ث لها تكلفة أعلى.`,
+    a: `لا. الفيديوهات تعمل بنقاط فيديو واضحة حتى يبقى السعر عادلاً والنتيجة قابلة للتنبؤ. تكلفة 5ث: ${VIDEO_QUALITY_LABELS.fast} ${videoCreditCost("fast", 5)} نقطة و${VIDEO_QUALITY_LABELS.quality} ${videoCreditCost("quality", 5)} نقطة، ومدة 8ث لها تكلفة أعلى.`,
   },
   {
     q: "هل النصوص والصور تخصم من نقاط الفيديو؟",
@@ -111,7 +111,7 @@ function PricingPage() {
             نصوص وصور يومية، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
           </h1>
           <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
-            اختر باقتك حسب عدد فيديوهاتك الشهرية. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: Fast بـ150 نقطة وQuality بـ450 نقطة.
+            اختر باقتك حسب عدد فيديوهاتك الشهرية. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)} نقطة واحترافي بـ{videoCreditCost("quality", 5)} نقطة.
           </p>
 
           <div className="mx-auto mt-5 flex min-h-[3.75rem] max-w-md items-center justify-center">
@@ -209,8 +209,8 @@ function PricingPage() {
                       <Zap className="h-4 w-4" /> {formatPlanNumber(plan.monthlyCredits)} نقطة فيديو
                     </div>
                     <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                      <p>{plan.videoFastAllowed ? `حتى ${formatPlanNumber(fastVideos)} فيديو Fast 5ث` : "الفيديو غير متاح"}</p>
-                      <p>{plan.videoQualityAllowed ? `حتى ${formatPlanNumber(qualityVideos)} فيديو Quality 5ث` : "Quality غير متاح"}</p>
+                      <p>{plan.videoFastAllowed ? `حتى ${formatPlanNumber(fastVideos)} فيديو سريع 5ث` : "الفيديو غير متاح"}</p>
+                      <p>{plan.videoQualityAllowed ? `حتى ${formatPlanNumber(qualityVideos)} فيديو احترافي 5ث` : "الاحترافي غير متاح"}</p>
                     </div>
                   </div>
 

@@ -10,6 +10,7 @@ import amiriBoldUrl from "@/assets/fonts/Amiri-Bold.ttf?url";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Database } from "@/integrations/supabase/types";
+import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 
 const PLAN_LABELS: Record<string, string> = {
   starter: "Starter",
@@ -21,14 +22,6 @@ const PLAN_LABELS: Record<string, string> = {
 const CYCLE_LABELS: Record<string, string> = {
   monthly: "شهري",
   yearly: "سنوي",
-};
-
-// نفس أسعار صفحة pricing.tsx (قبل الضريبة)
-const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
-  starter: { monthly: 149, yearly: 1490 },
-  growth: { monthly: 249, yearly: 2490 },
-  pro: { monthly: 399, yearly: 3990 },
-  business: { monthly: 999, yearly: 9990 },
 };
 
 const VAT_RATE = 0.15;
@@ -205,7 +198,8 @@ export const Route = createFileRoute("/api/invoice/$requestId")({
           // الأسعار
           const planKey = req.plan as "starter" | "growth" | "pro" | "business";
           const cycle = req.billing_cycle === "yearly" ? "yearly" : "monthly";
-          const subtotal = PLAN_PRICES[planKey]?.[cycle] ?? 0;
+          const planInfo = PLAN_BY_ID[planKey as PlanId];
+          const subtotal = cycle === "yearly" ? planInfo?.yearlyPriceSar ?? 0 : planInfo?.monthlyPriceSar ?? 0;
           const vat = subtotal * VAT_RATE;
           const total = subtotal + vat;
 

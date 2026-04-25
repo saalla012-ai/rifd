@@ -36,7 +36,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { PAID_PLANS, PLAN_BY_ID, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
+import { PAID_PLANS, PLAN_BY_ID, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
 import {
   formatSaudiPhoneDisplay,
   normalizeSaudiPhone,
@@ -236,7 +236,7 @@ function BillingPage() {
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Film className="h-3.5 w-3.5" /> Fast {videoCreditCost("fast", 5)} نقطة · Quality {videoCreditCost("quality", 5)} نقطة
+            <Film className="h-3.5 w-3.5" /> {VIDEO_QUALITY_LABELS.fast} {videoCreditCost("fast", 5)} نقطة · {VIDEO_QUALITY_LABELS.quality} {videoCreditCost("quality", 5)} نقطة
           </div>
         </div>
       </div>
@@ -317,7 +317,7 @@ function BillingPage() {
                     <Zap className="h-4 w-4" /> {formatPlanNumber(selected.monthlyCredits)} نقطة فيديو
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    تقريباً {formatPlanNumber(selectedFastVideos)} فيديو Fast أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو Quality` : "Quality غير متاح"} — الفيديو محكوم بالنقاط.
+                    تقريباً {formatPlanNumber(selectedFastVideos)} فيديو سريع أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو احترافي` : "الاحترافي غير متاح"} — الفيديو محكوم بالنقاط.
                   </p>
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>

@@ -3,7 +3,7 @@ import { Coins, FileText, Film, Image as ImageIcon, Loader2 } from "lucide-react
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Progress } from "@/components/ui/progress";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
-import { estimateVideoCount, videoCreditCost } from "@/lib/plan-catalog";
+import { VIDEO_QUALITY_LABELS, estimateVideoCount, videoCreditCost } from "@/lib/plan-catalog";
 
 export const Route = createFileRoute("/dashboard/usage")({
   head: () => ({ meta: [{ title: "الاستخدام — رِفد" }] }),
@@ -82,15 +82,15 @@ function UsagePage() {
           </div>
           <Progress value={videoPct} className="mt-3" />
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
-            <div className="rounded-lg bg-background/70 p-3">Fast 5ث: <strong>{videoCreditCost("fast", 5)} نقطة</strong> · متبقٍ تقريباً {fmt(remainingFastVideos)} فيديو</div>
-            <div className="rounded-lg bg-background/70 p-3">Quality 5ث: <strong>{videoCreditCost("quality", 5)} نقطة</strong> · {data?.videoQualityAllowed ? `متبقٍ تقريباً ${fmt(remainingQualityVideos)} فيديو` : "غير متاح في باقتك"}</div>
+            <div className="rounded-lg bg-background/70 p-3">{VIDEO_QUALITY_LABELS.fast} 5ث: <strong>{videoCreditCost("fast", 5)} نقطة</strong> · متبقٍ تقريباً {fmt(remainingFastVideos)} فيديو</div>
+            <div className="rounded-lg bg-background/70 p-3">{VIDEO_QUALITY_LABELS.quality} 5ث: <strong>{videoCreditCost("quality", 5)} نقطة</strong> · {data?.videoQualityAllowed ? `متبقٍ تقريباً ${fmt(remainingQualityVideos)} فيديو` : "غير متاح في باقتك"}</div>
           </div>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 text-sm leading-7 shadow-soft">
           <p className="font-extrabold">صلاحيات الباقة</p>
           <ul className="mt-2 space-y-1 text-muted-foreground">
-            <li>Pro Image: {data?.imageProAllowed ? "متاح" : "غير متاح"}</li>
-            <li>Quality Video: {data?.videoQualityAllowed ? "متاح" : "غير متاح"}</li>
+            <li>صور Pro: {data?.imageProAllowed ? "متاح" : "غير متاح"}</li>
+            <li>فيديو احترافي: {data?.videoQualityAllowed ? "متاح" : "غير متاح"}</li>
             <li>أقصى مدة فيديو: {fmt(data?.maxVideoDurationSeconds ?? 5)} ث</li>
           </ul>
         </div>

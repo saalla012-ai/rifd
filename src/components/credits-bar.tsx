@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 
 const PLAN_LABEL: Record<string, string> = {
   free: "مجاني",
@@ -166,7 +167,7 @@ export function CreditsBar() {
           <div className="flex items-start gap-1.5 rounded-md bg-muted/40 p-2 text-[10px] text-muted-foreground">
             <Info className="mt-0.5 h-3 w-3 shrink-0" />
             <span>
-              فيديو Fast: {data.costs.video_fast} نقطة · فيديو Quality:{" "}
+              فيديو {VIDEO_QUALITY_LABELS.fast}: {data.costs.video_fast} نقطة · فيديو {VIDEO_QUALITY_LABELS.quality}:{" "}
               {data.costs.video_quality} نقطة · النصوص والصور لا تخصم نقاط فيديو
             </span>
           </div>

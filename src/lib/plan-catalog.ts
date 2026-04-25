@@ -16,6 +16,11 @@ export function videoCreditCost(quality: VideoQuality, duration: VideoDuration =
   return duration === 8 ? VIDEO_CREDIT_COSTS.video_fast_8s : VIDEO_CREDIT_COSTS.video_fast;
 }
 
+export const VIDEO_QUALITY_LABELS: Record<VideoQuality, string> = {
+  fast: "سريع",
+  quality: "احترافي",
+};
+
 export type PlanCatalogEntry = {
   id: PlanId;
   name: string;
@@ -65,7 +70,7 @@ export const PLAN_CATALOG = [
     videoFastAllowed: true,
     videoQualityAllowed: false,
     maxVideoDurationSeconds: 5,
-    tagline: "لبداية فيديو Fast منتظمة بلا تكلفة Quality",
+    tagline: "لبداية فيديو سريع منتظمة بلا تكلفة احترافية",
   },
   {
     id: "growth",

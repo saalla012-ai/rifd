@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 
 export const Route = createFileRoute("/dashboard/library")({
@@ -284,7 +285,7 @@ function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold">{job.quality === "quality" ? "Quality" : "Fast"}</span>
+                  <span className="font-bold">{job.quality === "quality" ? VIDEO_QUALITY_LABELS.quality : VIDEO_QUALITY_LABELS.fast}</span>
                   <span className="rounded-full bg-background px-2 py-0.5 font-bold">{VIDEO_STATUS_LABEL[job.status] ?? job.status}</span>
                 </div>
                 <p className="line-clamp-2 text-muted-foreground">{job.prompt}</p>
