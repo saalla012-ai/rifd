@@ -62,6 +62,17 @@ export class ImageQuotaExceededError extends Error {
   }
 }
 
+export class VideoDailyQuotaExceededError extends Error {
+  used: number;
+  cap: number;
+  constructor(used: number, cap: number) {
+    super(`video_daily_quota_exceeded: used=${used} cap=${cap}`);
+    this.name = "VideoDailyQuotaExceededError";
+    this.used = used;
+    this.cap = cap;
+  }
+}
+
 // ============================================================
 // Helpers يستدعيها ai-functions داخل handler واحد
 // ============================================================
@@ -159,6 +170,22 @@ export async function consumeImageQuota(db: DbClient): Promise<{ used: number; c
   return { used: row.used, cap: row.daily_cap };
 }
 
+export async function consumeVideoDailyQuota(db: DbClient): Promise<{ used: number; cap: number }> {
+  const { data, error } = await db.rpc("consume_video_daily_quota");
+  if (error) throw new Error(`فشل التحقق من حد الفيديو اليومي: ${error.message}`);
+
+  const row = (data as Array<{ allowed: boolean; used: number; daily_cap: number }>)?.[0];
+  if (!row) throw new Error("استجابة فارغة من حد الفيديو اليومي");
+
+  if (!row.allowed) throw new VideoDailyQuotaExceededError(row.used, row.daily_cap);
+  return { used: row.used, cap: row.daily_cap };
+}
+
+export async function releaseVideoDailyQuota(db: DbClient, userId?: string): Promise<void> {
+  const { error } = await db.rpc("release_video_daily_quota", { _user_id: userId });
+  if (error) console.error(`release_video_daily_quota failed: ${error.message}`);
+}
+
 // ============================================================
 // Server Function: ملخص النقاط للواجهة (شريط الرصيد)
 // ============================================================
@@ -178,6 +205,8 @@ export const getCreditsSummary = createServerFn({ method: "POST" })
       daily_text_cap: number;
       daily_image_used: number;
       daily_image_cap: number;
+      daily_video_used: number;
+      daily_video_cap: number;
       plan: "free" | "starter" | "growth" | "pro" | "business";
     }>)?.[0];
 
@@ -191,6 +220,8 @@ export const getCreditsSummary = createServerFn({ method: "POST" })
         dailyTextCap: 200,
         dailyImageUsed: 0,
         dailyImageCap: 50,
+        dailyVideoUsed: 0,
+        dailyVideoCap: 1,
         plan: "free" as const,
         costs: CREDIT_COSTS,
       };
@@ -205,6 +236,8 @@ export const getCreditsSummary = createServerFn({ method: "POST" })
       dailyTextCap: row.daily_text_cap,
       dailyImageUsed: row.daily_image_used,
       dailyImageCap: row.daily_image_cap,
+      dailyVideoUsed: row.daily_video_used,
+      dailyVideoCap: row.daily_video_cap,
       plan: row.plan,
       costs: CREDIT_COSTS,
     };
