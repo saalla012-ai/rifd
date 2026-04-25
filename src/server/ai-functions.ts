@@ -182,10 +182,12 @@ export const generateImage = createServerFn({ method: "POST" })
       templateTitle: string;
       templateId: string;
       quality: "flash" | "pro";
+      campaignPackId?: string;
     }) => {
       if (!input.prompt?.trim()) throw new Error("وصف الصورة مطلوب");
       if (input.prompt.length > 1500) throw new Error("الوصف طويل جداً");
       if (!["flash", "pro"].includes(input.quality)) throw new Error("جودة غير صحيحة");
+      if (input.campaignPackId && !/^[0-9a-f-]{36}$/i.test(input.campaignPackId)) throw new Error("معرّف الحملة غير صحيح");
       return input;
     }
   )
@@ -201,6 +203,7 @@ export const generateImage = createServerFn({ method: "POST" })
 
     try {
       const profile = await loadProfile(supabase, userId);
+      const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const ctx: StoreContext = profile ?? {};
       const fullPrompt = buildImagePrompt(ctx, data.prompt, data.templateTitle);
 
@@ -254,10 +257,12 @@ export const generateImage = createServerFn({ method: "POST" })
         _estimated_cost_usd: usdCost,
         _metadata: {
           template_title: data.templateTitle,
+          source: campaignPack ? "campaign_studio" : "generate_image",
           quality: data.quality,
           storage_path: filename,
           credits_charged: 0,
           billing_scope: "daily_image_quota",
+          ...campaignMetadata(campaignPack),
         },
       });
       if (insErr) {
