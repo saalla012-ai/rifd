@@ -16,6 +16,11 @@ const VIDEO_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
   quality: 1.5,
 };
 
+const MAX_PROCESSING_MINUTES = 20;
+const PROCESSING_LIMIT_PER_USER = 2;
+
+const TERMINAL_PROVIDER_STATUSES = new Set(["succeeded", "failed", "canceled"]);
+
 type DbClient = SupabaseClient<Database>;
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
 
@@ -34,6 +39,25 @@ function videoCreditError(e: unknown): Error {
     );
   }
   return e instanceof Error ? e : new Error(String(e));
+}
+
+function publicVideoError(e: unknown): Error {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
+  if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
+  if (/إعداد مزوّد الفيديو غير مكتمل/i.test(msg)) return new Error("خدمة الفيديو غير جاهزة حالياً. جرّب لاحقاً أو تواصل مع الدعم.");
+  if (/فشل مزوّد الفيديو|Replicate|provider|prediction|fetch failed/i.test(msg)) return new Error("تعذر الاتصال بخدمة الفيديو حالياً. تم حفظ الحالة ورد النقاط عند الحاجة.");
+  return e instanceof Error ? e : new Error("فشل تنفيذ عملية الفيديو");
+}
+
+async function countProcessingJobs(userId: string) {
+  const { count, error } = await supabaseAdmin
+    .from("video_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("status", "processing");
+  if (error) throw new Error(`فشل التحقق من المهام النشطة: ${error.message}`);
+  return count ?? 0;
 }
 
 async function createReplicatePrediction(input: z.infer<typeof videoInputSchema>) {
