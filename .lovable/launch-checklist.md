@@ -136,9 +136,9 @@
 
 ## 🎯 الخطوات النهائية قبل الإعلان التسويقي
 
-1. **يدوي**: تنفيذ السيناريوهات الـ7 من `qa-runbook.md` على iPhone حقيقي + Android + Desktop
-2. **يدوي**: تشغيل Lighthouse على 5 صفحات والتأكد من ≥ 80 Performance
-3. **يدوي**: تأكيد iOS Safari لا يكسر أي مسار (خاصة `/auth` و `/dashboard/billing`)
-4. **جاهز**: خطة إعلان القنوات الأولى موثقة في `launch-day-runbook.md`
+1. **يدوي**: تنفيذ مصفوفة `qa-runbook.md` كاملة: 7 سيناريوهات × Mobile/Tablet/Desktop × Chrome/Safari = 42 تمريرة موثقة.
+2. **يدوي**: تشغيل Lighthouse على 5 صفحات والتأكد من ≥ 80 Performance و≥ 90 Accessibility وBest Practices.
+3. **يدوي**: تأكيد iOS Safari وAndroid Chrome لا يكسران المسارات الحرجة، خصوصاً `/auth` و`/onboarding` و`/dashboard/billing`.
+4. **جاهز**: خطة إعلان القنوات الأولى موثقة في `launch-day-runbook.md` بعد إغلاق البنود اليدوية أعلاه.
 5. **بعد القبول**: نشر إعلان X + LinkedIn + WhatsApp Business
 6. **متجاوز بقرار المالك**: مراقبة 72 ساعة متواصلة — البديل متابعة تشغيلية مباشرة حسب البلاغات والمؤشرات
