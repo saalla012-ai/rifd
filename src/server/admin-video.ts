@@ -28,6 +28,7 @@ const RefundVideoJobInput = z.object({
 });
 
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
+type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
 
 export type AdminVideoJob = {
   id: string;
@@ -84,6 +85,16 @@ export type AdminVideoProviderConfig = {
   updated_at: string;
 };
 
+function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
+  return {
+    ...row,
+    quality: row.quality as "fast" | "quality",
+    estimated_cost_usd: row.estimated_cost_usd === null ? null : Number(row.estimated_cost_usd),
+    user_email: profile?.email ?? null,
+    user_store: profile?.store_name ?? null,
+  };
+}
+
 export const listAdminVideoJobs = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ListAdminVideoJobsInput.parse(input ?? {}))
   .middleware([requireSupabaseAuth])
@@ -131,16 +142,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
 
     return {
       stats,
-      rows: statsRows.map((r) => {
-        const p = profMap.get(r.user_id);
-        return {
-          ...r,
-          quality: r.quality as "fast" | "quality",
-          estimated_cost_usd: r.estimated_cost_usd === null ? null : Number(r.estimated_cost_usd),
-          user_email: p?.email ?? null,
-          user_store: p?.store_name ?? null,
-        };
-      }),
+      rows: statsRows.map((r) => toAdminVideoJob(r as VideoJobRow, profMap.get(r.user_id))),
     };
   });
 
@@ -226,7 +228,7 @@ export const completeManualVideoJob = createServerFn({ method: "POST" })
 
     if (error || !updated) throw new Error(`فشل إكمال مهمة الفيديو: ${error?.message ?? "استجابة فارغة"}`);
     await logAdminAudit({ adminId: userId, action: "complete_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { result_url: data.resultUrl } as Json });
-    return { job: { ...(updated as AdminVideoJob), quality: updated.quality as "fast" | "quality", estimated_cost_usd: updated.estimated_cost_usd === null ? null : Number(updated.estimated_cost_usd), user_email: null, user_store: null } };
+    return { job: toAdminVideoJob(updated as VideoJobRow) };
   });
 
 export const refundManualVideoJob = createServerFn({ method: "POST" })
@@ -263,5 +265,5 @@ export const refundManualVideoJob = createServerFn({ method: "POST" })
 
     if (error || !updated) throw new Error(`فشل تحديث المهمة بعد رد النقاط: ${error?.message ?? "استجابة فارغة"}`);
     await logAdminAudit({ adminId: userId, action: "refund_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { reason: data.reason, refund_ledger_id: refundId } as Json });
-    return { job: { ...(updated as AdminVideoJob), quality: updated.quality as "fast" | "quality", estimated_cost_usd: updated.estimated_cost_usd === null ? null : Number(updated.estimated_cost_usd), user_email: null, user_store: null } };
+    return { job: toAdminVideoJob(updated as VideoJobRow) };
   });
