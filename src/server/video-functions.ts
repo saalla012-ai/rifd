@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { consume, consumeVideoDailyQuota, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, type VideoDuration, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
 
@@ -141,6 +141,39 @@ async function getReplicatePrediction(predictionId: string) {
   return { status: prediction.status ?? "processing", resultUrl: typeof output === "string" ? output : null, error: prediction.error };
 }
 
+async function markProcessingJobRefunded(params: {
+  jobId: string;
+  refundLedgerId: string | null;
+  errorMessage: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const updatePayload: Database["public"]["Tables"]["video_jobs"]["Update"] = {
+    status: "refunded",
+    error_message: params.errorMessage,
+    ...(params.refundLedgerId ? { refund_ledger_id: params.refundLedgerId } : {}),
+    ...(params.metadata ? { metadata: params.metadata as Json } : {}),
+  };
+
+  const { data, error } = await supabaseAdmin
+    .from("video_jobs")
+    .update(updatePayload)
+    .eq("id", params.jobId)
+    .eq("status", "processing")
+    .select("*")
+    .maybeSingle();
+
+  if (error) throw new Error(`فشل تحديث مهمة الفيديو: ${error.message}`);
+  if (data) return data as VideoJobRow;
+
+  const { data: current, error: readError } = await supabaseAdmin
+    .from("video_jobs")
+    .select("*")
+    .eq("id", params.jobId)
+    .single();
+  if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو بعد الاسترداد: ${readError?.message ?? "غير موجودة"}`);
+  return current as VideoJobRow;
+}
+
 export const generateVideo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => videoInputSchema.parse(input))
@@ -233,19 +266,16 @@ export const generateVideo = createServerFn({ method: "POST" })
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
       if (dailyQuotaConsumed && refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
-        await supabaseAdmin
-          .from("video_jobs")
-          .update({
-            status: "refunded",
+        await markProcessingJobRefunded({
+          jobId,
+          refundLedgerId,
+          errorMessage: publicVideoError(e).message,
+          metadata: {
+            failure_stage: "generate_video",
+            original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
             refund_ledger_id: refundLedgerId,
-            error_message: publicVideoError(e).message,
-            metadata: {
-              failure_stage: "generate_video",
-              original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
-              refund_ledger_id: refundLedgerId,
-            },
-          })
-          .eq("id", jobId);
+          },
+        });
       }
       throw publicVideoError(e);
     }
@@ -285,18 +315,12 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (isStale) {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_timeout") : null;
       if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
-      const { data: updated, error: updateError } = await supabaseAdmin
-        .from("video_jobs")
-        .update({
-          status: "refunded",
-          refund_ledger_id: refundLedgerId,
-          error_message: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً.",
-        })
-        .eq("id", row.id)
-        .select("*")
-        .single();
-      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
-      return { job: updated as VideoJobRow };
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId,
+        errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً.",
+      });
+      return { job: updated };
     }
 
     let prediction: Awaited<ReturnType<typeof getReplicatePrediction>>;
@@ -324,14 +348,12 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (prediction.status === "failed" || prediction.status === "canceled") {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_failed") : null;
       if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
-      const { data: updated, error: updateError } = await supabaseAdmin
-        .from("video_jobs")
-        .update({ status: "refunded", refund_ledger_id: refundLedgerId, error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
-        .eq("id", row.id)
-        .select("*")
-        .single();
-      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
-      return { job: updated as VideoJobRow };
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId,
+        errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود",
+      });
+      return { job: updated };
     }
 
     if (prediction.status === "succeeded" && prediction.resultUrl) {
