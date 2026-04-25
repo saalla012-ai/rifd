@@ -204,9 +204,9 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
       medium: signals.filter((item) => item.severity === "medium").length,
       low: signals.filter((item) => item.severity === "low").length,
       usersFlagged: new Set(signals.map((item) => item.user_id)).size,
-      creditsConsumed24h: ledgerRows.filter((row) => row.txn_type === "consume_video").reduce((sum, row) => sum + Math.abs(row.amount), 0),
-      videosCreated24h: videoRows.length,
-      refunds24h: ledgerRows.filter((row) => row.txn_type === "refund").length,
+      creditsConsumed: ledgerRows.filter((row) => row.txn_type === "consume_video").reduce((sum, row) => sum + Math.abs(row.amount), 0),
+      videosCreated: videoRows.length,
+      refunds: ledgerRows.filter((row) => row.txn_type === "refund").length,
     };
 
     return { stats, signals: filteredSignals, generatedAt: new Date().toISOString() };
