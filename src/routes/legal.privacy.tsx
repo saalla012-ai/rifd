@@ -64,7 +64,7 @@ function PrivacyPage() {
             <div className="mt-3 space-y-3">
               <div className="rounded-lg border border-border/60 bg-card/50 p-4">
                 <h3 className="font-bold text-foreground">أ. بيانات الحساب</h3>
-                <p className="mt-1 text-sm">الاسم الكامل، البريد الإلكتروني، كلمة السر (مُشفَّرة بـ bcrypt)، رقم الجوال (اختياري للتفعيل).</p>
+                <p className="mt-1 text-sm">الاسم الكامل، البريد الإلكتروني، بيانات الجلسة المُدارة، رقم الجوال (اختياري للتفعيل).</p>
               </div>
               <div className="rounded-lg border border-border/60 bg-card/50 p-4">
                 <h3 className="font-bold text-foreground">ب. بيانات ملف المتجر</h3>
