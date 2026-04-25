@@ -141,7 +141,7 @@ function HomePage() {
             جاهز تحوّل متجرك إلى آلة محتوى؟
           </h2>
           <p className="mt-3 text-base leading-7 text-primary-foreground/90">
-            ابدأ مجاناً اليوم — 5 توليدات نص + 2 صور بدون بطاقة ائتمان
+            ابدأ مجاناً اليوم — تجربة بداية واضحة بدون بطاقة ائتمان
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-primary-foreground/85 sm:text-sm">
             <span className="rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1">عامية سعودية جاهزة</span>
