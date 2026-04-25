@@ -301,12 +301,23 @@ const PROVIDERS: Record<string, VideoProvider> = {
 
 async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId: string) {
   const configs = await loadProviderConfigs(input);
-  const attempts: Array<Record<string, unknown>> = [];
+  const attempts: ProviderAttempt[] = [];
 
   for (const config of configs) {
+    const startedAt = new Date();
     const provider = PROVIDERS[config.provider_key];
     if (!provider) {
-      attempts.push({ provider: config.provider_key, skipped: true, reason: "provider_not_implemented" });
+      attempts.push({
+        provider: config.provider_key,
+        ok: false,
+        status: "skipped",
+        mode: config.mode,
+        priority: config.priority,
+        started_at: startedAt.toISOString(),
+        finished_at: new Date().toISOString(),
+        latency_ms: 0,
+        reason: "provider_not_implemented",
+      });
       continue;
     }
 
@@ -315,11 +326,42 @@ async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId:
       if (result.status === "failed" || result.status === "canceled") throw new Error("فشل مزوّد الفيديو أثناء إنشاء المهمة");
       if (result.status === "succeeded" && !result.resultUrl) throw new Error("فشل مزوّد الفيديو: لم يتم إرجاع رابط الفيديو النهائي");
       await markProviderSuccess(config.provider_key);
-      return { config, result, attempts: [...attempts, { provider: config.provider_key, ok: true, status: result.status }] };
+      const finishedAt = new Date();
+      return {
+        config,
+        result,
+        attempts: [
+          ...attempts,
+          {
+            provider: config.provider_key,
+            ok: true,
+            status: result.status,
+            mode: config.mode,
+            priority: config.priority,
+            started_at: startedAt.toISOString(),
+            finished_at: finishedAt.toISOString(),
+            latency_ms: finishedAt.getTime() - startedAt.getTime(),
+            provider_job_id: result.providerJobId,
+            manual_required: result.manualRequired === true,
+          },
+        ],
+      };
     } catch (error) {
-      attempts.push({ provider: config.provider_key, ok: false, error: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500) });
+      const finishedAt = new Date();
+      attempts.push({
+        provider: config.provider_key,
+        ok: false,
+        status: "failed",
+        mode: config.mode,
+        priority: config.priority,
+        started_at: startedAt.toISOString(),
+        finished_at: finishedAt.toISOString(),
+        latency_ms: finishedAt.getTime() - startedAt.getTime(),
+        error: errorMessage(error),
+      });
       await markProviderFailure(config.provider_key, error);
-      await supabaseAdmin.from("video_jobs").update({ metadata: { provider_attempts: attempts, last_attempt_at: new Date().toISOString() } as Json }).eq("id", jobId);
+      const { data: current } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
+      await supabaseAdmin.from("video_jobs").update({ metadata: mergeMetadata(current?.metadata, { provider_attempts: attempts, last_attempt_at: finishedAt.toISOString() }) }).eq("id", jobId);
     }
   }
 
