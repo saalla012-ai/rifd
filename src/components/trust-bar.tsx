@@ -11,12 +11,12 @@ export function TrustBar() {
         <span className="hidden h-3 w-px bg-border sm:block" />
         <span className="flex items-center gap-1.5">
           <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-          ضمان استرجاع 7 أيام
+          ضمان استرجاع 14 يوماً
         </span>
         <span className="hidden h-3 w-px bg-border sm:block" />
         <span className="flex items-center gap-1.5">
           <Lock className="h-3.5 w-3.5 text-primary" />
-          دفع آمن SSL
+          دفع عبر تحويل موثّق
         </span>
         <span className="hidden h-3 w-px bg-border sm:block" />
         <span className="flex items-center gap-1.5">
