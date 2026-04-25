@@ -98,6 +98,14 @@ export const updateContactStatus = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
+    const { data: before, error: beforeError } = await supabaseAdmin
+      .from("contact_submissions")
+      .select("id, status")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (beforeError) throw new Error(`فشل قراءة الحالة الحالية: ${beforeError.message}`);
+    if (!before) throw new Error("الرسالة غير موجودة");
+
     const { error } = await supabaseAdmin
       .from("contact_submissions")
       .update({ status: data.status, updated_at: new Date().toISOString() })
@@ -111,7 +119,9 @@ export const updateContactStatus = createServerFn({ method: "POST" })
         action: "update_contact_status",
         target_table: "contact_submissions",
         target_id: data.id,
+        before_value: { status: before.status },
         after_value: { status: data.status },
+        metadata: { changed: before.status !== data.status },
       });
     } catch {
       // ignore

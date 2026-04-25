@@ -84,6 +84,12 @@ export const updatePlanLimit = createServerFn({ method: "POST" })
       target_id: `${data.plan}:${data.kind}`,
       before_value: before ?? null,
       after_value: { ...data },
+      metadata: {
+        plan: data.plan,
+        kind: data.kind,
+        previous_limit: before?.monthly_limit ?? null,
+        new_limit: data.monthly_limit,
+      },
     });
     if (logErr) {
       // عدم الفشل التام، لكن سجّل تحذير
