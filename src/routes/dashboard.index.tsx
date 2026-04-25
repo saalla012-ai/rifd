@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { currentRiyadhMonth } from "@/lib/usage-month";
+import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemoryCoverage, getMemorySignals, getWeeklyRecommendation } from "@/lib/memory-insights";
 import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 
@@ -23,10 +23,6 @@ const PLAN_LABELS: Record<PlanId, string> = {
   pro: "احترافي",
   business: "أعمال",
 };
-
-function currentMonth() {
-  return currentRiyadhMonth();
-}
 
 type RecentItem = {
   id: string;
@@ -49,24 +45,18 @@ function timeAgo(iso: string) {
 
 function DashboardPage() {
   const { user, profile } = useAuth();
-  const [stats, setStats] = useState<{ text: number; image: number; favs: number } | null>(null);
+  const { data: creditsSummary } = useCreditsSummary({ enabled: Boolean(user?.id) });
+  const [stats, setStats] = useState<{ favs: number } | null>(null);
   const [recent, setRecent] = useState<RecentItem[]>([]);
 
   // نستخدم user.id (string) كـdependency بدل كائن user (يتغيّر مرجعه عند كل auth event)
-  // لتفادي تكرار الاستعلامات على usage_logs و generations عند re-renders.
+  // لتفادي تكرار استعلامات المفضلة وآخر التوليدات عند re-renders.
   const userId = user?.id;
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
     (async () => {
-      const month = currentMonth();
-      const [usageRes, favsRes, recentRes] = await Promise.all([
-        supabase
-          .from("usage_logs")
-          .select("text_count, image_count")
-          .eq("user_id", userId)
-          .eq("month", month)
-          .maybeSingle(),
+      const [favsRes, recentRes] = await Promise.all([
         supabase
           .from("generations")
           .select("id", { count: "exact", head: true })
@@ -81,8 +71,6 @@ function DashboardPage() {
       ]);
       if (cancelled) return;
       setStats({
-        text: usageRes.data?.text_count ?? 0,
-        image: usageRes.data?.image_count ?? 0,
         favs: favsRes.count ?? 0,
       });
       setRecent((recentRes.data as RecentItem[] | null) ?? []);
@@ -95,10 +83,12 @@ function DashboardPage() {
   const plan = (profile?.plan ?? "free") as PlanId;
   const planInfo = PLAN_BY_ID[plan] ?? PLAN_BY_ID.free;
   const limits = {
-    text: planInfo.dailyTextCap,
-    image: planInfo.dailyImageCap,
+    text: creditsSummary?.dailyTextCap ?? planInfo.dailyTextCap,
+    image: creditsSummary?.dailyImageCap ?? planInfo.dailyImageCap,
     label: PLAN_LABELS[planInfo.id],
   };
+  const dailyTextUsed = creditsSummary?.dailyTextUsed ?? 0;
+  const dailyImageUsed = creditsSummary?.dailyImageUsed ?? 0;
   const completionPct = getMemoryCoverage(profile);
   const memorySignals = getMemorySignals(profile);
   const weeklyRecommendation = getWeeklyRecommendation(profile);
@@ -212,8 +202,8 @@ function DashboardPage() {
       {/* إحصائيات */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "توليدات نصية (هذا الشهر)", value: `${stats?.text ?? 0} / ${limits.text}`, icon: Wand2, color: "text-primary" },
-          { label: "توليدات صور (هذا الشهر)", value: `${stats?.image ?? 0} / ${limits.image}`, icon: ImageIcon, color: "text-gold" },
+          { label: "توليدات نصية (اليوم)", value: `${dailyTextUsed} / ${limits.text}`, icon: Wand2, color: "text-primary" },
+          { label: "توليدات صور (اليوم)", value: `${dailyImageUsed} / ${limits.image}`, icon: ImageIcon, color: "text-gold" },
           { label: "المفضلة", value: `${stats?.favs ?? 0}`, icon: Star, color: "text-warning" },
           { label: "الباقة", value: limits.label, icon: Sparkles, color: "text-success" },
         ].map((s) => (
@@ -247,9 +237,9 @@ function DashboardPage() {
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <h3 className="text-base font-bold">حصة الصور</h3>
-          <Progress value={limits.image === 0 ? 0 : ((stats?.image ?? 0) / limits.image) * 100} className="mt-3" />
+          <Progress value={limits.image === 0 ? 0 : (dailyImageUsed / limits.image) * 100} className="mt-3" />
           <p className="mt-2 text-xs text-muted-foreground">
-            {stats?.image ?? 0} من {limits.image} صورة هذا الشهر
+            {dailyImageUsed} من {limits.image} صورة اليوم
           </p>
           <Button asChild size="sm" variant="link" className="mt-2 h-auto p-0 text-primary">
             <Link to="/dashboard/usage">عرض التفاصيل ←</Link>
