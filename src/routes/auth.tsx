@@ -109,7 +109,8 @@ function AuthPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        toast.error(result.error.message || "فشل الاتصال بـGoogle");
+        console.warn("[auth] google oauth rejected", result.error.message);
+        toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
         setGoogleLoading(false);
         return;
       }
