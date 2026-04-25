@@ -8,17 +8,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertAdmin, type DbClient } from "@/server/admin-auth";
 import { z } from "zod";
-
-async function assertAdmin(supabase: any, userId: string) {
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (!data) throw new Error("Forbidden: admin role required");
-}
 
 // ───────────────── Types ─────────────────
 export type ContactStatus = "new" | "contacted" | "closed";
@@ -54,7 +45,7 @@ export const getContactSubmissions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ListInput.parse(input ?? {}))
   .handler(async ({ data, context }): Promise<ContactSubmissionsList> => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
     // Counts (deduplicated, simple)
@@ -104,7 +95,7 @@ export const updateContactStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => UpdateInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
     const { error } = await supabaseAdmin
@@ -133,7 +124,7 @@ export const updateContactStatus = createServerFn({ method: "POST" })
 export const getNewContactCount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ count: number }> => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
     const { count } = await supabaseAdmin
       .from("contact_submissions")
