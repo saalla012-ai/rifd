@@ -15,13 +15,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
 
-type ImgSearch = { template?: string; prompt?: string };
+type ImgSearch = { template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-image")({
   head: () => ({ meta: [{ title: "توليد صور — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): ImgSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+    campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
   }),
   component: GenerateImagePage,
 });
@@ -53,7 +54,7 @@ function GenerateImagePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateImage({
-        data: { prompt, templateTitle: template.title, templateId: template.id, quality },
+        data: { prompt, templateTitle: template.title, templateId: template.id, quality, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setImageUrl(out.url);
