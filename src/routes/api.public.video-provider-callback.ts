@@ -7,12 +7,15 @@ import type { Json } from "@/integrations/supabase/types";
 const CALLBACK_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, X-Video-Callback-Signature",
+  "Access-Control-Allow-Headers": "Content-Type, X-Video-Callback-Signature, X-Video-Callback-Timestamp",
   "Access-Control-Max-Age": "86400",
 } as const;
 
+const SIGNATURE_TOLERANCE_MS = 5 * 60 * 1000;
+
 const CallbackSchema = z.object({
   jobId: z.string().uuid(),
+  providerKey: z.string().trim().min(2).max(80).optional(),
   status: z.enum(["completed", "failed"]),
   resultUrl: z.string().trim().url().max(2000).optional(),
   errorMessage: z.string().trim().max(500).optional(),
@@ -32,12 +35,22 @@ function safeEqual(a: string, b: string) {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-function verifySignature(rawBody: string, signature: string | null) {
+function verifySignature(rawBody: string, signature: string | null, timestamp: string | null) {
   const secret = process.env.VIDEO_PROVIDER_CALLBACK_SECRET;
   if (!secret) return false;
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+
+  const ts = Number(timestamp);
+  if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > SIGNATURE_TOLERANCE_MS) return false;
+
+  const signedPayload = `${timestamp}.${rawBody}`;
+  const expected = createHmac("sha256", secret).update(signedPayload).digest("hex");
   const normalized = signature?.replace(/^sha256=/i, "") ?? "";
   return Boolean(normalized) && safeEqual(normalized, expected);
+}
+
+function isCallbackAllowed(job: { provider: string; metadata: Json | null }) {
+  const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
+  return job.provider === "google_flow_bridge" || metadata.provider_mode === "bridge" || metadata.allow_provider_callback === true;
 }
 
 function appendCallbackAttempt(metadata: Record<string, unknown>, params: { provider: string; ok: boolean; status: string; error?: string }) {
