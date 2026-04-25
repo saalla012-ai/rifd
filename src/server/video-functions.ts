@@ -141,6 +141,39 @@ async function getReplicatePrediction(predictionId: string) {
   return { status: prediction.status ?? "processing", resultUrl: typeof output === "string" ? output : null, error: prediction.error };
 }
 
+async function markProcessingJobRefunded(params: {
+  jobId: string;
+  refundLedgerId: string | null;
+  errorMessage: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const updatePayload: Database["public"]["Tables"]["video_jobs"]["Update"] = {
+    status: "refunded",
+    error_message: params.errorMessage,
+    ...(params.refundLedgerId ? { refund_ledger_id: params.refundLedgerId } : {}),
+    ...(params.metadata ? { metadata: params.metadata } : {}),
+  };
+
+  const { data, error } = await supabaseAdmin
+    .from("video_jobs")
+    .update(updatePayload)
+    .eq("id", params.jobId)
+    .eq("status", "processing")
+    .select("*")
+    .maybeSingle();
+
+  if (error) throw new Error(`فشل تحديث مهمة الفيديو: ${error.message}`);
+  if (data) return data as VideoJobRow;
+
+  const { data: current, error: readError } = await supabaseAdmin
+    .from("video_jobs")
+    .select("*")
+    .eq("id", params.jobId)
+    .single();
+  if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو بعد الاسترداد: ${readError?.message ?? "غير موجودة"}`);
+  return current as VideoJobRow;
+}
+
 export const generateVideo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => videoInputSchema.parse(input))
