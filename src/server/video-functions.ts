@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { consume, consumeVideoDailyQuota, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, type VideoDuration, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
 
@@ -151,7 +151,7 @@ async function markProcessingJobRefunded(params: {
     status: "refunded",
     error_message: params.errorMessage,
     ...(params.refundLedgerId ? { refund_ledger_id: params.refundLedgerId } : {}),
-    ...(params.metadata ? { metadata: params.metadata } : {}),
+    ...(params.metadata ? { metadata: params.metadata as Json } : {}),
   };
 
   const { data, error } = await supabaseAdmin
