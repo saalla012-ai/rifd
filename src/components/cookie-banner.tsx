@@ -47,13 +47,13 @@ export function CookieBanner() {
   };
 
   return (
-      <div
-        role="dialog"
-        aria-live="polite"
-        aria-label="إشعار ملفات تعريف الارتباط"
-        className="fixed inset-x-0 bottom-16 z-[60] px-3 pb-3 sm:bottom-4 sm:px-6 sm:pb-0 lg:start-auto lg:end-6 lg:w-full lg:max-w-sm lg:px-0"
-      >
-      <div className="mx-auto flex max-w-3xl flex-col gap-2 rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md sm:flex-row sm:items-center sm:gap-4 sm:p-5 lg:mx-0 lg:flex-col lg:items-start lg:p-4">
+    <div
+      role="dialog"
+      aria-live="polite"
+      aria-label="إشعار ملفات تعريف الارتباط"
+      className="fixed inset-x-0 bottom-3 z-[60] px-3 sm:bottom-4 sm:px-6 lg:start-auto lg:end-6 lg:w-full lg:max-w-sm lg:px-0"
+    >
+      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md sm:max-w-xl sm:flex-row sm:items-center sm:gap-4 lg:mx-0 lg:max-w-sm lg:flex-col lg:items-start lg:p-4">
         <button
           type="button"
           onClick={reject}
@@ -70,7 +70,7 @@ export function CookieBanner() {
           </Link>
           .
         </div>
-        <div className="flex shrink-0 items-center gap-2 lg:w-full lg:justify-start">
+        <div className="flex shrink-0 items-center justify-end gap-2 lg:w-full lg:justify-start">
           <Button variant="ghost" size="sm" onClick={reject} className="h-9 px-3 text-muted-foreground">
             رفض
           </Button>
