@@ -93,7 +93,7 @@ export function HeroProofFilm() {
                 <div className="text-xs font-bold text-gold-foreground">المحصلة النهائية</div>
                 <div className="mt-1 text-sm font-extrabold">وصف واحد يجهّز لك منشوراً + صورة + فكرة ريلز + دعوة شراء</div>
               </div>
-              <div className="inline-flex self-start rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground sm:self-auto">تقدّم V8: 95%</div>
+              <div className="inline-flex self-start rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground sm:self-auto">جاهزية V9: 96%</div>
             </div>
             <div className="mt-3 flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-bold text-primary">
               <Sparkles className="h-3.5 w-3.5" />
