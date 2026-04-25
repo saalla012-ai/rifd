@@ -493,13 +493,15 @@ export const generateVideo = createServerFn({ method: "POST" })
       const effectiveRefundLedgerId = refundLedgerId ?? (ledgerId ? await getRefundLedgerId(supabaseAdmin, ledgerId) : null);
       if (dailyQuotaConsumed && (!ledgerId || refundLedgerId)) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
+        const { data: failedJob } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
         await markProcessingJobRefunded({
           jobId,
           refundLedgerId: effectiveRefundLedgerId,
           errorMessage: publicVideoError(e).message,
           metadata: {
+            ...((failedJob?.metadata as Record<string, unknown> | null) ?? {}),
             failure_stage: "generate_video",
-            original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
+            original_error: errorMessage(e),
             refund_ledger_id: effectiveRefundLedgerId,
           },
         });
@@ -547,7 +549,7 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
       await markProviderFailure(row.provider, e);
       await supabaseAdmin
         .from("video_jobs")
-        .update({ metadata: { ...(row.metadata as Record<string, unknown> | null), last_check_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500), last_checked_at: new Date().toISOString() } as Json })
+        .update({ metadata: mergeMetadata(row.metadata, { last_check_error: errorMessage(e), last_checked_at: new Date().toISOString() }) })
         .eq("id", row.id);
       throw publicVideoError(e);
     }
@@ -555,7 +557,7 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (!TERMINAL_PROVIDER_STATUSES.has(prediction.status)) {
       await supabaseAdmin
         .from("video_jobs")
-        .update({ metadata: { ...(row.metadata as Record<string, unknown> | null), ...(prediction.metadata ?? {}), provider_status: prediction.status, last_checked_at: new Date().toISOString() } as Json })
+        .update({ metadata: mergeMetadata(row.metadata, { ...(prediction.metadata ?? {}), provider_status: prediction.status, last_checked_at: new Date().toISOString() }) })
         .eq("id", row.id);
     }
 
