@@ -118,15 +118,17 @@ function DashboardNotFound() {
 
 function DashboardPending() {
   return (
-    <DashboardShell>
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-72" />
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-6xl space-y-4">
+        <Skeleton className="h-8 w-44" />
+        <Skeleton className="h-4 w-64" />
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
         </div>
       </div>
-    </DashboardShell>
+    </div>
   );
 }
