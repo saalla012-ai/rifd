@@ -275,16 +275,17 @@ export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" }
       .limit(300);
     if (error) throw new Error(`فشل جلب سجل محاولات المزودين: ${error.message}`);
 
-    const byProvider = new Map<string, { total: number; success: number; failed: number; latency: number[]; lastStatus: string | null; lastAt: string | null }>();
+    const byProvider = new Map<string, { total: number; success: number; failed: number; latency: number[]; errors: Map<string, number>; lastStatus: string | null; lastAt: string | null }>();
     for (const row of data ?? []) {
       const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
       const attempts = Array.isArray(metadata.provider_attempts) ? metadata.provider_attempts as ProviderAttempt[] : [{ provider: row.provider, ok: undefined, status: String(metadata.provider_status ?? "unknown"), finished_at: row.created_at }];
       for (const attempt of attempts) {
         const key = attempt.provider || row.provider || "unknown";
-        const current = byProvider.get(key) ?? { total: 0, success: 0, failed: 0, latency: [], lastStatus: null, lastAt: null };
+        const current = byProvider.get(key) ?? { total: 0, success: 0, failed: 0, latency: [], errors: new Map<string, number>(), lastStatus: null, lastAt: null };
         current.total += 1;
         if (attempt.ok === true) current.success += 1;
         if (attempt.ok === false) current.failed += 1;
+        if (attempt.ok === false && attempt.error) current.errors.set(attempt.error, (current.errors.get(attempt.error) ?? 0) + 1);
         if (typeof attempt.latency_ms === "number" && Number.isFinite(attempt.latency_ms)) current.latency.push(attempt.latency_ms);
         const finishedAt = attempt.finished_at ?? row.created_at;
         if (!current.lastAt || new Date(finishedAt).getTime() > new Date(current.lastAt).getTime()) {
@@ -296,15 +297,21 @@ export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" }
     }
 
     return {
-      attempts: Array.from(byProvider.entries()).map(([provider, item]) => ({
-        provider,
-        total: item.total,
-        success: item.success,
-        failed: item.failed,
-        avgLatencyMs: item.latency.length ? Math.round(item.latency.reduce((sum, value) => sum + value, 0) / item.latency.length) : null,
-        lastStatus: item.lastStatus,
-        lastAt: item.lastAt,
-      })).sort((a, b) => b.total - a.total),
+      attempts: Array.from(byProvider.entries()).map(([provider, item]) => {
+        const topError = Array.from(item.errors.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+        return {
+          provider,
+          total: item.total,
+          success: item.success,
+          failed: item.failed,
+          successRate: item.total ? Math.round((item.success / item.total) * 100) : 0,
+          failureRate: item.total ? Math.round((item.failed / item.total) * 100) : 0,
+          avgLatencyMs: item.latency.length ? Math.round(item.latency.reduce((sum, value) => sum + value, 0) / item.latency.length) : null,
+          topError,
+          lastStatus: item.lastStatus,
+          lastAt: item.lastAt,
+        };
+      }).sort((a, b) => b.total - a.total),
     };
   });
 
