@@ -9,6 +9,9 @@ export async function assertAdmin(db: DbClient, userId: string): Promise<void> {
     _role: "admin",
   });
 
-  if (error) throw new Error(`فشل التحقق من الصلاحيات: ${error.message}`);
+  if (error) {
+    console.error("Admin role verification failed", { userId, message: error.message });
+    throw new Error("تعذر التحقق من الصلاحيات حالياً");
+  }
   if (data !== true) throw new Error("هذه الصفحة للأدمن فقط");
 }
