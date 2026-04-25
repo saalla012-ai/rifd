@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, type DbClient } from "@/server/admin-auth";
 import type { Database } from "@/integrations/supabase/types";
+import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 
 type Severity = "critical" | "high" | "medium" | "low";
 type SignalCategory = "credits" | "video" | "quota" | "campaigns";
@@ -60,6 +61,10 @@ function addUserMetric<T extends { user_id: string }>(map: Map<string, T[]>, row
 
 function profileFor(map: Map<string, ProfileLite>, userId: string) {
   return map.get(userId) ?? { id: userId, email: null, store_name: null, plan: null };
+}
+
+function planFor(profile: ProfileLite) {
+  return PLAN_BY_ID[(profile.plan as PlanId) || "free"] ?? PLAN_BY_ID.free;
 }
 
 function signal(base: Omit<AbuseSignal, "user_email" | "user_store" | "plan">, profiles: Map<string, ProfileLite>): AbuseSignal {
@@ -142,15 +147,19 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
     const signals: AbuseSignal[] = [];
 
     for (const [uid, rows] of ledgerByUser) {
+      const profile = profileFor(profileMap, uid);
+      const plan = planFor(profile);
       const consumed = rows.filter((row) => row.txn_type === "consume_video").reduce((sum, row) => sum + Math.abs(row.amount), 0);
       const refunds = rows.filter((row) => row.txn_type === "refund").length;
       const adminAdjustAbs = rows.filter((row) => row.txn_type === "admin_adjust").reduce((sum, row) => sum + Math.abs(row.amount), 0);
       const last = rows[0]?.created_at ?? since;
+      const highCreditThreshold = Math.max(300, Math.round(plan.monthlyCredits * 0.18));
+      const criticalCreditThreshold = Math.max(900, Math.round(plan.monthlyCredits * 0.35));
 
-      if (consumed >= 240) {
-        signals.push(signal({ id: `credits-spike-${uid}`, user_id: uid, severity: "critical", category: "credits", title: "استهلاك نقاط فيديو مرتفع جداً", details: `استهلك المستخدم ${consumed} نقطة فيديو خلال ${data.windowHours} ساعة.`, metric: `${consumed} نقطة`, action_hint: "راجع الفيديوهات الناتجة، مصدر الشحن، واحتمال مشاركة الحساب.", last_seen_at: last }, profileMap));
-      } else if (consumed >= 120) {
-        signals.push(signal({ id: `credits-high-${uid}`, user_id: uid, severity: "high", category: "credits", title: "استهلاك نقاط فيديو مرتفع", details: `استهلاك يتجاوز عتبة المراقبة التشغيلية خلال نافذة قصيرة.`, metric: `${consumed} نقطة`, action_hint: "راقب الحساب قبل أي ضبط يدوي أو زيادة حدود.", last_seen_at: last }, profileMap));
+      if (consumed >= criticalCreditThreshold) {
+        signals.push(signal({ id: `credits-spike-${uid}`, user_id: uid, severity: "critical", category: "credits", title: "استهلاك نقاط فيديو مرتفع جداً", details: `استهلك المستخدم ${consumed} نقطة فيديو خلال ${data.windowHours} ساعة، بما يتجاوز نمط باقة ${plan.name}.`, metric: `${consumed} نقطة`, action_hint: "راجع الفيديوهات الناتجة، مصدر الشحن، واحتمال مشاركة الحساب.", last_seen_at: last }, profileMap));
+      } else if (consumed >= highCreditThreshold) {
+        signals.push(signal({ id: `credits-high-${uid}`, user_id: uid, severity: "high", category: "credits", title: "استهلاك نقاط فيديو مرتفع", details: `استهلاك يتجاوز عتبة المراقبة التشغيلية لباقته خلال نافذة قصيرة.`, metric: `${consumed} نقطة`, action_hint: "راقب الحساب قبل أي ضبط يدوي أو زيادة حدود.", last_seen_at: last }, profileMap));
       }
 
       if (refunds >= 3) {
