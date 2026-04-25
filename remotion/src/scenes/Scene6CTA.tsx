@@ -66,7 +66,7 @@ export const Scene6CTA: React.FC = () => {
             lineHeight: 1.5,
           }}
         >
-            الصورة تظهر أولاً، ثم تتبعها النسخة والـ Reel وCTA بنفس منطق البيع
+          الصورة تظهر أولاً، ثم تتبعها النسخة والـ Reel وCTA بنفس منطق البيع
         </div>
 
         <div
@@ -84,8 +84,18 @@ export const Scene6CTA: React.FC = () => {
             boxShadow: "0 12px 28px rgba(15,31,24,0.08)",
           }}
         >
-          <div style={{ width: 14, height: 14, borderRadius: "50%", background: COLORS.goldGlow, boxShadow: `0 0 22px ${COLORS.goldGlow}` }} />
-          <div style={{ fontSize: 26, fontWeight: 800, color: COLORS.greenDeep }}>تجربة مجانية تبدأ من أول صورة وأول زاوية بيع</div>
+          <div
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              background: COLORS.goldGlow,
+              boxShadow: `0 0 22px ${COLORS.goldGlow}`,
+            }}
+          />
+          <div style={{ fontSize: 26, fontWeight: 800, color: COLORS.greenDeep }}>
+            تجربة مجانية تبدأ من أول صورة وأول زاوية بيع
+          </div>
         </div>
 
         <div
@@ -105,7 +115,7 @@ export const Scene6CTA: React.FC = () => {
             letterSpacing: 0,
           }}
         >
-            www.rifd.site
+          www.rifd.site
         </div>
 
         <div
@@ -118,27 +128,25 @@ export const Scene6CTA: React.FC = () => {
             opacity: chipsIn,
           }}
         >
-          {[
-                "✓ 5 توليدات أولية مجانية",
-            "✓ بدون بطاقة ائتمان",
-                "✓ مناسب لمتجرك السعودي",
-          ].map((chip) => (
-            <div
-              key={chip}
-              style={{
-                background: COLORS.white,
-                color: COLORS.green,
-                padding: "16px 28px",
-                borderRadius: 100,
-                fontSize: 28,
-                fontWeight: 700,
-                border: `2px solid ${COLORS.green}30`,
-                boxShadow: "0 8px 20px rgba(15,31,24,0.08)",
-              }}
-            >
-              {chip}
-            </div>
-          ))}
+          {["✓ 5 توليدات أولية مجانية", "✓ بدون بطاقة ائتمان", "✓ مناسب لمتجرك السعودي"].map(
+            (chip) => (
+              <div
+                key={chip}
+                style={{
+                  background: COLORS.white,
+                  color: COLORS.green,
+                  padding: "16px 28px",
+                  borderRadius: 100,
+                  fontSize: 28,
+                  fontWeight: 700,
+                  border: `2px solid ${COLORS.green}30`,
+                  boxShadow: "0 8px 20px rgba(15,31,24,0.08)",
+                }}
+              >
+                {chip}
+              </div>
+            ),
+          )}
         </div>
       </div>
     </AbsoluteFill>

@@ -19,11 +19,20 @@ export const Scene3LogoStamp: React.FC = () => {
   const blur = interpolate(slam, [0, 0.5], [12, 0], { extrapolateRight: "clamp" });
 
   // Shockwave ring
-  const ring = interpolate(frame, [10, 35], [0, 1.6], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const ringOpacity = interpolate(frame, [10, 35], [0.7, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const ring = interpolate(frame, [10, 35], [0, 1.6], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const ringOpacity = interpolate(frame, [10, 35], [0.7, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   // Underline sweep
-  const underline = interpolate(frame, [18, 38], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const underline = interpolate(frame, [18, 38], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   return (
     <AbsoluteFill

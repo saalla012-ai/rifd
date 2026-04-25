@@ -26,7 +26,7 @@ const PostCard: React.FC<{ index: number; text: string }> = ({ index, text }) =>
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const rotate = interpolate(frame - delay - 20, [0, 30], [0, (index % 2 ? 25 : -25)], {
+  const rotate = interpolate(frame - delay - 20, [0, 30], [0, index % 2 ? 25 : -25], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -50,7 +50,9 @@ const PostCard: React.FC<{ index: number; text: string }> = ({ index, text }) =>
         marginBottom: 18,
       }}
     >
-      <div style={{ fontSize: 26, fontWeight: 400, color: COLORS.ink, opacity: 0.85, lineHeight: 1.5 }}>
+      <div
+        style={{ fontSize: 26, fontWeight: 400, color: COLORS.ink, opacity: 0.85, lineHeight: 1.5 }}
+      >
         {text}
       </div>
       {/* Red X stamp */}
@@ -103,7 +105,7 @@ export const Scene2Pain: React.FC = () => {
           transform: `translateY(${interpolate(titleIn, [0, 1], [-30, 0])}px)`,
         }}
       >
-          وتطلع النتيجة عامة؟
+        وتطلع النتيجة عامة؟
       </div>
 
       <div style={{ position: "relative" }}>

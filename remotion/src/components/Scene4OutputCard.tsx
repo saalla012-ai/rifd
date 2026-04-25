@@ -51,8 +51,27 @@ export const Scene4OutputCard: React.FC<{
         >
           {meta.label}
         </div>
-        <div style={{ fontSize: 27, fontWeight: 900, color: COLORS.ink, marginTop: 16, lineHeight: 1.25 }}>{title}</div>
-        <div style={{ fontSize: 19, fontWeight: 500, color: COLORS.ink, opacity: 0.82, marginTop: 12, lineHeight: 1.55 }}>
+        <div
+          style={{
+            fontSize: 27,
+            fontWeight: 900,
+            color: COLORS.ink,
+            marginTop: 16,
+            lineHeight: 1.25,
+          }}
+        >
+          {title}
+        </div>
+        <div
+          style={{
+            fontSize: 19,
+            fontWeight: 500,
+            color: COLORS.ink,
+            opacity: 0.82,
+            marginTop: 12,
+            lineHeight: 1.55,
+          }}
+        >
           {body}
         </div>
       </div>

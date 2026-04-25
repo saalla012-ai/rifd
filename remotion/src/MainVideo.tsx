@@ -48,7 +48,7 @@ export const MainVideo: React.FC = () => {
           presentation={wipe({ direction: "from-right" })}
           timing={springTiming({ config: { damping: 200 }, durationInFrames: 8 })}
         />
-         <TransitionSeries.Sequence durationInFrames={200}>
+        <TransitionSeries.Sequence durationInFrames={200}>
           <Scene4Magic />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
@@ -62,7 +62,7 @@ export const MainVideo: React.FC = () => {
           presentation={fade()}
           timing={linearTiming({ durationInFrames: 8 })}
         />
-         <TransitionSeries.Sequence durationInFrames={200}>
+        <TransitionSeries.Sequence durationInFrames={200}>
           <Scene6CTA />
         </TransitionSeries.Sequence>
       </TransitionSeries>

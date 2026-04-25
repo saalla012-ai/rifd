@@ -10,8 +10,8 @@ const PARTICLES = Array.from({ length: 22 }, (_, i) => ({
   size: 6 + ((i * 13) % 18),
   baseX: (i * 71) % 1080,
   baseY: (i * 137) % 1350,
-  speed: 0.15 + ((i % 7) * 0.04),
-  amp: 30 + ((i % 5) * 12),
+  speed: 0.15 + (i % 7) * 0.04,
+  amp: 30 + (i % 5) * 12,
   phase: i * 0.7,
 }));
 

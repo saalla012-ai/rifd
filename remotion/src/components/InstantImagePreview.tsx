@@ -29,7 +29,14 @@ export const InstantImagePreview: React.FC = () => {
         transform: `translateY(${interpolate(shellIn, [0, 1], [36, 0])}px) scale(${interpolate(shellIn, [0, 1], [0.92, 1])})`,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
         <div style={{ display: "flex", gap: 8 }}>
           {[COLORS.red, COLORS.gold, COLORS.greenGlow].map((color) => (
             <div
@@ -43,7 +50,9 @@ export const InstantImagePreview: React.FC = () => {
             />
           ))}
         </div>
-        <div style={{ fontSize: 18, fontWeight: 800, color: COLORS.greenDeep }}>تجربة الصورة الفورية</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: COLORS.greenDeep }}>
+          تجربة الصورة الفورية
+        </div>
       </div>
 
       <div
@@ -149,9 +158,24 @@ export const InstantImagePreview: React.FC = () => {
                 transform: `translateY(${interpolate(artIn, [0, 1], [26, 0])}px)`,
               }}
             >
-              <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.green, marginBottom: 10 }}>الصورة تُبنى من نفس الوصف</div>
-              <div style={{ fontSize: 40, fontWeight: 900, color: COLORS.greenDeep, lineHeight: 1.2 }}>ثبات يبان من أول لقطة</div>
-              <div style={{ fontSize: 19, fontWeight: 500, color: COLORS.ink, opacity: 0.78, marginTop: 12, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.green, marginBottom: 10 }}>
+                الصورة تُبنى من نفس الوصف
+              </div>
+              <div
+                style={{ fontSize: 40, fontWeight: 900, color: COLORS.greenDeep, lineHeight: 1.2 }}
+              >
+                ثبات يبان من أول لقطة
+              </div>
+              <div
+                style={{
+                  fontSize: 19,
+                  fontWeight: 500,
+                  color: COLORS.ink,
+                  opacity: 0.78,
+                  marginTop: 12,
+                  lineHeight: 1.5,
+                }}
+              >
                 تكوين بصري أنيق + عرض واضح + زاوية بيع قابلة للنشر.
               </div>
             </div>
@@ -185,11 +209,20 @@ export const InstantImagePreview: React.FC = () => {
               bottom: 26,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+            >
               <div style={{ fontSize: 16, fontWeight: 800, color: COLORS.greenDeep }}>
                 {progress < 1 ? "يبني الصورة والنسخة معاً" : "اكتملت المعاينة الأولى"}
               </div>
-              <div style={{ fontSize: 16, fontWeight: 900, color: COLORS.green }}>{Math.round(progress * 100)}%</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: COLORS.green }}>
+                {Math.round(progress * 100)}%
+              </div>
             </div>
             <div
               style={{
