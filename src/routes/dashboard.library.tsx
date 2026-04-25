@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { listVideoJobs } from "@/server/video-functions";
 
 export const Route = createFileRoute("/dashboard/library")({
   head: () => ({ meta: [{ title: "مكتبتي — رِفد" }] }),
@@ -24,11 +26,23 @@ type Generation = {
   metadata: { template_title?: string } | null;
 };
 
+type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
+
+const VIDEO_STATUS_LABEL: Record<string, string> = {
+  processing: "قيد المعالجة",
+  completed: "مكتمل",
+  refunded: "تم رد النقاط",
+  failed: "فشل",
+  pending: "بانتظار المعالجة",
+};
+
 function LibraryPage() {
   const { user } = useAuth();
+  const listVideoJobsFn = useServerFn(listVideoJobs);
   const [items, setItems] = useState<Generation[]>([]);
+  const [videoJobs, setVideoJobs] = useState<VideoJob[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "text" | "image" | "fav">("all");
+  const [filter, setFilter] = useState<"all" | "text" | "image" | "video" | "fav">("all");
 
   useEffect(() => {
     if (!user) return;
@@ -46,6 +60,11 @@ function LibraryPage() {
       .limit(100);
     if (error) toast.error(error.message);
     setItems((data as Generation[] | null) ?? []);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const out = await listVideoJobsFn({ headers: { Authorization: `Bearer ${session.access_token}` } });
+      setVideoJobs(out.jobs);
+    }
     setLoading(false);
   };
 
@@ -77,6 +96,7 @@ function LibraryPage() {
   const filtered = items.filter((i) => {
     if (filter === "all") return true;
     if (filter === "fav") return i.is_favorite;
+    if (filter === "video") return false;
     if (filter === "text") return i.type === "text";
     if (filter === "image") return i.type === "image" || i.type === "image_enhance";
     return true;
@@ -97,6 +117,7 @@ function LibraryPage() {
           { id: "all", label: "الكل" },
           { id: "text", label: "نصوص" },
           { id: "image", label: "صور" },
+          { id: "video", label: "فيديو" },
           { id: "fav", label: "المفضلة ⭐" },
         ].map((f) => (
           <button
@@ -116,7 +137,7 @@ function LibraryPage() {
 
       {loading ? (
         <div className="mt-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-      ) : filtered.length === 0 ? (
+      ) : filtered.length === 0 && (filter !== "video" || videoJobs.length === 0) ? (
         <div className="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
           ما عندك توليدات بعد. ابدأ من{" "}
           <Link to="/dashboard/generate-text" className="text-primary hover:underline">توليد نص</Link>{" "}
@@ -127,8 +148,8 @@ function LibraryPage() {
         </div>
       ) : (
         <>
-        <VideoJobsSection />
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {(filter === "all" || filter === "video") && <VideoJobsSection jobs={videoJobs} />}
+        {filter !== "video" && <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((g) => (
             <article key={g.id} className="rounded-xl border border-border bg-card p-4 shadow-soft">
               <div className="flex items-start justify-between gap-2">
@@ -170,28 +191,50 @@ function LibraryPage() {
               </div>
             </article>
           ))}
-        </div>
+        </div>}
         </>
       )}
     </DashboardShell>
   );
 }
 
-function VideoJobsSection() {
+function VideoJobsSection({ jobs }: { jobs: VideoJob[] }) {
   return (
     <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <Clapperboard className="h-4 w-4 text-primary" />
           <div>
-            <h2 className="text-sm font-extrabold">فيديوهاتك محفوظة في صفحة توليد الفيديو</h2>
-            <p className="text-xs text-muted-foreground">الفيديوهات تستخدم جدول مهام مستقل لضمان خصم واسترجاع نقاط الفيديو بأمان.</p>
+            <h2 className="text-sm font-extrabold">فيديوهاتك</h2>
+            <p className="text-xs text-muted-foreground">كل مهام الفيديو محفوظة بحالتها ونقاطها داخل المكتبة.</p>
           </div>
         </div>
         <Button asChild size="sm" variant="outline">
           <Link to="/dashboard/generate-video">فتح الفيديوهات</Link>
         </Button>
       </div>
+      {jobs.length > 0 && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {jobs.slice(0, 9).map((job) => (
+            <article key={job.id} className="overflow-hidden rounded-lg border border-border bg-secondary/20">
+              <div className="flex aspect-video items-center justify-center bg-secondary/50">
+                {job.result_url ? <video src={job.result_url} controls className="h-full w-full object-cover" /> : <Clapperboard className="h-7 w-7 text-primary" />}
+              </div>
+              <div className="space-y-2 p-3 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold">{job.quality === "quality" ? "Quality" : "Fast"}</span>
+                  <span className="rounded-full bg-background px-2 py-0.5 font-bold">{VIDEO_STATUS_LABEL[job.status] ?? job.status}</span>
+                </div>
+                <p className="line-clamp-2 text-muted-foreground">{job.prompt}</p>
+                <div className="flex items-center justify-between border-t border-border pt-2 text-[10px] text-muted-foreground">
+                  <span>{new Date(job.created_at).toLocaleDateString("ar-SA")}</span>
+                  <span>{job.credits_charged.toLocaleString("ar-SA")} نقطة</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
