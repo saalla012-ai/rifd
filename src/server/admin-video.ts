@@ -247,7 +247,7 @@ export const completeManualVideoJob = createServerFn({ method: "POST" })
     if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
 
     const metadata = {
-      ...((current.metadata as Record<string, unknown> | null) ?? {}),
+      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: true, status: "manual_completed" }) as Record<string, unknown>),
       manual_completed_by: userId,
       manual_completed_at: new Date().toISOString(),
       provider_status: "succeeded",
@@ -282,7 +282,7 @@ export const refundManualVideoJob = createServerFn({ method: "POST" })
     if (newlyRefunded) await supabaseAdmin.rpc("release_video_daily_quota", { _user_id: current.user_id });
 
     const metadata = {
-      ...((current.metadata as Record<string, unknown> | null) ?? {}),
+      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: false, status: "manual_refunded", error: data.reason }) as Record<string, unknown>),
       manual_refunded_by: userId,
       manual_refunded_at: new Date().toISOString(),
       manual_refund_reason: data.reason,
