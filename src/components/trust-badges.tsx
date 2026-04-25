@@ -16,8 +16,8 @@ const BADGES = [
   },
   {
     icon: FileText,
-    title: "فاتورة ضريبية رسمية",
-    desc: "مع كل اشتراك",
+    title: "فوترة واضحة",
+    desc: "تفاصيل الدفع داخل المنتج",
     color: "text-gold",
   },
   {
@@ -34,8 +34,8 @@ const BADGES = [
   },
   {
     icon: Award,
-    title: "متوافق مع PDPL",
-    desc: "نظام حماية البيانات السعودي",
+    title: "خصوصية واضحة",
+    desc: "سياسات وصول وحماية بيانات",
     color: "text-gold",
   },
 ] as const;
