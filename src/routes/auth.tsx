@@ -17,7 +17,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "تسجيل الدخول — رِفد للتقنية" },
-      { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديد للبدء بـ5 توليدات مجانية وحزمة بداية أقوى." },
+      { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديداً لتجربة توليد محتوى متجرك ضمن حدود بداية واضحة وبدون بطاقة." },
     ],
   }),
   component: AuthPage,
@@ -137,7 +137,7 @@ function AuthPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "login"
                 ? "ادخل لمتابعة توليد المحتوى لمتجرك"
-                : "5 توليدات نص + 2 صورة مجاناً، بدون بطاقة"}
+                : "جرّب رِفد بحدود بداية واضحة، بدون بطاقة"}
             </p>
           </div>
 

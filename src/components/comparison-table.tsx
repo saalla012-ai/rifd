@@ -11,7 +11,7 @@ const ROWS = [
   { label: "توليد صور بنص عربي", chatgpt: "محدود", gemini: "محدود", rifd: true },
   { label: "تحسين صور منتجات", chatgpt: false, gemini: false, rifd: true },
   { label: "لا يحتاج هندسة برومبتات", chatgpt: false, gemini: false, rifd: true },
-  { label: "فاتورة ضريبية SAR", chatgpt: false, gemini: false, rifd: true },
+  { label: "فوترة واضحة بالريال", chatgpt: false, gemini: false, rifd: true },
   { label: "دعم بالعربي", chatgpt: false, gemini: false, rifd: true },
 ];
 
