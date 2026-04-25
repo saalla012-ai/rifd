@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, type DbClient } from "@/server/admin-auth";
 import type { Database } from "@/integrations/supabase/types";
+import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 
 type Severity = "critical" | "high" | "medium" | "low";
 type SignalCategory = "credits" | "video" | "quota" | "campaigns";
@@ -60,6 +61,10 @@ function addUserMetric<T extends { user_id: string }>(map: Map<string, T[]>, row
 
 function profileFor(map: Map<string, ProfileLite>, userId: string) {
   return map.get(userId) ?? { id: userId, email: null, store_name: null, plan: null };
+}
+
+function planFor(profile: ProfileLite) {
+  return PLAN_BY_ID[(profile.plan as PlanId) || "free"] ?? PLAN_BY_ID.free;
 }
 
 function signal(base: Omit<AbuseSignal, "user_email" | "user_store" | "plan">, profiles: Map<string, ProfileLite>): AbuseSignal {
@@ -142,15 +147,19 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
     const signals: AbuseSignal[] = [];
 
     for (const [uid, rows] of ledgerByUser) {
+      const profile = profileFor(profileMap, uid);
+      const plan = planFor(profile);
       const consumed = rows.filter((row) => row.txn_type === "consume_video").reduce((sum, row) => sum + Math.abs(row.amount), 0);
       const refunds = rows.filter((row) => row.txn_type === "refund").length;
       const adminAdjustAbs = rows.filter((row) => row.txn_type === "admin_adjust").reduce((sum, row) => sum + Math.abs(row.amount), 0);
       const last = rows[0]?.created_at ?? since;
+      const highCreditThreshold = Math.max(300, Math.round(plan.monthlyCredits * 0.18));
+      const criticalCreditThreshold = Math.max(900, Math.round(plan.monthlyCredits * 0.35));
 
-      if (consumed >= 240) {
-        signals.push(signal({ id: `credits-spike-${uid}`, user_id: uid, severity: "critical", category: "credits", title: "استهلاك نقاط فيديو مرتفع جداً", details: `استهلك المستخدم ${consumed} نقطة فيديو خلال ${data.windowHours} ساعة.`, metric: `${consumed} نقطة`, action_hint: "راجع الفيديوهات الناتجة، مصدر الشحن، واحتمال مشاركة الحساب.", last_seen_at: last }, profileMap));
-      } else if (consumed >= 120) {
-        signals.push(signal({ id: `credits-high-${uid}`, user_id: uid, severity: "high", category: "credits", title: "استهلاك نقاط فيديو مرتفع", details: `استهلاك يتجاوز عتبة المراقبة التشغيلية خلال نافذة قصيرة.`, metric: `${consumed} نقطة`, action_hint: "راقب الحساب قبل أي ضبط يدوي أو زيادة حدود.", last_seen_at: last }, profileMap));
+      if (consumed >= criticalCreditThreshold) {
+        signals.push(signal({ id: `credits-spike-${uid}`, user_id: uid, severity: "critical", category: "credits", title: "استهلاك نقاط فيديو مرتفع جداً", details: `استهلك المستخدم ${consumed} نقطة فيديو خلال ${data.windowHours} ساعة، بما يتجاوز نمط باقة ${plan.name}.`, metric: `${consumed} نقطة`, action_hint: "راجع الفيديوهات الناتجة، مصدر الشحن، واحتمال مشاركة الحساب.", last_seen_at: last }, profileMap));
+      } else if (consumed >= highCreditThreshold) {
+        signals.push(signal({ id: `credits-high-${uid}`, user_id: uid, severity: "high", category: "credits", title: "استهلاك نقاط فيديو مرتفع", details: `استهلاك يتجاوز عتبة المراقبة التشغيلية لباقته خلال نافذة قصيرة.`, metric: `${consumed} نقطة`, action_hint: "راقب الحساب قبل أي ضبط يدوي أو زيادة حدود.", last_seen_at: last }, profileMap));
       }
 
       if (refunds >= 3) {
@@ -163,16 +172,19 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
     }
 
     for (const [uid, rows] of videosByUser) {
+      const profile = profileFor(profileMap, uid);
+      const plan = planFor(profile);
       const processing = rows.filter((row) => row.status === "processing").length;
       const failedOrRefunded = rows.filter((row) => row.status === "failed" || row.status === "refunded").length;
       const created = rows.length;
       const last = rows[0]?.updated_at ?? rows[0]?.created_at ?? since;
+      const dailyCapWindow = Math.max(plan.dailyVideoCap, 1) * Math.max(1, Math.ceil(data.windowHours / 24));
 
       if (processing >= 2) {
         signals.push(signal({ id: `video-concurrency-${uid}`, user_id: uid, severity: "high", category: "video", title: "وصول حد مهام الفيديو المتزامنة", details: "الحساب يلامس حد المعالجة المتزامنة وقد يسبب ضغط تكلفة أو انتظار طويل.", metric: `${processing} قيد المعالجة`, action_hint: "انتظر اكتمال المهام وافحص مدة المعالجة قبل رفع الحدود.", last_seen_at: last }, profileMap));
       }
-      if (created >= 8) {
-        signals.push(signal({ id: `video-volume-${uid}`, user_id: uid, severity: created >= 15 ? "high" : "medium", category: "video", title: "عدد فيديوهات مرتفع", details: `تم إنشاء ${created} مهام فيديو خلال النافذة المحددة.`, metric: `${created} فيديو`, action_hint: "راجع ملاءمة الباقة وتحقق من عدم وجود أتمتة غير مقصودة.", last_seen_at: last }, profileMap));
+      if (created > dailyCapWindow) {
+        signals.push(signal({ id: `video-volume-${uid}`, user_id: uid, severity: created >= dailyCapWindow * 2 ? "high" : "medium", category: "video", title: "عدد فيديوهات أعلى من نمط الباقة", details: `تم إنشاء ${created} مهام فيديو خلال النافذة المحددة مقابل سقف تشغيلي متوقع ${dailyCapWindow} لباقته.`, metric: `${created} فيديو`, action_hint: "راجع ملاءمة الباقة وتحقق من عدم وجود أتمتة غير مقصودة.", last_seen_at: last }, profileMap));
       }
       if (failedOrRefunded >= 3) {
         signals.push(signal({ id: `video-failures-${uid}`, user_id: uid, severity: "medium", category: "video", title: "فشل/استرداد فيديو متكرر", details: "نسبة الفشل قد تعني Prompt غير مناسب أو مشكلة مزود أو استخدام تجريبي مكثف.", metric: `${failedOrRefunded} حالة`, action_hint: "افتح إدارة الفيديو وراجع error_message وآخر prompt قبل أي إجراء.", last_seen_at: last }, profileMap));
@@ -180,9 +192,13 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
     }
 
     for (const row of usageRows) {
-      if (row.text_count >= 180 || row.image_count >= 45) {
-        const severity: Severity = row.text_count >= 240 || row.image_count >= 65 ? "high" : "medium";
-        signals.push(signal({ id: `daily-quota-${row.user_id}`, user_id: row.user_id, severity, category: "quota", title: "اقتراب أو تجاوز استخدام يومي كثيف", details: "الاستخدام اليومي يقترب من حدود الخطة أو يتجاوز النمط الطبيعي.", metric: `${row.text_count} نص / ${row.image_count} صورة`, action_hint: "راجع الخطة الحالية ونمط الجلسة قبل اعتبارها إساءة.", last_seen_at: row.updated_at }, profileMap));
+      const profile = profileFor(profileMap, row.user_id);
+      const plan = planFor(profile);
+      const textRatio = plan.dailyTextCap > 0 ? row.text_count / plan.dailyTextCap : 0;
+      const imageRatio = plan.dailyImageCap > 0 ? row.image_count / plan.dailyImageCap : 0;
+      if (textRatio >= 0.85 || imageRatio >= 0.85) {
+        const severity: Severity = textRatio >= 1 || imageRatio >= 1 ? "high" : "medium";
+        signals.push(signal({ id: `daily-quota-${row.user_id}`, user_id: row.user_id, severity, category: "quota", title: "اقتراب أو تجاوز استخدام يومي كثيف", details: `الاستخدام اليومي يقترب من حدود باقة ${plan.name} أو يتجاوز النمط الطبيعي.`, metric: `${row.text_count}/${plan.dailyTextCap} نص · ${row.image_count}/${plan.dailyImageCap} صورة`, action_hint: "راجع الخطة الحالية ونمط الجلسة قبل اعتبارها إساءة.", last_seen_at: row.updated_at }, profileMap));
       }
     }
 

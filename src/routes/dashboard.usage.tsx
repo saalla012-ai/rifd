@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Coins, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Coins, FileText, Film, Image as ImageIcon, Loader2 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Progress } from "@/components/ui/progress";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
+import { estimateVideoCount, videoCreditCost } from "@/lib/plan-catalog";
 
 export const Route = createFileRoute("/dashboard/usage")({
   head: () => ({ meta: [{ title: "الاستخدام — رِفد" }] }),
@@ -34,7 +35,10 @@ function UsagePage() {
 
   const textPct = Math.min(100, ((data?.dailyTextUsed ?? 0) / Math.max(1, data?.dailyTextCap ?? 1)) * 100);
   const imgPct = Math.min(100, ((data?.dailyImageUsed ?? 0) / Math.max(1, data?.dailyImageCap ?? 1)) * 100);
+  const videoPct = Math.min(100, ((data?.dailyVideoUsed ?? 0) / Math.max(1, data?.dailyVideoCap ?? 1)) * 100);
   const plan = data?.plan ?? "free";
+  const remainingFastVideos = estimateVideoCount(data?.totalCredits ?? 0, "fast", 5);
+  const remainingQualityVideos = data?.videoQualityAllowed ? estimateVideoCount(data?.totalCredits ?? 0, "quality", 5) : 0;
 
   return (
     <DashboardShell>
@@ -67,6 +71,28 @@ function UsagePage() {
             <div className="rounded-md bg-secondary/40 p-2"><span className="text-muted-foreground">إضافية</span><p className="font-bold">{fmt(data?.topupCredits ?? 0)}</p></div>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">تُستخدم للفيديو فقط</p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 shadow-soft lg:col-span-2">
+          <div className="flex flex-wrap items-start justify-between gap-3 text-sm">
+            <span className="inline-flex items-center gap-2 font-bold"><Film className="h-4 w-4 text-primary" /> حد الفيديو اليومي</span>
+            <span>{fmt(data?.dailyVideoUsed ?? 0)} / {fmt(data?.dailyVideoCap ?? 0)}</span>
+          </div>
+          <Progress value={videoPct} className="mt-3" />
+          <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+            <div className="rounded-lg bg-background/70 p-3">Fast 5ث: <strong>{videoCreditCost("fast", 5)} نقطة</strong> · متبقٍ تقريباً {fmt(remainingFastVideos)} فيديو</div>
+            <div className="rounded-lg bg-background/70 p-3">Quality 5ث: <strong>{videoCreditCost("quality", 5)} نقطة</strong> · {data?.videoQualityAllowed ? `متبقٍ تقريباً ${fmt(remainingQualityVideos)} فيديو` : "غير متاح في باقتك"}</div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5 text-sm leading-7 shadow-soft">
+          <p className="font-extrabold">صلاحيات الباقة</p>
+          <ul className="mt-2 space-y-1 text-muted-foreground">
+            <li>Pro Image: {data?.imageProAllowed ? "متاح" : "غير متاح"}</li>
+            <li>Quality Video: {data?.videoQualityAllowed ? "متاح" : "غير متاح"}</li>
+            <li>أقصى مدة فيديو: {fmt(data?.maxVideoDurationSeconds ?? 5)} ث</li>
+          </ul>
         </div>
       </div>
     </DashboardShell>
