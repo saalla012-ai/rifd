@@ -353,10 +353,10 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
       .single();
     if (lErr || !ledgerRow) throw new Error(`فشل تسجيل الحركة: ${lErr?.message}`);
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: data.amount > 0 ? "admin_grant_credits" : "admin_deduct_credits",
-      table: "user_credits",
+      targetTable: "user_credits",
       targetId: data.userId,
       before: { plan_credits: cur.plan_credits, topup_credits: cur.topup_credits },
       after: { plan_credits: newPlan, topup_credits: newTopup },
@@ -433,10 +433,10 @@ export const updateTopupPackage = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(`فشل التحديث: ${error.message}`);
 
-    await logAudit({
+    await logAdminAudit({
       adminId: userId,
       action: "update_topup_package",
-      table: "topup_packages",
+      targetTable: "topup_packages",
       targetId: data.id,
       before,
       after: { ...before, ...patch },
