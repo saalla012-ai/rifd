@@ -1,7 +1,7 @@
 /**
  * نافذة موحَّدة للأخطاء عند نفاد الحصة/الرصيد.
  * تُميّز بين 3 حالات:
- *   1) text_quota_exceeded — استنفدت 200 توليدة نص يومية → CTA: ارجع غداً + ترقية
+ *   1) text_quota_exceeded — استنفدت حصة النص اليومية → CTA: ارجع غداً + ترقية
  *   2) image_quota_exceeded — استنفدت حصة الصور اليومية → CTA: ترقية
  *   3) insufficient_credits — رصيد نقاط الفيديو لا يكفي → CTA: شحن /dashboard/credits
  */
@@ -27,7 +27,7 @@ export function detectQuotaError(message: string): QuotaErrorKind | null {
   if (/image_quota_exceeded/i.test(message)) return "image_quota";
   if (/video_daily_limit|video_daily_quota_exceeded/i.test(message)) return "plan_quota";
   if (/insufficient_credits/i.test(message)) return "insufficient_credits";
-  // quota_exceeded من enforce_generation_quota trigger (legacy)
+  // صيغة quota_exceeded القديمة — نبقيها كتوافق خلفي لرسائل محفوظة/قديمة لا كتريجر نشط.
   if (/quota_exceeded:\s*plan=.*kind=text/i.test(message)) return "text_quota";
   if (/quota_exceeded:\s*plan=.*kind=image/i.test(message)) return "image_quota";
 
