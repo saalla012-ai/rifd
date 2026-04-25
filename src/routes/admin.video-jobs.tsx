@@ -45,13 +45,24 @@ function fmt(n: number) {
   return n.toLocaleString("ar-SA");
 }
 
-function fmtDate(s: string) {
-  return new Date(s).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" });
+function fmtDate(s: string | null | undefined) {
+  return s ? new Date(s).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "—";
 }
 
 function providerAttempts(metadata: AdminVideoJob["metadata"]) {
-  const attempts = (metadata as { provider_attempts?: Array<{ provider?: string; ok?: boolean; status?: string; error?: string }> } | null)?.provider_attempts;
+  const attempts = (metadata as { provider_attempts?: Array<{ provider?: string; ok?: boolean; status?: string; mode?: string; latency_ms?: number; error?: string; reason?: string; finished_at?: string }> } | null)?.provider_attempts;
   return Array.isArray(attempts) ? attempts.slice(-3) : [];
+}
+
+function jobMeta(metadata: AdminVideoJob["metadata"]) {
+  return (metadata as { provider_mode?: string; manual_required?: boolean; provider_status?: string; failover_halted?: boolean } | null) ?? {};
+}
+
+function providerModeLabel(mode?: string, manualRequired?: boolean) {
+  if (manualRequired) return "Bridge يدوي";
+  if (mode === "bridge") return "Bridge";
+  if (mode === "manual") return "يدوي";
+  return "API";
 }
 
 function AdminVideoJobsPage() {
@@ -203,16 +214,19 @@ function AdminVideoJobsPage() {
                     <span>{fmtDate(job.created_at)}</span>
                     {job.provider && <span className="mx-1">· {job.provider}</span>}
                   </div>
-                  {providerAttempts(job.metadata).length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {providerAttempts(job.metadata).map((attempt, index) => (
-                        <Badge key={`${job.id}-${index}`} variant="secondary" className={cn("max-w-full truncate", attempt.ok === false && "bg-destructive/15 text-destructive", attempt.ok === true && "bg-success/15 text-success")}>
-                          {attempt.provider ?? "provider"}: {attempt.status ?? (attempt.ok ? "ok" : "failed")}
-                        </Badge>
-                      ))}
-                    </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <Badge variant="secondary">{providerModeLabel(jobMeta(job.metadata).provider_mode, jobMeta(job.metadata).manual_required)}</Badge>
+                    {jobMeta(job.metadata).provider_status && <Badge variant="secondary">حالة المزود: {jobMeta(job.metadata).provider_status}</Badge>}
+                    {jobMeta(job.metadata).failover_halted && <Badge className="bg-warning/20 text-warning-foreground">تم إيقاف البدائل بعد إنشاء مهمة خارجية</Badge>}
+                    {job.result_url && <Badge className="bg-success/15 text-success">رابط النتيجة محفوظ</Badge>}
+                  </div>
+                  <ProviderAttemptsPanel attempts={providerAttempts(job.metadata)} />
+                  {job.result_url && (
+                    <Button type="button" variant="outline" size="sm" className="mt-3" asChild>
+                      <a href={job.result_url} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> فتح الفيديو الناتج</a>
+                    </Button>
                   )}
-                  {job.status === "processing" && Boolean((job.metadata as { manual_required?: boolean } | null)?.manual_required) && (
+                  {job.status === "processing" && Boolean(jobMeta(job.metadata).manual_required) && (
                     <div className="mt-3 rounded-lg border border-border bg-secondary/30 p-3">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-xs font-bold text-foreground">تنفيذ يدوي مطلوب</p>
@@ -277,6 +291,27 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg border border-border bg-secondary/30 p-2">
       <p className="text-[10px] text-muted-foreground">{label}</p>
       <p className="mt-0.5 truncate font-bold tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function ProviderAttemptsPanel({ attempts }: { attempts: ReturnType<typeof providerAttempts> }) {
+  if (attempts.length === 0) return null;
+
+  return (
+    <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      {attempts.map((attempt, index) => (
+        <div key={`${attempt.provider ?? "provider"}-${index}`} className={cn("rounded-lg border border-border bg-secondary/30 p-2 text-xs", attempt.ok === false && "border-destructive/30 bg-destructive/10", attempt.ok === true && "border-success/30 bg-success/10")}>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate font-bold">{attempt.provider ?? "provider"}</p>
+            <Badge variant="secondary">{attempt.status ?? (attempt.ok ? "ok" : "failed")}</Badge>
+          </div>
+          <p className="mt-1 text-muted-foreground">{attempt.mode ?? "—"} · {typeof attempt.latency_ms === "number" ? `${attempt.latency_ms.toLocaleString("ar-SA")}ms` : "—"}</p>
+          {attempt.reason && <p className="mt-1 truncate text-muted-foreground">{attempt.reason}</p>}
+          {attempt.error && <p className="mt-1 line-clamp-2 text-destructive">{attempt.error}</p>}
+          <p className="mt-1 text-muted-foreground">{fmtDate(attempt.finished_at)}</p>
+        </div>
+      ))}
     </div>
   );
 }
