@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { consume, refund, videoCost, type VideoQuality, InsufficientCreditsError } from "./credits";
+import { consume, consumeVideoDailyQuota, refund, releaseVideoDailyQuota, videoCost, type VideoQuality, InsufficientCreditsError, VideoDailyQuotaExceededError } from "./credits";
 
 const VIDEO_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "google/veo-3-fast",
@@ -44,6 +44,7 @@ function videoCreditError(e: unknown): Error {
 function publicVideoError(e: unknown): Error {
   const msg = e instanceof Error ? e.message : String(e);
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
+  if (e instanceof VideoDailyQuotaExceededError || /video_daily_quota_exceeded/i.test(msg)) return new Error("VIDEO_DAILY_LIMIT: وصلت إلى حد توليد الفيديو اليومي في باقتك. جرّب غداً أو رقّ الباقة.");
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
   if (/إعداد مزوّد الفيديو غير مكتمل/i.test(msg)) return new Error("خدمة الفيديو غير جاهزة حالياً. جرّب لاحقاً أو تواصل مع الدعم.");
   if (/فشل مزوّد الفيديو|Replicate|provider|prediction|fetch failed/i.test(msg)) return new Error("تعذر الاتصال بخدمة الفيديو حالياً. تم حفظ الحالة ورد النقاط عند الحاجة.");
@@ -126,15 +127,21 @@ export const generateVideo = createServerFn({ method: "POST" })
     const cost = videoCost(data.quality);
     let ledgerId: string | null = null;
     let jobId: string | null = null;
+    let dailyQuotaConsumed = false;
 
     try {
       const processingCount = await countProcessingJobs(userId);
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
 
+      const dailyQuota = await consumeVideoDailyQuota(supabase);
+      dailyQuotaConsumed = true;
+
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
         aspect_ratio: data.aspectRatio,
         duration_seconds: data.durationSeconds,
+        daily_video_used: dailyQuota.used,
+        daily_video_cap: dailyQuota.cap,
         provider: "replicate",
         credit_scope: "video",
       });
@@ -193,6 +200,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       };
     } catch (e) {
       const refundLedgerId = ledgerId ? await refund(supabase, ledgerId, "video_generation_failed") : null;
+      if (dailyQuotaConsumed) await releaseVideoDailyQuota(supabase, userId);
       if (jobId) {
         await supabaseAdmin
           .from("video_jobs")
