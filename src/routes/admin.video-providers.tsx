@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, ArrowUpDown, Clapperboard, Loader2, RefreshCw } from "lucide-react";
+import { Activity, AlertTriangle, ArrowUpDown, CheckCircle2, Clapperboard, Loader2, RefreshCw, Wifi } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, testVideoProviderConnection, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -48,10 +48,12 @@ function AdminVideoProvidersPage() {
   const fetchProviders = useServerFn(listVideoProviderConfigs);
   const fetchAttempts = useServerFn(listVideoProviderAttemptSummary);
   const updateProvider = useServerFn(updateVideoProviderConfig);
+  const testProvider = useServerFn(testVideoProviderConnection);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [testingKey, setTestingKey] = useState<string | null>(null);
 
   async function authHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -84,6 +86,20 @@ function AdminVideoProvidersPage() {
       toast.error(error instanceof Error ? error.message : "فشل حفظ إعدادات المزود");
     } finally {
       setSavingKey(null);
+    }
+  }
+
+  async function testConnection(providerKey: string) {
+    setTestingKey(providerKey);
+    try {
+      const headers = await authHeaders();
+      const result = await testProvider({ data: { providerKey }, headers });
+      setProviders((current) => current.map((provider) => provider.provider_key === providerKey ? result.provider : provider));
+      toast[result.result.ok ? "success" : "error"](result.result.message);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل اختبار اتصال المزود");
+    } finally {
+      setTestingKey(null);
     }
   }
 
