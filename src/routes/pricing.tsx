@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { PLAN_CATALOG, estimateVideoCount, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
 
 const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
 const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
@@ -49,115 +50,19 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-type Plan = {
-  id: "free" | "starter" | "growth" | "pro" | "business";
-  name: string;
-  tier: "free" | "entry" | "popular" | "premium" | "scale";
-  price: { monthly: number; yearly: number };
-  credits: number;
-  fastVideos: string;
-  qualityVideos: string;
-  tagline: string;
-  badge?: string;
-  cta: string;
-  features: string[];
-};
-
-const PLANS: Plan[] = [
-  {
-    id: "free",
-    name: "Free",
-    tier: "free",
-    price: { monthly: 0, yearly: 0 },
-    credits: 150,
-    fastVideos: "فيديو ترحيبي واحد",
-    qualityVideos: "—",
-    tagline: "للتجربة وبناء أول ذاكرة متجر",
-    cta: "ابدأ مجاناً",
-    features: [
-      "200 نص يومياً بسقف حماية",
-      "50 صورة يومياً بسقف حماية",
-      "فيديو ترحيبي Fast مرة واحدة",
-      "قوالب أساسية للمتاجر السعودية",
-    ],
-  },
-  {
-    id: "starter",
-    name: "Starter",
-    tier: "entry",
-    price: { monthly: 149, yearly: 1490 },
-    credits: 3000,
-    fastVideos: "حتى 20 فيديو Fast",
-    qualityVideos: "حتى 6 فيديو Quality",
-    tagline: "لمتجر يبدأ الإعلان بالفيديو بانتظام",
-    cta: "اشترك في Starter",
-    features: [
-      "3,000 نقطة فيديو شهرياً",
-      "نصوص وصور يومية ضمن سقوف حماية مرتفعة",
-      "مكتبة توليدات وحفظ النتائج",
-      "تفعيل يدوي خلال 24 ساعة بعد الإيصال",
-    ],
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    tier: "popular",
-    price: { monthly: 249, yearly: 2490 },
-    credits: 6000,
-    fastVideos: "حتى 40 فيديو Fast",
-    qualityVideos: "حتى 13 فيديو Quality",
-    tagline: "الأفضل لمعظم المتاجر النشطة",
-    badge: "الأكثر توازناً",
-    cta: "اشترك في Growth",
-    features: [
-      "6,000 نقطة فيديو شهرياً",
-      "سعة مناسبة للحملات الأسبوعية",
-      "صور ونصوص مجانية بسقوف يومية",
-      "أولوية أعلى في الدعم والتفعيل",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    tier: "premium",
-    price: { monthly: 399, yearly: 3990 },
-    credits: 11000,
-    fastVideos: "حتى 73 فيديو Fast",
-    qualityVideos: "حتى 24 فيديو Quality",
-    tagline: "للمتجر الذي يعتمد الفيديو كقناة نمو",
-    badge: "أفضل هامش تشغيل",
-    cta: "اشترك في Pro",
-    features: [
-      "11,000 نقطة فيديو شهرياً",
-      "إنتاج أكبر للإعلانات والاختبارات",
-      "قوالب كاملة + ذاكرة متجر متقدمة",
-      "فاتورة ضريبية ودعم واتساب مباشر",
-    ],
-  },
-  {
-    id: "business",
-    name: "Business",
-    tier: "scale",
-    price: { monthly: 999, yearly: 9990 },
-    credits: 30000,
-    fastVideos: "حتى 200 فيديو Fast",
-    qualityVideos: "حتى 66 فيديو Quality",
-    tagline: "للفرق والوكالات الخفيفة متعددة الحملات",
-    badge: "للتوسع",
-    cta: "اشترك في Business",
-    features: [
-      "30,000 نقطة فيديو شهرياً",
-      "سعة كبيرة لحملات متعددة ومتاجر أكثر",
-      "أولوية تشغيل ومراجعة أعلى",
-      "مسار مناسب قبل الحلول المؤسسية المخصصة",
-    ],
-  },
-];
+function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
+  return [
+    `${formatPlanNumber(plan.dailyTextCap)} نص يومياً`,
+    `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
+    plan.dailyVideoCap > 0 ? `${formatPlanNumber(plan.dailyVideoCap)} فيديو يومياً حتى ${plan.maxVideoDurationSeconds} ث` : "الفيديو غير متاح في المجاني",
+    plan.videoQualityAllowed ? "Fast وQuality حسب النقاط" : "Fast فقط حسب النقاط",
+  ];
+}
 
 const FAQS = [
   {
     q: "هل الفيديوهات غير محدودة؟",
-    a: "لا. الفيديوهات تعمل بنقاط فيديو واضحة حتى يبقى السعر عادلاً والنتيجة قابلة للتنبؤ. تكلفة Fast هي 150 نقطة، وQuality هي 450 نقطة.",
+    a: `لا. الفيديوهات تعمل بنقاط فيديو واضحة حتى يبقى السعر عادلاً والنتيجة قابلة للتنبؤ. تكلفة 5ث: Fast ${videoCreditCost("fast", 5)} نقطة وQuality ${videoCreditCost("quality", 5)} نقطة، ومدة 8ث لها تكلفة أعلى.`,
   },
   {
     q: "هل النصوص والصور تخصم من نقاط الفيديو؟",
