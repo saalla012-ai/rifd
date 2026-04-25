@@ -134,6 +134,7 @@ function LibraryPage() {
 
   const campaignItemCount = items.filter((item) => item.metadata?.campaign_pack_id).length
     + videoJobs.filter((job) => (job.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id).length;
+  const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
   const hasVisibleItems = filter === "video"
     ? videoJobs.length > 0
     : filtered.length > 0 || (filter === "all" && videoJobs.length > 0);
@@ -184,7 +185,7 @@ function LibraryPage() {
         </div>
       ) : (
         <>
-        {(filter === "all" || filter === "video") && <VideoJobsSection jobs={videoJobs} refreshingJobId={refreshingJobId} onRefresh={refreshVideo} />}
+        {shouldShowVideoSection && <VideoJobsSection jobs={videoJobs} refreshingJobId={refreshingJobId} onRefresh={refreshVideo} />}
         {filter !== "video" && <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((g) => (
             <article key={g.id} className="rounded-xl border border-border bg-card p-4 shadow-soft">
