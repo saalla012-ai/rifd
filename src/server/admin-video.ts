@@ -184,6 +184,16 @@ function providerPriorityScore(provider: AdminVideoProviderConfig) {
   return provider.priority + healthPenalty;
 }
 
+function providerSecretName(providerKey: string) {
+  return ({
+    replicate: "REPLICATE_API_TOKEN",
+    google_veo_api: "GOOGLE_VEO_API_KEY",
+    runway: "RUNWAY_API_KEY",
+    luma: "LUMA_API_KEY",
+    kling: "KLING_API_KEY",
+  } as Record<string, string | undefined>)[providerKey];
+}
+
 async function refundVideoCreditsOnce(ledgerId: string | null) {
   if (!ledgerId) return { refundId: null as string | null, newlyRefunded: false };
   const { data: refundId, error } = await supabaseAdmin.rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
@@ -373,9 +383,18 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
       result = { providerKey: provider.provider_key, ok: false, status: "unhealthy", latencyMs: Date.now() - startedAt, message: "المزود متوقف داخلياً", checkedAt };
     } else if (provider.mode === "manual" || provider.mode === "bridge") {
       result = { providerKey: provider.provider_key, ok: true, status: "manual_required", latencyMs: Date.now() - startedAt, message: "الجسر اليدوي جاهز ويحتاج تنفيذ بشري عند الطلب", checkedAt };
-    } else if (provider.provider_key === "replicate") {
-      const tokenReady = Boolean(process.env.REPLICATE_API_TOKEN);
-      result = { providerKey: provider.provider_key, ok: tokenReady, status: tokenReady ? "active" : "unhealthy", latencyMs: Date.now() - startedAt, message: tokenReady ? "مفتاح المزود موجود والراوتر قادر على استخدامه" : "مفتاح المزود غير متوفر", checkedAt };
+    } else if (providerSecretName(provider.provider_key)) {
+      const secretName = providerSecretName(provider.provider_key)!;
+      const tokenReady = Boolean(process.env[secretName]);
+      const implemented = provider.provider_key === "replicate";
+      result = {
+        providerKey: provider.provider_key,
+        ok: tokenReady && implemented,
+        status: tokenReady && implemented ? "active" : "unhealthy",
+        latencyMs: Date.now() - startedAt,
+        message: !tokenReady ? `مفتاح ${secretName} غير متوفر` : implemented ? "مفتاح المزود موجود والراوتر قادر على استخدامه" : "المفتاح موجود لكن موصل التنفيذ لم يُفعّل بعد",
+        checkedAt,
+      };
     } else {
       result = { providerKey: provider.provider_key, ok: false, status: "unhealthy", latencyMs: Date.now() - startedAt, message: "المزود غير موصول براوتر التنفيذ بعد", checkedAt };
     }
