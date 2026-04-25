@@ -111,7 +111,10 @@ export type AdminVideoProviderAttemptSummary = {
   total: number;
   success: number;
   failed: number;
+  successRate: number;
+  failureRate: number;
   avgLatencyMs: number | null;
+  topError: string | null;
   lastStatus: string | null;
   lastAt: string | null;
 };
@@ -129,7 +132,7 @@ export type AdminVideoRouterTestResult = {
   ok: boolean;
   selectedProvider: string | null;
   checkedAt: string;
-  candidates: Array<{ providerKey: string; displayName: string; priority: number; mode: string; eligible: boolean; reason: string }>;
+  candidates: Array<{ providerKey: string; displayName: string; priority: number; effectivePriority: number; mode: string; eligible: boolean; reason: string }>;
 };
 
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
@@ -173,7 +176,12 @@ function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.i
   if (input.hasStartingFrame && !provider.supports_starting_frame) return { eligible: false, reason: "صورة البداية غير مدعومة" };
   const cost = input.durationSeconds === 8 ? provider.cost_8s : provider.cost_5s;
   if (cost <= 0) return { eligible: false, reason: "تكلفة المدة غير مضبوطة" };
-  return { eligible: true, reason: "جاهز للراوتر" };
+  return { eligible: true, reason: provider.health_status === "unhealthy" ? "مؤهل لكن مؤخر بسبب حالة غير صحية" : "جاهز للراوتر" };
+}
+
+function providerPriorityScore(provider: AdminVideoProviderConfig) {
+  const healthPenalty = provider.health_status === "unhealthy" ? 10_000 : provider.health_status === "inactive" ? 20_000 : 0;
+  return provider.priority + healthPenalty;
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
