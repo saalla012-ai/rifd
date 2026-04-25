@@ -30,7 +30,26 @@ const videoInputSchema = z.object({
   aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
   durationSeconds: z.union([z.literal(5), z.literal(8)]).default(5),
   startingFrameUrl: z.string().url().optional().or(z.literal("")),
+  campaignPackId: z.string().uuid().optional(),
 });
+
+async function assertCampaignPackOwner(db: DbClient, userId: string, campaignPackId?: string) {
+  if (!campaignPackId) return null;
+  const { data, error } = await db
+    .from("campaign_packs")
+    .select("id, product, goal, channel")
+    .eq("id", campaignPackId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error || !data) throw new Error("حزمة الحملة غير موجودة أو لا تملك صلاحية استخدامها");
+  return data;
+}
+
+function campaignMetadata(pack: Awaited<ReturnType<typeof assertCampaignPackOwner>>) {
+  return pack
+    ? { source: "campaign_studio", campaign_pack_id: pack.id, campaign_product: pack.product, campaign_goal: pack.goal, campaign_channel: pack.channel }
+    : { source: "dashboard_generate_video" };
+}
 
 function videoCreditError(e: unknown): Error {
   if (e instanceof InsufficientCreditsError) {
@@ -132,6 +151,7 @@ export const generateVideo = createServerFn({ method: "POST" })
     try {
       const processingCount = await countProcessingJobs(userId);
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
+      const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
 
       const dailyQuota = await consumeVideoDailyQuota(supabase);
       dailyQuotaConsumed = true;
@@ -144,6 +164,7 @@ export const generateVideo = createServerFn({ method: "POST" })
         daily_video_cap: dailyQuota.cap,
         provider: "replicate",
         credit_scope: "video",
+        ...campaignMetadata(campaignPack),
       });
       ledgerId = charge.ledgerId;
 
@@ -161,7 +182,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "replicate",
           estimated_cost_usd: VIDEO_ESTIMATED_COST_USD[data.quality],
-          metadata: { source: "dashboard_generate_video", model: VIDEO_MODEL_BY_QUALITY[data.quality] },
+          metadata: { ...campaignMetadata(campaignPack), model: VIDEO_MODEL_BY_QUALITY[data.quality] },
         })
         .select("*")
         .single();
