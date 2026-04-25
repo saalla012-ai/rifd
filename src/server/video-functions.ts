@@ -363,6 +363,7 @@ async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId:
       };
     } catch (error) {
       const finishedAt = new Date();
+      const committed = error instanceof ProviderCommittedFailure;
       attempts.push({
         provider: config.provider_key,
         ok: false,
@@ -373,10 +374,12 @@ async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId:
         finished_at: finishedAt.toISOString(),
         latency_ms: finishedAt.getTime() - startedAt.getTime(),
         error: errorMessage(error),
+        reason: committed ? "provider_job_committed" : "pre_submit_or_create_failed",
       });
       await markProviderFailure(config.provider_key, error);
       const { data: current } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
-      await supabaseAdmin.from("video_jobs").update({ metadata: mergeMetadata(current?.metadata, { provider_attempts: attempts, last_attempt_at: finishedAt.toISOString() }) }).eq("id", jobId);
+      await supabaseAdmin.from("video_jobs").update({ metadata: mergeMetadata(current?.metadata, { provider_attempts: attempts, last_attempt_at: finishedAt.toISOString(), failover_halted: committed }) }).eq("id", jobId);
+      if (committed) throw error;
     }
   }
 
