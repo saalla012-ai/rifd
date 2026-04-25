@@ -81,7 +81,7 @@ export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
   }, [user, isAdmin, loading, navigate]);
 
   // ---- حالة التحميل ----
-  if (loading || (!user && isAdmin === null)) {
+  if (!user && (loading || isAdmin === null)) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3 text-center">
