@@ -73,6 +73,10 @@ async function bumpUsage(
  * يحافظ على رمز معروف في بداية الرسالة ليلتقطه العميل ويعرض CTA الترقية/الشحن.
  */
 function creditError(e: unknown): Error {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/image_pro_not_allowed/i.test(msg)) {
+    return new Error("IMAGE_PRO_NOT_ALLOWED: صور Pro متاحة في باقات Growth وما فوق. استخدم Flash أو رقّ الباقة.");
+  }
   if (e instanceof InsufficientCreditsError) {
     return new Error(
       `INSUFFICIENT_CREDITS: رصيد نقاط الفيديو لا يكفي (تحتاج ${e.required} نقطة فيديو). اشحن نقاط فيديو إضافية أو رقّ باقتك.`
@@ -196,7 +200,7 @@ export const generateImage = createServerFn({ method: "POST" })
 
     let quota: { used: number; cap: number };
     try {
-      quota = await consumeImageQuota(supabase);
+      quota = await consumeImageQuota(supabase, data.quality);
     } catch (e) {
       throw creditError(e);
     }
@@ -313,7 +317,7 @@ export const editImage = createServerFn({ method: "POST" })
 
     let quota: { used: number; cap: number };
     try {
-      quota = await consumeImageQuota(supabase);
+      quota = await consumeImageQuota(supabase, "flash");
     } catch (e) {
       throw creditError(e);
     }
