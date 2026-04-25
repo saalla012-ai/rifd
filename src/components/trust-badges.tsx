@@ -10,7 +10,7 @@ const BADGES = [
   },
   {
     icon: ShieldCheck,
-    title: "ضمان استرجاع 7 أيام",
+    title: "ضمان استرجاع 14 يوماً",
     desc: "وفق سياسة الاسترجاع",
     color: "text-primary",
   },
@@ -23,7 +23,7 @@ const BADGES = [
   {
     icon: Lock,
     title: "بياناتك محمية",
-    desc: "تشفير TLS 1.3",
+    desc: "جلسات مؤمنة وسياسات وصول",
     color: "text-info",
   },
   {
