@@ -1389,6 +1389,10 @@ export type Database = {
         Args: { _ledger_id: string; _reason?: string }
         Returns: string
       }
+      release_image_daily_quota: {
+        Args: { _user_id?: string }
+        Returns: undefined
+      }
       release_video_daily_quota: {
         Args: { _user_id?: string }
         Returns: undefined
