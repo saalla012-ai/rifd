@@ -8,7 +8,6 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
-import { currentRiyadhMonth } from "@/lib/usage-month";
 import { getMemoryCoverage, getMemorySignals, getWeeklyRecommendation } from "@/lib/memory-insights";
 import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 
@@ -24,10 +23,6 @@ const PLAN_LABELS: Record<PlanId, string> = {
   pro: "احترافي",
   business: "أعمال",
 };
-
-function currentMonth() {
-  return currentRiyadhMonth();
-}
 
 type RecentItem = {
   id: string;
@@ -207,8 +202,8 @@ function DashboardPage() {
       {/* إحصائيات */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "توليدات نصية (هذا الشهر)", value: `${stats?.text ?? 0} / ${limits.text}`, icon: Wand2, color: "text-primary" },
-          { label: "توليدات صور (هذا الشهر)", value: `${stats?.image ?? 0} / ${limits.image}`, icon: ImageIcon, color: "text-gold" },
+          { label: "توليدات نصية (اليوم)", value: `${dailyTextUsed} / ${limits.text}`, icon: Wand2, color: "text-primary" },
+          { label: "توليدات صور (اليوم)", value: `${dailyImageUsed} / ${limits.image}`, icon: ImageIcon, color: "text-gold" },
           { label: "المفضلة", value: `${stats?.favs ?? 0}`, icon: Star, color: "text-warning" },
           { label: "الباقة", value: limits.label, icon: Sparkles, color: "text-success" },
         ].map((s) => (
@@ -242,9 +237,9 @@ function DashboardPage() {
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <h3 className="text-base font-bold">حصة الصور</h3>
-          <Progress value={limits.image === 0 ? 0 : ((stats?.image ?? 0) / limits.image) * 100} className="mt-3" />
+          <Progress value={limits.image === 0 ? 0 : (dailyImageUsed / limits.image) * 100} className="mt-3" />
           <p className="mt-2 text-xs text-muted-foreground">
-            {stats?.image ?? 0} من {limits.image} صورة هذا الشهر
+            {dailyImageUsed} من {limits.image} صورة اليوم
           </p>
           <Button asChild size="sm" variant="link" className="mt-2 h-auto p-0 text-primary">
             <Link to="/dashboard/usage">عرض التفاصيل ←</Link>
