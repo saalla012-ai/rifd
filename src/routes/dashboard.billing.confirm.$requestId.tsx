@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { getReceiptSignedUrl, markSubscriptionReceiptUploaded } from "@/server/receipts";
+import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
 
 export const Route = createFileRoute("/dashboard/billing/confirm/$requestId")({
   head: () => ({ meta: [{ title: "تأكيد طلب الاشتراك — رِفد" }] }),
@@ -39,13 +40,6 @@ const PLAN_LABELS = {
   pro: "Pro",
   business: "Business",
 } as const;
-const PLAN_PRICES = {
-  starter: { monthly: 149, yearly: 1490 },
-  growth: { monthly: 249, yearly: 2490 },
-  pro: { monthly: 399, yearly: 3990 },
-  business: { monthly: 999, yearly: 9990 },
-} as const;
-
 const TRANSFER_REASON = "اشتراك رِفد";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -232,7 +226,8 @@ function ConfirmRequestPage() {
 
   if (!request) return null;
 
-  const price = PLAN_PRICES[request.plan][request.billing_cycle as "monthly" | "yearly"];
+  const planInfo = PLAN_BY_ID[request.plan as PlanId];
+  const price = request.billing_cycle === "yearly" ? planInfo.yearlyPriceSar : planInfo.monthlyPriceSar;
   const planLabel = PLAN_LABELS[request.plan];
   const cycleLabel = request.billing_cycle === "yearly" ? "سنوي" : "شهري";
   const isActivated = request.status === "activated";
