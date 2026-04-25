@@ -1138,6 +1138,78 @@ export type Database = {
           },
         ]
       }
+      video_provider_configs: {
+        Row: {
+          cost_5s: number
+          cost_8s: number
+          created_at: string
+          display_name_admin: string
+          enabled: boolean
+          health_status: string
+          id: string
+          last_error_at: string | null
+          last_error_message: string | null
+          last_success_at: string | null
+          metadata: Json
+          mode: string
+          priority: number
+          provider_key: string
+          public_enabled: boolean
+          supported_qualities: string[]
+          supports_1_1: boolean
+          supports_16_9: boolean
+          supports_9_16: boolean
+          supports_starting_frame: boolean
+          updated_at: string
+        }
+        Insert: {
+          cost_5s?: number
+          cost_8s?: number
+          created_at?: string
+          display_name_admin: string
+          enabled?: boolean
+          health_status?: string
+          id?: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          metadata?: Json
+          mode?: string
+          priority?: number
+          provider_key: string
+          public_enabled?: boolean
+          supported_qualities?: string[]
+          supports_1_1?: boolean
+          supports_16_9?: boolean
+          supports_9_16?: boolean
+          supports_starting_frame?: boolean
+          updated_at?: string
+        }
+        Update: {
+          cost_5s?: number
+          cost_8s?: number
+          created_at?: string
+          display_name_admin?: string
+          enabled?: boolean
+          health_status?: string
+          id?: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          metadata?: Json
+          mode?: string
+          priority?: number
+          provider_key?: string
+          public_enabled?: boolean
+          supported_qualities?: string[]
+          supports_1_1?: boolean
+          supports_16_9?: boolean
+          supports_9_16?: boolean
+          supports_starting_frame?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
