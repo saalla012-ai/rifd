@@ -117,6 +117,9 @@ function LibraryPage() {
 
   const campaignItemCount = items.filter((item) => item.metadata?.campaign_pack_id).length
     + videoJobs.filter((job) => (job.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id).length;
+  const hasVisibleItems = filter === "video"
+    ? videoJobs.length > 0
+    : filtered.length > 0 || (filter === "all" && videoJobs.length > 0);
 
   return (
     <DashboardShell>
@@ -125,7 +128,7 @@ function LibraryPage() {
           <h1 className="text-2xl font-extrabold">مكتبتي</h1>
           <p className="mt-1 text-sm text-muted-foreground">المفضلة وكل توليداتك السابقة، مع ربط مخرجات الحملات بسياقها</p>
         </div>
-        <div className="text-xs text-muted-foreground">{items.length} توليدة • {campaignItemCount} من حملة</div>
+        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} توليدة • {campaignItemCount} من حملة</div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -153,7 +156,7 @@ function LibraryPage() {
 
       {loading ? (
         <div className="mt-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-      ) : filtered.length === 0 && (filter !== "video" || videoJobs.length === 0) ? (
+      ) : !hasVisibleItems ? (
         <div className="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
           ما عندك توليدات بعد. ابدأ من{" "}
           <Link to="/dashboard/generate-text" className="text-primary hover:underline">توليد نص</Link>{" "}
