@@ -85,6 +85,12 @@ function AnalyticsBridge() {
       void initAnalytics().then((ph) => {
         if (!ph) return;
         trackPageview(window.location.pathname + window.location.search);
+        if (!loading && user) {
+          identifyUser(user.id, {
+            plan: profile?.plan,
+            onboarded: profile?.onboarded,
+          });
+        }
       });
     };
 
@@ -97,7 +103,7 @@ function AnalyticsBridge() {
       window.clearTimeout(timeoutId);
       unsubscribe();
     };
-  }, [router]);
+  }, [router, user, profile, loading]);
 
   // ربط/فك ربط المستخدم
   useEffect(() => {
