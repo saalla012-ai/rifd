@@ -256,20 +256,20 @@ function BillingPage() {
             </div>
 
             <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {(Object.entries(PLAN_CONFIG) as Array<[PaidPlan, PlanConfig]>).map(([key, p]) => (
+              {PAID_PLANS.map((p) => (
                 <button
-                  key={key}
+                  key={p.id}
                   type="button"
-                  onClick={() => setPlan(key)}
-                  className={cn("rounded-xl border p-4 text-right transition-colors", plan === key ? "border-primary bg-primary/10" : "border-border bg-secondary/20 hover:border-primary/40")}
+                  onClick={() => setPlan(p.id as PaidPlanId)}
+                  className={cn("rounded-xl border p-4 text-right transition-colors", plan === p.id ? "border-primary bg-primary/10" : "border-border bg-secondary/20 hover:border-primary/40")}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-extrabold">{p.label}</span>
+                    <span className="font-extrabold">{p.name}</span>
                     {p.badge && <Badge className="text-[10px]">{p.badge}</Badge>}
                   </div>
-                  <div className="mt-2 text-2xl font-extrabold">{p.monthly} <span className="text-xs font-normal text-muted-foreground">ر.س</span></div>
-                  <div className="mt-1 text-xs text-primary">{p.credits.toLocaleString("ar-SA")} نقطة فيديو</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{p.note}</div>
+                  <div className="mt-2 text-2xl font-extrabold">{p.monthlyPriceSar} <span className="text-xs font-normal text-muted-foreground">ر.س</span></div>
+                  <div className="mt-1 text-xs text-primary">{formatPlanNumber(p.monthlyCredits)} نقطة فيديو</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{p.tagline}</div>
                 </button>
               ))}
             </div>
@@ -314,10 +314,10 @@ function BillingPage() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 text-sm font-extrabold text-primary">
-                    <Zap className="h-4 w-4" /> {selected.credits.toLocaleString("ar-SA")} نقطة فيديو
+                    <Zap className="h-4 w-4" /> {formatPlanNumber(selected.monthlyCredits)} نقطة فيديو
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    تقريباً {selected.fast} فيديو Fast أو {selected.quality} فيديو Quality — الفيديو ليس غير محدود.
+                    تقريباً {formatPlanNumber(selectedFastVideos)} فيديو Fast أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو Quality` : "Quality غير متاح"} — الفيديو ليس غير محدود.
                   </p>
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
