@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, testVideoProviderConnection, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -49,11 +49,14 @@ function AdminVideoProvidersPage() {
   const fetchAttempts = useServerFn(listVideoProviderAttemptSummary);
   const updateProvider = useServerFn(updateVideoProviderConfig);
   const testProvider = useServerFn(testVideoProviderConnection);
+  const testRouter = useServerFn(testVideoRouterDryRun);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
+  const [routerResult, setRouterResult] = useState<AdminVideoRouterTestResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
+  const [testingRouter, setTestingRouter] = useState(false);
 
   async function authHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -103,6 +106,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function testRouterPath() {
+    setTestingRouter(true);
+    try {
+      const headers = await authHeaders();
+      const result = await testRouter({ data: { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false }, headers });
+      setRouterResult(result);
+      toast[result.ok ? "success" : "error"](result.ok ? `الراوتر اختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل لهذا المسار");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل اختبار الراوتر");
+    } finally {
+      setTestingRouter(false);
+    }
+  }
+
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,6 +135,9 @@ function AdminVideoProvidersPage() {
           <p className="mt-1 text-sm text-muted-foreground">تحكم داخلي بالمزودين، الأولوية، الصحة، والتفعيل دون كشف أي اسم تقني للمستخدم.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="default" size="sm" onClick={() => void testRouterPath()} disabled={loading || testingRouter}>
+            {testingRouter ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار الراوتر
+          </Button>
           <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} /> تحديث
           </Button>
@@ -131,6 +151,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          {routerResult && <RouterResultPanel result={routerResult} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
           </div>
@@ -215,6 +236,31 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
       <p className="mt-2 text-xs text-muted-foreground">نجاح: {attempt.success.toLocaleString("ar-SA")} · فشل: {attempt.failed.toLocaleString("ar-SA")} · متوسط: {attempt.avgLatencyMs ? `${attempt.avgLatencyMs.toLocaleString("ar-SA")}ms` : "—"}</p>
       <p className="mt-1 truncate text-xs text-muted-foreground">آخر حالة: {attempt.lastStatus ?? "—"} · {fmtDate(attempt.lastAt)}</p>
     </div>
+  );
+}
+
+function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">نتيجة اختبار الراوتر</h2>
+          <p className="mt-1 text-xs text-muted-foreground">مسار آمن: سريع · 9:16 · 5ث · بدون إنشاء فيديو أو خصم نقاط</p>
+        </div>
+        <Badge className={cn(result.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{result.ok ? `المختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل"}</Badge>
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {result.candidates.map((candidate) => (
+          <div key={candidate.providerKey} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-bold">{candidate.displayName}</span>
+              <Badge variant="secondary">#{candidate.priority}</Badge>
+            </div>
+            <p className="mt-1 text-muted-foreground">{candidate.mode} · {candidate.reason}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

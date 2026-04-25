@@ -21,6 +21,13 @@ const TestProviderInput = z.object({
   providerKey: z.string().min(2).max(80),
 });
 
+const TestVideoRouterInput = z.object({
+  quality: z.enum(["fast", "quality"]).default("fast"),
+  aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
+  durationSeconds: z.union([z.literal(5), z.literal(8)]).default(5),
+  hasStartingFrame: z.boolean().default(false),
+});
+
 const CompleteManualVideoJobInput = z.object({
   jobId: z.string().uuid(),
   resultUrl: z.string().trim().url().max(2000),
@@ -118,6 +125,13 @@ export type AdminVideoProviderTestResult = {
   checkedAt: string;
 };
 
+export type AdminVideoRouterTestResult = {
+  ok: boolean;
+  selectedProvider: string | null;
+  checkedAt: string;
+  candidates: Array<{ providerKey: string; displayName: string; priority: number; mode: string; eligible: boolean; reason: string }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -147,6 +161,19 @@ function appendConnectionTest(metadata: Json | null, result: AdminVideoProviderT
   const base = (metadata as Record<string, unknown> | null) ?? {};
   const tests = Array.isArray(base.connection_tests) ? base.connection_tests.slice(-9) : [];
   return { ...base, connection_tests: [...tests, result], last_connection_test_at: result.checkedAt } as Json;
+}
+
+function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.infer<typeof TestVideoRouterInput>) {
+  if (!provider.enabled) return { eligible: false, reason: "متوقف داخلياً" };
+  if (!provider.public_enabled) return { eligible: false, reason: "غير متاح للطلبات" };
+  if (!provider.supported_qualities.includes(input.quality)) return { eligible: false, reason: "الجودة غير مدعومة" };
+  if (input.aspectRatio === "9:16" && !provider.supports_9_16) return { eligible: false, reason: "مقاس 9:16 غير مدعوم" };
+  if (input.aspectRatio === "1:1" && !provider.supports_1_1) return { eligible: false, reason: "مقاس 1:1 غير مدعوم" };
+  if (input.aspectRatio === "16:9" && !provider.supports_16_9) return { eligible: false, reason: "مقاس 16:9 غير مدعوم" };
+  if (input.hasStartingFrame && !provider.supports_starting_frame) return { eligible: false, reason: "صورة البداية غير مدعومة" };
+  const cost = input.durationSeconds === 8 ? provider.cost_8s : provider.cost_5s;
+  if (cost <= 0) return { eligible: false, reason: "تكلفة المدة غير مضبوطة" };
+  return { eligible: true, reason: "جاهز للراوتر" };
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
@@ -358,6 +385,33 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
 
     await logAdminAudit({ adminId: userId, action: "test_video_provider_connection", targetTable: "video_provider_configs", targetId: provider.provider_key, after: result as unknown as Json });
     return { provider: updated as AdminVideoProviderConfig, result };
+  });
+
+export const testVideoRouterDryRun = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => TestVideoRouterInput.parse(input ?? {}))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<AdminVideoRouterTestResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data: rows, error } = await (supabaseAdmin as unknown as {
+      from: (table: string) => { select: (columns: string) => { order: (column: string, opts: { ascending: boolean }) => Promise<{ data: unknown; error: { message: string } | null }> } };
+    })
+      .from("video_provider_configs")
+      .select("provider_key, display_name_admin, enabled, public_enabled, supported_qualities, priority, cost_5s, cost_8s, supports_9_16, supports_1_1, supports_16_9, supports_starting_frame, mode, health_status, last_success_at, last_error_at, last_error_message, metadata, updated_at")
+      .order("priority", { ascending: true });
+    if (error) throw new Error(`فشل اختبار الراوتر: ${error.message}`);
+
+    const providers = ((rows as AdminVideoProviderConfig[] | null) ?? []).sort((a, b) => a.priority - b.priority);
+    const candidates = providers.map((provider) => {
+      const readiness = providerEligibleForInput(provider, data);
+      return { providerKey: provider.provider_key, displayName: provider.display_name_admin, priority: provider.priority, mode: provider.mode, eligible: readiness.eligible, reason: readiness.reason };
+    });
+    const selected = candidates.find((candidate) => candidate.eligible) ?? null;
+    const result = { ok: Boolean(selected), selectedProvider: selected?.providerKey ?? null, checkedAt: new Date().toISOString(), candidates };
+
+    await logAdminAudit({ adminId: userId, action: "test_video_router_dry_run", targetTable: "video_provider_configs", targetId: selected?.providerKey ?? "none", after: result as unknown as Json });
+    return result;
   });
 
 export const completeManualVideoJob = createServerFn({ method: "POST" })
