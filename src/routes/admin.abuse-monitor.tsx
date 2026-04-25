@@ -121,6 +121,10 @@ function AbuseMonitorPage() {
         <StatCard icon={Clapperboard} label="فيديوهات النافذة" value={fmt(stats.videosCreated)} />
       </div>
 
+      <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm leading-7 text-muted-foreground">
+        <strong className="text-foreground">معايرة V9:</strong> الإشارات الآن تُقاس نسبةً إلى حدود الباقة الفعلية، لا بأرقام ثابتة قد تظلم الخطط الكبيرة أو تتساهل مع الخطط الصغيرة.
+      </div>
+
       <div className="mb-4 grid gap-2 lg:grid-cols-[180px_180px_minmax(0,1fr)]">
         <Select value={String(windowHours)} onValueChange={(value) => setWindowHours(Number(value) as 24 | 72 | 168)}>
           <SelectTrigger><SelectValue /></SelectTrigger>
@@ -169,7 +173,7 @@ function AbuseMonitorPage() {
                   </div>
                   <h2 className="mt-2 text-base font-extrabold">{item.title}</h2>
                   <p className="mt-1 text-sm leading-7 text-muted-foreground">{item.details}</p>
-                  <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                   <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
                     <div className="rounded-lg bg-secondary/60 p-3"><span className="text-muted-foreground">المؤشر: </span><strong>{item.metric}</strong></div>
                     <div className="rounded-lg bg-secondary/60 p-3"><span className="text-muted-foreground">الإجراء: </span><strong>{item.action_hint}</strong></div>
                   </div>
