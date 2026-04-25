@@ -1191,6 +1191,8 @@ export type Database = {
           daily_image_used: number
           daily_text_cap: number
           daily_text_used: number
+          daily_video_cap: number
+          daily_video_used: number
           plan: Database["public"]["Enums"]["user_plan"]
           plan_credits: number
           topup_credits: number
