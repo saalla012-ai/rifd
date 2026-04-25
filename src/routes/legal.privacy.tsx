@@ -64,7 +64,7 @@ function PrivacyPage() {
             <div className="mt-3 space-y-3">
               <div className="rounded-lg border border-border/60 bg-card/50 p-4">
                 <h3 className="font-bold text-foreground">أ. بيانات الحساب</h3>
-                <p className="mt-1 text-sm">الاسم الكامل، البريد الإلكتروني، كلمة السر (مُشفَّرة بـ bcrypt)، رقم الجوال (اختياري للتفعيل).</p>
+                <p className="mt-1 text-sm">الاسم الكامل، البريد الإلكتروني، بيانات الجلسة المُدارة، رقم الجوال (اختياري للتفعيل).</p>
               </div>
               <div className="rounded-lg border border-border/60 bg-card/50 p-4">
                 <h3 className="font-bold text-foreground">ب. بيانات ملف المتجر</h3>
@@ -115,9 +115,9 @@ function PrivacyPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   <tr>
-                    <td className="p-3">Supabase</td>
-                    <td className="p-3">قاعدة البيانات والتخزين</td>
-                    <td className="p-3">الاتحاد الأوروبي / الولايات المتحدة</td>
+                    <td className="p-3">Lovable Cloud</td>
+                    <td className="p-3">البنية الخلفية، قاعدة البيانات، والتخزين</td>
+                    <td className="p-3">مناطق تشغيل آمنة بحسب مزوّد الخدمة</td>
                   </tr>
                   <tr>
                     <td className="p-3">Cloudflare</td>
@@ -130,9 +130,9 @@ function PrivacyPage() {
                     <td className="p-3">الاتحاد الأوروبي / الولايات المتحدة</td>
                   </tr>
                   <tr>
-                    <td className="p-3">Mailgun</td>
-                    <td className="p-3">إرسال البريد المعاملاتي</td>
-                    <td className="p-3">الاتحاد الأوروبي</td>
+                    <td className="p-3">مزود البريد المعاملاتي</td>
+                    <td className="p-3">إرسال رسائل الحساب والفواتير والتنبيهات</td>
+                    <td className="p-3">بحسب إعدادات مزود البريد</td>
                   </tr>
                 </tbody>
               </table>
@@ -186,9 +186,9 @@ function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-xl font-bold text-foreground">7. الإجراءات الأمنية</h2>
             <ul className="list-disc space-y-1 pr-5">
-              <li>تشفير البيانات أثناء النقل (TLS 1.3) وأثناء التخزين (AES-256).</li>
-              <li>سياسات Row-Level Security صارمة على مستوى قاعدة البيانات.</li>
-              <li>تجزئة كلمات السر بـ bcrypt مع salt فريد لكل مستخدم.</li>
+              <li>تأمين الاتصال أثناء النقل واستخدام تخزين مُدار بمعايير حماية حديثة.</li>
+              <li>سياسات وصول صارمة على مستوى البيانات بحيث يرى كل مستخدم بياناته فقط.</li>
+              <li>إدارة كلمات المرور والجلسات عبر نظام مصادقة مُدار دون تخزين كلمات مرور قابلة للقراءة.</li>
               <li>سجلات تدقيق (Audit Log) على العمليات الإدارية الحسّاسة.</li>
               <li>مراقبة DLQ وتنبيهات Telegram للأعطال خلال دقائق.</li>
             </ul>
