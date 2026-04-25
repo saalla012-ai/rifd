@@ -174,11 +174,7 @@ function TemplatesPage() {
                   <span className="rounded-md bg-secondary px-2 py-0.5">⏱️ {p.estimatedTime}</span>
                 </div>
 
-                <Button
-                  onClick={() => useTemplate(p.id, p.type)}
-                  className="mt-4 gap-2 gradient-primary text-primary-foreground"
-                  size="sm"
-                >
+                <Button onClick={() => useTemplate(p.id, p.type)} className="mt-4 gap-2 gradient-primary text-primary-foreground" size="sm">
                   استخدم هذا القالب
                   <ArrowLeft className="h-3.5 w-3.5" />
                 </Button>
