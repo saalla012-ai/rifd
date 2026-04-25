@@ -17,6 +17,10 @@ const ProviderUpdateInput = z.object({
   priority: z.number().int().min(1).max(1000).optional(),
 });
 
+const TestProviderInput = z.object({
+  providerKey: z.string().min(2).max(80),
+});
+
 const CompleteManualVideoJobInput = z.object({
   jobId: z.string().uuid(),
   resultUrl: z.string().trim().url().max(2000),
@@ -105,6 +109,15 @@ export type AdminVideoProviderAttemptSummary = {
   lastAt: string | null;
 };
 
+export type AdminVideoProviderTestResult = {
+  providerKey: string;
+  ok: boolean;
+  status: "active" | "manual_required" | "unhealthy";
+  latencyMs: number;
+  message: string;
+  checkedAt: string;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -128,6 +141,12 @@ function appendProviderAttempt(metadata: Json | null, attempt: ProviderAttempt) 
     provider_attempts: [...attempts, { ...attempt, finished_at: new Date().toISOString() }],
     last_attempt_at: new Date().toISOString(),
   } as Json;
+}
+
+function appendConnectionTest(metadata: Json | null, result: AdminVideoProviderTestResult) {
+  const base = (metadata as Record<string, unknown> | null) ?? {};
+  const tests = Array.isArray(base.connection_tests) ? base.connection_tests.slice(-9) : [];
+  return { ...base, connection_tests: [...tests, result], last_connection_test_at: result.checkedAt } as Json;
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
