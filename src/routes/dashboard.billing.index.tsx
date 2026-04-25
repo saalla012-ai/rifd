@@ -317,7 +317,7 @@ function BillingPage() {
                     <Zap className="h-4 w-4" /> {formatPlanNumber(selected.monthlyCredits)} نقطة فيديو
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    تقريباً {formatPlanNumber(selectedFastVideos)} فيديو Fast أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو Quality` : "Quality غير متاح"} — الفيديو ليس غير محدود.
+                    تقريباً {formatPlanNumber(selectedFastVideos)} فيديو Fast أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو Quality` : "Quality غير متاح"} — الفيديو محكوم بالنقاط.
                   </p>
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
