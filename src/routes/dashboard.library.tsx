@@ -108,6 +108,21 @@ function LibraryPage() {
     }
   };
 
+  const refreshVideo = async (jobId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return toast.error("سجّل الدخول لتحديث حالة الفيديو");
+    setRefreshingJobId(jobId);
+    try {
+      const out = await refreshVideoJobFn({ data: { jobId }, headers: { Authorization: `Bearer ${session.access_token}` } });
+      setVideoJobs((jobs) => jobs.map((job) => (job.id === out.job.id ? out.job : job)));
+      toast.success(out.job.status === "completed" ? "اكتمل الفيديو" : "تم تحديث الحالة");
+    } catch {
+      toast.error("تعذر تحديث حالة الفيديو مؤقتاً");
+    } finally {
+      setRefreshingJobId(null);
+    }
+  };
+
   const filtered = items.filter((i) => {
     if (filter === "all") return true;
     if (filter === "fav") return i.is_favorite;
@@ -169,7 +184,7 @@ function LibraryPage() {
         </div>
       ) : (
         <>
-        {(filter === "all" || filter === "video") && <VideoJobsSection jobs={videoJobs} />}
+        {(filter === "all" || filter === "video") && <VideoJobsSection jobs={videoJobs} refreshingJobId={refreshingJobId} onRefresh={refreshVideo} />}
         {filter !== "video" && <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((g) => (
             <article key={g.id} className="rounded-xl border border-border bg-card p-4 shadow-soft">
