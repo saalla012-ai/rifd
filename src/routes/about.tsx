@@ -71,7 +71,7 @@ function AboutPage() {
             {[
               { icon: Target, t: "رؤيتنا", d: "نمكّن كل متجر سعودي بأدوات AI محلية الذوق والنبرة." },
               { icon: Heart, t: "قيمنا", d: "الشفافية، السعر العادل، والاحترام لخصوصية بياناتك." },
-              { icon: Award, t: "وعدنا", d: "ضمان رضا 7 أيام كامل + دعم بالعربي + تطوير مستمر." },
+              { icon: Award, t: "وعدنا", d: "ضمان استرجاع 14 يوماً للاشتراك الأول + دعم بالعربي + تطوير مستمر." },
             ].map((v) => (
               <div key={v.t} className="rounded-xl border border-border bg-card p-5 shadow-soft">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
