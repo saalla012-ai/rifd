@@ -161,11 +161,13 @@ function PricingPage() {
       <section className="bg-background py-14">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-5">
-            {PLANS.map((plan) => {
-              const price = yearly ? plan.price.yearly : plan.price.monthly;
+            {PLAN_CATALOG.map((plan) => {
+              const price = yearly ? plan.yearlyPriceSar : plan.monthlyPriceSar;
               const isPaid = price > 0;
               const isPopular = plan.tier === "popular";
               const isPremium = plan.tier === "premium" || plan.tier === "scale";
+              const fastVideos = estimateVideoCount(plan.monthlyCredits, "fast", 5);
+              const qualityVideos = plan.videoQualityAllowed ? estimateVideoCount(plan.monthlyCredits, "quality", 5) : 0;
               return (
                 <article
                   key={plan.id}
@@ -193,25 +195,25 @@ function PricingPage() {
                       <span className="text-4xl font-extrabold tracking-normal">{price}</span>
                       <span className="text-xs text-muted-foreground">ر.س / {yearly ? "سنوياً" : "شهرياً"}</span>
                     </div>
-                    {yearly && plan.price.monthly > 0 && (
+                    {yearly && plan.monthlyPriceSar > 0 && (
                       <p className="mt-1 text-xs font-bold text-success">
-                        توفر {(plan.price.monthly * 12 - plan.price.yearly).toLocaleString("ar-SA")} ر.س سنوياً
+                        توفر {(plan.monthlyPriceSar * 12 - plan.yearlyPriceSar).toLocaleString("ar-SA")} ر.س سنوياً
                       </p>
                     )}
                   </div>
 
                   <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center gap-2 text-sm font-extrabold text-primary">
-                      <Zap className="h-4 w-4" /> {plan.credits.toLocaleString("ar-SA")} نقطة فيديو
+                      <Zap className="h-4 w-4" /> {formatPlanNumber(plan.monthlyCredits)} نقطة فيديو
                     </div>
                     <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                      <p>{plan.fastVideos}</p>
-                      <p>{plan.qualityVideos}</p>
+                      <p>{plan.videoFastAllowed ? `حتى ${formatPlanNumber(fastVideos)} فيديو Fast 5ث` : "الفيديو غير متاح"}</p>
+                      <p>{plan.videoQualityAllowed ? `حتى ${formatPlanNumber(qualityVideos)} فيديو Quality 5ث` : "Quality غير متاح"}</p>
                     </div>
                   </div>
 
                   <ul className="mt-5 flex-1 space-y-2.5 text-sm">
-                    {plan.features.map((feature) => (
+                    {planFeatures(plan).map((feature) => (
                       <li key={feature} className="flex items-start gap-2">
                         <Check className={cn("mt-0.5 h-4 w-4 shrink-0", isPremium ? "text-gold" : "text-success")} />
                         <span>{feature}</span>
