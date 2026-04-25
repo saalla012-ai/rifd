@@ -309,9 +309,27 @@ const manualBridgeProvider: VideoProvider = {
   },
 };
 
+function futureApiProvider(key: string, secretName: string): VideoProvider {
+  return {
+    key,
+    async createJob() {
+      if (!process.env[secretName]) throw new Error(`إعداد مزوّد الفيديو غير مكتمل: ${secretName}`);
+      throw new Error(`provider_not_implemented:${key}`);
+    },
+    async refreshJob() {
+      if (!process.env[secretName]) throw new Error(`إعداد مزوّد الفيديو غير مكتمل: ${secretName}`);
+      throw new Error(`provider_refresh_not_implemented:${key}`);
+    },
+  };
+}
+
 const PROVIDERS: Record<string, VideoProvider> = {
   replicate: replicateProvider,
   google_flow_bridge: manualBridgeProvider,
+  google_veo_api: futureApiProvider("google_veo_api", "GOOGLE_VEO_API_KEY"),
+  runway: futureApiProvider("runway", "RUNWAY_API_KEY"),
+  luma: futureApiProvider("luma", "LUMA_API_KEY"),
+  kling: futureApiProvider("kling", "KLING_API_KEY"),
 };
 
 async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId: string) {
