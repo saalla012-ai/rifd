@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 type DbClient = SupabaseClient<Database>;
+type CampaignPackRow = Database["public"]["Tables"]["campaign_packs"]["Row"];
 type CampaignGoal = "launch" | "offer" | "seasonal" | "retention";
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
 type CampaignStatus = "draft" | "generated" | "archived";
@@ -67,7 +68,7 @@ async function assertAdmin(db: DbClient, userId: string): Promise<void> {
   if (!data) throw new Error("هذه الصفحة للأدمن فقط");
 }
 
-function mapPack(row: Record<string, unknown>): CampaignPack {
+function mapPack(row: CampaignPackRow): CampaignPack {
   return row as CampaignPack;
 }
 
@@ -76,7 +77,7 @@ export const listCampaignPacks = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => listSchema.parse(input ?? {}))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    let query = (supabase as unknown as { from: (table: string) => any })
+    let query = supabase
       .from("campaign_packs")
       .select("*")
       .eq("user_id", userId)
@@ -88,7 +89,7 @@ export const listCampaignPacks = createServerFn({ method: "POST" })
 
     const { data: rows, error } = await query;
     if (error) throw new Error(`فشل تحميل حزم الحملات: ${error.message}`);
-    return { packs: ((rows ?? []) as Record<string, unknown>[]).map(mapPack) };
+    return { packs: ((rows ?? []) as CampaignPackRow[]).map(mapPack) };
   });
 
 export const saveCampaignPack = createServerFn({ method: "POST" })
@@ -110,14 +111,14 @@ export const saveCampaignPack = createServerFn({ method: "POST" })
       video_prompt: data.videoPrompt,
     };
 
-    const table = (supabase as unknown as { from: (table: string) => any }).from("campaign_packs");
+    const table = supabase.from("campaign_packs");
     const query = data.id
       ? table.update(payload).eq("id", data.id).eq("user_id", userId).select("*").single()
       : table.insert(payload).select("*").single();
 
     const { data: row, error } = await query;
     if (error || !row) throw new Error(`فشل حفظ حزمة الحملة: ${error?.message ?? "استجابة فارغة"}`);
-    return { pack: mapPack(row as Record<string, unknown>) };
+    return { pack: mapPack(row as CampaignPackRow) };
   });
 
 export const archiveCampaignPack = createServerFn({ method: "POST" })
@@ -125,7 +126,7 @@ export const archiveCampaignPack = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    const { error } = await (supabase as unknown as { from: (table: string) => any })
+    const { error } = await supabase
       .from("campaign_packs")
       .update({ status: "archived" })
       .eq("id", data.id)
@@ -141,7 +142,7 @@ export const listAdminCampaignPacks = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    let query = (supabaseAdmin as unknown as { from: (table: string) => any })
+    let query = supabaseAdmin
       .from("campaign_packs")
       .select("*")
       .order("updated_at", { ascending: false })
@@ -151,7 +152,7 @@ export const listAdminCampaignPacks = createServerFn({ method: "POST" })
     const { data: rows, error } = await query;
     if (error) throw new Error(`فشل تحميل حملات العملاء: ${error.message}`);
 
-    const packs = ((rows ?? []) as Record<string, unknown>[]).map(mapPack);
+    const packs = ((rows ?? []) as CampaignPackRow[]).map(mapPack);
     const userIds = Array.from(new Set(packs.map((p) => p.user_id)));
     const { data: profiles } = userIds.length
       ? await supabaseAdmin.from("profiles").select("id, email, store_name").in("id", userIds)
