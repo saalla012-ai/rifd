@@ -147,7 +147,12 @@ function AdminVideoProvidersPage() {
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{provider.provider_key} · {provider.mode === "manual" ? "جسر يدوي" : provider.mode === "bridge" ? "جسر شبه آلي" : "API"}</p>
                   </div>
-                  {saving && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                  <div className="flex items-center gap-2">
+                    {(saving || testingKey === provider.provider_key) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                    <Button type="button" variant="outline" size="sm" onClick={() => void testConnection(provider.provider_key)} disabled={saving || testingKey === provider.provider_key}>
+                      {provider.health_status === "active" ? <CheckCircle2 className="h-4 w-4" /> : <Wifi className="h-4 w-4" />} اختبار الاتصال
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -184,6 +189,7 @@ function AdminVideoProvidersPage() {
                     </div>
                     <p className="mt-2">5ث: <strong>{provider.cost_5s.toLocaleString("ar-SA")}</strong> نقطة · 8ث: <strong>{provider.cost_8s.toLocaleString("ar-SA")}</strong> نقطة</p>
                     <p>آخر نجاح: {fmtDate(provider.last_success_at)} · آخر خطأ: {fmtDate(provider.last_error_at)}</p>
+                    <LastConnectionTest metadata={provider.metadata} />
                     {provider.last_error_message && <p className="mt-1 flex items-start gap-1 text-destructive"><AlertTriangle className="mt-1 h-3.5 w-3.5" /> {provider.last_error_message}</p>}
                   </div>
                 </div>
@@ -210,6 +216,13 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
       <p className="mt-1 truncate text-xs text-muted-foreground">آخر حالة: {attempt.lastStatus ?? "—"} · {fmtDate(attempt.lastAt)}</p>
     </div>
   );
+}
+
+function LastConnectionTest({ metadata }: { metadata: AdminVideoProviderConfig["metadata"] }) {
+  const tests = (metadata as { connection_tests?: Array<{ ok?: boolean; message?: string; checkedAt?: string; latencyMs?: number }> } | null)?.connection_tests;
+  const last = Array.isArray(tests) ? tests.at(-1) : null;
+  if (!last) return null;
+  return <p className="mt-1">آخر اختبار: {last.ok ? "ناجح" : "فشل"} · {last.latencyMs ?? 0}ms · {last.message ?? "—"}</p>;
 }
 
 function ControlRow({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
