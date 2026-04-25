@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { AdminGuard } from "@/components/admin-guard";
 import {
   Loader2,
@@ -36,9 +37,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { formatSaudiPhoneDisplay, normalizeSaudiPhone } from "@/lib/phone";
 import { sendTransactionalEmail } from "@/lib/email/send";
+import { listAdminSubscriptionRequests, updateAdminSubscriptionStatus } from "@/server/admin-subscriptions";
 
 export const Route = createFileRoute("/admin/subscriptions")({
   head: () => ({ meta: [{ title: "إدارة الاشتراكات — رِفد" }] }),
@@ -92,8 +93,8 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function AdminSubscriptionsPage() {
-  // الحماية مضمونة عبر <AdminGuard> — نقرأ user فقط لتسجيل audit log.
-  const { user } = useAuth();
+  const fetchRequests = useServerFn(listAdminSubscriptionRequests);
+  const updateRequestStatus = useServerFn(updateAdminSubscriptionStatus);
   const [requests, setRequests] = useState<Req[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
@@ -105,11 +106,8 @@ function AdminSubscriptionsPage() {
 
   async function loadRequests() {
     setLoading(true);
-    const { data } = await supabase
-      .from("subscription_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setRequests((data as Req[] | null) ?? []);
+    const { requests: rows } = await fetchRequests();
+    setRequests(rows as Req[]);
     setLoading(false);
   }
 
