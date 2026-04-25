@@ -128,6 +128,9 @@ export const generateVideo = createServerFn({ method: "POST" })
     let jobId: string | null = null;
 
     try {
+      const processingCount = await countProcessingJobs(userId);
+      if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
+
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
         aspect_ratio: data.aspectRatio,
@@ -189,14 +192,19 @@ export const generateVideo = createServerFn({ method: "POST" })
         pending: finalStatus === "processing",
       };
     } catch (e) {
-      if (ledgerId) await refund(supabase, ledgerId, "video_generation_failed");
+      const refundLedgerId = ledgerId ? await refund(supabase, ledgerId, "video_generation_failed") : null;
       if (jobId) {
         await supabaseAdmin
           .from("video_jobs")
-          .update({ status: "refunded", error_message: e instanceof Error ? e.message : String(e) })
+          .update({
+            status: "refunded",
+            refund_ledger_id: refundLedgerId,
+            error_message: publicVideoError(e).message,
+            metadata: { failure_stage: "generate_video", original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500) },
+          })
           .eq("id", jobId);
       }
-      throw videoCreditError(e);
+      throw publicVideoError(e);
     }
   });
 
