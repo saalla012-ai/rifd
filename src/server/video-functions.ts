@@ -284,6 +284,7 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     const isStale = Number.isFinite(createdAt) && Date.now() - createdAt > MAX_PROCESSING_MINUTES * 60_000;
     if (isStale) {
       const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_timeout") : null;
+      await releaseVideoDailyQuota(supabase, userId);
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
         .update({
@@ -322,6 +323,7 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     }
     if (prediction.status === "failed" || prediction.status === "canceled") {
       const refundLedgerId = row.ledger_id ? await refund(supabase, row.ledger_id, "video_generation_failed") : null;
+      await releaseVideoDailyQuota(supabase, userId);
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
         .update({ status: "refunded", refund_ledger_id: refundLedgerId, error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
