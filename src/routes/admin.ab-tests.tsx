@@ -4,6 +4,7 @@
  * (لا استعلامات Supabase مباشرة من العميل — defense-in-depth.)
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { AdminGuard } from "@/components/admin-guard";
 import { useEffect, useState } from "react";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, Users, MousePointerClick, Wand2 } from "lucide-react";
 import { getAbTestResults, type AbStats } from "@/server/admin-ab-tests";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/ab-tests")({
   head: () => ({ meta: [{ title: "نتائج اختبارات A/B — رِفد" }] }),
@@ -24,6 +26,7 @@ export const Route = createFileRoute("/admin/ab-tests")({
 type Stats = AbStats;
 
 function AbTestsPage() {
+  const fetchResults = useServerFn(getAbTestResults);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [a, setA] = useState<Stats | null>(null);
@@ -33,7 +36,12 @@ function AbTestsPage() {
     let active = true;
     (async () => {
       try {
-        const res = await getAbTestResults({ data: { experiment: "hero_hook" } });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("لا توجد جلسة");
+        const res = await fetchResults({
+          data: { experiment: "hero_hook" },
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
         if (!active) return;
         setA(res.A);
         setB(res.B);
