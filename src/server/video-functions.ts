@@ -266,19 +266,16 @@ export const generateVideo = createServerFn({ method: "POST" })
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
       if (dailyQuotaConsumed && refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
-        await supabaseAdmin
-          .from("video_jobs")
-          .update({
-            status: "refunded",
+        await markProcessingJobRefunded({
+          jobId,
+          refundLedgerId,
+          errorMessage: publicVideoError(e).message,
+          metadata: {
+            failure_stage: "generate_video",
+            original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
             refund_ledger_id: refundLedgerId,
-            error_message: publicVideoError(e).message,
-            metadata: {
-              failure_stage: "generate_video",
-              original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
-              refund_ledger_id: refundLedgerId,
-            },
-          })
-          .eq("id", jobId);
+          },
+        });
       }
       throw publicVideoError(e);
     }
@@ -318,18 +315,12 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (isStale) {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_timeout") : null;
       if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
-      const { data: updated, error: updateError } = await supabaseAdmin
-        .from("video_jobs")
-        .update({
-          status: "refunded",
-          refund_ledger_id: refundLedgerId,
-          error_message: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً.",
-        })
-        .eq("id", row.id)
-        .select("*")
-        .single();
-      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
-      return { job: updated as VideoJobRow };
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId,
+        errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً.",
+      });
+      return { job: updated };
     }
 
     let prediction: Awaited<ReturnType<typeof getReplicatePrediction>>;
