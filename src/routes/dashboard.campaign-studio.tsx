@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Archive, ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, FolderKanban, Image as ImageIcon, LayoutTemplate, Loader2, Megaphone, Save, Wand2 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ type CampaignSearch = {
   goal?: CampaignGoal;
   channel?: CampaignChannel;
 };
+type OutputToolRoute = "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video";
 
 const GOALS: Array<{ value: CampaignGoal; label: string; angle: string }> = [
   { value: "launch", label: "إطلاق منتج", angle: "تركيز على التشويق، المشكلة، والتحوّل بعد استخدام المنتج" },
@@ -75,6 +76,7 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
 });
 
 function CampaignStudioPage() {
+  const navigate = useNavigate();
   const search = useSearch({ from: "/dashboard/campaign-studio" });
   const loadPacksFn = useServerFn(listCampaignPacks);
   const savePackFn = useServerFn(saveCampaignPack);
@@ -141,7 +143,7 @@ function CampaignStudioPage() {
     toast.success("تم نسخ موجز الحملة");
   };
 
-  const saveCurrentPack = async (status: "draft" | "generated" = "draft") => {
+  const saveCurrentPack = async (status: "draft" | "generated" = "draft"): Promise<CampaignPack | null> => {
     setSaving(true);
     try {
       const headers = await authHeaders();
@@ -152,11 +154,19 @@ function CampaignStudioPage() {
       setActivePackId(out.pack.id);
       setPacks((current) => [out.pack, ...current.filter((pack) => pack.id !== out.pack.id)].slice(0, 12));
       toast.success(status === "generated" ? "تم حفظ الحملة كحزمة جاهزة" : "تم حفظ مسودة الحملة");
+      return out.pack;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل حفظ الحملة");
+      return null;
     } finally {
       setSaving(false);
     }
+  };
+
+  const openOutputTool = async (to: OutputToolRoute, payload: string) => {
+    const packId = (await saveCurrentPack("generated"))?.id;
+    if (!packId) return;
+    await navigate({ to, search: { prompt: payload, campaignPackId: packId } });
   };
 
   const applyPack = (pack: CampaignPack) => {
@@ -259,9 +269,9 @@ function CampaignStudioPage() {
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-extrabold">مخرجات الحملة</h2>
             <div className="mt-4 space-y-3">
-              <OutputStep icon={Wand2} title="نص الحملة" desc="منشور، CTA، ونسخة واتساب" to="/dashboard/generate-text" payload={textPrompt} campaignPackId={activePackId} />
-              <OutputStep icon={ImageIcon} title="الصورة الإعلانية" desc="بوستر أو صورة منتج متوافقة مع الزاوية" to="/dashboard/generate-image" payload={imagePrompt} campaignPackId={activePackId} />
-              <OutputStep icon={Clapperboard} title="الفيديو القصير" desc="Prompt جاهز لـFast أو Quality" to="/dashboard/generate-video" payload={videoPrompt} campaignPackId={activePackId} />
+              <OutputStep icon={Wand2} title="نص الحملة" desc="منشور، CTA، ونسخة واتساب" to="/dashboard/generate-text" payload={textPrompt} saving={saving} onOpen={openOutputTool} />
+              <OutputStep icon={ImageIcon} title="الصورة الإعلانية" desc="بوستر أو صورة منتج متوافقة مع الزاوية" to="/dashboard/generate-image" payload={imagePrompt} saving={saving} onOpen={openOutputTool} />
+              <OutputStep icon={Clapperboard} title="الفيديو القصير" desc="Prompt جاهز لـFast أو Quality" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} onOpen={openOutputTool} />
             </div>
           </section>
 
@@ -321,7 +331,7 @@ function SavedPacksSection({ packs, loading, activePackId, onOpen, onArchive }: 
   );
 }
 
-function OutputStep({ icon: Icon, title, desc, to, payload, campaignPackId }: { icon: typeof Wand2; title: string; desc: string; to: "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video"; payload: string; campaignPackId?: string }) {
+function OutputStep({ icon: Icon, title, desc, to, payload, saving, onOpen }: { icon: typeof Wand2; title: string; desc: string; to: OutputToolRoute; payload: string; saving: boolean; onOpen: (to: OutputToolRoute, payload: string) => Promise<void> }) {
   const copy = async () => {
     await navigator.clipboard.writeText(payload);
     toast.success(`تم نسخ ${title}`);
@@ -335,7 +345,9 @@ function OutputStep({ icon: Icon, title, desc, to, payload, campaignPackId }: { 
       </div>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Button type="button" variant="outline" size="sm" onClick={copy} className="flex-1 gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
-        <Button asChild size="sm" className="flex-1 gradient-primary text-primary-foreground shadow-elegant"><Link to={to} search={{ prompt: payload, campaignPackId }}>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></Link></Button>
+        <Button type="button" size="sm" disabled={saving} onClick={() => void onOpen(to, payload)} className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></>}
+        </Button>
       </div>
     </div>
   );
