@@ -36,13 +36,13 @@ export const Route = createFileRoute("/pricing")({
       {
         property: "og:description",
         content:
-          "Starter 149ر، Growth 249ر، Pro 399ر، Business 999ر — فيديوهات بالنقاط دون وعود غير محدودة.",
+          `Starter ${PLAN_CATALOG[1].monthlyPriceSar}ر، Growth ${PLAN_CATALOG[2].monthlyPriceSar}ر، Pro ${PLAN_CATALOG[3].monthlyPriceSar}ر، Business ${PLAN_CATALOG[4].monthlyPriceSar}ر — فيديوهات بالنقاط دون وعود غير محدودة.`,
       },
       { name: "twitter:title", content: "أسعار رِفد — نقاط فيديو واضحة" },
       {
         name: "twitter:description",
         content:
-          "اختر باقتك حسب عدد فيديوهاتك الشهرية: Fast من 150 نقطة وQuality من 450 نقطة.",
+          `اختر باقتك حسب عدد فيديوهاتك الشهرية: ${VIDEO_QUALITY_LABELS.fast} من ${videoCreditCost("fast", 5)} نقطة و${VIDEO_QUALITY_LABELS.quality} من ${videoCreditCost("quality", 5)} نقطة.`,
       },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/pricing" }],
