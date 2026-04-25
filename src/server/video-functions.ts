@@ -200,7 +200,11 @@ export const generateVideo = createServerFn({ method: "POST" })
             status: "refunded",
             refund_ledger_id: refundLedgerId,
             error_message: publicVideoError(e).message,
-            metadata: { failure_stage: "generate_video", original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500) },
+            metadata: {
+              failure_stage: "generate_video",
+              original_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
+              refund_ledger_id: refundLedgerId,
+            },
           })
           .eq("id", jobId);
       }
@@ -255,7 +259,22 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
       return { job: updated as VideoJobRow };
     }
 
-    const prediction = await getReplicatePrediction(row.provider_job_id);
+    let prediction: Awaited<ReturnType<typeof getReplicatePrediction>>;
+    try {
+      prediction = await getReplicatePrediction(row.provider_job_id);
+    } catch (e) {
+      await supabaseAdmin
+        .from("video_jobs")
+        .update({
+          metadata: {
+            ...(row.metadata as Record<string, unknown> | null),
+            last_check_error: e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500),
+            last_checked_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", row.id);
+      throw publicVideoError(e);
+    }
     if (!TERMINAL_PROVIDER_STATUSES.has(prediction.status)) {
       await supabaseAdmin
         .from("video_jobs")
@@ -277,7 +296,12 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (prediction.status === "succeeded" && prediction.resultUrl) {
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
-        .update({ status: "completed", result_url: prediction.resultUrl, completed_at: new Date().toISOString() })
+        .update({
+          status: "completed",
+          result_url: prediction.resultUrl,
+          completed_at: new Date().toISOString(),
+          metadata: { ...(row.metadata as Record<string, unknown> | null), provider_status: prediction.status },
+        })
         .eq("id", row.id)
         .select("*")
         .single();
