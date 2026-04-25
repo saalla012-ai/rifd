@@ -1,8 +1,8 @@
 # Launch Checklist — رِفد للتقنية
 
-آخر تحديث: 24 أبريل 2026 — **الجاهزية: 100/100** ✅
+آخر تحديث: 25 أبريل 2026 — **الجاهزية: 97/100** ✅
 
-> **قرار الإطلاق:** المنتج جاهز فنياً للإطلاق التسويقي. كل البوابات الحرجة مغلقة بنجاح.
+> **قرار الإطلاق:** المنتج جاهز فنياً للإطلاق التسويقي، لكن اعتماد QA اليدوي النهائي لا يُغلق إلا بعد تنفيذ مصفوفة الـ42 تمريرة الموثقة في `.lovable/qa-runbook.md`.
 
 ---
 
@@ -12,7 +12,7 @@
 |---|---|---|
 | **الأمان** (P1) | 100% | RLS + Headers + Triggers + Linter نظيف |
 | **نموذج /contact** (P2) | 100% | end-to-end يعمل (DB + بريد + Telegram + Inbox) |
-| **QA Runbook** (P3) | 100% (وثائق) | 7 سيناريوهات × 6 تشكيلات موثَّقة — التنفيذ اليدوي post-launch |
+| **QA Runbook** (P3) | 100% (وثائق) / 0% اعتماد يدوي | 7 سيناريوهات × 6 تشكيلات موثَّقة — الاعتماد اليدوي ما زال مفتوحاً |
 | **PostHog Analytics** (P4) | 100% | 5 أحداث + identify + pageviews + CSP |
 | **الإطلاق** (P5) | 100% | DNS + بريد `send.rifd.site` verified + runbook كامل |
 
@@ -23,13 +23,13 @@
 - [x] **P1 — الأمان:** AdminGuard مركزي + RLS مُراجعة + Security Headers + CSP + triggers الحماية
 - [x] **P2 — نموذج /contact:** schema + server route + UI + email template + Telegram + honeypot + rate-limit
 - [x] **P3 — Admin Inbox:** جدول رسائل التواصل + sidebar badge + تحديث الحالة
-- [x] **P3 — QA Runbook:** `.lovable/qa-runbook.md` بـ7 سيناريوهات × 3 مقاسات × 2 متصفح
+- [x] **P3 — QA Runbook:** `.lovable/qa-runbook.md` بـ7 سيناريوهات × 3 مقاسات × 2 متصفح، مع بقاء التنفيذ اليدوي الكامل مفتوحاً
 - [x] **P4 — PostHog Analytics:** posthog-js + 5 events + AnalyticsBridge SSR-safe + CSP محدَّث
 - [x] **P5 — الإطلاق:** publish + DNS verified + linter clean + `launch-day-runbook.md` + بريد `send.rifd.site` ✅
 
 ---
 
-## ✅ بوابة قبول P5 (تعريف "تم الإطلاق")
+## ✅ بوابة قبول P5 (تعريف "جاهز فنياً للإطلاق")
 
 ```text
 أمان:    [x] 0 critical/high في security scan
@@ -52,6 +52,8 @@
          [x] خطة استجابة موثقة (launch-day-runbook.md)
          [x] تحليلات تعمل (PostHog + 5 events)
 ```
+
+> لا تُستخدم هذه القائمة لإعلان إغلاق QA اليدوي الكامل؛ مرجع الإغلاق النهائي هو تعبئة مصفوفة `.lovable/qa-runbook.md` عبر Chrome/Safari على Mobile/Tablet/Desktop.
 
 ---
 
