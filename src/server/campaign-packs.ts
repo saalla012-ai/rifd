@@ -2,10 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { assertAdmin, type DbClient } from "@/server/admin-auth";
 import type { Database } from "@/integrations/supabase/types";
 
-type DbClient = SupabaseClient<Database>;
 type CampaignPackRow = Database["public"]["Tables"]["campaign_packs"]["Row"];
 type CampaignGoal = "launch" | "offer" | "seasonal" | "retention";
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
@@ -56,17 +55,6 @@ const adminListSchema = z.object({
   status: z.enum(["all", "draft", "generated", "archived"]).default("all"),
   limit: z.number().int().min(1).max(300).default(150),
 });
-
-async function assertAdmin(db: DbClient, userId: string): Promise<void> {
-  const { data, error } = await db
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error) throw new Error(`فشل التحقق من الصلاحيات: ${error.message}`);
-  if (!data) throw new Error("هذه الصفحة للأدمن فقط");
-}
 
 function mapPack(row: CampaignPackRow): CampaignPack {
   return row as CampaignPack;

@@ -14,21 +14,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { assertAdmin, type DbClient } from "@/server/admin-auth";
 import type { Database } from "@/integrations/supabase/types";
-
-type DbClient = SupabaseClient<Database>;
-
-async function assertAdmin(db: DbClient, userId: string): Promise<void> {
-  const { data, error } = await db
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error) throw new Error(`فشل التحقق من الصلاحيات: ${error.message}`);
-  if (!data) throw new Error("هذه الصفحة للأدمن فقط");
-}
 
 async function logAudit(params: {
   adminId: string;

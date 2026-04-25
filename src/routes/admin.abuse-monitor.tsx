@@ -53,7 +53,7 @@ function fmtDate(value: string) {
 }
 
 function emptyStats(): AbuseMonitorStats {
-  return { totalSignals: 0, critical: 0, high: 0, medium: 0, low: 0, usersFlagged: 0, creditsConsumed24h: 0, videosCreated24h: 0, refunds24h: 0 };
+  return { totalSignals: 0, critical: 0, high: 0, medium: 0, low: 0, usersFlagged: 0, creditsConsumed: 0, videosCreated: 0, refunds: 0 };
 }
 
 function AbuseMonitorPage() {
@@ -117,8 +117,8 @@ function AbuseMonitorPage() {
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={ShieldAlert} label="إشارات مرصودة" value={fmt(stats.totalSignals)} emphasis={stats.critical > 0 || stats.high > 0} />
         <StatCard icon={UserRoundSearch} label="مستخدمون تحت المراقبة" value={fmt(stats.usersFlagged)} />
-        <StatCard icon={Coins} label="نقاط مستهلكة" value={fmt(stats.creditsConsumed24h)} />
-        <StatCard icon={Clapperboard} label="فيديوهات النافذة" value={fmt(stats.videosCreated24h)} />
+        <StatCard icon={Coins} label="نقاط مستهلكة" value={fmt(stats.creditsConsumed)} />
+        <StatCard icon={Clapperboard} label="فيديوهات النافذة" value={fmt(stats.videosCreated)} />
       </div>
 
       <div className="mb-4 grid gap-2 lg:grid-cols-[180px_180px_minmax(0,1fr)]">
