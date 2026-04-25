@@ -68,6 +68,7 @@ type ProviderAttempt = {
   ok?: boolean;
   status?: string;
   latency_ms?: number;
+  finished_at?: string;
   error?: string;
   reason?: string;
 };
@@ -92,6 +93,16 @@ export type AdminVideoProviderConfig = {
   last_error_message: string | null;
   metadata: Json;
   updated_at: string;
+};
+
+export type AdminVideoProviderAttemptSummary = {
+  provider: string;
+  total: number;
+  success: number;
+  failed: number;
+  avgLatencyMs: number | null;
+  lastStatus: string | null;
+  lastAt: string | null;
 };
 
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
@@ -195,6 +206,52 @@ export const listVideoProviderConfigs = createServerFn({ method: "POST" })
 
     if (error) throw new Error(`فشل جلب إعدادات مزودي الفيديو: ${error.message}`);
     return { providers: (data as AdminVideoProviderConfig[] | null) ?? [] };
+  });
+
+export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ attempts: AdminVideoProviderAttemptSummary[] }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data, error } = await supabaseAdmin
+      .from("video_jobs")
+      .select("provider, metadata, created_at")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (error) throw new Error(`فشل جلب سجل محاولات المزودين: ${error.message}`);
+
+    const byProvider = new Map<string, { total: number; success: number; failed: number; latency: number[]; lastStatus: string | null; lastAt: string | null }>();
+    for (const row of data ?? []) {
+      const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+      const attempts = Array.isArray(metadata.provider_attempts) ? metadata.provider_attempts as ProviderAttempt[] : [{ provider: row.provider, ok: undefined, status: String(metadata.provider_status ?? "unknown"), finished_at: row.created_at }];
+      for (const attempt of attempts) {
+        const key = attempt.provider || row.provider || "unknown";
+        const current = byProvider.get(key) ?? { total: 0, success: 0, failed: 0, latency: [], lastStatus: null, lastAt: null };
+        current.total += 1;
+        if (attempt.ok === true) current.success += 1;
+        if (attempt.ok === false) current.failed += 1;
+        if (typeof attempt.latency_ms === "number" && Number.isFinite(attempt.latency_ms)) current.latency.push(attempt.latency_ms);
+        const finishedAt = attempt.finished_at ?? row.created_at;
+        if (!current.lastAt || new Date(finishedAt).getTime() > new Date(current.lastAt).getTime()) {
+          current.lastAt = finishedAt;
+          current.lastStatus = attempt.status ?? null;
+        }
+        byProvider.set(key, current);
+      }
+    }
+
+    return {
+      attempts: Array.from(byProvider.entries()).map(([provider, item]) => ({
+        provider,
+        total: item.total,
+        success: item.success,
+        failed: item.failed,
+        avgLatencyMs: item.latency.length ? Math.round(item.latency.reduce((sum, value) => sum + value, 0) / item.latency.length) : null,
+        lastStatus: item.lastStatus,
+        lastAt: item.lastAt,
+      })).sort((a, b) => b.total - a.total),
+    };
   });
 
 export const updateVideoProviderConfig = createServerFn({ method: "POST" })
