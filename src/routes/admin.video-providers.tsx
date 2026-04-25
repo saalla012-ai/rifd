@@ -114,14 +114,14 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
-        <div className="mb-4 grid gap-3 md:grid-cols-3">
-          {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
-        </div>
-        <div className="grid gap-4 xl:grid-cols-2">
-          {providers.map((provider) => {
-            const saving = savingKey === provider.provider_key;
-            return (
-              <article key={provider.provider_key} className="rounded-xl border border-border bg-card p-4 shadow-soft">
+          <div className="mb-4 grid gap-3 md:grid-cols-3">
+            {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
+          </div>
+          <div className="grid gap-4 xl:grid-cols-2">
+            {providers.map((provider) => {
+              const saving = savingKey === provider.provider_key;
+              return (
+                <article key={provider.provider_key} className="rounded-xl border border-border bg-card p-4 shadow-soft">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -170,10 +170,10 @@ function AdminVideoProvidersPage() {
                     {provider.last_error_message && <p className="mt-1 flex items-start gap-1 text-destructive"><AlertTriangle className="mt-1 h-3.5 w-3.5" /> {provider.last_error_message}</p>}
                   </div>
                 </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
         </>
       )}
     </DashboardShell>
