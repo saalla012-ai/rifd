@@ -14,6 +14,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
+const DASHBOARD_AUTH_TIMEOUT_MS = 3_500;
+
+function authTimeout() {
+  return new Promise<null>((resolve) => {
+    window.setTimeout(() => resolve(null), DASHBOARD_AUTH_TIMEOUT_MS);
+  });
+}
+
 export const Route = createFileRoute("/dashboard")({
   /**
    * Auth guard مُحسَّن — يعمل قبل أي render.
@@ -25,9 +33,10 @@ export const Route = createFileRoute("/dashboard")({
    */
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const session = await Promise.race([
+      supabase.auth.getSession().then(({ data }) => data.session).catch(() => null),
+      authTimeout(),
+    ]);
     if (!session) {
       throw redirect({ to: "/auth" });
     }
