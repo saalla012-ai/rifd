@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { markSubscriptionReceiptUploaded } from "@/server/receipts";
 
 export const Route = createFileRoute("/dashboard/billing/confirm/$requestId")({
   head: () => ({ meta: [{ title: "تأكيد طلب الاشتراك — رِفد" }] }),
@@ -194,18 +195,7 @@ function ConfirmRequestPage() {
         return;
       }
 
-      const { error: updateError } = await supabase
-        .from("subscription_requests")
-        .update({
-          receipt_path: path,
-          receipt_uploaded_at: new Date().toISOString(),
-        })
-        .eq("id", request.id);
-
-      if (updateError) {
-        toast.error("تم رفع الملف لكن فشل تحديث الطلب");
-        return;
-      }
+      await markSubscriptionReceiptUploaded({ data: { requestId: request.id, path } });
 
       // Fire-and-forget OCR check (admin-side note only, never blocks user)
       void fetch("/api/public/hooks/ocr-receipt", {
