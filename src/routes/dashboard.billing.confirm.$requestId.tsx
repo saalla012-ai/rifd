@@ -25,7 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { markSubscriptionReceiptUploaded } from "@/server/receipts";
+import { getReceiptSignedUrl, markSubscriptionReceiptUploaded } from "@/server/receipts";
 
 export const Route = createFileRoute("/dashboard/billing/confirm/$requestId")({
   head: () => ({ meta: [{ title: "تأكيد طلب الاشتراك — رِفد" }] }),
@@ -157,10 +157,12 @@ function ConfirmRequestPage() {
   }
 
   async function loadReceiptPreview(path: string) {
-    const { data, error } = await supabase.storage
-      .from("payment-receipts")
-      .createSignedUrl(path, 600);
-    if (!error && data?.signedUrl) setPreviewUrl(data.signedUrl);
+    try {
+      const data = await getReceiptSignedUrl({ data: { path } });
+      if (data.url) setPreviewUrl(data.url);
+    } catch (err) {
+      console.warn("[billing-confirm] failed to load receipt preview", err);
+    }
   }
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
