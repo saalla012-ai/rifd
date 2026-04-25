@@ -71,6 +71,7 @@ import { Route as AdminAbuseMonitorRouteImport } from './routes/admin.abuse-moni
 import { Route as AdminAbTestsRouteImport } from './routes/admin.ab-tests'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard.billing.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicVideoProviderCallbackRouteImport } from './routes/api.public.video-provider-callback'
 import { Route as ApiPublicContactSubmitRouteImport } from './routes/api.public.contact-submit'
 import { Route as ApiInvoiceRequestIdRouteImport } from './routes/api.invoice.$requestId'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -397,6 +398,12 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicVideoProviderCallbackRoute =
+  ApiPublicVideoProviderCallbackRouteImport.update({
+    id: '/api/public/video-provider-callback',
+    path: '/api/public/video-provider-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicContactSubmitRoute = ApiPublicContactSubmitRouteImport.update({
   id: '/api/public/contact-submit',
   path: '/api/public/contact-submit',
@@ -523,6 +530,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
+  '/api/public/video-provider-callback': typeof ApiPublicVideoProviderCallbackRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
@@ -597,6 +605,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
+  '/api/public/video-provider-callback': typeof ApiPublicVideoProviderCallbackRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
@@ -673,6 +682,7 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
+  '/api/public/video-provider-callback': typeof ApiPublicVideoProviderCallbackRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
@@ -750,6 +760,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/api/invoice/$requestId'
     | '/api/public/contact-submit'
+    | '/api/public/video-provider-callback'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/api/public/hooks/check-email-dlq'
@@ -824,6 +835,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/api/invoice/$requestId'
     | '/api/public/contact-submit'
+    | '/api/public/video-provider-callback'
     | '/lovable/email/suppression'
     | '/dashboard/billing'
     | '/api/public/hooks/check-email-dlq'
@@ -899,6 +911,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/api/invoice/$requestId'
     | '/api/public/contact-submit'
+    | '/api/public/video-provider-callback'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
     | '/api/public/hooks/check-email-dlq'
@@ -963,6 +976,7 @@ export interface RootRouteChildren {
   LegalTermsRoute: typeof LegalTermsRoute
   ApiInvoiceRequestIdRoute: typeof ApiInvoiceRequestIdRoute
   ApiPublicContactSubmitRoute: typeof ApiPublicContactSubmitRoute
+  ApiPublicVideoProviderCallbackRoute: typeof ApiPublicVideoProviderCallbackRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
   ApiPublicHooksCheckStaleSubscriptionsRoute: typeof ApiPublicHooksCheckStaleSubscriptionsRoute
@@ -1410,6 +1424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/video-provider-callback': {
+      id: '/api/public/video-provider-callback'
+      path: '/api/public/video-provider-callback'
+      fullPath: '/api/public/video-provider-callback'
+      preLoaderRoute: typeof ApiPublicVideoProviderCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/contact-submit': {
       id: '/api/public/contact-submit'
       path: '/api/public/contact-submit'
@@ -1579,6 +1600,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalTermsRoute: LegalTermsRoute,
   ApiInvoiceRequestIdRoute: ApiInvoiceRequestIdRoute,
   ApiPublicContactSubmitRoute: ApiPublicContactSubmitRoute,
+  ApiPublicVideoProviderCallbackRoute: ApiPublicVideoProviderCallbackRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksCheckEmailDlqRoute: ApiPublicHooksCheckEmailDlqRoute,
   ApiPublicHooksCheckStaleSubscriptionsRoute:
