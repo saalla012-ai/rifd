@@ -111,7 +111,10 @@ export type AdminVideoProviderAttemptSummary = {
   total: number;
   success: number;
   failed: number;
+  successRate: number;
+  failureRate: number;
   avgLatencyMs: number | null;
+  topError: string | null;
   lastStatus: string | null;
   lastAt: string | null;
 };
@@ -129,7 +132,7 @@ export type AdminVideoRouterTestResult = {
   ok: boolean;
   selectedProvider: string | null;
   checkedAt: string;
-  candidates: Array<{ providerKey: string; displayName: string; priority: number; mode: string; eligible: boolean; reason: string }>;
+  candidates: Array<{ providerKey: string; displayName: string; priority: number; effectivePriority: number; mode: string; eligible: boolean; reason: string }>;
 };
 
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
@@ -173,7 +176,12 @@ function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.i
   if (input.hasStartingFrame && !provider.supports_starting_frame) return { eligible: false, reason: "صورة البداية غير مدعومة" };
   const cost = input.durationSeconds === 8 ? provider.cost_8s : provider.cost_5s;
   if (cost <= 0) return { eligible: false, reason: "تكلفة المدة غير مضبوطة" };
-  return { eligible: true, reason: "جاهز للراوتر" };
+  return { eligible: true, reason: provider.health_status === "unhealthy" ? "مؤهل لكن مؤخر بسبب حالة غير صحية" : "جاهز للراوتر" };
+}
+
+function providerPriorityScore(provider: AdminVideoProviderConfig) {
+  const healthPenalty = provider.health_status === "unhealthy" ? 10_000 : provider.health_status === "inactive" ? 20_000 : 0;
+  return provider.priority + healthPenalty;
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
@@ -267,16 +275,17 @@ export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" }
       .limit(300);
     if (error) throw new Error(`فشل جلب سجل محاولات المزودين: ${error.message}`);
 
-    const byProvider = new Map<string, { total: number; success: number; failed: number; latency: number[]; lastStatus: string | null; lastAt: string | null }>();
+    const byProvider = new Map<string, { total: number; success: number; failed: number; latency: number[]; errors: Map<string, number>; lastStatus: string | null; lastAt: string | null }>();
     for (const row of data ?? []) {
       const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
       const attempts = Array.isArray(metadata.provider_attempts) ? metadata.provider_attempts as ProviderAttempt[] : [{ provider: row.provider, ok: undefined, status: String(metadata.provider_status ?? "unknown"), finished_at: row.created_at }];
       for (const attempt of attempts) {
         const key = attempt.provider || row.provider || "unknown";
-        const current = byProvider.get(key) ?? { total: 0, success: 0, failed: 0, latency: [], lastStatus: null, lastAt: null };
+        const current = byProvider.get(key) ?? { total: 0, success: 0, failed: 0, latency: [], errors: new Map<string, number>(), lastStatus: null, lastAt: null };
         current.total += 1;
         if (attempt.ok === true) current.success += 1;
         if (attempt.ok === false) current.failed += 1;
+        if (attempt.ok === false && attempt.error) current.errors.set(attempt.error, (current.errors.get(attempt.error) ?? 0) + 1);
         if (typeof attempt.latency_ms === "number" && Number.isFinite(attempt.latency_ms)) current.latency.push(attempt.latency_ms);
         const finishedAt = attempt.finished_at ?? row.created_at;
         if (!current.lastAt || new Date(finishedAt).getTime() > new Date(current.lastAt).getTime()) {
@@ -288,15 +297,21 @@ export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" }
     }
 
     return {
-      attempts: Array.from(byProvider.entries()).map(([provider, item]) => ({
-        provider,
-        total: item.total,
-        success: item.success,
-        failed: item.failed,
-        avgLatencyMs: item.latency.length ? Math.round(item.latency.reduce((sum, value) => sum + value, 0) / item.latency.length) : null,
-        lastStatus: item.lastStatus,
-        lastAt: item.lastAt,
-      })).sort((a, b) => b.total - a.total),
+      attempts: Array.from(byProvider.entries()).map(([provider, item]) => {
+        const topError = Array.from(item.errors.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+        return {
+          provider,
+          total: item.total,
+          success: item.success,
+          failed: item.failed,
+          successRate: item.total ? Math.round((item.success / item.total) * 100) : 0,
+          failureRate: item.total ? Math.round((item.failed / item.total) * 100) : 0,
+          avgLatencyMs: item.latency.length ? Math.round(item.latency.reduce((sum, value) => sum + value, 0) / item.latency.length) : null,
+          topError,
+          lastStatus: item.lastStatus,
+          lastAt: item.lastAt,
+        };
+      }).sort((a, b) => b.total - a.total),
     };
   });
 
@@ -402,10 +417,10 @@ export const testVideoRouterDryRun = createServerFn({ method: "POST" })
       .order("priority", { ascending: true });
     if (error) throw new Error(`فشل اختبار الراوتر: ${error.message}`);
 
-    const providers = ((rows as AdminVideoProviderConfig[] | null) ?? []).sort((a, b) => a.priority - b.priority);
+    const providers = ((rows as AdminVideoProviderConfig[] | null) ?? []).sort((a, b) => providerPriorityScore(a) - providerPriorityScore(b));
     const candidates = providers.map((provider) => {
       const readiness = providerEligibleForInput(provider, data);
-      return { providerKey: provider.provider_key, displayName: provider.display_name_admin, priority: provider.priority, mode: provider.mode, eligible: readiness.eligible, reason: readiness.reason };
+      return { providerKey: provider.provider_key, displayName: provider.display_name_admin, priority: provider.priority, effectivePriority: providerPriorityScore(provider), mode: provider.mode, eligible: readiness.eligible, reason: readiness.reason };
     });
     const selected = candidates.find((candidate) => candidate.eligible) ?? null;
     const result = { ok: Boolean(selected), selectedProvider: selected?.providerKey ?? null, checkedAt: new Date().toISOString(), candidates };
