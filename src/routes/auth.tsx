@@ -94,7 +94,8 @@ function AuthPage() {
       } else if (msg.toLowerCase().includes("password")) {
         toast.error("كلمة السر ضعيفة — استخدم 8 أحرف على الأقل");
       } else {
-        toast.error(msg);
+        console.warn("[auth] handled auth error", msg);
+        toast.error("تعذر إكمال العملية الآن. حاول مرة أخرى أو تواصل مع الدعم.");
       }
     } finally {
       setSubmitting(false);
@@ -115,7 +116,8 @@ function AuthPage() {
       // إذا redirected = true، المتصفح بيتحول لGoogle تلقائياً
       // إذا رجعت tokens، الجلسة بتنحفظ والـuseEffect أعلاه يحوّل للوجهة الصحيحة
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "فشل الاتصال بـGoogle");
+      console.warn("[auth] google oauth error", err);
+      toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
       setGoogleLoading(false);
     }
   };
