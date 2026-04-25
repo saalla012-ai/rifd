@@ -71,6 +71,21 @@ type ProviderRefreshResult = {
   metadata?: Record<string, unknown>;
 };
 
+type ProviderAttempt = {
+  provider: string;
+  ok: boolean;
+  status?: ProviderStatus | "skipped";
+  mode?: VideoProviderMode;
+  priority?: number;
+  started_at: string;
+  finished_at: string;
+  latency_ms: number;
+  provider_job_id?: string | null;
+  manual_required?: boolean;
+  error?: string;
+  reason?: string;
+};
+
 type VideoProvider = {
   key: string;
   createJob(input: z.infer<typeof videoInputSchema>, config: VideoProviderConfig): Promise<ProviderCreateResult>;
@@ -122,6 +137,14 @@ function publicVideoError(e: unknown): Error {
   if (/no_video_provider_available|إعداد مزوّد الفيديو غير مكتمل/i.test(msg)) return new Error("خدمة الفيديو غير جاهزة حالياً. جرّب لاحقاً أو تواصل مع الدعم.");
   if (/فشل مزوّد الفيديو|provider|prediction|fetch failed/i.test(msg)) return new Error("تعذر الاتصال بخدمة الفيديو حالياً. تم حفظ الحالة ورد النقاط عند الحاجة.");
   return e instanceof Error ? e : new Error("فشل تنفيذ عملية الفيديو");
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
+}
+
+function mergeMetadata(current: Json | null | undefined, patch?: Record<string, unknown>) {
+  return { ...((current as Record<string, unknown> | null) ?? {}), ...(patch ?? {}) } as Json;
 }
 
 async function countProcessingJobs(userId: string) {
