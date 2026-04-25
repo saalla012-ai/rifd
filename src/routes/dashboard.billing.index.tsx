@@ -94,7 +94,7 @@ function BillingPage() {
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [plan, setPlan] = useState<PaidPlan>("growth");
+  const [plan, setPlan] = useState<PaidPlanId>("growth");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [storeName, setStoreName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -137,9 +137,11 @@ function BillingPage() {
   const seatsPct = seatsTotal > 0 ? (seatsTaken / seatsTotal) * 100 : 0;
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
   const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
-  const selected = PLAN_CONFIG[plan];
-  const price = selected[billingCycle];
+  const selected = PLAN_BY_ID[plan];
+  const price = billingCycle === "yearly" ? selected.yearlyPriceSar : selected.monthlyPriceSar;
   const futurePrice = Math.round(price * (1 + increasePct / 100));
+  const selectedFastVideos = estimateVideoCount(selected.monthlyCredits, "fast", 5);
+  const selectedQualityVideos = selected.videoQualityAllowed ? estimateVideoCount(selected.monthlyCredits, "quality", 5) : 0;
   const pendingRequest = useMemo(
     () => requests.find((r) => r.status === "pending" || r.status === "contacted"),
     [requests]
@@ -161,8 +163,8 @@ function BillingPage() {
       "السلام عليكم 👋",
       "أرغب بالاشتراك في رِفد بنظام نقاط الفيديو الجديد",
       "",
-      `📦 الباقة: ${selected.label} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
-      `🎬 نقاط الفيديو: ${selected.credits.toLocaleString("ar-SA")} نقطة`,
+      `📦 الباقة: ${selected.name} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
+      `🎬 نقاط الفيديو: ${formatPlanNumber(selected.monthlyCredits)} نقطة`,
       `💰 السعر: ${price} ر.س (سيرتفع لـ ${futurePrice} ر.س بعد برنامج المؤسسين)`,
       storeName ? `🏪 المتجر: ${storeName}` : "",
       `📱 واتساب: ${whatsapp}`,
@@ -227,14 +229,14 @@ function BillingPage() {
           <div>
             <div className="flex items-center gap-2">
               {isPaidUser && <Crown className="h-5 w-5 text-gold" />}
-              <h2 className="text-lg font-bold">باقتك الحالية: {PLAN_LABELS[(profile?.plan ?? "free") as PlanKey] ?? profile?.plan}</h2>
+              <h2 className="text-lg font-bold">باقتك الحالية: {PLAN_LABELS[(profile?.plan ?? "free") as PlanId] ?? profile?.plan}</h2>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {isPaidUser ? "نقاطك الحالية مخصصة للفيديو فقط، والنصوص والصور لا تخصم منها." : "ابدأ مجاناً، ثم اختر باقة فيديو عندما تحتاج حملات إعلانية أكثر."}
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Film className="h-3.5 w-3.5" /> Fast 150 نقطة · Quality 450 نقطة
+            <Film className="h-3.5 w-3.5" /> Fast {videoCreditCost("fast", 5)} نقطة · Quality {videoCreditCost("quality", 5)} نقطة
           </div>
         </div>
       </div>
