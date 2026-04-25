@@ -27,7 +27,8 @@ export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
   useEffect(() => {
     if (loading || isAdmin === null) return;
     if (!user) {
-      void navigate({ to: "/auth", search: { redirect: window.location.pathname } as never });
+      const redirectPath = window.location.pathname + window.location.search;
+      void navigate({ to: "/auth", search: { redirect: redirectPath } as never });
       return;
     }
     if (isAdmin === false) {
