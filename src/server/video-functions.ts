@@ -174,6 +174,36 @@ async function markProcessingJobRefunded(params: {
   return current as VideoJobRow;
 }
 
+async function markProcessingJobCompleted(params: {
+  jobId: string;
+  resultUrl: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const { data, error } = await supabaseAdmin
+    .from("video_jobs")
+    .update({
+      status: "completed",
+      result_url: params.resultUrl,
+      completed_at: new Date().toISOString(),
+      ...(params.metadata ? { metadata: params.metadata as Json } : {}),
+    })
+    .eq("id", params.jobId)
+    .eq("status", "processing")
+    .select("*")
+    .maybeSingle();
+
+  if (error) throw new Error(`فشل تحديث مهمة الفيديو: ${error.message}`);
+  if (data) return data as VideoJobRow;
+
+  const { data: current, error: readError } = await supabaseAdmin
+    .from("video_jobs")
+    .select("*")
+    .eq("id", params.jobId)
+    .single();
+  if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو بعد الإكمال: ${readError?.message ?? "غير موجودة"}`);
+  return current as VideoJobRow;
+}
+
 export const generateVideo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => videoInputSchema.parse(input))
