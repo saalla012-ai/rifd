@@ -147,7 +147,7 @@ export const Route = createFileRoute("/api/public/hooks/ocr-receipt")({
 
           await admin
             .from("subscription_requests")
-            .update({ admin_notes: finalNotes, ocr_processed_at: new Date().toISOString(), ocr_receipt_path: req.receipt_path, ocr_status: insights.ok ? "processed" : "review_needed", ocr_error: insights.ok ? null : insights.reason ?? "ocr_uncertain" })
+            .update({ admin_notes: finalNotes, ocr_processed_at: new Date().toISOString(), ocr_receipt_path: req.receipt_path, ocr_status: insights.ok ? "processed" : "review_needed", ocr_error: insights.ok ? null : insights.error ?? "ocr_uncertain" })
             .eq("id", requestId);
 
           return new Response(
