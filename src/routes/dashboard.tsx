@@ -31,7 +31,7 @@ export const Route = createFileRoute("/dashboard")({
    * - SSR-safe: لا يفحص الجلسة على السيرفر (Supabase session في localStorage)
    * - لا يفحص onboarding هنا — يبقى client-side لأنه يعتمد على بيانات profile
    */
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     if (typeof window === "undefined") return;
     const session = await Promise.race([
       supabase.auth.getSession().then(({ data }) => data.session).catch(() => null),
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/dashboard")({
     if (!session) {
       throw redirect({
         to: "/auth",
-        search: { redirect: window.location.pathname + window.location.search } as never,
+        search: { redirect: location.href },
       });
     }
   },
@@ -60,7 +60,10 @@ function DashboardLayout() {
     if (loading) return;
     if (!user) {
       // حماية إضافية لو فات beforeLoad (مثلاً جلسة انتهت بعد التحميل)
-      void navigate({ to: "/auth" });
+      void navigate({
+        to: "/auth",
+        search: { redirect: window.location.pathname + window.location.search },
+      });
       return;
     }
     if (!profile) return;
