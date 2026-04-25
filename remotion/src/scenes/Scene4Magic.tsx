@@ -29,7 +29,11 @@ const OUTPUT_CARDS: Array<{ title: string; body: string; tone: "copy" | "image" 
   },
 ];
 
-const INPUT_PROMPT = ["عطر نسائي بثبات واضح", "نبرة راقية غير مترجمة", "أنشئ صورة إعلان فوراً مع CTA خفيف"];
+const INPUT_PROMPT = [
+  "عطر نسائي بثبات واضح",
+  "نبرة راقية غير مترجمة",
+  "أنشئ صورة إعلان فوراً مع CTA خفيف",
+];
 
 export const Scene4Magic: React.FC = () => {
   const frame = useCurrentFrame();
@@ -39,7 +43,10 @@ export const Scene4Magic: React.FC = () => {
   const packIn = spring({ frame: frame - 22, fps, config: { damping: 12, stiffness: 160 } });
   const titleIn = spring({ frame: frame - 40, fps, config: { damping: 14 } });
   const badgeIn = spring({ frame: frame - 70, fps, config: { damping: 15 } });
-  const drift = interpolate(frame, [70, 180], [0, -20], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const drift = interpolate(frame, [70, 180], [0, -20], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   return (
     <AbsoluteFill
@@ -60,12 +67,29 @@ export const Scene4Magic: React.FC = () => {
           transform: `translateY(${interpolate(inputIn, [0, 1], [-42, 0])}px)`,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 24,
+          }}
+        >
           <div>
-            <div style={{ fontSize: 21, fontWeight: 700, color: COLORS.ink, opacity: 0.65, marginBottom: 10 }}>
+            <div
+              style={{
+                fontSize: 21,
+                fontWeight: 700,
+                color: COLORS.ink,
+                opacity: 0.65,
+                marginBottom: 10,
+              }}
+            >
               المدخل
             </div>
-            <div style={{ fontSize: 36, fontWeight: 900, color: COLORS.greenDeep, lineHeight: 1.3 }}>
+            <div
+              style={{ fontSize: 36, fontWeight: 900, color: COLORS.greenDeep, lineHeight: 1.3 }}
+            >
               متجر عطور — جمهور نسائي — نبرة راقية
             </div>
           </div>
@@ -125,23 +149,29 @@ export const Scene4Magic: React.FC = () => {
         </div>
       </div>
 
-        <div
-          style={{
-            marginTop: 28,
-            display: "grid",
-            gridTemplateColumns: "1.18fr 0.82fr",
-            gap: 20,
-            alignItems: "start",
-            transform: `translateY(${drift}px)`,
-          }}
-        >
-          <InstantImagePreview />
+      <div
+        style={{
+          marginTop: 28,
+          display: "grid",
+          gridTemplateColumns: "1.18fr 0.82fr",
+          gap: 20,
+          alignItems: "start",
+          transform: `translateY(${drift}px)`,
+        }}
+      >
+        <InstantImagePreview />
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 18 }}>
-            {OUTPUT_CARDS.map((card, index) => (
-              <Scene4OutputCard key={card.title} index={index} title={card.title} body={card.body} tone={card.tone} />
-            ))}
-          </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 18 }}>
+          {OUTPUT_CARDS.map((card, index) => (
+            <Scene4OutputCard
+              key={card.title}
+              index={index}
+              title={card.title}
+              body={card.body}
+              tone={card.tone}
+            />
+          ))}
+        </div>
       </div>
 
       <div
@@ -164,7 +194,7 @@ export const Scene4Magic: React.FC = () => {
             border: `2px solid ${COLORS.green}24`,
           }}
         >
-            مدخل واحد ← نص + صورة تُنشأ فوراً + Reel + CTA ضمن نفس منطق البيع
+          مدخل واحد ← نص + صورة تُنشأ فوراً + Reel + CTA ضمن نفس منطق البيع
         </div>
       </div>
     </AbsoluteFill>
