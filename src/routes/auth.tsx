@@ -23,7 +23,7 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: typeof search.redirect === "string" && search.redirect.startsWith("/")
       ? search.redirect
-      : "/dashboard",
+      : undefined,
   }),
   component: AuthPage,
 });
@@ -59,7 +59,7 @@ function AuthPage() {
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else {
-        void navigate({ to: search.redirect as never });
+        void navigate({ to: (search.redirect ?? "/dashboard") as never });
       }
     }
   }, [authLoading, user, profile, navigate, search.redirect]);
