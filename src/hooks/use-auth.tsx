@@ -50,6 +50,11 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AUTH_TIMEOUT_MS = 3_500;
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -86,7 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!force && loadedUserIdRef.current === userId) return;
     loadedUserIdRef.current = userId;
     // نشغّل البروفايل والدور بالتوازي — استعلامان فقط لكل جلسة بدلاً من تكرارهما في كل مكوّن.
-    await Promise.all([loadProfile(userId), loadIsAdmin(userId)]);
+    await Promise.race([
+      Promise.allSettled([loadProfile(userId), loadIsAdmin(userId)]),
+      wait(AUTH_TIMEOUT_MS),
+    ]);
   };
 
   useEffect(() => {
@@ -108,7 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    void supabase.auth.getSession().then(({ data: { session: s } }) => {
+    void Promise.race([
+      supabase.auth.getSession(),
+      wait(AUTH_TIMEOUT_MS).then(() => ({ data: { session: null } })),
+    ]).then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
