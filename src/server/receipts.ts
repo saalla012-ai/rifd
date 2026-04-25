@@ -63,3 +63,51 @@ export const getReceiptSignedUrl = createServerFn({ method: "POST" })
       expiresIn: 300,
     };
   });
+
+export const markSubscriptionReceiptUploaded = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    z.object({
+      requestId: z.string().uuid(),
+      path: z
+        .string()
+        .min(1)
+        .max(500)
+        .regex(/^[a-f0-9-]+\/[a-f0-9-]+\.[a-z0-9]+$/i, "Invalid receipt path"),
+    }).parse
+  )
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+    const expectedPrefix = `${userId}/${data.requestId}.`;
+
+    if (!data.path.startsWith(expectedPrefix)) {
+      throw new Response("Forbidden: receipt path does not match request owner", { status: 403 });
+    }
+
+    const { data: requestRow, error: readError } = await supabase
+      .from("subscription_requests")
+      .select("id, user_id, status")
+      .eq("id", data.requestId)
+      .maybeSingle();
+
+    if (readError) throw new Error(`Failed to verify subscription request: ${readError.message}`);
+    if (!requestRow || requestRow.user_id !== userId) {
+      throw new Response("Forbidden: subscription request not found for this user", { status: 403 });
+    }
+    if (requestRow.status === "activated") {
+      throw new Error("لا يمكن تعديل إيصال طلب تم تفعيله مسبقاً");
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from("subscription_requests")
+      .update({
+        receipt_path: data.path,
+        receipt_uploaded_at: new Date().toISOString(),
+      })
+      .eq("id", data.requestId)
+      .eq("user_id", userId);
+
+    if (updateError) throw new Error(`Failed to mark receipt uploaded: ${updateError.message}`);
+
+    return { ok: true };
+  });
