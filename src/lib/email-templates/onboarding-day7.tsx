@@ -33,7 +33,7 @@ const OnboardingDay7Email = ({
       <Text style={featureItem}>✅ حتى 600 نص يومياً ضمن سقف حماية عادل</Text>
       <Text style={featureItem}>✅ حتى 100 صورة يومياً تشمل Pro</Text>
       <Text style={featureItem}>✅ 11,000 نقطة فيديو شهرياً</Text>
-      <Text style={featureItem}>✅ Fast وQuality حتى 8 ثوانٍ حسب النقاط</Text>
+      <Text style={featureItem}>✅ فيديو سريع واحترافي حتى 8 ثوانٍ حسب النقاط</Text>
       <Text style={featureItem}>✅ قوالب موسمية مناسبة للسوق السعودي</Text>
     </InfoCard>
     <div style={{ textAlign: "center", margin: `${spacing.lg} 0` }}>
