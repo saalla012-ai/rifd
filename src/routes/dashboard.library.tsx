@@ -23,7 +23,7 @@ type Generation = {
   template: string | null;
   is_favorite: boolean;
   created_at: string;
-  metadata: { template_title?: string } | null;
+  metadata: { template_title?: string; campaign_pack_id?: string; campaign_product?: string; campaign_goal?: string; campaign_channel?: string } | null;
 };
 
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
@@ -102,14 +102,17 @@ function LibraryPage() {
     return true;
   });
 
+  const campaignItemCount = items.filter((item) => item.metadata?.campaign_pack_id).length
+    + videoJobs.filter((job) => (job.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id).length;
+
   return (
     <DashboardShell>
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold">مكتبتي</h1>
-          <p className="mt-1 text-sm text-muted-foreground">المفضلة وكل توليداتك السابقة</p>
+          <p className="mt-1 text-sm text-muted-foreground">المفضلة وكل توليداتك السابقة، مع ربط مخرجات الحملات بسياقها</p>
         </div>
-        <div className="text-xs text-muted-foreground">{items.length} توليدة</div>
+        <div className="text-xs text-muted-foreground">{items.length} توليدة • {campaignItemCount} من حملة</div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -162,6 +165,11 @@ function LibraryPage() {
                 </button>
               </div>
               <div className="mt-3">
+                {g.metadata?.campaign_pack_id && (
+                  <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[11px] leading-5 text-primary">
+                    من حملة: {g.metadata.campaign_product || "Campaign Pack"} · {g.metadata.campaign_channel || "قناة"}
+                  </div>
+                )}
                 {g.type === "text" ? (
                   <pre className="line-clamp-6 whitespace-pre-wrap text-right font-sans text-xs leading-relaxed text-foreground">
                     {g.result ?? ""}
