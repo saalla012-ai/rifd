@@ -348,14 +348,12 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (prediction.status === "failed" || prediction.status === "canceled") {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_failed") : null;
       if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
-      const { data: updated, error: updateError } = await supabaseAdmin
-        .from("video_jobs")
-        .update({ status: "refunded", refund_ledger_id: refundLedgerId, error_message: prediction.error ?? "فشل توليد الفيديو لدى المزود" })
-        .eq("id", row.id)
-        .select("*")
-        .single();
-      if (updateError || !updated) throw new Error(`فشل تحديث مهمة الفيديو: ${updateError?.message ?? "استجابة فارغة"}`);
-      return { job: updated as VideoJobRow };
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId,
+        errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود",
+      });
+      return { job: updated };
     }
 
     if (prediction.status === "succeeded" && prediction.resultUrl) {
