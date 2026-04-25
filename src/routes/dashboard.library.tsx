@@ -52,20 +52,29 @@ function LibraryPage() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from("generations")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(100);
-    if (error) toast.error(error.message);
-    setItems((data as Generation[] | null) ?? []);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const out = await listVideoJobsFn({ headers: { Authorization: `Bearer ${session.access_token}` } });
-      setVideoJobs(out.jobs);
+    try {
+      const { data, error } = await supabase
+        .from("generations")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) toast.error(error.message);
+      setItems((data as Generation[] | null) ?? []);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        try {
+          const out = await listVideoJobsFn({ headers: { Authorization: `Bearer ${session.access_token}` } });
+          setVideoJobs(out.jobs);
+        } catch {
+          setVideoJobs([]);
+          toast.error("تعذر تحميل الفيديوهات مؤقتاً");
+        }
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const toggleFav = async (id: string, current: boolean) => {
