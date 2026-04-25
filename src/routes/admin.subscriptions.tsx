@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import {
   Loader2,
   Crown,
@@ -42,6 +42,7 @@ import { sendTransactionalEmail } from "@/lib/email/send";
 import { listAdminSubscriptionRequests, updateAdminSubscriptionStatus } from "@/server/admin-subscriptions";
 
 export const Route = createFileRoute("/admin/subscriptions")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "إدارة الاشتراكات — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل إدارة الاشتراكات…">

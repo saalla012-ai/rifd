@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, BarChart3, Clapperboard, Coins, Copy, Loader2, RefreshCw, Search, ShieldAlert, UserRoundSearch } from "lucide-react";
 import { toast } from "sonner";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { getAbuseMonitor, type AbuseSignal, type AbuseMonitorStats } from "@/server/admin-abuse";
 
 export const Route = createFileRoute("/admin/abuse-monitor")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "مراقبة إساءة الاستخدام — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل مراقبة الإساءة…">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { Loader2, RefreshCw, ArrowLeft, Shield, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -20,6 +20,7 @@ type ScanRow = {
 };
 
 export const Route = createFileRoute("/admin/domain-scan")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "فحص النطاقات — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل فحص النطاقات…">

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import {
   Mail,
   CheckCircle2,
@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/email-monitor")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "مراقبة البريد — لوحة الأدمن" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل مراقبة البريد…">

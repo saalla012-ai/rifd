@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +47,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/contact-submissions")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "رسائل التواصل — لوحة الأدمن" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل رسائل التواصل…">

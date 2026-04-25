@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { Loader2, Save, RefreshCw, ArrowLeft, History } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -18,6 +18,7 @@ import {
 } from "@/server/admin-plan-limits";
 
 export const Route = createFileRoute("/admin/plan-limits")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "حدود الباقات — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل حدود الباقات…">

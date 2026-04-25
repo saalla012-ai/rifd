@@ -22,7 +22,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AdminGuard } from "@/components/admin-guard";
+import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +54,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/credits")({
+  beforeLoad: adminBeforeLoad,
   head: () => ({ meta: [{ title: "إدارة شحن نقاط الفيديو — رِفد" }] }),
   component: () => (
     <AdminGuard loadingLabel="جاري تحميل إدارة نقاط الفيديو…">
