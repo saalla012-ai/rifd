@@ -123,6 +123,21 @@ function LibraryPage() {
     }
   };
 
+  useEffect(() => {
+    if (authLoading || !user || !videoJobs.some((job) => job.status === "processing")) return;
+    const id = window.setInterval(async () => {
+      if (document.visibilityState !== "visible") return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const processingJobs = videoJobs.filter((job) => job.status === "processing").slice(0, 2);
+      await Promise.allSettled(processingJobs.map(async (job) => {
+        const out = await refreshVideoJobFn({ data: { jobId: job.id }, headers: { Authorization: `Bearer ${session.access_token}` } });
+        setVideoJobs((jobs) => jobs.map((current) => (current.id === out.job.id ? out.job : current)));
+      }));
+    }, 15_000);
+    return () => window.clearInterval(id);
+  }, [authLoading, user, videoJobs, refreshVideoJobFn]);
+
   const filtered = items.filter((i) => {
     if (filter === "all") return true;
     if (filter === "fav") return i.is_favorite;
