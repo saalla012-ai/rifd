@@ -49,12 +49,11 @@ const EvaluatePilotSampleInput = z.object({
   sampleId: z.string().trim().min(3).max(40),
   resultUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
   productClarity: z.number().int().min(1).max(5),
-  sceneAdherence: z.number().int().min(1).max(5).optional(),
-  motionAdherence: z.number().int().min(1).max(5).optional(),
+  sceneAdherence: z.number().int().min(1).max(5),
+  motionAdherence: z.number().int().min(1).max(5),
   saudiDialect: z.number().int().min(1).max(5),
-  negativeSafety: z.number().int().min(1).max(5).optional(),
+  negativeSafety: z.number().int().min(1).max(5),
   publishReadiness: z.number().int().min(1).max(5),
-  promptAdherence: z.number().int().min(1).max(5).default(4),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
@@ -259,11 +258,10 @@ export type SaudiVideoPilotEvaluationResult = {
   saudiDialect: number;
   negativeSafety: number;
   publishReadiness: number;
-  promptAdherence: number;
   notes?: string;
   score: number;
-  promptAdherenceScore: number;
   decision: "publishable" | "minor_revision" | "reject_or_reprompt";
+  gateReason: string;
   evaluatedAt: string;
 };
 
