@@ -32,6 +32,7 @@ type VideoSearch = {
   source?: "medium-test";
   mediumTestSampleId?: string;
   mediumTestTemplateId?: string;
+  requiresProductImage?: boolean;
 };
 
 const QUALITY = {
@@ -80,6 +81,7 @@ export const Route = createFileRoute("/dashboard/generate-video")({
     source: s.source === "medium-test" ? "medium-test" : undefined,
     mediumTestSampleId: typeof s.mediumTestSampleId === "string" ? s.mediumTestSampleId : undefined,
     mediumTestTemplateId: typeof s.mediumTestTemplateId === "string" ? s.mediumTestTemplateId : undefined,
+    requiresProductImage: s.requiresProductImage === true || s.requiresProductImage === "true" ? true : undefined,
   }),
   component: GenerateVideoPage,
 });
@@ -137,10 +139,11 @@ function GenerateVideoPage() {
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
   const watermarkRequired = credits?.plan === "free";
-  const productImageRequired = isPaidPlan && !productImageUrl.trim();
+  const internalMediumTestMode = search.source === "medium-test";
+  const mediumTestProductImageRequired = internalMediumTestMode && search.requiresProductImage === true;
+  const productImageRequired = (isPaidPlan || mediumTestProductImageRequired) && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
-  const internalMediumTestMode = search.source === "medium-test";
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
