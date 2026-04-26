@@ -42,6 +42,7 @@ export const SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD = [
 ] as const;
 
 export function withSaudiPromptAdherence(prompt: string) {
+  if (prompt.includes("المطلوب تنفيذه بدقة:")) return prompt;
   return [
     prompt,
     "المطلوب تنفيذه بدقة:",
