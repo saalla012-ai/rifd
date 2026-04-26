@@ -63,6 +63,7 @@ function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
     `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
     usageLabel[plan.id],
     plan.videoQualityAllowed ? "سريع وإعلاني واحترافي حسب النقاط" : "سريع وإعلاني حسب النقاط",
+    plan.id === "free" ? "فيديو بعلامة رِفد المائية" : "بدون علامة مائية ونقاط الباقة لا ترحل بعد 30 يوم",
   ];
 }
 
@@ -78,6 +79,10 @@ const FAQS = [
   {
     q: "ماذا يحدث إذا انتهت نقاط الفيديو؟",
     a: "يمكنك شحن نقاط فيديو إضافية من لوحة التحكم، أو الترقية إلى باقة أعلى حسب حجم حملاتك.",
+  },
+  {
+    q: "هل تنتقل نقاط الباقة للشهر التالي؟",
+    a: "لا. نقاط الباقة الشهرية تتجدد كل 30 يوم ولا يرحل المتبقي منها، بينما نقاط الشحن الإضافية تبقى منفصلة حسب سياسة الشحن.",
   },
   {
     q: "كيف يعمل ضمان 14 يوم؟",
@@ -118,7 +123,7 @@ function PricingPage() {
             نصوص وصور يومية، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
           </h1>
           <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
-            اختر باقتك حسب رصيد نقاط الفيديو. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة.
+            اختر باقتك حسب رصيد نقاط الفيديو. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
           </p>
 
           <div className="mx-auto mt-5 flex min-h-[3.75rem] max-w-md items-center justify-center">
@@ -250,8 +255,8 @@ function PricingPage() {
             </div>
             <div className="rounded-2xl border border-border bg-card p-5">
               <Gift className="h-6 w-6 text-gold" />
-              <h2 className="mt-3 font-extrabold">نصوص وصور ضمن الباقة</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">لا تخصم من نقاط الفيديو، وتبقى محمية بسقوف يومية عملية لكل متجر.</p>
+              <h2 className="mt-3 font-extrabold">نقاط شهرية لا تتراكم</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">رصيد الباقة يتجدد كل 30 يوم، والمتبقي لا يرحل حتى تبقى التكلفة واضحة ومستدامة.</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-5">
               <Star className="h-6 w-6 text-success" />
