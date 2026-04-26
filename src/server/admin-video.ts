@@ -206,8 +206,10 @@ export type SaudiVideoPilotMatrixResult = {
     personaLabel: string;
     quality: "fast" | "lite" | "quality";
     durationSeconds: 5 | 8;
+    expectedAspectRatio: "9:16" | "1:1" | "16:9";
     requiresProductImage: boolean;
     objective: string;
+    technicalGate: string[];
     mustPass: string[];
     scorecard: string[];
   }>;
@@ -674,6 +676,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
       const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
       const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
       const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
+      const expectedAspectRatio: "9:16" | "1:1" | "16:9" = index % 5 === 4 ? "1:1" : "9:16";
       const mustPass = template.risk === "عالٍ"
         ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
         : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"];
@@ -686,8 +689,10 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
         personaLabel: persona.label,
         quality,
         durationSeconds,
+        expectedAspectRatio,
         requiresProductImage: quality !== "fast",
         objective: quality === "quality" ? "قياس صلاحية إعلان مدفوع عالي الجودة" : quality === "lite" ? "قياس إعلان يومي قابل للنشر" : "قياس سرعة الفكرة وسلامة الهوية السعودية",
+        technicalGate: [`النسبة المطلوبة: ${expectedAspectRatio}`, `المدة المطلوبة: ${durationSeconds} ثوانٍ`, "H.264 MP4 قابل للنشر", "لا اعتماد للعينة إذا خرجت بنسبة مختلفة عن المطلوب"],
         mustPass,
         scorecard: ["وضوح المنتج", "طبيعية اللهجة السعودية", "مزامنة الشفاه", "سلامة اليدين والوجه", "قابلية النشر التجاري"],
       };
