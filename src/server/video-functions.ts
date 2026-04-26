@@ -287,58 +287,6 @@ async function markProviderSuccess(providerKey: string) {
     .eq("provider_key", providerKey);
 }
 
-const replicateProvider: VideoProvider = {
-  key: "replicate",
-  async createJob(input) {
-    const token = process.env.REPLICATE_API_TOKEN;
-    if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
-
-    const model = REPLICATE_MODEL_BY_QUALITY[input.quality];
-    const response = await fetch(`https://api.replicate.com/v1/models/${model}/predictions`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Prefer: "wait=60" },
-      body: JSON.stringify({
-        input: {
-          prompt: buildSaudiVideoPrompt(input),
-          aspect_ratio: input.aspectRatio,
-          duration: input.durationSeconds,
-          image: primaryReferenceImage(input),
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw new Error(`فشل مزوّد الفيديو (${response.status}): ${text.slice(0, 300)}`);
-    }
-
-    const prediction = await response.json() as { id?: string; status?: string; output?: string | string[]; error?: string };
-    if (prediction.error) throw new Error(`فشل مزوّد الفيديو: ${prediction.error}`);
-    const output = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-    return {
-      providerJobId: prediction.id ?? null,
-      status: (prediction.status ?? "processing") as ProviderStatus,
-      resultUrl: typeof output === "string" ? output : null,
-      estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds),
-      metadata: { model },
-    };
-  },
-  async refreshJob(providerJobId) {
-    const token = process.env.REPLICATE_API_TOKEN;
-    if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
-    const response = await fetch(`https://api.replicate.com/v1/predictions/${providerJobId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw new Error(`فشل تحديث حالة الفيديو (${response.status}): ${text.slice(0, 300)}`);
-    }
-    const prediction = await response.json() as { status?: string; output?: string | string[]; error?: string };
-    const output = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-    return { status: (prediction.status ?? "processing") as ProviderStatus, resultUrl: typeof output === "string" ? output : null, error: prediction.error };
-  },
-};
-
 const FAL_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "fal-ai/pixverse/v6/image-to-video",
   lite: "fal-ai/pixverse/v6/image-to-video",
