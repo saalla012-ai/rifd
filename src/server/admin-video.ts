@@ -47,7 +47,7 @@ export type AdminVideoJob = {
   user_email: string | null;
   user_store: string | null;
   prompt: string;
-  quality: "fast" | "quality";
+  quality: "fast" | "lite" | "quality";
   aspect_ratio: string;
   duration_seconds: number;
   status: VideoJobStatus;
@@ -138,7 +138,7 @@ export type AdminVideoRouterTestResult = {
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
-    quality: row.quality as "fast" | "quality",
+    quality: row.quality as "fast" | "lite" | "quality",
     estimated_cost_usd: row.estimated_cost_usd === null ? null : Number(row.estimated_cost_usd),
     user_email: profile?.email ?? null,
     user_store: profile?.store_name ?? null,
@@ -186,6 +186,7 @@ function providerPriorityScore(provider: AdminVideoProviderConfig) {
 
 function providerSecretName(providerKey: string) {
   return ({
+    fal_ai: "FAL_API_KEY",
     replicate: "REPLICATE_API_TOKEN",
     google_veo_api: "GOOGLE_VEO_API_KEY",
     runway: "RUNWAY_API_KEY",
@@ -386,7 +387,7 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
     } else if (providerSecretName(provider.provider_key)) {
       const secretName = providerSecretName(provider.provider_key)!;
       const tokenReady = Boolean(process.env[secretName]);
-      const implemented = provider.provider_key === "replicate";
+      const implemented = provider.provider_key === "fal_ai" || provider.provider_key === "replicate";
       result = {
         providerKey: provider.provider_key,
         ok: tokenReady && implemented,
@@ -497,8 +498,6 @@ export const refundManualVideoJob = createServerFn({ method: "POST" })
     if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
 
     const { refundId, newlyRefunded } = await refundVideoCreditsOnce(current.ledger_id);
-    if (newlyRefunded) await supabaseAdmin.rpc("release_video_daily_quota", { _user_id: current.user_id });
-
     const metadata = {
       ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: false, status: "manual_refunded", error: data.reason }) as Record<string, unknown>),
       manual_refunded_by: userId,
