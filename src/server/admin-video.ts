@@ -185,6 +185,25 @@ export type SaudiVideoPilotAuditResult = {
   findings: Array<{ templateId: string; label: string; sector: string; risk: string; score: number; issues: string[]; recommendation: string }>;
 };
 
+export type SaudiVideoPilotMatrixResult = {
+  checkedAt: string;
+  totalSamples: number;
+  estimatedCostUsd: number;
+  readinessGate: string;
+  samples: Array<{
+    sampleId: string;
+    templateId: string;
+    label: string;
+    sector: string;
+    personaId: string;
+    personaLabel: string;
+    quality: "fast" | "lite" | "quality";
+    durationSeconds: 5 | 8;
+    requiresProductImage: boolean;
+    scorecard: string[];
+  }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -226,7 +245,9 @@ function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.i
   if (input.aspectRatio === "16:9" && !provider.supports_16_9) return { eligible: false, reason: "مقاس 16:9 غير مدعوم" };
   if (input.hasStartingFrame && !provider.supports_starting_frame) return { eligible: false, reason: "صورة البداية غير مدعومة" };
   if (input.imageCount > 0 && !provider.supports_starting_frame) return { eligible: false, reason: "مراجع الصور غير مدعومة" };
-  if (input.imageCount > 1 && (provider.metadata as { supports_two_images?: boolean } | null)?.supports_two_images !== true) return { eligible: false, reason: "صورتان غير مدعومتين" };
+  const metadata = (provider.metadata as { supports_two_images?: boolean; model_family?: string } | null) ?? {};
+  const pixverseCanCollapseReferences = provider.provider_key === "fal_ai" && metadata.model_family === "pixverse_v6";
+  if (input.imageCount > 1 && !pixverseCanCollapseReferences && metadata.supports_two_images !== true) return { eligible: false, reason: "صورتان غير مدعومتين" };
   const cost = input.durationSeconds === 8 ? provider.cost_8s : provider.cost_5s;
   if (cost <= 0) return { eligible: false, reason: "تكلفة المدة غير مضبوطة" };
   return { eligible: true, reason: provider.health_status === "unhealthy" ? "مؤهل لكن مؤخر بسبب حالة غير صحية" : "جاهز للراوتر" };
@@ -609,6 +630,44 @@ export const auditSaudiVideoPilotLibrary = createServerFn({ method: "POST" })
     };
 
     await logAdminAudit({ adminId: userId, action: "audit_saudi_video_pilot_library", targetTable: "video_provider_configs", targetId: "saudi_prompt_library", after: result as unknown as Json });
+    return result;
+  });
+
+export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SaudiVideoPilotMatrixResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const selectedTemplates = ["perfume-premium-hook", "abaya-elegance", "coffee-hospitality", "electronics-benefit", "beauty-skincare", "gifts-luxury", "home-decor", "limited-offer", "premium-testimonial", "ramadan-offer"];
+    const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
+    const samples = selectedTemplates.map((templateId, index) => {
+      const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
+      const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
+      const quality: "fast" | "lite" | "quality" = index < 3 ? "fast" : index < 8 ? "lite" : "quality";
+      const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
+      return {
+        sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
+        templateId: template.id,
+        label: template.label,
+        sector: template.sector,
+        personaId: persona.id,
+        personaLabel: persona.label,
+        quality,
+        durationSeconds,
+        requiresProductImage: quality !== "fast",
+        scorecard: ["وضوح المنتج", "طبيعية اللهجة السعودية", "مزامنة الشفاه", "سلامة اليدين والوجه", "قابلية النشر التجاري"],
+      };
+    });
+    const result: SaudiVideoPilotMatrixResult = {
+      checkedAt: new Date().toISOString(),
+      totalSamples: samples.length,
+      estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.quality === "quality" ? 0.45 : sample.quality === "lite" ? 0.25 : 0.2), 0).toFixed(2)),
+      readinessGate: "يبدأ التنفيذ الفعلي عندما تكون fal_ai نشطة، والراوتر يمرر 3/3 مسارات، ومكتبة البرومبتات تحقق 80%+.",
+      samples,
+    };
+
+    await logAdminAudit({ adminId: userId, action: "build_saudi_video_pilot_matrix", targetTable: "video_provider_configs", targetId: "saudi_pilot_matrix", after: result as unknown as Json });
     return result;
   });
 
