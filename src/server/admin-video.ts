@@ -277,6 +277,8 @@ export type SaudiVideoMediumBatchResult = {
   executionRate: number;
   completionRate: number;
   releaseGate: "not_started" | "running" | "ready_for_review" | "blocked";
+  releaseGateReason: string;
+  nextAction: string;
   samples: Array<{
     sampleId: string;
     templateId: string;
@@ -885,7 +887,21 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const executionRate = Math.round((generated / Math.max(samples.length, 1)) * 100);
     const completionRate = Math.round((completed / Math.max(samples.length, 1)) * 100);
     const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 2 ? "blocked" : completed === samples.length ? "ready_for_review" : "running";
-    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, processing, failedOrRefunded, missingProductImage, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, samples };
+    const releaseGateReason = releaseGate === "not_started"
+      ? "لم تُسجّل أي مهمة موسومة للاختبار المتوسط بعد؛ لا يوجد دليل عملي يسمح بقرار تجاري."
+      : releaseGate === "blocked"
+        ? "الدفعة متوقفة للمراجعة بسبب فشل/استرداد مرتفع أو عينة تتطلب صورة منتج ولم تُرفق بها."
+        : releaseGate === "ready_for_review"
+          ? "كل العينات المخططة اكتملت ولديها نتائج؛ انتقل الآن إلى تقييم كل فيديو ببوابة 80%+."
+          : "الدفعة بدأت لكنها لم تكتمل؛ أكمل توليد العينات الناقصة أو حدّث المهام قيد المعالجة.";
+    const nextAction = releaseGate === "not_started"
+      ? "افتح مصفوفة الاختبار، ولّد العينات بالترتيب من pilot-01 إلى pilot-12، وارفع صورة منتج لكل عينة موسومة كإلزامية."
+      : releaseGate === "blocked"
+        ? "أصلح العينات المتوقفة أولاً: أعد توليد ما فشل، وأرفق صورة منتج واضحة للعينات الإعلانية/الاحترافية قبل التقييم."
+        : releaseGate === "ready_for_review"
+          ? "قيّم كل عينة عبر نموذج التقييم: المنتج، المشهد، الحركة، اللهجة، الممنوعات، وقابلية النشر؛ لا تعتمد إلا 80%+."
+          : "تابع توليد العينات غير المكتملة ثم اضغط تدقيق الدفعة حتى تتحول الحالة إلى جاهزة للتقييم.";
+    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, processing, failedOrRefunded, missingProductImage, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
 
     await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
