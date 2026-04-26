@@ -50,6 +50,12 @@ const STATUS_LABEL: Record<string, string> = {
   refunded: "تم رد النقاط",
 };
 
+function absoluteAssetUrl(value: string) {
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  return typeof window === "undefined" ? value : new URL(value, window.location.origin).toString();
+}
+
 export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
@@ -147,7 +153,7 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || selectedPersona.image, productImageUrl, selectedPersonaId, campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
@@ -241,7 +247,7 @@ function GenerateVideoPage() {
                     <Icon className={cn("mb-2 h-5 w-5", key === "quality" ? "text-gold" : "text-primary")} />
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-extrabold">{option.label}</span>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">{(credits?.costs[key === "quality" ? "video_quality" : "video_fast"] ?? 0).toLocaleString("ar-SA")} نقطة من 5ث</span>
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">{(credits?.costs[key === "quality" ? "video_quality" : key === "lite" ? "video_lite" : "video_fast"] ?? 0).toLocaleString("ar-SA")} نقطة من 5ث</span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{option.note}</p>
                   </button>
@@ -400,7 +406,7 @@ function GenerateVideoPage() {
                     )}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold">{job.quality === "quality" ? "احترافي" : "سريع"}</span>
+                      <span className="font-bold">{job.quality === "quality" ? "احترافي" : job.quality === "lite" ? "إعلاني" : "سريع"}</span>
                     <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{STATUS_LABEL[job.status] ?? job.status}</span>
                     </div>
                     <p className="mt-1 line-clamp-2 text-muted-foreground">{job.prompt}</p>
