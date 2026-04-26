@@ -71,16 +71,20 @@ function AdminVideoProvidersPage() {
   const testProvider = useServerFn(testVideoProviderConnection);
   const testRouter = useServerFn(testVideoRouterDryRun);
   const previewSaudiFalPrompt = useServerFn(previewSaudiFalVideoTestPrompt);
+  const runSaudiFalTest = useServerFn(runSaudiFalVideoModelTest);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
+  const [falTestResult, setFalTestResult] = useState<SaudiFalModelTestResult | null>(null);
   const [falDraft, setFalDraft] = useState<SaudiFalDraft>({ modelId: FAL_VIDEO_TEST_MODELS[0].id, personaId: SAUDI_VIDEO_PERSONAS[0].id, scenarioId: SAUDI_VIDEO_TEST_SCENARIOS[0].id, includeProductImage: true, includeVoice: true });
+  const [productImageUrl, setProductImageUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testingRouter, setTestingRouter] = useState(false);
   const [loadingFalPreview, setLoadingFalPreview] = useState(false);
+  const [runningFalTest, setRunningFalTest] = useState(false);
 
   async function authHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
