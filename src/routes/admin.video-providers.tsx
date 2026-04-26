@@ -401,11 +401,11 @@ function PilotProofPanel() {
             <Badge variant="secondary">مسار عمودي فقط</Badge>
             <Badge variant="secondary">متوسط أولي {averageScore.toLocaleString("ar-SA")}%</Badge>
           </div>
-          <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: المسار التقني صالح، لكن لا تُعتمد المصفوفة تجارياً حتى تسجل كل عينة وضوح المنتج، طبيعية الأسلوب السعودي، سلامة اليدين والوجه، وقابلية النشر.</p>
+          <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: تم إغلاق نسخة الإطلاق على {SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS.length.toLocaleString("ar-SA")} قالبين فقط بحد أدنى {SAUDI_VIDEO_LAUNCH_DECISION.minimumPublishableScore.toLocaleString("ar-SA")}%؛ أي قالب أقل من ذلك يبقى داخلياً حتى إعادة الاختبار.</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>اعتمد</strong><p className="mt-1 text-muted-foreground">9:16، مدة قصيرة، فيديو مباشر داخل لوحة الإدارة.</p></div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>لا توسّع عشوائي</strong><p className="mt-1 text-muted-foreground">أي عينة إضافية يجب أن تُبنى على أفضل قالبين أداءً فقط.</p></div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">فرز أفضل قالبين، ثم تثبيت نسخة الإطلاق وتحديث واجهة المستخدم العامة.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>اعتمد للإطلاق</strong><p className="mt-1 text-muted-foreground">هدايا فاخرة + قهوة عربية فقط في واجهة المستخدم العامة.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>حُذف المسار القديم</strong><p className="mt-1 text-muted-foreground">لم تعد كل القوالب التجريبية ظاهرة للمستخدم قبل الاعتماد.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">قياس أول توليدات حقيقية ثم إعادة إدخال القطاعات الاحتياطية تدريجياً.</p></div>
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
