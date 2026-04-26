@@ -274,6 +274,8 @@ export type SaudiVideoMediumBatchResult = {
   publishable: number;
   needsRevision: number;
   rejected: number;
+  minimumPublishable: number;
+  commercialValidityRate: number;
   processing: number;
   failedOrRefunded: number;
   missingProductImage: number;
@@ -902,11 +904,12 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const needsRevision = samples.filter((sample) => sample.releaseDecision === "minor_revision").length;
     const rejected = samples.filter((sample) => sample.releaseDecision === "reject_or_reprompt").length;
     const minimumPublishable = Math.ceil(samples.length * 0.8);
-    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 2 || rejected > 0 ? "blocked" : evaluated === samples.length && publishable >= minimumPublishable ? "ready_for_expansion" : evaluated === samples.length ? "needs_iteration" : completed === samples.length ? "ready_for_review" : "running";
+    const commercialValidityRate = Math.round((publishable / Math.max(samples.length, 1)) * 100);
+    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 0 || rejected > 0 ? "blocked" : evaluated === samples.length && publishable >= minimumPublishable ? "ready_for_expansion" : evaluated === samples.length ? "needs_iteration" : completed === samples.length ? "ready_for_review" : "running";
     const releaseGateReason = releaseGate === "not_started"
       ? "لم تُسجّل أي مهمة موسومة للاختبار المتوسط بعد؛ لا يوجد دليل عملي يسمح بقرار تجاري."
       : releaseGate === "blocked"
-        ? "الدفعة متوقفة للمراجعة بسبب فشل/استرداد مرتفع أو عينة تتطلب صورة منتج ولم تُرفق بها."
+        ? "الدفعة متوقفة للمراجعة بسبب فشل/استرداد أو عينة تتطلب صورة منتج ولم تُرفق بها؛ لا يبدأ التقييم التجاري قبل إصلاح العينات الطرفية."
         : releaseGate === "ready_for_expansion"
           ? "اكتمل تقييم الدفعة وحققت بوابة 80%+؛ القوالب الصالحة جاهزة لاختبار تكرار أوسع قبل الفتح العام."
         : releaseGate === "needs_iteration"
@@ -925,7 +928,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         : releaseGate === "ready_for_review"
           ? "قيّم كل عينة عبر نموذج التقييم: المنتج، المشهد، الحركة، اللهجة، الممنوعات، وقابلية النشر؛ لا تعتمد إلا 80%+."
           : "تابع توليد العينات غير المكتملة ثم اضغط تدقيق الدفعة حتى تتحول الحالة إلى جاهزة للتقييم.";
-    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, processing, failedOrRefunded, missingProductImage, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
+    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, missingProductImage, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
 
     await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
@@ -960,10 +963,11 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const job = jobs?.[0] as Pick<VideoJobRow, "id" | "metadata" | "created_at"> | undefined;
     if (job) {
       const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
-      await admin
+      const { error: updateError } = await admin
         .from("video_jobs")
         .update({ metadata: { ...metadata, medium_test_evaluation: result, medium_test_release_decision: decision, medium_test_evaluated_at: result.evaluatedAt } as Json })
         .eq("id", job.id);
+      if (updateError) throw new Error(`فشل حفظ تقييم العينة داخل مهمة الفيديو: ${updateError.message}`);
     }
     await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: job ? "video_jobs" : "video_provider_configs", targetId: job?.id ?? data.sampleId, after: result as unknown as Json });
     return result;
