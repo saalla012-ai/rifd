@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listSaudiLaunchTemplatePerformance, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiLaunchTemplatePerformance, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
+import { auditSaudiVideoMediumBatch, auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listSaudiLaunchTemplatePerformance, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiLaunchTemplatePerformance, type SaudiVideoMediumBatchResult, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -81,6 +81,7 @@ function AdminVideoProvidersPage() {
   const previewSaudiFalPrompt = useServerFn(previewSaudiFalVideoTestPrompt);
   const runSaudiFalTest = useServerFn(runSaudiFalVideoModelTest);
   const auditPilotLibrary = useServerFn(auditSaudiVideoPilotLibrary);
+  const auditMediumBatch = useServerFn(auditSaudiVideoMediumBatch);
   const buildPilotMatrix = useServerFn(buildSaudiVideoPilotMatrix);
   const evaluatePilotSample = useServerFn(evaluateSaudiVideoPilotSample);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
@@ -89,6 +90,7 @@ function AdminVideoProvidersPage() {
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [pilotAudit, setPilotAudit] = useState<SaudiVideoPilotAuditResult | null>(null);
   const [pilotMatrix, setPilotMatrix] = useState<SaudiVideoPilotMatrixResult | null>(null);
+  const [mediumBatch, setMediumBatch] = useState<SaudiVideoMediumBatchResult | null>(null);
   const [pilotEvaluation, setPilotEvaluation] = useState<SaudiVideoPilotEvaluationResult | null>(null);
   const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
   const [falTestResult, setFalTestResult] = useState<SaudiFalModelTestResult | null>(null);
@@ -99,6 +101,7 @@ function AdminVideoProvidersPage() {
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testingRouter, setTestingRouter] = useState(false);
   const [auditingPilot, setAuditingPilot] = useState(false);
+  const [auditingMediumBatch, setAuditingMediumBatch] = useState(false);
   const [buildingMatrix, setBuildingMatrix] = useState(false);
   const [evaluatingPilot, setEvaluatingPilot] = useState(false);
   const [loadingFalPreview, setLoadingFalPreview] = useState(false);
