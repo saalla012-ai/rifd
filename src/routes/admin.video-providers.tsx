@@ -490,8 +490,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-extrabold">مصفوفة الاختبار التجاري السعودي</h2>
-          <p className="mt-1 text-xs text-muted-foreground">عينات ممثلة قبل الإطلاق: قطاعات سعودية، شخصيات، جودات، ومعيار 9:16 إلزامي للإعلانات العمودية دون خصم نقاط.</p>
+          <h2 className="font-extrabold">مصفوفة الاختبار المتوسط للبرومبتات</h2>
+          <p className="mt-1 text-xs text-muted-foreground">عينات داخلية لبقية البرومبتات المحجوبة: نقيس الالتزام الكامل بالمنتج والمشهد والحركة والصوت قبل فتح أي قالب عام.</p>
         </div>
         <Badge className="bg-primary/15 text-primary">{matrix.totalSamples.toLocaleString("ar-SA")} عينات · ${matrix.estimatedCostUsd}</Badge>
       </div>
@@ -513,6 +513,7 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
             <p className="mt-1 text-muted-foreground">بوابة فنية: {sample.technicalGate.join(" · ")}</p>
             <p className="mt-1 text-muted-foreground">شرط النجاح: {sample.mustPass.join(" · ")}</p>
             <p className="mt-2 text-muted-foreground">التقييم: {sample.scorecard.join(" · ")}</p>
+            <p className="mt-1 font-semibold text-foreground">{sample.promptAdherenceGate}</p>
           </div>
         ))}
       </div>
@@ -521,8 +522,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
 }
 
 function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
-  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, saudiDialect: 4, lipSync: 4, visualIntegrity: 4, publishReadiness: 4, notes: "" });
-  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "saudiDialect" | "lipSync" | "visualIntegrity" | "publishReadiness">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
+  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, saudiDialect: 4, lipSync: 4, visualIntegrity: 4, publishReadiness: 4, promptAdherence: 4, notes: "" });
+  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "saudiDialect" | "lipSync" | "visualIntegrity" | "publishReadiness" | "promptAdherence">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
