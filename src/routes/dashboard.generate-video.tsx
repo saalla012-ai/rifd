@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { videoTierDuration } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_PERSONAS } from "@/lib/saudi-video-test";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -99,7 +99,7 @@ function GenerateVideoPage() {
   const [speakerImageUrl, setSpeakerImageUrl] = useState("");
   const [productImageUrl, setProductImageUrl] = useState("");
   const [selectedPersonaId, setSelectedPersonaId] = useState<string>(PERSONAS[0].id);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(SAUDI_VIDEO_PROMPT_TEMPLATES[0].id);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0].id);
   const [uploadingInput, setUploadingInput] = useState<"speaker" | "product" | null>(null);
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<VideoJob[]>([]);
@@ -117,7 +117,7 @@ function GenerateVideoPage() {
   const watermarkRequired = credits?.plan === "free";
   const productImageRequired = isPaidPlan && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
-  const selectedTemplate = SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[0];
+  const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
 
@@ -333,7 +333,7 @@ function GenerateVideoPage() {
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_120px]">
               <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm">
-                {SAUDI_VIDEO_PROMPT_TEMPLATES.map((template) => (
+                {SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.map((template) => (
                   <option key={template.id} value={template.id}>{template.sector} — {template.label}</option>
                 ))}
               </select>
