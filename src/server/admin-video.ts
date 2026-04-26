@@ -913,6 +913,7 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
+    const admin = await getSupabaseAdmin();
     const weights = { productClarity: 25, sceneAdherence: 20, motionAdherence: 15, saudiDialect: 15, negativeSafety: 15, publishReadiness: 10 } as const;
     const weightedScore =
       data.productClarity * weights.productClarity +
@@ -926,6 +927,20 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const decision = hardFail ? "reject_or_reprompt" : score >= 80 ? "publishable" : score >= 65 ? "minor_revision" : "reject_or_reprompt";
     const gateReason = hardFail ? "رفض مؤقت: تجاهل المنتج أو الصوت أو ظهرت مخالفة/تشوه قوي." : score >= 80 ? "جاهز لتكرار أوسع ضمن بوابة 80%+." : score >= 65 ? "يحتاج ضبط برومبت قبل أي فتح عام." : "يبقى مخفياً ويعاد توليده بعد إعادة صياغة كبيرة.";
     const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, gateReason, evaluatedAt: new Date().toISOString() } satisfies SaudiVideoPilotEvaluationResult;
-    await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
+    const { data: jobs } = await admin
+      .from("video_jobs")
+      .select("id, metadata, created_at")
+      .contains("metadata", { medium_test: true, medium_test_sample_id: data.sampleId })
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const job = jobs?.[0] as Pick<VideoJobRow, "id" | "metadata" | "created_at"> | undefined;
+    if (job) {
+      const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
+      await admin
+        .from("video_jobs")
+        .update({ metadata: { ...metadata, medium_test_evaluation: result, medium_test_release_decision: decision, medium_test_evaluated_at: result.evaluatedAt } as Json })
+        .eq("id", job.id);
+    }
+    await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: job ? "video_jobs" : "video_provider_configs", targetId: job?.id ?? data.sampleId, after: result as unknown as Json });
     return result;
   });
