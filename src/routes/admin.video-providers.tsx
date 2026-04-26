@@ -157,6 +157,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function auditPromptLibrary() {
+    setAuditingPilot(true);
+    try {
+      const headers = await authHeaders();
+      const result = await auditPilotLibrary({ headers });
+      setPilotAudit(result);
+      toast[result.readyForPilot ? "success" : "error"](`جاهزية مكتبة البرومبتات: ${result.passRate.toLocaleString("ar-SA")}%`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تدقيق مكتبة البرومبتات");
+    } finally {
+      setAuditingPilot(false);
+    }
+  }
+
   async function buildFalPromptPreview() {
     setLoadingFalPreview(true);
     try {
