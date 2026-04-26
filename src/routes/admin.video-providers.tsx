@@ -210,7 +210,7 @@ function AdminVideoProvidersPage() {
       const headers = await authHeaders();
       const result = await auditMediumBatch({ headers });
       setMediumBatch(result);
-      toast[result.releaseGate === "ready_for_review" ? "success" : result.releaseGate === "blocked" ? "error" : "message"](`تنفيذ الاختبار المتوسط: ${result.executionRate.toLocaleString("ar-SA")}%`);
+      toast[result.releaseGate === "ready_for_review" || result.releaseGate === "ready_for_expansion" ? "success" : result.releaseGate === "blocked" || result.releaseGate === "needs_iteration" ? "error" : "message"](`تنفيذ الاختبار المتوسط: ${result.executionRate.toLocaleString("ar-SA")}%`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تدقيق دفعة الاختبار المتوسط");
     } finally {
@@ -574,7 +574,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <MetricTile label="مرفوض" value={batch.rejected} />
         <MetricTile label="قيد المعالجة" value={batch.processing} />
       </div>
-      {batch.evaluated > 0 && <p className="mt-3 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">نسبة الصلاحية التجارية: {Math.round((batch.publishable / Math.max(batch.totalPlanned, 1)) * 100).toLocaleString("ar-SA")}% — بوابة الاعتماد تتطلب 80%+ دون عينات مرفوضة.</p>}
+      {batch.evaluated > 0 && <p className="mt-3 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">نسبة الصلاحية التجارية: {batch.commercialValidityRate.toLocaleString("ar-SA")}% — المطلوب {batch.minimumPublishable.toLocaleString("ar-SA")} عينات صالحة على الأقل من أصل {batch.totalPlanned.toLocaleString("ar-SA")} دون فشل أو رفض.</p>}
       <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">{batch.releaseGateReason}</p>
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">الخطوة التنفيذية: {batch.nextAction}</p>
