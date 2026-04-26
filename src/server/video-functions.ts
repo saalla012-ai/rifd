@@ -236,7 +236,7 @@ function defaultReplicateConfig(): VideoProviderConfig {
     display_name_admin: "Replicate / Google Veo via Replicate",
     enabled: true,
     public_enabled: true,
-    supported_qualities: ["fast", "quality"],
+    supported_qualities: ["fast", "lite", "quality"],
     priority: 10,
     cost_5s: 150,
     cost_8s: 240,
