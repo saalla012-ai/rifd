@@ -379,7 +379,7 @@ const PROVIDERS: Record<string, VideoProvider> = {
   kling: futureApiProvider("kling", "KLING_API_KEY"),
 };
 
-async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId: string) {
+async function createProviderJob(input: VideoInput, jobId: string) {
   const configs = await loadProviderConfigs(input);
   const attempts: ProviderAttempt[] = [];
 
@@ -513,6 +513,8 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
+      const watermarkRequired = profile?.plan === "free";
+      const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
 
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
@@ -540,7 +542,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, plan_credit_rollover: false, watermark_required: profile?.plan === "free", product_image_required: profile?.plan !== "free" },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free" },
         })
         .select("*")
         .single();
@@ -549,7 +551,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       const job = inserted as VideoJobRow;
       jobId = job.id;
 
-      const routed = await createProviderJob(data, job.id);
+      const routed = await createProviderJob(providerInput, job.id);
       const finalStatus = routed.result.resultUrl ? "completed" : "processing";
       const metadata = {
         ...(job.metadata as Record<string, unknown> | null),
