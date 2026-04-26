@@ -571,6 +571,47 @@ export const testVideoRouterDryRun = createServerFn({ method: "POST" })
     return result;
   });
 
+export const auditSaudiVideoPilotLibrary = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SaudiVideoPilotAuditResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const findings = SAUDI_VIDEO_PROMPT_TEMPLATES.map((template) => {
+      const issues: string[] = [];
+      const prompt = template.prompt;
+      if (!/الصوت:/.test(prompt)) issues.push("لا يحتوي تعليمات صوت واضحة");
+      if (!/تجنب:/.test(prompt)) issues.push("لا يحتوي قيود منع التشوهات");
+      if (!/النصوص العربية المرئية/.test(prompt)) issues.push("لا يمنع النص العربي المرئي بوضوح");
+      if (!/المنتج/.test(prompt)) issues.push("تركيز المنتج غير كافٍ");
+      if (prompt.length < 280) issues.push("البرومبت قصير وقد يعطي نتيجة عامة");
+      const score = Math.max(0, 100 - issues.length * 14 - (template.risk === "عالٍ" ? 8 : template.risk === "متوسط" ? 3 : 0));
+      return {
+        templateId: template.id,
+        label: template.label,
+        sector: template.sector,
+        risk: template.risk,
+        score,
+        issues,
+        recommendation: issues.length === 0 ? "جاهز للاختبار العملي" : "راجعه قبل اعتماده ضمن عينات الإطلاق",
+      };
+    });
+    const passCount = findings.filter((item) => item.score >= 80).length;
+    const result: SaudiVideoPilotAuditResult = {
+      checkedAt: new Date().toISOString(),
+      totalTemplates: findings.length,
+      passCount,
+      passRate: Math.round((passCount / Math.max(findings.length, 1)) * 100),
+      readyForPilot: passCount >= 24,
+      sectorCoverage: Array.from(new Set(findings.map((item) => item.sector))).sort((a, b) => a.localeCompare(b, "ar")),
+      riskMix: findings.reduce<Record<string, number>>((acc, item) => ({ ...acc, [item.risk]: (acc[item.risk] ?? 0) + 1 }), {}),
+      findings,
+    };
+
+    await logAdminAudit({ adminId: userId, action: "audit_saudi_video_pilot_library", targetTable: "video_provider_configs", targetId: "saudi_prompt_library", after: result as unknown as Json });
+    return result;
+  });
+
 export const completeManualVideoJob = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => CompleteManualVideoJobInput.parse(input))
   .middleware([requireSupabaseAuth])
