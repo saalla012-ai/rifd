@@ -20,12 +20,6 @@ const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
 const TERMINAL_PROVIDER_STATUSES = new Set(["succeeded", "failed", "canceled"]);
 
-const REPLICATE_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
-  fast: "google/veo-3-fast",
-  lite: "google/veo-3-fast",
-  quality: "google/veo-3",
-};
-
 const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
   fast: 0.2,
   lite: 0.25,
@@ -91,6 +85,8 @@ type ProviderAttempt = {
   reason?: string;
 };
 
+type VideoInput = z.infer<typeof videoInputSchema> & { watermarkRequired?: boolean };
+
 type VideoEntitlement = {
   video_fast_allowed: boolean;
   video_quality_allowed: boolean;
@@ -99,7 +95,7 @@ type VideoEntitlement = {
 
 type VideoProvider = {
   key: string;
-  createJob(input: z.infer<typeof videoInputSchema>, config: VideoProviderConfig): Promise<ProviderCreateResult>;
+  createJob(input: VideoInput, config: VideoProviderConfig): Promise<ProviderCreateResult>;
   refreshJob(providerJobId: string, row: VideoJobRow): Promise<ProviderRefreshResult>;
 };
 
@@ -198,7 +194,7 @@ function personaPrompt(personaId?: string) {
   } as Record<string, string>)[personaId ?? ""] ?? "";
 }
 
-function buildSaudiVideoPrompt(input: z.infer<typeof videoInputSchema>) {
+function buildSaudiVideoPrompt(input: VideoInput) {
   const persona = personaPrompt(input.selectedPersonaId);
   const imageBrief = [
     input.speakerImageUrl ? "استخدم صورة الشخص كمرجع للشخصية المتحدثة." : persona,
@@ -208,10 +204,11 @@ function buildSaudiVideoPrompt(input: z.infer<typeof videoInputSchema>) {
     "إعلان فيديو سعودي قصير عالي التحويل للسوق السعودي. صوت عربي سعودي واضح وطبيعي إذا كان الصوت مدعوماً. بنية الإعلان: خطاف قوي، فائدة ملموسة، لقطة منتج جذابة، دعوة إجراء مباشرة. حافظ على مظهر محتشم وواقعي وابتعد عن المبالغة غير الموثوقة.",
     imageBrief,
     input.prompt,
+    input.watermarkRequired ? "أضف علامة مائية صغيرة ونظيفة بحروف لاتينية فقط: RIFD في الزاوية السفلية، بدون أي نص عربي داخل الفيديو." : "",
   ].filter(Boolean).join("\n\n");
 }
 
-function primaryReferenceImage(input: z.infer<typeof videoInputSchema>) {
+function primaryReferenceImage(input: VideoInput) {
   return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
 }
 
@@ -262,33 +259,13 @@ async function loadProviderConfigs(input: z.infer<typeof videoInputSchema>) {
 
   if (error) {
     console.error(`video_provider_configs read failed: ${error.message}`);
-    return [defaultReplicateConfig()];
+    return [];
   }
 
   const rows = ((data as VideoProviderConfig[] | null) ?? [])
     .filter((config) => providerSupports(config, input))
     .sort((a, b) => providerPriorityScore(a) - providerPriorityScore(b));
-  return rows.length > 0 ? rows : [defaultReplicateConfig()].filter((config) => providerSupports(config, input));
-}
-
-function defaultReplicateConfig(): VideoProviderConfig {
-  return {
-    provider_key: "replicate",
-    display_name_admin: "Replicate backup video provider",
-    enabled: true,
-    public_enabled: true,
-    supported_qualities: ["fast", "lite", "quality"],
-    priority: 10,
-    cost_5s: 150,
-    cost_8s: 800,
-    supports_9_16: true,
-    supports_1_1: true,
-    supports_16_9: true,
-    supports_starting_frame: true,
-    mode: "api",
-    health_status: "active",
-    metadata: { fallback: true },
-  };
+  return rows;
 }
 
 async function markProviderFailure(providerKey: string, error: unknown) {
@@ -312,58 +289,6 @@ async function markProviderSuccess(providerKey: string) {
     .update({ health_status: "active", last_success_at: new Date().toISOString(), last_error_message: null })
     .eq("provider_key", providerKey);
 }
-
-const replicateProvider: VideoProvider = {
-  key: "replicate",
-  async createJob(input) {
-    const token = process.env.REPLICATE_API_TOKEN;
-    if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
-
-    const model = REPLICATE_MODEL_BY_QUALITY[input.quality];
-    const response = await fetch(`https://api.replicate.com/v1/models/${model}/predictions`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Prefer: "wait=60" },
-      body: JSON.stringify({
-        input: {
-          prompt: buildSaudiVideoPrompt(input),
-          aspect_ratio: input.aspectRatio,
-          duration: input.durationSeconds,
-          image: primaryReferenceImage(input),
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw new Error(`فشل مزوّد الفيديو (${response.status}): ${text.slice(0, 300)}`);
-    }
-
-    const prediction = await response.json() as { id?: string; status?: string; output?: string | string[]; error?: string };
-    if (prediction.error) throw new Error(`فشل مزوّد الفيديو: ${prediction.error}`);
-    const output = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-    return {
-      providerJobId: prediction.id ?? null,
-      status: (prediction.status ?? "processing") as ProviderStatus,
-      resultUrl: typeof output === "string" ? output : null,
-      estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds),
-      metadata: { model },
-    };
-  },
-  async refreshJob(providerJobId) {
-    const token = process.env.REPLICATE_API_TOKEN;
-    if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
-    const response = await fetch(`https://api.replicate.com/v1/predictions/${providerJobId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw new Error(`فشل تحديث حالة الفيديو (${response.status}): ${text.slice(0, 300)}`);
-    }
-    const prediction = await response.json() as { status?: string; output?: string | string[]; error?: string };
-    const output = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-    return { status: (prediction.status ?? "processing") as ProviderStatus, resultUrl: typeof output === "string" ? output : null, error: prediction.error };
-  },
-};
 
 const FAL_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "fal-ai/pixverse/v6/image-to-video",
@@ -447,7 +372,6 @@ function futureApiProvider(key: string, secretName: string): VideoProvider {
 
 const PROVIDERS: Record<string, VideoProvider> = {
   fal_ai: falProvider,
-  replicate: replicateProvider,
   google_flow_bridge: manualBridgeProvider,
   google_veo_api: futureApiProvider("google_veo_api", "GOOGLE_VEO_API_KEY"),
   runway: futureApiProvider("runway", "RUNWAY_API_KEY"),
@@ -455,7 +379,7 @@ const PROVIDERS: Record<string, VideoProvider> = {
   kling: futureApiProvider("kling", "KLING_API_KEY"),
 };
 
-async function createProviderJob(input: z.infer<typeof videoInputSchema>, jobId: string) {
+async function createProviderJob(input: VideoInput, jobId: string) {
   const configs = await loadProviderConfigs(input);
   const attempts: ProviderAttempt[] = [];
 
@@ -589,6 +513,8 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
+      const watermarkRequired = profile?.plan === "free";
+      const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
 
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
@@ -616,7 +542,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, plan_credit_rollover: false, watermark_required: profile?.plan === "free", product_image_required: profile?.plan !== "free" },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free" },
         })
         .select("*")
         .single();
@@ -625,7 +551,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       const job = inserted as VideoJobRow;
       jobId = job.id;
 
-      const routed = await createProviderJob(data, job.id);
+      const routed = await createProviderJob(providerInput, job.id);
       const finalStatus = routed.result.resultUrl ? "completed" : "processing";
       const metadata = {
         ...(job.metadata as Record<string, unknown> | null),
@@ -704,7 +630,8 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
       return { job: updated };
     }
 
-    const provider = PROVIDERS[row.provider] ?? replicateProvider;
+    const provider = PROVIDERS[row.provider];
+    if (!provider) throw new Error("مزود الفيديو المستخدم في هذه المهمة لم يعد مدعوماً");
     let prediction: ProviderRefreshResult;
     try {
       prediction = await provider.refreshJob(row.provider_job_id, row);
