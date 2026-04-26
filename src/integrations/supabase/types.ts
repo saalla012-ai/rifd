@@ -1063,12 +1063,15 @@ export type Database = {
           id: string
           ledger_id: string | null
           metadata: Json | null
+          product_image_url: string | null
           prompt: string
           provider: string
           provider_job_id: string | null
           quality: Database["public"]["Enums"]["video_quality"]
           refund_ledger_id: string | null
           result_url: string | null
+          selected_persona_id: string | null
+          speaker_image_url: string | null
           starting_frame_url: string | null
           status: Database["public"]["Enums"]["video_job_status"]
           storage_path: string | null
@@ -1086,12 +1089,15 @@ export type Database = {
           id?: string
           ledger_id?: string | null
           metadata?: Json | null
+          product_image_url?: string | null
           prompt: string
           provider?: string
           provider_job_id?: string | null
           quality: Database["public"]["Enums"]["video_quality"]
           refund_ledger_id?: string | null
           result_url?: string | null
+          selected_persona_id?: string | null
+          speaker_image_url?: string | null
           starting_frame_url?: string | null
           status?: Database["public"]["Enums"]["video_job_status"]
           storage_path?: string | null
@@ -1109,12 +1115,15 @@ export type Database = {
           id?: string
           ledger_id?: string | null
           metadata?: Json | null
+          product_image_url?: string | null
           prompt?: string
           provider?: string
           provider_job_id?: string | null
           quality?: Database["public"]["Enums"]["video_quality"]
           refund_ledger_id?: string | null
           result_url?: string | null
+          selected_persona_id?: string | null
+          speaker_image_url?: string | null
           starting_frame_url?: string | null
           status?: Database["public"]["Enums"]["video_job_status"]
           storage_path?: string | null
@@ -1521,7 +1530,7 @@ export type Database = {
         | "failed"
         | "cancelled"
         | "refunded"
-      video_quality: "fast" | "quality"
+      video_quality: "fast" | "quality" | "lite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1678,7 +1687,7 @@ export const Constants = {
         "cancelled",
         "refunded",
       ],
-      video_quality: ["fast", "quality"],
+      video_quality: ["fast", "quality", "lite"],
     },
   },
 } as const
