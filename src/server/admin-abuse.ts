@@ -67,6 +67,17 @@ function planFor(profile: ProfileLite) {
   return PLAN_BY_ID[(profile.plan as PlanId) || "free"] ?? PLAN_BY_ID.free;
 }
 
+function expectedVideoVolumeWindow(plan: ReturnType<typeof planFor>, windowHours: number) {
+  const baselineByPlan: Record<PlanId, number> = {
+    free: 2,
+    starter: 10,
+    growth: 24,
+    pro: 48,
+    business: 96,
+  };
+  return Math.max(baselineByPlan[plan.id], Math.ceil(windowHours / 24) * baselineByPlan[plan.id]);
+}
+
 function signal(base: Omit<AbuseSignal, "user_email" | "user_store" | "plan">, profiles: Map<string, ProfileLite>): AbuseSignal {
   const profile = profileFor(profiles, base.user_id);
   return {
@@ -178,13 +189,13 @@ export const getAbuseMonitor = createServerFn({ method: "POST" })
       const failedOrRefunded = rows.filter((row) => row.status === "failed" || row.status === "refunded").length;
       const created = rows.length;
       const last = rows[0]?.updated_at ?? rows[0]?.created_at ?? since;
-      const dailyCapWindow = Math.max(plan.dailyVideoCap, 1) * Math.max(1, Math.ceil(data.windowHours / 24));
+      const expectedVolumeWindow = expectedVideoVolumeWindow(plan, data.windowHours);
 
       if (processing >= 2) {
         signals.push(signal({ id: `video-concurrency-${uid}`, user_id: uid, severity: "high", category: "video", title: "وصول حد مهام الفيديو المتزامنة", details: "الحساب يلامس حد المعالجة المتزامنة وقد يسبب ضغط تكلفة أو انتظار طويل.", metric: `${processing} قيد المعالجة`, action_hint: "انتظر اكتمال المهام وافحص مدة المعالجة قبل رفع الحدود.", last_seen_at: last }, profileMap));
       }
-      if (created > dailyCapWindow) {
-        signals.push(signal({ id: `video-volume-${uid}`, user_id: uid, severity: created >= dailyCapWindow * 2 ? "high" : "medium", category: "video", title: "عدد فيديوهات أعلى من نمط الباقة", details: `تم إنشاء ${created} مهام فيديو خلال النافذة المحددة مقابل سقف تشغيلي متوقع ${dailyCapWindow} لباقته.`, metric: `${created} فيديو`, action_hint: "راجع ملاءمة الباقة وتحقق من عدم وجود أتمتة غير مقصودة.", last_seen_at: last }, profileMap));
+      if (created > expectedVolumeWindow) {
+        signals.push(signal({ id: `video-volume-${uid}`, user_id: uid, severity: created >= expectedVolumeWindow * 2 ? "high" : "medium", category: "video", title: "حجم مهام فيديو أعلى من نمط الباقة", details: `تم إنشاء ${created} مهام فيديو خلال النافذة المحددة مقابل نمط تشغيلي متوقع ${expectedVolumeWindow} لباقته.`, metric: `${created} فيديو`, action_hint: "راجع ملاءمة الباقة وتحقق من عدم وجود أتمتة غير مقصودة.", last_seen_at: last }, profileMap));
       }
       if (failedOrRefunded >= 3) {
         signals.push(signal({ id: `video-failures-${uid}`, user_id: uid, severity: "medium", category: "video", title: "فشل/استرداد فيديو متكرر", details: "نسبة الفشل قد تعني Prompt غير مناسب أو مشكلة مزود أو استخدام تجريبي مكثف.", metric: `${failedOrRefunded} حالة`, action_hint: "افتح إدارة الفيديو وراجع error_message وآخر prompt قبل أي إجراء.", last_seen_at: last }, profileMap));
