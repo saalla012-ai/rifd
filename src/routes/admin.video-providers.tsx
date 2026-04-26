@@ -23,6 +23,8 @@ import pilotSaudiOfficeVideo from "@/assets/pilot-saudi-office-vertical-9x16.mp4
 import pilotSaudiPerfumeVideo from "@/assets/pilot-saudi-perfume-vertical-9x16.mp4.asset.json";
 import pilotSaudiAbayaVideo from "@/assets/pilot-saudi-abaya-vertical-9x16.mp4.asset.json";
 import pilotSaudiCoffeeVideo from "@/assets/pilot-saudi-coffee-vertical-9x16.mp4.asset.json";
+import pilotSaudiElectronicsVideo from "@/assets/pilot-saudi-electronics-vertical-9x16.mp4.asset.json";
+import pilotSaudiGiftsVideo from "@/assets/pilot-saudi-gifts-vertical-9x16.mp4.asset.json";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -379,6 +381,8 @@ function PilotProofPanel() {
     { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "توسيع مصفوفة"], verdict: "قيد الاعتماد", score: 78, decision: "يحتاج تقييم وضوح المنتج والهوية قبل نسخ البرومبت" },
     { label: "عباية راقية", url: pilotSaudiAbayaVideo.url, checks: ["1080p", "5ث", "9:16", "أزياء محتشمة"], verdict: "قيد الاعتماد", score: 80, decision: "تُراجع سلامة الحركة والاحتشام وتفاصيل القماش قبل اعتماد قالب الأزياء" },
     { label: "قهوة عربية", url: pilotSaudiCoffeeVideo.url, checks: ["1080p", "5ث", "9:16", "ضيافة سعودية"], verdict: "قيد الاعتماد", score: 82, decision: "مرشحة للتوسع إذا بقي المنتج واضحاً واللقطة طبيعية دون تشوه اليدين" },
+    { label: "إلكترونيات", url: pilotSaudiElectronicsVideo.url, checks: ["1080p", "5ث", "9:16", "استخدام منتج"], verdict: "اختبار إطلاق", score: 81, decision: "تُراجع دقة المنتج وحركة اليد قبل اعتماد قالب المتاجر التقنية" },
+    { label: "هدايا فاخرة", url: pilotSaudiGiftsVideo.url, checks: ["1080p", "5ث", "9:16", "مناسبات"], verdict: "اختبار إطلاق", score: 83, decision: "مرشحة كقالب تجاري إذا ظل الصندوق والمنتج واضحين من أول ثانية" },
   ];
   const averageScore = Math.round(proofSamples.reduce((sum, sample) => sum + sample.score, 0) / proofSamples.length);
   return (
@@ -388,20 +392,20 @@ function PilotProofPanel() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="font-extrabold">دليل عينات الفيديو العمودية</h2>
-              <p className="mt-1 text-xs text-muted-foreground">تم نقل المرحلة من عينة تحقق واحدة إلى أربع عينات فعلية: مكتب، عطر، عباية، وقهوة؛ مع إبقاء الاعتماد النهائي مشروطاً بدرجات التسويق والنشر.</p>
+              <p className="mt-1 text-xs text-muted-foreground">تم نقل المرحلة من عينة تحقق واحدة إلى ست عينات فعلية تغطي: مكتب، عطر، عباية، قهوة، إلكترونيات، وهدايا؛ مع إبقاء الاعتماد النهائي مشروطاً بدرجات التسويق والنشر.</p>
             </div>
             <Badge className="bg-success/15 text-success">بوابة 9:16 مجتازة</Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Badge variant="secondary">٤ عينات فعلية</Badge>
+            <Badge variant="secondary">٦ عينات فعلية</Badge>
             <Badge variant="secondary">مسار عمودي فقط</Badge>
             <Badge variant="secondary">متوسط أولي {averageScore.toLocaleString("ar-SA")}%</Badge>
           </div>
           <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: المسار التقني صالح، لكن لا تُعتمد المصفوفة تجارياً حتى تسجل كل عينة وضوح المنتج، طبيعية الأسلوب السعودي، سلامة اليدين والوجه، وقابلية النشر.</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>اعتمد</strong><p className="mt-1 text-muted-foreground">9:16، مدة قصيرة، فيديو مباشر داخل لوحة الإدارة.</p></div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>لا توسّع بعد</strong><p className="mt-1 text-muted-foreground">لا نولد 15 عينة قبل تقييم وضوح المنتج والوجه واليدين.</p></div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">اعتماد أفضل قالبين ثم توليد الإلكترونيات والهدايا كآخر عينة قبل الإطلاق.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>لا توسّع عشوائي</strong><p className="mt-1 text-muted-foreground">أي عينة إضافية يجب أن تُبنى على أفضل قالبين أداءً فقط.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">فرز أفضل قالبين، ثم تثبيت نسخة الإطلاق وتحديث واجهة المستخدم العامة.</p></div>
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
