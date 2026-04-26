@@ -132,6 +132,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function buildFalPromptPreview() {
+    setLoadingFalPreview(true);
+    try {
+      const headers = await authHeaders();
+      const result = await previewSaudiFalPrompt({ data: falDraft, headers });
+      setFalPreview(result);
+      toast.success("تم تجهيز برومبت الاختبار السعودي");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تجهيز برومبت الاختبار");
+    } finally {
+      setLoadingFalPreview(false);
+    }
+  }
+
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -163,6 +177,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          <SaudiFalTestPanel draft={falDraft} preview={falPreview} loading={loadingFalPreview} onDraft={setFalDraft} onPreview={() => void buildFalPromptPreview()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
