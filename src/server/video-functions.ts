@@ -151,6 +151,32 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
 }
 
+function personaPrompt(personaId?: string) {
+  return ({
+    "male-young": "متحدث سعودي شاب بثوب أبيض وشماغ أبيض، أسلوب UGC طبيعي وموثوق.",
+    "male-premium": "رجل سعودي أنيق بثوب رسمي وشماغ أحمر، أسلوب إعلان فاخر وواثق.",
+    "female-abaya": "متحدثة سعودية بعباءة وحجاب، أسلوب راقٍ ومحتشم مناسب للتجارة الإلكترونية.",
+    "retail-seller": "بائع سعودي داخل متجر حديث، أسلوب توصية منتج مباشر ودافئ.",
+  } as Record<string, string>)[personaId ?? ""] ?? "";
+}
+
+function buildSaudiVideoPrompt(input: z.infer<typeof videoInputSchema>) {
+  const persona = personaPrompt(input.selectedPersonaId);
+  const imageBrief = [
+    input.speakerImageUrl ? "استخدم صورة الشخص كمرجع للشخصية المتحدثة." : persona,
+    input.productImageUrl ? "اجعل صورة المنتج مرجعاً واضحاً للمنتج داخل الإعلان." : "",
+  ].filter(Boolean).join(" ");
+  return [
+    "إعلان فيديو سعودي قصير عالي التحويل للسوق السعودي. صوت عربي سعودي واضح وطبيعي إذا كان الصوت مدعوماً. بنية الإعلان: خطاف قوي، فائدة ملموسة، لقطة منتج جذابة، دعوة إجراء مباشرة. حافظ على مظهر محتشم وواقعي وابتعد عن المبالغة غير الموثوقة.",
+    imageBrief,
+    input.prompt,
+  ].filter(Boolean).join("\n\n");
+}
+
+function primaryReferenceImage(input: z.infer<typeof videoInputSchema>) {
+  return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
+}
+
 function mergeMetadata(current: Json | null | undefined, patch?: Record<string, unknown>) {
   return { ...((current as Record<string, unknown> | null) ?? {}), ...(patch ?? {}) } as Json;
 }
