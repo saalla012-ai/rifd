@@ -215,6 +215,7 @@ export type SaudiVideoPilotAuditResult = {
 
 export type SaudiVideoPilotMatrixResult = {
   checkedAt: string;
+  testLevel: "medium" | "full";
   totalSamples: number;
   estimatedCostUsd: number;
   requiredPublishableRate: number;
@@ -234,6 +235,7 @@ export type SaudiVideoPilotMatrixResult = {
     technicalGate: string[];
     mustPass: string[];
     scorecard: string[];
+    promptAdherenceGate: string;
   }>;
 };
 
@@ -245,8 +247,10 @@ export type SaudiVideoPilotEvaluationResult = {
   lipSync: number;
   visualIntegrity: number;
   publishReadiness: number;
+  promptAdherence: number;
   notes?: string;
   score: number;
+  promptAdherenceScore: number;
   decision: "publishable" | "minor_revision" | "reject_or_reprompt";
   evaluatedAt: string;
 };
