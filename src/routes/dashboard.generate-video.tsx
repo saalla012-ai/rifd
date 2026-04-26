@@ -74,13 +74,18 @@ function ImageInputCard({ label, value, uploading, onFile, onUrl }: { label: str
     <div className="rounded-lg border border-border bg-secondary/20 p-3">
       <Label>{label}</Label>
       <div className="mt-2 flex items-center gap-2">
-        <label className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-input px-3 text-xs font-bold hover:bg-accent">
+        <label className={cn("inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-input px-3 text-xs font-bold hover:bg-accent", uploading && "pointer-events-none opacity-70")}>
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-          <input type="file" accept="image/*" className="sr-only" onChange={(event) => onFile(event.target.files?.[0])} />
+          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={uploading} onChange={(event) => { onFile(event.target.files?.[0]); event.currentTarget.value = ""; }} />
         </label>
         <input value={value} onChange={(event) => onUrl(event.target.value)} placeholder="أو رابط صورة" className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-xs" />
       </div>
-      {value && <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><ImageUp className="h-3.5 w-3.5" /> الصورة جاهزة للاستخدام</div>}
+      {value && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <img src={value} alt="معاينة الصورة المرفوعة" className="h-10 w-10 rounded-md border border-border object-cover" loading="lazy" />
+          <span className="inline-flex items-center gap-1"><ImageUp className="h-3.5 w-3.5" /> الصورة جاهزة للاستخدام</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -213,8 +218,9 @@ function GenerateVideoPage() {
 
   const uploadInputImage = async (kind: "speaker" | "product", file?: File) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("اختر ملف صورة فقط");
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("ارفع صورة بصيغة JPG أو PNG أو WebP فقط");
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
@@ -225,12 +231,11 @@ function GenerateVideoPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
-      const rawExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const ext = ["jpg", "jpeg", "png", "webp"].includes(rawExt) ? rawExt : "jpg";
+      const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
       const path = `${session.user.id}/video-inputs/${kind}-${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("generated-images").upload(path, file, { upsert: true, contentType: file.type });
       if (error) throw new Error(error.message);
-      const { data, error: signedError } = await supabase.storage.from("generated-images").createSignedUrl(path, 60 * 60 * 24);
+      const { data, error: signedError } = await supabase.storage.from("generated-images").createSignedUrl(path, 60 * 60 * 24 * 7);
       if (signedError || !data?.signedUrl) throw new Error(signedError?.message ?? "فشل تجهيز رابط الصورة");
       if (kind === "speaker") setSpeakerImageUrl(data.signedUrl);
       else setProductImageUrl(data.signedUrl);
