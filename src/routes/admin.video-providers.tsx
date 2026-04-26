@@ -111,9 +111,9 @@ function AdminVideoProvidersPage() {
     try {
       const headers = await authHeaders();
       const scenarios = [
-        { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false },
-        { quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true },
-        { quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true },
+        { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false, imageCount: 0 },
+        { quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true, imageCount: 1 },
+        { quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true, imageCount: 2 },
       ] as const;
       const result = await testRouter({ data: scenarios[0], headers });
       await Promise.all(scenarios.slice(1).map((scenario) => testRouter({ data: scenario, headers })));
@@ -255,7 +255,7 @@ function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-extrabold">نتيجة اختبار الراوتر</h2>
-          <p className="mt-1 text-xs text-muted-foreground">مسار آمن: سريع · 9:16 · 5ث · بدون إنشاء فيديو أو خصم نقاط</p>
+          <p className="mt-1 text-xs text-muted-foreground">مسار آمن: سريع/إعلاني/احترافي مع 0–2 صور، دون إنشاء فيديو أو خصم نقاط</p>
         </div>
         <Badge className={cn(result.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{result.ok ? `المختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل"}</Badge>
       </div>
