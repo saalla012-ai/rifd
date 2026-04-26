@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -149,12 +149,22 @@ export type SaudiLaunchTemplatePerformance = {
   templateId: string;
   total: number;
   completed: number;
+  processing: number;
   refunded: number;
   failed: number;
   publishableRate: number;
+  failureRate: number;
   avgCostUsd: number | null;
+  minSampleReached: boolean;
+  expansionEligible: boolean;
+  decision: "collecting" | "watch" | "eligible";
+  gateNotes: string[];
   lastAt: string | null;
 };
+
+const LAUNCH_TEMPLATE_MIN_SAMPLE_SIZE = 20;
+const LAUNCH_TEMPLATE_MAX_FAILURE_RATE = 12;
+const LAUNCH_TEMPLATE_MAX_AVG_COST_USD = 0.5;
 
 export type AdminVideoProviderTestResult = {
   providerKey: string;
@@ -451,14 +461,15 @@ export const listSaudiLaunchTemplatePerformance = createServerFn({ method: "POST
       .limit(500);
     if (error) throw new Error(`فشل جلب أداء قوالب الإطلاق: ${error.message}`);
 
-    const byTemplate = new Map<string, { total: number; completed: number; refunded: number; failed: number; costs: number[]; lastAt: string | null }>();
+    const byTemplate = new Map<string, { total: number; completed: number; processing: number; refunded: number; failed: number; costs: number[]; lastAt: string | null }>();
     for (const row of data ?? []) {
       const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
       const templateId = typeof metadata.selected_template_id === "string" ? metadata.selected_template_id : "custom";
       if (templateId === "custom") continue;
-      const current = byTemplate.get(templateId) ?? { total: 0, completed: 0, refunded: 0, failed: 0, costs: [], lastAt: null };
+      const current = byTemplate.get(templateId) ?? { total: 0, completed: 0, processing: 0, refunded: 0, failed: 0, costs: [], lastAt: null };
       current.total += 1;
       if (row.status === "completed") current.completed += 1;
+      if (row.status === "processing") current.processing += 1;
       if (row.status === "refunded") current.refunded += 1;
       if (row.status === "failed") current.failed += 1;
       if (row.estimated_cost_usd !== null && Number.isFinite(Number(row.estimated_cost_usd))) current.costs.push(Number(row.estimated_cost_usd));
@@ -466,17 +477,25 @@ export const listSaudiLaunchTemplatePerformance = createServerFn({ method: "POST
       byTemplate.set(templateId, current);
     }
 
+    for (const templateId of SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS) {
+      if (!byTemplate.has(templateId)) byTemplate.set(templateId, { total: 0, completed: 0, processing: 0, refunded: 0, failed: 0, costs: [], lastAt: null });
+    }
+
     return {
-      templates: Array.from(byTemplate.entries()).map(([templateId, item]) => ({
-        templateId,
-        total: item.total,
-        completed: item.completed,
-        refunded: item.refunded,
-        failed: item.failed,
-        publishableRate: item.total ? Math.round((item.completed / item.total) * 100) : 0,
-        avgCostUsd: item.costs.length ? Number((item.costs.reduce((sum, cost) => sum + cost, 0) / item.costs.length).toFixed(3)) : null,
-        lastAt: item.lastAt,
-      })).sort((a, b) => b.total - a.total || b.publishableRate - a.publishableRate),
+      templates: Array.from(byTemplate.entries()).map(([templateId, item]) => {
+        const publishableRate = item.total ? Math.round((item.completed / item.total) * 100) : 0;
+        const failureRate = item.total ? Math.round(((item.failed + item.refunded) / item.total) * 100) : 0;
+        const avgCostUsd = item.costs.length ? Number((item.costs.reduce((sum, cost) => sum + cost, 0) / item.costs.length).toFixed(3)) : null;
+        const gateNotes = [
+          item.total >= LAUNCH_TEMPLATE_MIN_SAMPLE_SIZE ? "حجم العينة كافٍ" : `نحتاج ${Math.max(LAUNCH_TEMPLATE_MIN_SAMPLE_SIZE - item.total, 0).toLocaleString("ar-SA")} توليدات إضافية`,
+          publishableRate >= SAUDI_VIDEO_LAUNCH_DECISION.minimumPublishableScore ? "نسبة الإكمال ضمن البوابة" : "نسبة الإكمال أقل من بوابة 80%",
+          failureRate <= LAUNCH_TEMPLATE_MAX_FAILURE_RATE ? "الفشل/الاسترداد تحت السيطرة" : "الفشل أو الاسترداد مرتفع",
+          avgCostUsd === null || avgCostUsd <= LAUNCH_TEMPLATE_MAX_AVG_COST_USD ? "التكلفة مستقرة" : "متوسط التكلفة أعلى من الحد التشغيلي",
+        ];
+        const minSampleReached = item.total >= LAUNCH_TEMPLATE_MIN_SAMPLE_SIZE;
+        const expansionEligible = minSampleReached && publishableRate >= SAUDI_VIDEO_LAUNCH_DECISION.minimumPublishableScore && failureRate <= LAUNCH_TEMPLATE_MAX_FAILURE_RATE && (avgCostUsd === null || avgCostUsd <= LAUNCH_TEMPLATE_MAX_AVG_COST_USD);
+        return { templateId, total: item.total, completed: item.completed, processing: item.processing, refunded: item.refunded, failed: item.failed, publishableRate, failureRate, avgCostUsd, minSampleReached, expansionEligible, decision: expansionEligible ? "eligible" : minSampleReached ? "watch" : "collecting", gateNotes, lastAt: item.lastAt } satisfies SaudiLaunchTemplatePerformance;
+      }).sort((a, b) => Number(b.expansionEligible) - Number(a.expansionEligible) || b.total - a.total || b.publishableRate - a.publishableRate),
     };
   });
 
