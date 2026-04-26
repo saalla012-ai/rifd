@@ -283,27 +283,6 @@ export type Database = {
         }
         Relationships: []
       }
-      daily_video_usage: {
-        Row: {
-          day: string
-          updated_at: string
-          user_id: string
-          video_count: number
-        }
-        Insert: {
-          day: string
-          updated_at?: string
-          user_id: string
-          video_count?: number
-        }
-        Update: {
-          day?: string
-          updated_at?: string
-          user_id?: string
-          video_count?: number
-        }
-        Relationships: []
-      }
       demo_rate_limits: {
         Row: {
           count: number
@@ -609,7 +588,6 @@ export type Database = {
           active: boolean
           daily_image_cap: number
           daily_text_cap: number
-          daily_video_cap: number
           image_pro_allowed: boolean
           max_video_duration_seconds: number
           monthly_credits: number
@@ -624,7 +602,6 @@ export type Database = {
           active?: boolean
           daily_image_cap?: number
           daily_text_cap?: number
-          daily_video_cap?: number
           image_pro_allowed?: boolean
           max_video_duration_seconds?: number
           monthly_credits?: number
@@ -639,7 +616,6 @@ export type Database = {
           active?: boolean
           daily_image_cap?: number
           daily_text_cap?: number
-          daily_video_cap?: number
           image_pro_allowed?: boolean
           max_video_duration_seconds?: number
           monthly_credits?: number
@@ -1348,8 +1324,6 @@ export type Database = {
           daily_image_used: number
           daily_text_cap: number
           daily_text_used: number
-          daily_video_cap: number
-          daily_video_used: number
           image_pro_allowed: boolean
           max_video_duration_seconds: number
           plan: Database["public"]["Enums"]["user_plan"]
@@ -1383,7 +1357,6 @@ export type Database = {
           active: boolean
           daily_image_cap: number
           daily_text_cap: number
-          daily_video_cap: number
           image_pro_allowed: boolean
           max_video_duration_seconds: number
           monthly_credits: number
