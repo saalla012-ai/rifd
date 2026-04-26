@@ -454,23 +454,37 @@ function GenerateVideoPage() {
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
-              {activeJob?.status === "processing" && (
-                <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
-                  <RefreshCw className="h-3 w-3" /> تحديث
-                </button>
-              )}
-              {latestResult && (
-                <a href={latestResult} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
-                  <Download className="h-3 w-3" /> فتح
-                </a>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {activeJob?.status === "processing" && (
+                  <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                    <RefreshCw className="h-3 w-3" /> تحديث
+                  </button>
+                )}
+                {latestResult && (
+                  <>
+                    <button type="button" onClick={() => void downloadLatestVideo()} disabled={downloadingVideo} className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-bold text-primary-foreground hover:opacity-90 disabled:opacity-60">
+                      {downloadingVideo ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} تحميل
+                    </button>
+                    <a href={latestResult} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                      فتح
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
             <div className="mt-3 flex aspect-[9/16] items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-secondary/30 text-center text-sm text-muted-foreground">
               {latestResult ? (
                 latestResult.startsWith("data:image") ? (
                   <img src={latestResult} alt="معاينة الفيديو" className="h-full w-full object-cover" />
                 ) : (
-                  <video src={latestResult} controls className="h-full w-full object-cover" />
+                  <div className="relative h-full w-full">
+                    <video src={latestResult} controls playsInline preload="metadata" className="h-full w-full object-cover" onError={() => setPreviewError(true)} />
+                    {previewError && (
+                      <div className="absolute inset-x-3 bottom-3 rounded-lg border border-border bg-card/95 p-3 text-xs font-medium text-foreground shadow-soft">
+                        تعذر تشغيل المعاينة داخل الصفحة. استخدم زر فتح أو تحميل.
+                      </div>
+                    )}
+                  </div>
                 )
               ) : loading ? (
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -506,7 +520,7 @@ function GenerateVideoPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold">{job.quality === "quality" ? "احترافي" : job.quality === "lite" ? "إعلاني" : "سريع"}</span>
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{STATUS_LABEL[job.status] ?? job.status}</span>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{job.status === "completed" && job.result_url ? "جاهز للمعاينة" : STATUS_LABEL[job.status] ?? job.status}</span>
                     </div>
                     <p className="mt-1 line-clamp-2 text-muted-foreground">{job.prompt}</p>
                   {job.error_message && <p className="mt-1 line-clamp-2 text-[10px] font-medium text-destructive">{job.error_message}</p>}
