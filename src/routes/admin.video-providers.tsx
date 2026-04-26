@@ -204,6 +204,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function auditMediumTestBatch() {
+    setAuditingMediumBatch(true);
+    try {
+      const headers = await authHeaders();
+      const result = await auditMediumBatch({ headers });
+      setMediumBatch(result);
+      toast[result.releaseGate === "ready_for_review" ? "success" : result.releaseGate === "blocked" ? "error" : "message"](`تنفيذ الاختبار المتوسط: ${result.executionRate.toLocaleString("ar-SA")}%`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تدقيق دفعة الاختبار المتوسط");
+    } finally {
+      setAuditingMediumBatch(false);
+    }
+  }
+
   async function submitPilotEvaluation(draft: PilotEvaluationDraft) {
     setEvaluatingPilot(true);
     try {
