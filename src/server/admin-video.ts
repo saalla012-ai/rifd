@@ -672,70 +672,16 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     return result;
   });
 
-export const completeManualVideoJob = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => CompleteManualVideoJobInput.parse(input))
+export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => EvaluatePilotSampleInput.parse(input))
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }): Promise<{ job: AdminVideoJob }> => {
+  .handler(async ({ data, context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
-
-    const { data: current, error: readError } = await supabaseAdmin
-      .from("video_jobs")
-      .select("*")
-      .eq("id", data.jobId)
-      .single();
-    if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
-    if (current.status !== "processing") throw new Error("لا يمكن إكمال مهمة ليست قيد المعالجة");
-    if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
-
-    const metadata = {
-      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: true, status: "manual_completed" }) as Record<string, unknown>),
-      manual_completed_by: userId,
-      manual_completed_at: new Date().toISOString(),
-      provider_status: "succeeded",
-    };
-
-    const { data: updated, error } = await supabaseAdmin
-      .from("video_jobs")
-      .update({ status: "completed", result_url: data.resultUrl, completed_at: new Date().toISOString(), error_message: null, metadata: metadata as Json })
-      .eq("id", data.jobId)
-      .eq("status", "processing")
-      .select("*")
-      .single();
-
-    if (error || !updated) throw new Error(`فشل إكمال مهمة الفيديو: ${error?.message ?? "استجابة فارغة"}`);
-    await logAdminAudit({ adminId: userId, action: "complete_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { result_url: data.resultUrl } as Json });
-    return { job: toAdminVideoJob(updated as VideoJobRow) };
-  });
-
-export const refundManualVideoJob = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => RefundVideoJobInput.parse(input))
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }): Promise<{ job: AdminVideoJob }> => {
-    const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    await assertAdmin(supabase, userId);
-
-    const { data: current, error: readError } = await supabaseAdmin.from("video_jobs").select("*").eq("id", data.jobId).single();
-    if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
-    if (current.status !== "processing") throw new Error("لا يمكن رد نقاط مهمة ليست قيد المعالجة");
-    if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
-
-    const { refundId, newlyRefunded } = await refundVideoCreditsOnce(current.ledger_id);
-    const metadata = {
-      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: false, status: "manual_refunded", error: data.reason }) as Record<string, unknown>),
-      manual_refunded_by: userId,
-      manual_refunded_at: new Date().toISOString(),
-      manual_refund_reason: data.reason,
-    };
-
-    const { data: updated, error } = await supabaseAdmin
-      .from("video_jobs")
-      .update({ status: "refunded", refund_ledger_id: refundId ?? current.refund_ledger_id, error_message: data.reason, metadata: metadata as Json })
-      .eq("id", data.jobId)
-      .select("*")
-      .single();
-
-    if (error || !updated) throw new Error(`فشل تحديث المهمة بعد رد النقاط: ${error?.message ?? "استجابة فارغة"}`);
-    await logAdminAudit({ adminId: userId, action: "refund_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { reason: data.reason, refund_ledger_id: refundId } as Json });
-    return { job: toAdminVideoJob(updated as VideoJobRow) };
+    const total = data.productClarity + data.saudiDialect + data.lipSync + data.visualIntegrity + data.publishReadiness;
+    const score = Math.round((total / 25) * 100);
+    const decision = score >= 80 ? "publishable" : score >= 68 ? "minor_revision" : "reject_or_reprompt";
+    const result = { ...data, score, decision, evaluatedAt: new Date().toISOString() };
+    await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
+    return result;
   });
