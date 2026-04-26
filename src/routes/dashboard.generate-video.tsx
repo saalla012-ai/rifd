@@ -213,15 +213,24 @@ function GenerateVideoPage() {
 
   const uploadInputImage = async (kind: "speaker" | "product", file?: File) => {
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("اختر ملف صورة فقط");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("حجم الصورة كبير؛ الحد الأقصى 8MB");
+      return;
+    }
     setUploadingInput(kind);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `video-inputs/${session.user.id}/${kind}-${Date.now()}.${ext}`;
+      const rawExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const ext = ["jpg", "jpeg", "png", "webp"].includes(rawExt) ? rawExt : "jpg";
+      const path = `${session.user.id}/video-inputs/${kind}-${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("generated-images").upload(path, file, { upsert: true, contentType: file.type });
       if (error) throw new Error(error.message);
-      const { data, error: signedError } = await supabase.storage.from("generated-images").createSignedUrl(path, 60 * 60 * 6);
+      const { data, error: signedError } = await supabase.storage.from("generated-images").createSignedUrl(path, 60 * 60 * 24);
       if (signedError || !data?.signedUrl) throw new Error(signedError?.message ?? "فشل تجهيز رابط الصورة");
       if (kind === "speaker") setSpeakerImageUrl(data.signedUrl);
       else setProductImageUrl(data.signedUrl);
