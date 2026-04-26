@@ -15,7 +15,7 @@ import {
   InsufficientCreditsError,
 } from "./credits";
 import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -215,6 +215,7 @@ function buildSaudiVideoPrompt(input: VideoInput) {
     input.prompt,
     input.watermarkRequired ? "أضف علامة مائية صغيرة ونظيفة بحروف لاتينية فقط: RIFD في الزاوية السفلية، بدون أي نص عربي داخل الفيديو." : "",
   ].filter(Boolean).join("\n\n");
+  return withSaudiPromptAdherence(prompt);
 }
 
 function primaryReferenceImage(input: VideoInput) {
