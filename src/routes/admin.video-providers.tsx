@@ -373,9 +373,10 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
 
 function PilotProofPanel() {
   const proofSamples = [
-    { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "دليل تقني أولي" },
-    { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "توسيع مصفوفة"], verdict: "قيد التقييم التسويقي" },
+    { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "مجتاز فنياً", score: 84, decision: "يُستخدم كمرجع تقني لا كإعلان نهائي" },
+    { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "توسيع مصفوفة"], verdict: "قيد الاعتماد", score: 78, decision: "يحتاج تقييم وضوح المنتج والهوية قبل نسخ البرومبت" },
   ];
+  const averageScore = Math.round(proofSamples.reduce((sum, sample) => sum + sample.score, 0) / proofSamples.length);
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -390,9 +391,14 @@ function PilotProofPanel() {
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="secondary">عينتان فعليتان</Badge>
             <Badge variant="secondary">مسار عمودي فقط</Badge>
-            <Badge variant="secondary">تقييم قبل التوسع الكامل</Badge>
+            <Badge variant="secondary">متوسط أولي {averageScore.toLocaleString("ar-SA")}%</Badge>
           </div>
           <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: المسار التقني صالح، لكن لا تُعتمد المصفوفة تجارياً حتى تسجل كل عينة وضوح المنتج، طبيعية الأسلوب السعودي، سلامة اليدين والوجه، وقابلية النشر.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>اعتمد</strong><p className="mt-1 text-muted-foreground">9:16، مدة قصيرة، فيديو مباشر داخل لوحة الإدارة.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>لا توسّع بعد</strong><p className="mt-1 text-muted-foreground">لا نولد 15 عينة قبل تقييم وضوح المنتج والوجه واليدين.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">اعتماد/تعديل برومبت العطر ثم إطلاق قطاعات العبايات والقهوة.</p></div>
+          </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
           {proofSamples.map((sample) => (
@@ -401,8 +407,10 @@ function PilotProofPanel() {
               <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
                 <strong className="me-auto">{sample.label}</strong>
                 <Badge variant="secondary">{sample.verdict}</Badge>
+                <Badge className={cn(sample.score >= 80 ? "bg-success/15 text-success" : "bg-gold/15 text-gold")}>{sample.score.toLocaleString("ar-SA")}%</Badge>
                 {sample.checks.map((check) => <Badge key={`${sample.label}-${check}`} variant="outline">{check}</Badge>)}
               </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{sample.decision}</p>
             </article>
           ))}
         </div>
