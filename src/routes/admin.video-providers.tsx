@@ -553,8 +553,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
 }
 
 function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
-  const gateLabel = batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
-  const gateTone = batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
+  const gateLabel = batch.releaseGate === "ready_for_expansion" ? "جاهزة للتوسيع" : batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
+  const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -564,12 +564,15 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         </div>
         <Badge className={cn(gateTone)}>{gateLabel} · {batch.executionRate.toLocaleString("ar-SA")}% تنفيذ</Badge>
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <MetricTile label="المخطط" value={batch.totalPlanned} />
         <MetricTile label="المولد" value={batch.generated} />
         <MetricTile label="المكتمل" value={batch.completed} />
+        <MetricTile label="المقيّم" value={batch.evaluated} />
+        <MetricTile label="صالح" value={batch.publishable} />
+        <MetricTile label="تعديل" value={batch.needsRevision} />
+        <MetricTile label="مرفوض" value={batch.rejected} />
         <MetricTile label="قيد المعالجة" value={batch.processing} />
-        <MetricTile label="فشل/استرداد" value={batch.failedOrRefunded} />
       </div>
       <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">{batch.releaseGateReason}</p>
@@ -583,6 +586,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
               <Badge className={cn(sample.status === "completed" ? "bg-success/15 text-success" : sample.status === "not_generated" ? "bg-muted text-muted-foreground" : sample.status === "failed" || sample.status === "refunded" || sample.status === "cancelled" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold")}>{sample.status}</Badge>
             </div>
             <p className="mt-1 text-muted-foreground">{sample.sector} · {sample.requiredProductImage ? "صورة منتج إلزامية" : "عينة سريعة"} · {sample.creditsCharged ?? "—"} نقطة</p>
+            {sample.releaseDecision && <p className="mt-2 font-bold text-foreground">قرار التقييم: {sample.releaseDecision === "publishable" ? "صالح للنشر" : sample.releaseDecision === "minor_revision" ? "يحتاج تعديل" : "مرفوض/إعادة برومبت"} · {sample.evaluationScore ?? "—"}%</p>}
             {sample.resultUrl && <a href={sample.resultUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex font-bold text-primary hover:underline">فتح النتيجة</a>}
             {sample.issue && <p className="mt-2 text-muted-foreground">{sample.issue}</p>}
           </div>
