@@ -371,6 +371,32 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
+function PilotProofPanel() {
+  const videoUrl = pilotSaudiOfficeVideo.url;
+  const checks = ["H.264", "1088×1920", "5.04ث", "9:16"];
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+        <div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="font-extrabold">دليل العينة العمودية المعتمدة</h2>
+              <p className="mt-1 text-xs text-muted-foreground">عينة مكتب سعودي تحققت فنياً كبداية اختبار الإطلاق: الهدف الآن تقييم القابلية التسويقية قبل توسيع التوليد.</p>
+            </div>
+            <Badge className="bg-success/15 text-success">بوابة 9:16 مجتازة</Badge>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {checks.map((check) => <Badge key={check} variant="secondary">{check}</Badge>)}
+          </div>
+          <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: صالحة كدليل تقني أولي، وليست اعتماداً نهائياً للمصفوفة حتى تُسجّل درجات وضوح المنتج، طبيعية الأسلوب السعودي، سلامة اليدين والوجه، وقابلية النشر.</p>
+          <a href={videoUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex text-xs font-bold text-primary underline-offset-4 hover:underline">فتح ملف الفيديو للمراجعة</a>
+        </div>
+        <img src={pilotSaudiOfficeContactSheet} alt="لقطات مراجعة من عينة فيديو سعودية عمودية" className="h-auto w-full rounded-lg border border-border bg-secondary/30 object-cover" loading="lazy" />
+      </div>
+    </section>
+  );
+}
+
 function PilotAuditPanel({ audit }: { audit: SaudiVideoPilotAuditResult }) {
   const topIssues = audit.findings.filter((item) => item.issues.length > 0).slice(0, 5);
   return (
