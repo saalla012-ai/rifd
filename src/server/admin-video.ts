@@ -237,6 +237,10 @@ function providerSecretName(providerKey: string) {
   } as Record<string, string | undefined>)[providerKey];
 }
 
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
+}
+
 async function refundVideoCreditsOnce(ledgerId: string | null) {
   if (!ledgerId) return { refundId: null as string | null, newlyRefunded: false };
   const { data: refundId, error } = await supabaseAdmin.rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
