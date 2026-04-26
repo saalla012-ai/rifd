@@ -145,6 +145,17 @@ export type AdminVideoProviderAttemptSummary = {
   lastAt: string | null;
 };
 
+export type SaudiLaunchTemplatePerformance = {
+  templateId: string;
+  total: number;
+  completed: number;
+  refunded: number;
+  failed: number;
+  publishableRate: number;
+  avgCostUsd: number | null;
+  lastAt: string | null;
+};
+
 export type AdminVideoProviderTestResult = {
   providerKey: string;
   ok: boolean;
@@ -425,6 +436,47 @@ export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" }
           lastAt: item.lastAt,
         };
       }).sort((a, b) => b.total - a.total),
+    };
+  });
+
+export const listSaudiLaunchTemplatePerformance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ templates: SaudiLaunchTemplatePerformance[] }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+    const { data, error } = await (await getSupabaseAdmin())
+      .from("video_jobs")
+      .select("status, estimated_cost_usd, metadata, created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(`فشل جلب أداء قوالب الإطلاق: ${error.message}`);
+
+    const byTemplate = new Map<string, { total: number; completed: number; refunded: number; failed: number; costs: number[]; lastAt: string | null }>();
+    for (const row of data ?? []) {
+      const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+      const templateId = typeof metadata.selected_template_id === "string" ? metadata.selected_template_id : "custom";
+      if (templateId === "custom") continue;
+      const current = byTemplate.get(templateId) ?? { total: 0, completed: 0, refunded: 0, failed: 0, costs: [], lastAt: null };
+      current.total += 1;
+      if (row.status === "completed") current.completed += 1;
+      if (row.status === "refunded") current.refunded += 1;
+      if (row.status === "failed") current.failed += 1;
+      if (row.estimated_cost_usd !== null && Number.isFinite(Number(row.estimated_cost_usd))) current.costs.push(Number(row.estimated_cost_usd));
+      if (!current.lastAt || new Date(row.created_at).getTime() > new Date(current.lastAt).getTime()) current.lastAt = row.created_at;
+      byTemplate.set(templateId, current);
+    }
+
+    return {
+      templates: Array.from(byTemplate.entries()).map(([templateId, item]) => ({
+        templateId,
+        total: item.total,
+        completed: item.completed,
+        refunded: item.refunded,
+        failed: item.failed,
+        publishableRate: item.total ? Math.round((item.completed / item.total) * 100) : 0,
+        avgCostUsd: item.costs.length ? Number((item.costs.reduce((sum, cost) => sum + cost, 0) / item.costs.length).toFixed(3)) : null,
+        lastAt: item.lastAt,
+      })).sort((a, b) => b.total - a.total || b.publishableRate - a.publishableRate),
     };
   });
 
