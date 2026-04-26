@@ -282,6 +282,9 @@ function AdminVideoProvidersPage() {
           <Button variant="outline" size="sm" onClick={() => void buildPilotTestMatrix()} disabled={loading || buildingMatrix}>
             {buildingMatrix ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />} مصفوفة الاختبار
           </Button>
+          <Button variant="outline" size="sm" onClick={() => void auditMediumTestBatch()} disabled={loading || auditingMediumBatch}>
+            {auditingMediumBatch ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />} تدقيق الدفعة
+          </Button>
           <Button variant="default" size="sm" onClick={() => void testRouterPath()} disabled={loading || testingRouter}>
             {testingRouter ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار الراوتر
           </Button>
@@ -302,6 +305,7 @@ function AdminVideoProvidersPage() {
           <LaunchTemplatePerformancePanel templates={templatePerformance} />
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
+          {mediumBatch && <MediumBatchPanel batch={mediumBatch} />}
           <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
