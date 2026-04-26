@@ -185,6 +185,25 @@ export type SaudiVideoPilotAuditResult = {
   findings: Array<{ templateId: string; label: string; sector: string; risk: string; score: number; issues: string[]; recommendation: string }>;
 };
 
+export type SaudiVideoPilotMatrixResult = {
+  checkedAt: string;
+  totalSamples: number;
+  estimatedCostUsd: number;
+  readinessGate: string;
+  samples: Array<{
+    sampleId: string;
+    templateId: string;
+    label: string;
+    sector: string;
+    personaId: string;
+    personaLabel: string;
+    quality: "fast" | "lite" | "quality";
+    durationSeconds: 5 | 8;
+    requiresProductImage: boolean;
+    scorecard: string[];
+  }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -226,7 +245,9 @@ function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.i
   if (input.aspectRatio === "16:9" && !provider.supports_16_9) return { eligible: false, reason: "مقاس 16:9 غير مدعوم" };
   if (input.hasStartingFrame && !provider.supports_starting_frame) return { eligible: false, reason: "صورة البداية غير مدعومة" };
   if (input.imageCount > 0 && !provider.supports_starting_frame) return { eligible: false, reason: "مراجع الصور غير مدعومة" };
-  if (input.imageCount > 1 && (provider.metadata as { supports_two_images?: boolean } | null)?.supports_two_images !== true) return { eligible: false, reason: "صورتان غير مدعومتين" };
+  const metadata = (provider.metadata as { supports_two_images?: boolean; model_family?: string } | null) ?? {};
+  const pixverseCanCollapseReferences = provider.provider_key === "fal_ai" && metadata.model_family === "pixverse_v6";
+  if (input.imageCount > 1 && !pixverseCanCollapseReferences && metadata.supports_two_images !== true) return { eligible: false, reason: "صورتان غير مدعومتين" };
   const cost = input.durationSeconds === 8 ? provider.cost_8s : provider.cost_5s;
   if (cost <= 0) return { eligible: false, reason: "تكلفة المدة غير مضبوطة" };
   return { eligible: true, reason: provider.health_status === "unhealthy" ? "مؤهل لكن مؤخر بسبب حالة غير صحية" : "جاهز للراوتر" };
