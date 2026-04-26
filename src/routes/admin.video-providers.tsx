@@ -270,6 +270,56 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
+function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { draft: { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean }; preview: SaudiFalPromptPreview | null; loading: boolean; onDraft: (next: { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean }) => void; onPreview: () => void }) {
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">اختبار fal.ai بالصور الحالية</h2>
+          <p className="mt-1 text-xs text-muted-foreground">يستخدم شخصيات قسم الفيديو نفسها مع برومبت سعودي واضح للحركة والصوت قبل أي اعتماد إنتاجي.</p>
+        </div>
+        <Button type="button" size="sm" onClick={onPreview} disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clapperboard className="h-4 w-4" />} تجهيز البرومبت
+        </Button>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <SelectBox label="النموذج" value={draft.modelId} onChange={(modelId) => onDraft({ ...draft, modelId })} options={FAL_VIDEO_TEST_MODELS.map((model) => ({ value: model.id, label: model.label }))} />
+        <SelectBox label="صورة الشخصية" value={draft.personaId} onChange={(personaId) => onDraft({ ...draft, personaId })} options={SAUDI_VIDEO_PERSONAS.map((persona) => ({ value: persona.id, label: persona.label }))} />
+        <SelectBox label="السيناريو السعودي" value={draft.scenarioId} onChange={(scenarioId) => onDraft({ ...draft, scenarioId })} options={SAUDI_VIDEO_TEST_SCENARIOS.map((scenario) => ({ value: scenario.id, label: scenario.label }))} />
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <ControlRow label="إضافة صورة منتج" hint="لقياس التزام النموذج بالمنتج داخل الإعلان">
+          <Switch checked={draft.includeProductImage} onCheckedChange={(includeProductImage) => onDraft({ ...draft, includeProductImage })} />
+        </ControlRow>
+        <ControlRow label="طلب صوت سعودي" hint="يطبّق فقط على النماذج التي تدعم الصوت">
+          <Switch checked={draft.includeVoice} onCheckedChange={(includeVoice) => onDraft({ ...draft, includeVoice })} />
+        </ControlRow>
+      </div>
+      {preview && (
+        <div className="mt-4 grid gap-3 lg:grid-cols-[220px_1fr]">
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs leading-6">
+            <p className="font-bold">التقييم: {preview.imageEvaluation.score.toLocaleString("ar-SA")}/100</p>
+            <p className="mt-1 text-muted-foreground">{preview.imageEvaluation.recommendation}</p>
+            <p className="mt-2 text-muted-foreground">{preview.model.label} · {preview.persona.label} · {preview.scenario.label}</p>
+          </div>
+          <Textarea readOnly value={preview.prompt} className="min-h-56 text-left text-xs leading-6" dir="ltr" />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SelectBox({ label, value, options, onChange }: { label: string; value: string; options: Array<{ value: string; label: string }>; onChange: (value: string) => void }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold text-muted-foreground">{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
+        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label>
+  );
+}
+
 function RouterResultPanel({ results }: { results: Array<AdminVideoRouterTestResult & { scenarioLabel: string }> }) {
   const allPassed = results.every((result) => result.ok);
   return (
