@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
@@ -56,6 +55,12 @@ const EvaluatePilotSampleInput = z.object({
   publishReadiness: z.number().int().min(1).max(5),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
+
+
+async function getSupabaseAdmin() {
+  const mod = await import("@/integrations/supabase/client.server");
+  return mod.supabaseAdmin;
+}
 
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
@@ -288,11 +293,11 @@ function errorMessage(error: unknown) {
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
   if (!ledgerId) return { refundId: null as string | null, newlyRefunded: false };
-  const { data: refundId, error } = await supabaseAdmin.rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
+  const { data: refundId, error } = await (await getSupabaseAdmin()).rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
   if (!error) return { refundId: refundId as string, newlyRefunded: true };
   if (!/already_refunded/i.test(error.message)) throw new Error(`فشل رد النقاط: ${error.message}`);
 
-  const { data: ledger } = await supabaseAdmin.from("credit_ledger").select("refund_ledger_id").eq("id", ledgerId).maybeSingle();
+  const { data: ledger } = await (await getSupabaseAdmin()).from("credit_ledger").select("refund_ledger_id").eq("id", ledgerId).maybeSingle();
   return { refundId: ledger?.refund_ledger_id ?? null, newlyRefunded: false };
 }
 
@@ -316,7 +321,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
 
     const userIds = Array.from(new Set((rows ?? []).map((r) => r.user_id)));
     const { data: profs } = userIds.length
-      ? await supabaseAdmin.from("profiles").select("id, email, store_name").in("id", userIds)
+      ? await (await getSupabaseAdmin()).from("profiles").select("id, email, store_name").in("id", userIds)
       : { data: [] as { id: string; email: string | null; store_name: string | null }[] };
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
 
@@ -324,12 +329,12 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const counts: Record<string, number> = { processing: 0, completed: 0, refunded: 0, failed: 0 };
     await Promise.all(
       statusList.map(async (status) => {
-        const { count } = await supabaseAdmin.from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
+        const { count } = await (await getSupabaseAdmin()).from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
         counts[status] = count ?? 0;
       })
     );
 
-    const { count: totalCount } = await supabaseAdmin.from("video_jobs").select("id", { count: "exact", head: true });
+    const { count: totalCount } = await (await getSupabaseAdmin()).from("video_jobs").select("id", { count: "exact", head: true });
     const statsRows = rows ?? [];
     const stats: AdminVideoStats = {
       total: totalCount ?? statsRows.length,
@@ -353,7 +358,7 @@ export const listVideoProviderConfigs = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const { data, error } = await (supabaseAdmin as unknown as {
+    const { data, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { select: (columns: string) => { order: (column: string, opts: { ascending: boolean }) => Promise<{ data: unknown; error: { message: string } | null }> } };
     })
       .from("video_provider_configs")
@@ -432,7 +437,7 @@ export const updateVideoProviderConfig = createServerFn({ method: "POST" })
     if (typeof data.cost8s === "number") patch.cost_8s = data.cost8s;
     if (Object.keys(patch).length === 0) throw new Error("لا توجد تغييرات للحفظ");
 
-    const { data: updated, error } = await (supabaseAdmin as unknown as {
+    const { data: updated, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => { select: (columns: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } } };
     })
       .from("video_provider_configs")
@@ -459,7 +464,7 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const { data: current, error: readError } = await (supabaseAdmin as unknown as {
+    const { data: current, error: readError } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } };
     })
       .from("video_provider_configs")
@@ -501,7 +506,7 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
       metadata: appendConnectionTest(provider.metadata, result),
     };
 
-    const { data: updated, error } = await (supabaseAdmin as unknown as {
+    const { data: updated, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => { select: (columns: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } } };
     })
       .from("video_provider_configs")
@@ -587,7 +592,7 @@ export const testVideoRouterDryRun = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const { data: rows, error } = await (supabaseAdmin as unknown as {
+    const { data: rows, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { select: (columns: string) => { order: (column: string, opts: { ascending: boolean }) => Promise<{ data: unknown; error: { message: string } | null }> } };
     })
       .from("video_provider_configs")
