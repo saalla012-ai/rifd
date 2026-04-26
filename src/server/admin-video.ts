@@ -265,6 +265,34 @@ export type SaudiVideoPilotEvaluationResult = {
   evaluatedAt: string;
 };
 
+export type SaudiVideoMediumBatchResult = {
+  checkedAt: string;
+  totalPlanned: number;
+  generated: number;
+  completed: number;
+  processing: number;
+  failedOrRefunded: number;
+  missingProductImage: number;
+  estimatedCostUsd: number;
+  executionRate: number;
+  completionRate: number;
+  releaseGate: "not_started" | "running" | "ready_for_review" | "blocked";
+  samples: Array<{
+    sampleId: string;
+    templateId: string;
+    label: string;
+    sector: string;
+    requiredProductImage: boolean;
+    jobId: string | null;
+    status: VideoJobStatus | "not_generated";
+    resultUrl: string | null;
+    creditsCharged: number | null;
+    estimatedCostUsd: number | null;
+    createdAt: string | null;
+    issue: string | null;
+  }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
