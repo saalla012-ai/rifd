@@ -119,6 +119,9 @@ function assertVideoEntitlement(entitlement: VideoEntitlement, input: z.infer<ty
 }
 
 function assertProductImagePolicy(plan: string | null | undefined, input: z.infer<typeof videoInputSchema>) {
+  if (input.source === "medium-test" && input.quality !== "fast" && !input.productImageUrl) {
+    throw new Error("product_image_required_for_medium_test_video");
+  }
   if (PLAN_CREDIT_POLICY.paidPlansRequireProductImageForVideo && plan && plan !== "free" && !input.productImageUrl) {
     throw new Error("product_image_required_for_paid_video");
   }
@@ -184,6 +187,7 @@ function publicVideoError(e: unknown): Error {
   if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
   if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية متاحة في باقات Pro وBusiness.");
   if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
+  if (/product_image_required_for_medium_test_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج إلزامية لهذه العينة الداخلية حتى يكون اختبار الالتزام عادلاً وقابلاً للاعتماد.");
   if (/product_image_required_for_paid_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان.");
   if (/video_template_not_publicly_approved/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: هذا القالب ما زال احتياطياً ولن يُفتح قبل اكتمال بيانات الاستخدام الفعلية.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
@@ -516,9 +520,11 @@ export const generateVideo = createServerFn({ method: "POST" })
             medium_test: true,
             medium_test_sample_id: data.mediumTestSampleId || null,
             medium_test_template_id: data.mediumTestTemplateId || null,
+            medium_test_product_image_required: data.quality !== "fast",
           }
         : {};
       const watermarkRequired = profile?.plan === "free";
+      const productImageRequired = (profile?.plan !== "free") || (data.source === "medium-test" && data.quality !== "fast");
       const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
 
       const charge = await consume(supabase, cost, "consume_video", {
@@ -548,7 +554,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free", prompt_adherence_required: true, prompt_adherence_gate: "80%+" },
+          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: productImageRequired, prompt_adherence_required: true, prompt_adherence_gate: "80%+" },
         })
         .select("*")
         .single();
