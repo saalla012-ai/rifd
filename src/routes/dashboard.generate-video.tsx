@@ -23,7 +23,14 @@ import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
-type VideoSearch = { prompt?: string; campaignPackId?: string };
+type VideoSearch = {
+  prompt?: string;
+  campaignPackId?: string;
+  quality?: VideoQuality;
+  aspectRatio?: AspectRatio;
+  selectedPersonaId?: string;
+  source?: "medium-test";
+};
 
 const QUALITY = {
   fast: { label: "سريع", icon: Zap, note: "للتجربة والمحتوى اليومي بتكلفة أقل" },
@@ -65,6 +72,10 @@ export const Route = createFileRoute("/dashboard/generate-video")({
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
+    quality: s.quality === "fast" || s.quality === "lite" || s.quality === "quality" ? s.quality : undefined,
+    aspectRatio: s.aspectRatio === "9:16" || s.aspectRatio === "1:1" || s.aspectRatio === "16:9" ? s.aspectRatio : undefined,
+    selectedPersonaId: typeof s.selectedPersonaId === "string" ? s.selectedPersonaId : undefined,
+    source: s.source === "medium-test" ? "medium-test" : undefined,
   }),
   component: GenerateVideoPage,
 });
@@ -97,13 +108,13 @@ function GenerateVideoPage() {
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
   const { data: credits, loading: creditsLoading, refresh: refreshCredits } = useCreditsSummary();
-  const [quality, setQuality] = useState<VideoQuality>("fast");
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
+  const [quality, setQuality] = useState<VideoQuality>(search.quality ?? "fast");
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(search.aspectRatio ?? "9:16");
   const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [startingFrameUrl, setStartingFrameUrl] = useState("");
   const [speakerImageUrl, setSpeakerImageUrl] = useState("");
   const [productImageUrl, setProductImageUrl] = useState("");
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(PERSONAS[0].id);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(search.selectedPersonaId && PERSONAS.some((persona) => persona.id === search.selectedPersonaId) ? search.selectedPersonaId : PERSONAS[0].id);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0].id);
   const [uploadingInput, setUploadingInput] = useState<"speaker" | "product" | null>(null);
   const [loading, setLoading] = useState(false);
@@ -125,6 +136,7 @@ function GenerateVideoPage() {
   const productImageRequired = isPaidPlan && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
+  const internalMediumTestMode = search.source === "medium-test";
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -186,7 +198,7 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId, campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
@@ -289,6 +301,7 @@ function GenerateVideoPage() {
         <div>
           <h1 className="text-2xl font-extrabold">توليد فيديو</h1>
           <p className="mt-1 text-sm text-muted-foreground">حوّل وصف حملتك إلى لقطة فيديو قصيرة بنقاط فيديو واضحة قبل التنفيذ</p>
+          {internalMediumTestMode && <p className="mt-2 w-fit rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-xs font-bold text-gold">وضع اختبار داخلي: لن يُفتح القالب للعامة حتى يجتاز بوابة الالتزام 80%+</p>}
         </div>
         <Button asChild variant="outline" size="sm" className="w-fit gap-1">
           <Link to="/dashboard/credits"><Sparkles className="h-3.5 w-3.5" /> شحن نقاط الفيديو</Link>
@@ -403,7 +416,7 @@ function GenerateVideoPage() {
               onChange={(e) => setPrompt(e.target.value)}
               maxLength={1800}
               className="mt-2 min-h-36"
-              placeholder="مثلاً: لقطة عمودية لمنتج عطر فاخر على خلفية خضراء وذهبية، حركة كاميرا بطيئة، ظهور نص عرض محدود، نهاية بشعار المتجر وCTA للطلب عبر واتساب"
+              placeholder="مثلاً: لقطة عمودية لمنتج عطر فاخر على خلفية خضراء وذهبية، حركة كاميرا بطيئة، المنتج واضح طوال المشهد، دعوة مباشرة للطلب عبر واتساب"
             />
           </div>
 
@@ -475,18 +488,14 @@ function GenerateVideoPage() {
             </div>
             <div className="mt-3 flex aspect-[9/16] items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-secondary/30 text-center text-sm text-muted-foreground">
               {latestResult ? (
-                latestResult.startsWith("data:image") ? (
-                  <img src={latestResult} alt="معاينة الفيديو" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="relative h-full w-full">
-                    <video src={latestResult} controls playsInline preload="metadata" className="h-full w-full object-cover" onError={() => setPreviewError(true)} />
-                    {previewError && (
-                      <div className="absolute inset-x-3 bottom-3 rounded-lg border border-border bg-card/95 p-3 text-xs font-medium text-foreground shadow-soft">
-                        تعذر تشغيل المعاينة داخل الصفحة. استخدم زر فتح أو تحميل.
-                      </div>
-                    )}
-                  </div>
-                )
+                <div className="relative h-full w-full">
+                  <video src={latestResult} controls playsInline preload="metadata" className="h-full w-full object-cover" onError={() => setPreviewError(true)} />
+                  {previewError && (
+                    <div className="absolute inset-x-3 bottom-3 rounded-lg border border-border bg-card/95 p-3 text-xs font-medium text-foreground shadow-soft">
+                      تعذر تشغيل المعاينة داخل الصفحة. استخدم زر فتح أو تحميل.
+                    </div>
+                  )}
+                </div>
               ) : loading ? (
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               ) : (

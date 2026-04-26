@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_PLAN, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_PLAN, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -762,12 +762,12 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
       const mustPass = template.risk === "عالٍ"
         ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
         : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"];
-      const finalPrompt = [
+      const finalPrompt = withSaudiPromptAdherence([
         template.prompt,
         `هدف العينة ${index + 1}: ${quality === "quality" ? "اختبار إعلان مدفوع عالي الجودة" : quality === "lite" ? "اختبار إعلان يومي قابل للنشر" : "اختبار سريع لسلامة الفكرة"}.`,
         `الشخصية المرجعية: ${persona.brief}`,
         "يجب تسجيل النتيجة في مصفوفة الاختبار المتوسط قبل فتح القالب للعامة.",
-      ].join("\n\n");
+      ].join("\n\n"));
       return {
         sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
         templateId: template.id,
@@ -808,8 +808,14 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
-    const total = data.productClarity + data.saudiDialect + data.lipSync + data.visualIntegrity + data.publishReadiness;
-    const score = Math.round((total / 25) * 100);
+    const weights = { productClarity: 25, saudiDialect: 15, lipSync: 10, visualIntegrity: 20, publishReadiness: 30 } as const;
+    const weightedScore =
+      data.productClarity * weights.productClarity +
+      data.saudiDialect * weights.saudiDialect +
+      data.lipSync * weights.lipSync +
+      data.visualIntegrity * weights.visualIntegrity +
+      data.publishReadiness * weights.publishReadiness;
+    const score = Math.round(weightedScore / 5);
     const promptAdherenceScore = Math.round((data.promptAdherence / 5) * 100);
     const decision = score >= 80 && promptAdherenceScore >= 80 ? "publishable" : score >= 68 && promptAdherenceScore >= 65 ? "minor_revision" : "reject_or_reprompt";
     const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
