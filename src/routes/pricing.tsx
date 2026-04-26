@@ -130,6 +130,18 @@ function PricingPage() {
             اختر باقتك حسب رصيد نقاط الفيديو. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
           </p>
 
+          <div className="mx-auto mt-5 grid max-w-3xl gap-2 text-right sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-5 text-muted-foreground">
+              <BadgeCheck className="mb-2 h-4 w-4 text-success" /> المدفوع بدون علامة مائية وقابل للنشر باسم متجرك.
+            </div>
+            <div className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-5 text-muted-foreground">
+              <Film className="mb-2 h-4 w-4 text-primary" /> صورة المنتج مطلوبة في المدفوع لتقليل النتائج العامة.
+            </div>
+            <div className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-5 text-muted-foreground">
+              <Gift className="mb-2 h-4 w-4 text-gold" /> رصيد الباقة يتجدد كل 30 يوم دون ترحيل.
+            </div>
+          </div>
+
           <div className="mx-auto mt-5 flex min-h-[3.75rem] max-w-md items-center justify-center">
             <Suspense fallback={<div className="h-12 w-full rounded-xl border border-border bg-card/70" aria-hidden="true" />}>
               <SubscribersCounter />
