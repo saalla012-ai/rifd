@@ -15,6 +15,7 @@ import {
   InsufficientCreditsError,
 } from "./credits";
 import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
+import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS } from "@/lib/saudi-video-test";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -123,6 +124,12 @@ function assertProductImagePolicy(plan: string | null | undefined, input: z.infe
   }
 }
 
+function assertLaunchTemplatePolicy(templateId?: string) {
+  if (!templateId) return "custom";
+  if ((SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]).includes(templateId)) return templateId;
+  throw new Error("video_template_not_publicly_approved");
+}
+
 class ProviderCommittedFailure extends Error {
   constructor(message: string) {
     super(message);
@@ -174,6 +181,7 @@ function publicVideoError(e: unknown): Error {
   if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية متاحة في باقات Pro وBusiness.");
   if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
   if (/product_image_required_for_paid_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان.");
+  if (/video_template_not_publicly_approved/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: هذا القالب ما زال احتياطياً ولن يُفتح قبل اكتمال بيانات الاستخدام الفعلية.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
@@ -495,7 +503,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
-      const selectedTemplateId = data.selectedTemplateId || "custom";
+      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId);
       const watermarkRequired = profile?.plan === "free";
       const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
 
