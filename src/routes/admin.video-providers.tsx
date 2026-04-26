@@ -215,6 +215,9 @@ function AdminVideoProvidersPage() {
           <p className="mt-1 text-sm text-muted-foreground">تحكم داخلي بالمزودين، الأولوية، الصحة، والتفعيل دون كشف أي اسم تقني للمستخدم.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => void auditPromptLibrary()} disabled={loading || auditingPilot}>
+            {auditingPilot ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />} تدقيق مكتبة البرومبتات
+          </Button>
           <Button variant="default" size="sm" onClick={() => void testRouterPath()} disabled={loading || testingRouter}>
             {testingRouter ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار الراوتر
           </Button>
@@ -231,6 +234,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
