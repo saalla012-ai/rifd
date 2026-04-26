@@ -53,7 +53,7 @@ const HEALTH_TONE: Record<string, string> = {
 };
 
 type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
-type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; saudiDialect: number; lipSync: number; visualIntegrity: number; publishReadiness: number; notes: string };
+type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; saudiDialect: number; lipSync: number; visualIntegrity: number; publishReadiness: number; promptAdherence: number; notes: string };
 
 const PERSONA_IMAGES: Record<string, string> = {
   "male-young": personaMaleYoung,
@@ -193,7 +193,7 @@ function AdminVideoProvidersPage() {
       const headers = await authHeaders();
       const result = await buildPilotMatrix({ headers });
       setPilotMatrix(result);
-      toast.success(`تم تجهيز ${result.totalSamples.toLocaleString("ar-SA")} عينات اختبار تجاري`);
+      toast.success(`تم تجهيز اختبار متوسط: ${result.totalSamples.toLocaleString("ar-SA")} عينة`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تجهيز مصفوفة الاختبار");
     } finally {
