@@ -237,7 +237,8 @@ function providerSupports(config: VideoProviderConfig, input: z.infer<typeof vid
     (input.aspectRatio === "16:9" && config.supports_16_9);
   const needsReferenceImage = Boolean(input.startingFrameUrl || input.speakerImageUrl || input.productImageUrl);
   const needsTwoImages = Boolean(input.speakerImageUrl && input.productImageUrl);
-  const supportsTwoImages = !needsTwoImages || ((config.metadata?.supports_two_images as boolean | undefined) === true);
+  const canCollapseToPrimaryImage = config.provider_key === "fal_ai" && config.metadata?.model_family === "pixverse_v6";
+  const supportsTwoImages = !needsTwoImages || canCollapseToPrimaryImage || ((config.metadata?.supports_two_images as boolean | undefined) === true);
   const supportsFrame = !needsReferenceImage || config.supports_starting_frame;
   const cost = input.durationSeconds === 8 ? config.cost_8s : config.cost_5s;
   return config.enabled && config.public_enabled && supportsQuality && supportsAspect && supportsFrame && supportsTwoImages && cost > 0;
@@ -393,8 +394,6 @@ const falProvider: VideoProvider = {
         duration: videoDurationPayload(input.durationSeconds),
         resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
         image_url: primaryReferenceImage(input),
-        speaker_image_url: input.speakerImageUrl || undefined,
-        product_image_url: input.productImageUrl || undefined,
         negative_prompt: PIXVERSE_NEGATIVE_PROMPT,
         generate_audio_switch: true,
         generate_multi_clip_switch: input.quality !== "fast",
