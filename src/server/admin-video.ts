@@ -808,8 +808,14 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
-    const total = data.productClarity + data.saudiDialect + data.lipSync + data.visualIntegrity + data.publishReadiness;
-    const score = Math.round((total / 25) * 100);
+    const weights = { productClarity: 25, saudiDialect: 15, lipSync: 10, visualIntegrity: 20, publishReadiness: 30 } as const;
+    const weightedScore =
+      data.productClarity * weights.productClarity +
+      data.saudiDialect * weights.saudiDialect +
+      data.lipSync * weights.lipSync +
+      data.visualIntegrity * weights.visualIntegrity +
+      data.publishReadiness * weights.publishReadiness;
+    const score = Math.round(weightedScore / 5);
     const promptAdherenceScore = Math.round((data.promptAdherence / 5) * 100);
     const decision = score >= 80 && promptAdherenceScore >= 80 ? "publishable" : score >= 68 && promptAdherenceScore >= 65 ? "minor_revision" : "reject_or_reprompt";
     const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
