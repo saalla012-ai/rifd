@@ -99,9 +99,35 @@ export const SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES = SAUDI_VIDEO_PROMPT_TEMPLATES.
   (SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]).includes(template.id)
 );
 
+export const SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS = [
+  "perfume-premium-hook",
+  "abaya-elegance",
+  "electronics-benefit",
+  "beauty-skincare",
+  "restaurant-offer",
+  "home-decor",
+  "bags",
+  "phone-case",
+  "ramadan-offer",
+  "eid-gift",
+  "kids-product",
+  "supplements",
+] as const;
+
+export const SAUDI_VIDEO_MEDIUM_TEST_PLAN = {
+  sampleRange: "12–16",
+  estimatedCostUsd: "2.10–2.80",
+  purpose: "غربلة القوالب الاحتياطية بقياس التزام المزود بكل عناصر البرومبت قبل فتحها للمستخدمين.",
+  decisionGate: "80%+ جاهز لتكرار أوسع، 65–79% يحتاج ضبط، أقل من 65% يبقى مخفياً، وتجاهل المنتج أو الصوت أو تشوه قوي يعني رفضاً مؤقتاً.",
+} as const;
+
+export const SAUDI_VIDEO_MEDIUM_TEST_PROMPT_TEMPLATES = SAUDI_VIDEO_PROMPT_TEMPLATES.filter((template) =>
+  (SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS as readonly string[]).includes(template.id)
+);
+
 export function buildSaudiFalTestPrompt(input: { personaBrief: string; scenarioId: SaudiVideoScenarioId; includeProductImage: boolean; includeVoice: boolean }) {
   const scenario = SAUDI_VIDEO_TEST_SCENARIOS.find((item) => item.id === input.scenarioId) ?? SAUDI_VIDEO_TEST_SCENARIOS[0];
-  return [
+  return withSaudiPromptAdherence([
     "Create a premium Saudi commercial video for ecommerce in Riyadh.",
     `Main character reference: ${input.personaBrief} Keep identity, clothing, modesty, face structure, and Gulf/Saudi visual style consistent with the provided image.`,
     input.includeProductImage ? `Product reference: keep the provided product image accurate, visible, and central. Product context: ${scenario.productBrief}.` : `Product context: ${scenario.productBrief}.`,
@@ -110,7 +136,7 @@ export function buildSaudiFalTestPrompt(input: { personaBrief: string; scenarioI
     "Avoid readable text, Arabic letters inside the generated video, distorted logos, Westernized clothing, unrealistic fingers, face warping, oversexualized styling, or exaggerated claims.",
     "PixVerse v6 settings: enable generated audio, allow one smooth multi-clip camera change, use thinking/auto reasoning when available, and keep the product reference dominant instead of a plain white-background cutout.",
     "Vertical 9:16, 5 to 8 seconds, high-conversion Saudi ad style.",
-  ].join("\n");
+  ].join("\n"));
 }
 
 export function evaluateSaudiVideoImage(input: { hasProductImage: boolean; personaLabel: string }) {
