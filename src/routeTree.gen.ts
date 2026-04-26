@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VsChatgptRouteImport } from './routes/vs-chatgpt'
+import { Route as VideoProvidersRouteImport } from './routes/video-providers'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProofCenterRouteImport } from './routes/proof-center'
@@ -87,6 +88,11 @@ import { Route as ApiPublicHooksCheckEmailDlqRouteImport } from './routes/api.pu
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
   path: '/vs-chatgpt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideoProvidersRoute = VideoProvidersRouteImport.update({
+  id: '/video-providers',
+  path: '/video-providers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -488,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/video-providers': typeof VideoProvidersRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/abuse-monitor': typeof AdminAbuseMonitorRoute
@@ -563,6 +570,7 @@ export interface FileRoutesByTo {
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/video-providers': typeof VideoProvidersRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/abuse-monitor': typeof AdminAbuseMonitorRoute
@@ -640,6 +648,7 @@ export interface FileRoutesById {
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/video-providers': typeof VideoProvidersRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
   '/admin/abuse-monitor': typeof AdminAbuseMonitorRoute
@@ -718,6 +727,7 @@ export interface FileRouteTypes {
     | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
+    | '/video-providers'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
     | '/admin/abuse-monitor'
@@ -793,6 +803,7 @@ export interface FileRouteTypes {
     | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
+    | '/video-providers'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
     | '/admin/abuse-monitor'
@@ -869,6 +880,7 @@ export interface FileRouteTypes {
     | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
+    | '/video-providers'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
     | '/admin/abuse-monitor'
@@ -946,6 +958,7 @@ export interface RootRouteChildren {
   ProofCenterRoute: typeof ProofCenterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  VideoProvidersRoute: typeof VideoProvidersRoute
   VsChatgptRoute: typeof VsChatgptRoute
   AdminAbTestsRoute: typeof AdminAbTestsRoute
   AdminAbuseMonitorRoute: typeof AdminAbuseMonitorRoute
@@ -995,6 +1008,13 @@ declare module '@tanstack/react-router' {
       path: '/vs-chatgpt'
       fullPath: '/vs-chatgpt'
       preLoaderRoute: typeof VsChatgptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/video-providers': {
+      id: '/video-providers'
+      path: '/video-providers'
+      fullPath: '/video-providers'
+      preLoaderRoute: typeof VideoProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/unsubscribe': {
@@ -1570,6 +1590,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProofCenterRoute: ProofCenterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  VideoProvidersRoute: VideoProvidersRoute,
   VsChatgptRoute: VsChatgptRoute,
   AdminAbTestsRoute: AdminAbTestsRoute,
   AdminAbuseMonitorRoute: AdminAbuseMonitorRoute,
