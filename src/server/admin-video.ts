@@ -676,7 +676,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
       const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
       const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
       const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
-      const expectedAspectRatio: "9:16" | "1:1" | "16:9" = index % 5 === 4 ? "1:1" : "9:16";
+      const expectedAspectRatio: "9:16" | "1:1" | "16:9" = "9:16";
       const mustPass = template.risk === "عالٍ"
         ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
         : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"];
@@ -692,7 +692,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
         expectedAspectRatio,
         requiresProductImage: quality !== "fast",
         objective: quality === "quality" ? "قياس صلاحية إعلان مدفوع عالي الجودة" : quality === "lite" ? "قياس إعلان يومي قابل للنشر" : "قياس سرعة الفكرة وسلامة الهوية السعودية",
-        technicalGate: [`النسبة المطلوبة: ${expectedAspectRatio}`, `المدة المطلوبة: ${durationSeconds} ثوانٍ`, "H.264 MP4 قابل للنشر", "لا اعتماد للعينة إذا خرجت بنسبة مختلفة عن المطلوب"],
+        technicalGate: [`النسبة المطلوبة للإطلاق: ${expectedAspectRatio}`, `المدة المطلوبة: ${durationSeconds} ثوانٍ`, "H.264 MP4 قابل للنشر", "لا اعتماد تجاري لأي عينة تخرج مربعة أو أفقية ضمن مصفوفة الإطلاق"],
         mustPass,
         scorecard: ["وضوح المنتج", "طبيعية اللهجة السعودية", "مزامنة الشفاه", "سلامة اليدين والوجه", "قابلية النشر التجاري"],
       };
@@ -702,7 +702,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
       totalSamples: samples.length,
       estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.quality === "quality" ? 0.45 : sample.quality === "lite" ? 0.25 : 0.2), 0).toFixed(2)),
       requiredPublishableRate: 80,
-      readinessGate: "يبدأ التنفيذ الفعلي عندما تكون fal_ai نشطة، والراوتر يمرر 3/3 مسارات، ومكتبة البرومبتات تحقق 80%+، ثم لا نعتمد الإطلاق إلا إذا كانت 80% من العينات صالحة للنشر أو تحتاج تعديلاً بسيطاً فقط.",
+      readinessGate: "يبدأ التنفيذ الفعلي عندما تكون fal_ai نشطة، والراوتر يمرر 3/3 مسارات، ومكتبة البرومبتات تحقق 80%+، ثم لا نعتمد الإطلاق إلا إذا خرجت كل عينات الإطلاق بنسبة 9:16 وكانت 80% منها صالحة للنشر أو تحتاج تعديلاً بسيطاً فقط.",
       samples,
     };
 
