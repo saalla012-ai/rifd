@@ -125,17 +125,13 @@ function GenerateVideoPage() {
       setQuotaDialog({ open: true, reason: !selectedQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
       return;
     }
-    if (reachedDailyVideoLimit) {
-      setQuotaDialog({ open: true, reason: `VIDEO_DAILY_LIMIT: وصلت إلى حد توليد الفيديو اليومي (${dailyVideoUsed}/${dailyVideoCap}).` });
-      return;
-    }
     setLoading(true);
     setQuotaDialog({ open: false });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || selectedPersona.image, productImageUrl, selectedPersonaId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
