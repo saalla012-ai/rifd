@@ -289,7 +289,7 @@ async function markProviderFailure(providerKey: string, error: unknown) {
 }
 
 function videoDurationPayload(durationSeconds: VideoDuration) {
-  return durationSeconds === 8 ? "8s" : "5s";
+  return durationSeconds;
 }
 
 async function markProviderSuccess(providerKey: string) {
