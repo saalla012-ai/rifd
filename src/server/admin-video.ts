@@ -270,13 +270,17 @@ export type SaudiVideoMediumBatchResult = {
   totalPlanned: number;
   generated: number;
   completed: number;
+  evaluated: number;
+  publishable: number;
+  needsRevision: number;
+  rejected: number;
   processing: number;
   failedOrRefunded: number;
   missingProductImage: number;
   estimatedCostUsd: number;
   executionRate: number;
   completionRate: number;
-  releaseGate: "not_started" | "running" | "ready_for_review" | "blocked";
+  releaseGate: "not_started" | "running" | "ready_for_review" | "ready_for_expansion" | "blocked";
   releaseGateReason: string;
   nextAction: string;
   samples: Array<{
@@ -290,6 +294,8 @@ export type SaudiVideoMediumBatchResult = {
     resultUrl: string | null;
     creditsCharged: number | null;
     estimatedCostUsd: number | null;
+    evaluationScore: number | null;
+    releaseDecision: "publishable" | "minor_revision" | "reject_or_reprompt" | null;
     createdAt: string | null;
     issue: string | null;
   }>;
