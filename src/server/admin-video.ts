@@ -265,6 +265,34 @@ export type SaudiVideoPilotEvaluationResult = {
   evaluatedAt: string;
 };
 
+export type SaudiVideoMediumBatchResult = {
+  checkedAt: string;
+  totalPlanned: number;
+  generated: number;
+  completed: number;
+  processing: number;
+  failedOrRefunded: number;
+  missingProductImage: number;
+  estimatedCostUsd: number;
+  executionRate: number;
+  completionRate: number;
+  releaseGate: "not_started" | "running" | "ready_for_review" | "blocked";
+  samples: Array<{
+    sampleId: string;
+    templateId: string;
+    label: string;
+    sector: string;
+    requiredProductImage: boolean;
+    jobId: string | null;
+    status: VideoJobStatus | "not_generated";
+    resultUrl: string | null;
+    creditsCharged: number | null;
+    estimatedCostUsd: number | null;
+    createdAt: string | null;
+    issue: string | null;
+  }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -799,6 +827,67 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     };
 
     await logAdminAudit({ adminId: userId, action: "build_saudi_video_pilot_matrix", targetTable: "video_provider_configs", targetId: "saudi_pilot_matrix", after: result as unknown as Json });
+    return result;
+  });
+
+export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SaudiVideoMediumBatchResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const { data: rows, error } = await (await getSupabaseAdmin() as unknown as {
+      from: (table: string) => { select: (columns: string) => { contains: (column: string, value: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> } };
+    })
+      .from("video_jobs")
+      .select("id, status, result_url, credits_charged, estimated_cost_usd, product_image_url, error_message, metadata, created_at")
+      .contains("metadata", { medium_test: true });
+    if (error) throw new Error(`فشل تدقيق دفعة الاختبار المتوسط: ${error.message}`);
+
+    const jobsBySample = new Map<string, Pick<VideoJobRow, "id" | "status" | "result_url" | "credits_charged" | "estimated_cost_usd" | "product_image_url" | "error_message" | "metadata" | "created_at">>();
+    for (const row of (rows as Array<Pick<VideoJobRow, "id" | "status" | "result_url" | "credits_charged" | "estimated_cost_usd" | "product_image_url" | "error_message" | "metadata" | "created_at">> | null) ?? []) {
+      const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+      const sampleId = typeof metadata.medium_test_sample_id === "string" ? metadata.medium_test_sample_id : "";
+      const current = sampleId ? jobsBySample.get(sampleId) : null;
+      if (sampleId && (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime())) jobsBySample.set(sampleId, row);
+    }
+
+    const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
+    const samples = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.map((templateId, index) => {
+      const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
+      const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
+      const sampleId = `pilot-${String(index + 1).padStart(2, "0")}`;
+      const job = jobsBySample.get(sampleId) ?? null;
+      const requiredProductImage = quality !== "fast";
+      const missingProductImage = Boolean(job && requiredProductImage && !job.product_image_url);
+      const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
+      return {
+        sampleId,
+        templateId: template.id,
+        label: template.label,
+        sector: template.sector,
+        personaId: personas[index % personas.length],
+        requiredProductImage,
+        jobId: job?.id ?? null,
+        status,
+        resultUrl: job?.result_url ?? null,
+        creditsCharged: job?.credits_charged ?? null,
+        estimatedCostUsd: job?.estimated_cost_usd === null || job?.estimated_cost_usd === undefined ? null : Number(job.estimated_cost_usd),
+        createdAt: job?.created_at ?? null,
+        issue: !job ? "لم تُولد العينة بعد" : missingProductImage ? "صورة المنتج الإلزامية غير مرفقة" : job.error_message,
+      };
+    });
+    const generated = samples.filter((sample) => sample.jobId).length;
+    const completed = samples.filter((sample) => sample.status === "completed" && sample.resultUrl).length;
+    const processing = samples.filter((sample) => sample.status === "processing" || sample.status === "pending").length;
+    const failedOrRefunded = samples.filter((sample) => sample.status === "failed" || sample.status === "refunded" || sample.status === "cancelled").length;
+    const missingProductImage = samples.filter((sample) => sample.issue === "صورة المنتج الإلزامية غير مرفقة").length;
+    const executionRate = Math.round((generated / Math.max(samples.length, 1)) * 100);
+    const completionRate = Math.round((completed / Math.max(samples.length, 1)) * 100);
+    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 2 ? "blocked" : completed === samples.length ? "ready_for_review" : "running";
+    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, processing, failedOrRefunded, missingProductImage, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, samples };
+
+    await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
   });
 

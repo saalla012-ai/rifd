@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listSaudiLaunchTemplatePerformance, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiLaunchTemplatePerformance, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
+import { auditSaudiVideoMediumBatch, auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listSaudiLaunchTemplatePerformance, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiLaunchTemplatePerformance, type SaudiVideoMediumBatchResult, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -81,6 +81,7 @@ function AdminVideoProvidersPage() {
   const previewSaudiFalPrompt = useServerFn(previewSaudiFalVideoTestPrompt);
   const runSaudiFalTest = useServerFn(runSaudiFalVideoModelTest);
   const auditPilotLibrary = useServerFn(auditSaudiVideoPilotLibrary);
+  const auditMediumBatch = useServerFn(auditSaudiVideoMediumBatch);
   const buildPilotMatrix = useServerFn(buildSaudiVideoPilotMatrix);
   const evaluatePilotSample = useServerFn(evaluateSaudiVideoPilotSample);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
@@ -89,6 +90,7 @@ function AdminVideoProvidersPage() {
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [pilotAudit, setPilotAudit] = useState<SaudiVideoPilotAuditResult | null>(null);
   const [pilotMatrix, setPilotMatrix] = useState<SaudiVideoPilotMatrixResult | null>(null);
+  const [mediumBatch, setMediumBatch] = useState<SaudiVideoMediumBatchResult | null>(null);
   const [pilotEvaluation, setPilotEvaluation] = useState<SaudiVideoPilotEvaluationResult | null>(null);
   const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
   const [falTestResult, setFalTestResult] = useState<SaudiFalModelTestResult | null>(null);
@@ -99,6 +101,7 @@ function AdminVideoProvidersPage() {
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testingRouter, setTestingRouter] = useState(false);
   const [auditingPilot, setAuditingPilot] = useState(false);
+  const [auditingMediumBatch, setAuditingMediumBatch] = useState(false);
   const [buildingMatrix, setBuildingMatrix] = useState(false);
   const [evaluatingPilot, setEvaluatingPilot] = useState(false);
   const [loadingFalPreview, setLoadingFalPreview] = useState(false);
@@ -201,6 +204,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function auditMediumTestBatch() {
+    setAuditingMediumBatch(true);
+    try {
+      const headers = await authHeaders();
+      const result = await auditMediumBatch({ headers });
+      setMediumBatch(result);
+      toast[result.releaseGate === "ready_for_review" ? "success" : result.releaseGate === "blocked" ? "error" : "message"](`تنفيذ الاختبار المتوسط: ${result.executionRate.toLocaleString("ar-SA")}%`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تدقيق دفعة الاختبار المتوسط");
+    } finally {
+      setAuditingMediumBatch(false);
+    }
+  }
+
   async function submitPilotEvaluation(draft: PilotEvaluationDraft) {
     setEvaluatingPilot(true);
     try {
@@ -265,6 +282,9 @@ function AdminVideoProvidersPage() {
           <Button variant="outline" size="sm" onClick={() => void buildPilotTestMatrix()} disabled={loading || buildingMatrix}>
             {buildingMatrix ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />} مصفوفة الاختبار
           </Button>
+          <Button variant="outline" size="sm" onClick={() => void auditMediumTestBatch()} disabled={loading || auditingMediumBatch}>
+            {auditingMediumBatch ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />} تدقيق الدفعة
+          </Button>
           <Button variant="default" size="sm" onClick={() => void testRouterPath()} disabled={loading || testingRouter}>
             {testingRouter ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار الراوتر
           </Button>
@@ -285,6 +305,7 @@ function AdminVideoProvidersPage() {
           <LaunchTemplatePerformancePanel templates={templatePerformance} />
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
+          {mediumBatch && <MediumBatchPanel batch={mediumBatch} />}
           <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
@@ -529,6 +550,46 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
       </div>
     </section>
   );
+}
+
+function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
+  const gateLabel = batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
+  const gateTone = batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">تدقيق تنفيذ دفعة الاختبار المتوسط</h2>
+          <p className="mt-1 text-xs text-muted-foreground">مطابقة فعلية بين عينات الخطة ومهام الفيديو الموسومة داخلياً قبل أي قرار فتح تجاري للقوالب الاحتياطية.</p>
+        </div>
+        <Badge className={cn(gateTone)}>{gateLabel} · {batch.executionRate.toLocaleString("ar-SA")}% تنفيذ</Badge>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <MetricTile label="المخطط" value={batch.totalPlanned} />
+        <MetricTile label="المولد" value={batch.generated} />
+        <MetricTile label="المكتمل" value={batch.completed} />
+        <MetricTile label="قيد المعالجة" value={batch.processing} />
+        <MetricTile label="فشل/استرداد" value={batch.failedOrRefunded} />
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {batch.samples.map((sample) => (
+          <div key={sample.sampleId} className="rounded-lg border border-border bg-background/60 p-3 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong>{sample.sampleId} — {sample.label}</strong>
+              <Badge className={cn(sample.status === "completed" ? "bg-success/15 text-success" : sample.status === "not_generated" ? "bg-muted text-muted-foreground" : sample.status === "failed" || sample.status === "refunded" || sample.status === "cancelled" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold")}>{sample.status}</Badge>
+            </div>
+            <p className="mt-1 text-muted-foreground">{sample.sector} · {sample.requiredProductImage ? "صورة منتج إلزامية" : "عينة سريعة"} · {sample.creditsCharged ?? "—"} نقطة</p>
+            {sample.resultUrl && <a href={sample.resultUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex font-bold text-primary hover:underline">فتح النتيجة</a>}
+            {sample.issue && <p className="mt-2 text-muted-foreground">{sample.issue}</p>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MetricTile({ label, value }: { label: string; value: number }) {
+  return <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{value.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">{label}</p></div>;
 }
 
 function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
