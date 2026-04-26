@@ -549,9 +549,10 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-6">
         <ScoreInput label="المنتج" value={draft.productClarity} onChange={(value) => setScore("productClarity", value)} />
+        <ScoreInput label="المشهد" value={draft.sceneAdherence} onChange={(value) => setScore("sceneAdherence", value)} />
+        <ScoreInput label="الحركة" value={draft.motionAdherence} onChange={(value) => setScore("motionAdherence", value)} />
         <ScoreInput label="اللهجة" value={draft.saudiDialect} onChange={(value) => setScore("saudiDialect", value)} />
-        <ScoreInput label="الشفاه" value={draft.lipSync} onChange={(value) => setScore("lipSync", value)} />
-        <ScoreInput label="السلامة" value={draft.visualIntegrity} onChange={(value) => setScore("visualIntegrity", value)} />
+        <ScoreInput label="الممنوعات" value={draft.negativeSafety} onChange={(value) => setScore("negativeSafety", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
         <ScoreInput label="تنفيذ البرومبت" value={draft.promptAdherence} onChange={(value) => setScore("promptAdherence", value)} />
       </div>
