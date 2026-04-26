@@ -53,7 +53,7 @@ const HEALTH_TONE: Record<string, string> = {
 };
 
 type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
-type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; sceneAdherence: number; motionAdherence: number; saudiDialect: number; negativeSafety: number; publishReadiness: number; promptAdherence: number; notes: string };
+type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; sceneAdherence: number; motionAdherence: number; saudiDialect: number; negativeSafety: number; publishReadiness: number; notes: string };
 
 const PERSONA_IMAGES: Record<string, string> = {
   "male-young": personaMaleYoung,
@@ -532,8 +532,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
 }
 
 function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
-  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, promptAdherence: 4, notes: "" });
-  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "sceneAdherence" | "motionAdherence" | "saudiDialect" | "negativeSafety" | "publishReadiness" | "promptAdherence">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
+  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
+  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "sceneAdherence" | "motionAdherence" | "saudiDialect" | "negativeSafety" | "publishReadiness">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -541,7 +541,7 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
           <h2 className="font-extrabold">تقييم نتيجة عينة فعلية</h2>
           <p className="mt-1 text-xs text-muted-foreground">حوّل مشاهدة الفيديو إلى قرار إطلاق واضح: صالح للنشر، يحتاج تعديل بسيط، أو يعاد توليده.</p>
         </div>
-        {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> نشر {result.score.toLocaleString("ar-SA")}% · التزام {result.promptAdherenceScore.toLocaleString("ar-SA")}%</Badge>}
+        {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> درجة تنفيذ البرومبت {result.score.toLocaleString("ar-SA")}%</Badge>}
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[140px_minmax(0,1fr)]">
         <Input value={draft.sampleId} onChange={(event) => setDraft({ ...draft, sampleId: event.target.value })} className="h-9 text-xs" />
@@ -554,8 +554,8 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
         <ScoreInput label="اللهجة" value={draft.saudiDialect} onChange={(value) => setScore("saudiDialect", value)} />
         <ScoreInput label="الممنوعات" value={draft.negativeSafety} onChange={(value) => setScore("negativeSafety", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
-        <ScoreInput label="تنفيذ البرومبت" value={draft.promptAdherence} onChange={(value) => setScore("promptAdherence", value)} />
       </div>
+      {result && <p className="mt-2 text-xs font-semibold text-muted-foreground">{result.gateReason}</p>}
       <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
       <Button type="button" size="sm" onClick={() => onSubmit(draft)} disabled={saving} className="mt-3 gap-1">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />} حفظ تقييم العينة
