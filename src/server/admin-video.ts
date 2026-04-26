@@ -33,6 +33,11 @@ const SaudiFalPromptPreviewInput = z.object({
   includeVoice: z.boolean().default(true),
 });
 
+const SaudiFalModelTestInput = SaudiFalPromptPreviewInput.extend({
+  personaImageUrl: z.string().url().max(2000),
+  productImageUrl: z.string().url().max(2000).optional().or(z.literal("")),
+});
+
 const TestVideoRouterInput = z.object({
   quality: z.enum(["fast", "lite", "quality"]).default("fast"),
   aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
@@ -149,6 +154,17 @@ export type SaudiFalPromptPreview = {
   persona: typeof SAUDI_VIDEO_PERSONAS[number];
   scenario: typeof SAUDI_VIDEO_TEST_SCENARIOS[number];
   imageEvaluation: { score: number; recommendation: string };
+};
+
+export type SaudiFalModelTestResult = SaudiFalPromptPreview & {
+  ok: boolean;
+  status: "submitted" | "completed" | "failed";
+  requestId: string | null;
+  resultUrl: string | null;
+  latencyMs: number;
+  estimatedCostUsd: number | null;
+  error: string | null;
+  checkedAt: string;
 };
 
 export type AdminVideoRouterTestResult = {
