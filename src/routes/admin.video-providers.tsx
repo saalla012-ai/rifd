@@ -174,6 +174,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function buildPilotTestMatrix() {
+    setBuildingMatrix(true);
+    try {
+      const headers = await authHeaders();
+      const result = await buildPilotMatrix({ headers });
+      setPilotMatrix(result);
+      toast.success(`تم تجهيز ${result.totalSamples.toLocaleString("ar-SA")} عينات اختبار تجاري`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تجهيز مصفوفة الاختبار");
+    } finally {
+      setBuildingMatrix(false);
+    }
+  }
+
   async function buildFalPromptPreview() {
     setLoadingFalPreview(true);
     try {
@@ -221,6 +235,9 @@ function AdminVideoProvidersPage() {
           <Button variant="outline" size="sm" onClick={() => void auditPromptLibrary()} disabled={loading || auditingPilot}>
             {auditingPilot ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />} تدقيق مكتبة البرومبتات
           </Button>
+          <Button variant="outline" size="sm" onClick={() => void buildPilotTestMatrix()} disabled={loading || buildingMatrix}>
+            {buildingMatrix ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />} مصفوفة الاختبار
+          </Button>
           <Button variant="default" size="sm" onClick={() => void testRouterPath()} disabled={loading || testingRouter}>
             {testingRouter ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار الراوتر
           </Button>
@@ -238,6 +255,7 @@ function AdminVideoProvidersPage() {
       ) : (
         <>
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
+          {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
