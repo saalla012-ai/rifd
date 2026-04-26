@@ -46,14 +46,15 @@ const TestVideoRouterInput = z.object({
   imageCount: z.union([z.literal(0), z.literal(1), z.literal(2)]).default(0),
 });
 
-const CompleteManualVideoJobInput = z.object({
-  jobId: z.string().uuid(),
-  resultUrl: z.string().trim().url().max(2000),
-});
-
-const RefundVideoJobInput = z.object({
-  jobId: z.string().uuid(),
-  reason: z.string().trim().min(3).max(240).default("تعذر تنفيذ مهمة الفيديو يدوياً"),
+const EvaluatePilotSampleInput = z.object({
+  sampleId: z.string().trim().min(3).max(40),
+  resultUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
+  productClarity: z.number().int().min(1).max(5),
+  saudiDialect: z.number().int().min(1).max(5),
+  lipSync: z.number().int().min(1).max(5),
+  visualIntegrity: z.number().int().min(1).max(5),
+  publishReadiness: z.number().int().min(1).max(5),
+  notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
@@ -216,7 +217,7 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
 
 function isManualBridgeJob(row: VideoJobRow): boolean {
   const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
-  return row.provider === "google_flow_bridge" || metadata.manual_required === true;
+  return metadata.manual_required === true;
 }
 
 function appendProviderAttempt(metadata: Json | null, attempt: ProviderAttempt) {
