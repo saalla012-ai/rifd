@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
-import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
 import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
@@ -377,12 +377,12 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
 
 function PilotProofPanel() {
   const proofSamples = [
-    { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "مجتاز فنياً", score: 84, decision: "يُستخدم كمرجع تقني لا كإعلان نهائي" },
-    { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "توسيع مصفوفة"], verdict: "قيد الاعتماد", score: 78, decision: "يحتاج تقييم وضوح المنتج والهوية قبل نسخ البرومبت" },
-    { label: "عباية راقية", url: pilotSaudiAbayaVideo.url, checks: ["1080p", "5ث", "9:16", "أزياء محتشمة"], verdict: "قيد الاعتماد", score: 80, decision: "تُراجع سلامة الحركة والاحتشام وتفاصيل القماش قبل اعتماد قالب الأزياء" },
-    { label: "قهوة عربية", url: pilotSaudiCoffeeVideo.url, checks: ["1080p", "5ث", "9:16", "ضيافة سعودية"], verdict: "قيد الاعتماد", score: 82, decision: "مرشحة للتوسع إذا بقي المنتج واضحاً واللقطة طبيعية دون تشوه اليدين" },
-    { label: "إلكترونيات", url: pilotSaudiElectronicsVideo.url, checks: ["1080p", "5ث", "9:16", "استخدام منتج"], verdict: "اختبار إطلاق", score: 81, decision: "تُراجع دقة المنتج وحركة اليد قبل اعتماد قالب المتاجر التقنية" },
-    { label: "هدايا فاخرة", url: pilotSaudiGiftsVideo.url, checks: ["1080p", "5ث", "9:16", "مناسبات"], verdict: "اختبار إطلاق", score: 83, decision: "مرشحة كقالب تجاري إذا ظل الصندوق والمنتج واضحين من أول ثانية" },
+    { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "مرجع فني", score: 84, decision: "صالح كمرجع استقرار تقني، وليس قالب إطلاق عام." },
+    { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "هوية المنتج"], verdict: "مستبعد مؤقتاً", score: 78, decision: "أقل من بوابة 80%؛ يُعاد ضبط وضوح المنتج قبل إعادته للواجهة العامة." },
+    { label: "عباية راقية", url: pilotSaudiAbayaVideo.url, checks: ["1080p", "5ث", "9:16", "أزياء محتشمة"], verdict: "احتياطي", score: 80, decision: "يجتاز الحد الأدنى، لكنه يبقى احتياطياً حتى تتكرر سلامة الحركة والقماش." },
+    { label: "قهوة عربية", url: pilotSaudiCoffeeVideo.url, checks: ["1080p", "5ث", "9:16", "ضيافة سعودية", "معتمد"], verdict: "قالب إطلاق", score: 82, decision: "معتمد كقالب إطلاق ثانوي: آمن سعودياً، واضح الضيافة، وقابل للتكييف مع منتجات متعددة." },
+    { label: "إلكترونيات", url: pilotSaudiElectronicsVideo.url, checks: ["1080p", "5ث", "9:16", "استخدام منتج"], verdict: "احتياطي", score: 81, decision: "صالح كمسار لاحق، لكن لا يُفتح عاماً قبل تكرار اختبار دقة المنتج وحركة اليد." },
+    { label: "هدايا فاخرة", url: pilotSaudiGiftsVideo.url, checks: ["1080p", "5ث", "9:16", "مناسبات", "معتمد"], verdict: "قالب إطلاق", score: 83, decision: "معتمد كقالب إطلاق أساسي لأنه الأعلى تسويقياً والأوضح من أول ثانية." },
   ];
   const averageScore = Math.round(proofSamples.reduce((sum, sample) => sum + sample.score, 0) / proofSamples.length);
   return (
