@@ -367,10 +367,18 @@ const replicateProvider: VideoProvider = {
 };
 
 const FAL_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
-  fast: "fal-ai/veo3/fast",
-  lite: "fal-ai/veo3/fast",
-  quality: "fal-ai/veo3",
+  fast: "fal-ai/pixverse/v6/image-to-video",
+  lite: "fal-ai/pixverse/v6/image-to-video",
+  quality: "fal-ai/pixverse/v6/image-to-video",
 };
+
+const PIXVERSE_RESOLUTION_BY_QUALITY: Record<VideoQuality, string> = {
+  fast: "360p",
+  lite: "540p",
+  quality: "720p",
+};
+
+const PIXVERSE_NEGATIVE_PROMPT = "distorted face, deformed hands, extra fingers, unreadable Arabic text, misspelled text, western clothing, immodest styling, unrealistic product, duplicated product, plain white cutout background, shaky low quality footage, exaggerated claims";
 
 const falProvider: VideoProvider = {
   key: "fal_ai",
@@ -385,9 +393,14 @@ const falProvider: VideoProvider = {
         prompt: buildSaudiVideoPrompt(input),
         aspect_ratio: input.aspectRatio,
         duration: videoDurationPayload(input.durationSeconds),
+        resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
         image_url: primaryReferenceImage(input),
         speaker_image_url: input.speakerImageUrl || undefined,
         product_image_url: input.productImageUrl || undefined,
+        negative_prompt: PIXVERSE_NEGATIVE_PROMPT,
+        generate_audio_switch: true,
+        generate_multi_clip_switch: input.quality !== "fast",
+        thinking_type: input.quality === "fast" ? "auto" : "enabled",
       }),
     });
     if (!response.ok) {
@@ -397,7 +410,7 @@ const falProvider: VideoProvider = {
     const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
-    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, fal_result_shape: Object.keys(result) } };
+    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(_providerJobId, row) {
     return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
