@@ -192,6 +192,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function submitPilotEvaluation(draft: PilotEvaluationDraft) {
+    setEvaluatingPilot(true);
+    try {
+      const headers = await authHeaders();
+      const result = await evaluatePilotSample({ data: draft, headers });
+      setPilotEvaluation(result);
+      toast[result.decision === "publishable" ? "success" : "warning"](`تقييم العينة: ${result.score.toLocaleString("ar-SA")}%`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل حفظ تقييم العينة");
+    } finally {
+      setEvaluatingPilot(false);
+    }
+  }
+
   async function buildFalPromptPreview() {
     setLoadingFalPreview(true);
     try {
@@ -260,6 +274,7 @@ function AdminVideoProvidersPage() {
         <>
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
+          <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft) => void submitPilotEvaluation(draft)} />
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
