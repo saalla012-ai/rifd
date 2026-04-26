@@ -52,8 +52,6 @@ const EvaluatePilotSampleInput = z.object({
   sceneAdherence: z.number().int().min(1).max(5).optional(),
   motionAdherence: z.number().int().min(1).max(5).optional(),
   saudiDialect: z.number().int().min(1).max(5),
-  lipSync: z.number().int().min(1).max(5),
-  visualIntegrity: z.number().int().min(1).max(5),
   negativeSafety: z.number().int().min(1).max(5).optional(),
   publishReadiness: z.number().int().min(1).max(5),
   promptAdherence: z.number().int().min(1).max(5).default(4),
@@ -812,9 +810,9 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
-    const sceneAdherence = data.sceneAdherence ?? data.visualIntegrity;
-    const motionAdherence = data.motionAdherence ?? data.lipSync;
-    const negativeSafety = data.negativeSafety ?? data.visualIntegrity;
+    const sceneAdherence = data.sceneAdherence ?? 4;
+    const motionAdherence = data.motionAdherence ?? 4;
+    const negativeSafety = data.negativeSafety ?? 4;
     const weights = { productClarity: 25, sceneAdherence: 20, motionAdherence: 15, saudiDialect: 15, negativeSafety: 15, publishReadiness: 10 } as const;
     const weightedScore =
       data.productClarity * weights.productClarity +
