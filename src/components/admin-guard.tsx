@@ -26,13 +26,11 @@ function authTimeout() {
 async function hasAdminRole(userId: string) {
   const roleQuery = (async () => {
     try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
-      return error ? false : data?.role === "admin";
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      });
+      return error ? false : data === true;
     } catch {
       return false;
     }
