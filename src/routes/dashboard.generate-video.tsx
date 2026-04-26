@@ -324,8 +324,8 @@ function GenerateVideoPage() {
           <div className="rounded-lg border border-border bg-secondary/20 p-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <Label>قوالب PixVerse v6 السعودية</Label>
-                <p className="mt-1 text-xs text-muted-foreground">اختر قالباً حسب القطاع ثم عدّل النص قبل التوليد.</p>
+                <Label>قوالب الإطلاق السعودية المعتمدة</Label>
+                <p className="mt-1 text-xs text-muted-foreground">تم حصر الإطلاق على أفضل قالبين من العينات الفعلية لتقليل الهدر ورفع قابلية النشر.</p>
               </div>
               <Button type="button" size="sm" variant="outline" onClick={applyTemplate} className="w-fit gap-1">
                 <Wand2 className="h-3.5 w-3.5" /> تطبيق القالب
