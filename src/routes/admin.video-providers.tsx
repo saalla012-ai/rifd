@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
-import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
 import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
@@ -377,12 +377,12 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
 
 function PilotProofPanel() {
   const proofSamples = [
-    { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "مجتاز فنياً", score: 84, decision: "يُستخدم كمرجع تقني لا كإعلان نهائي" },
-    { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "توسيع مصفوفة"], verdict: "قيد الاعتماد", score: 78, decision: "يحتاج تقييم وضوح المنتج والهوية قبل نسخ البرومبت" },
-    { label: "عباية راقية", url: pilotSaudiAbayaVideo.url, checks: ["1080p", "5ث", "9:16", "أزياء محتشمة"], verdict: "قيد الاعتماد", score: 80, decision: "تُراجع سلامة الحركة والاحتشام وتفاصيل القماش قبل اعتماد قالب الأزياء" },
-    { label: "قهوة عربية", url: pilotSaudiCoffeeVideo.url, checks: ["1080p", "5ث", "9:16", "ضيافة سعودية"], verdict: "قيد الاعتماد", score: 82, decision: "مرشحة للتوسع إذا بقي المنتج واضحاً واللقطة طبيعية دون تشوه اليدين" },
-    { label: "إلكترونيات", url: pilotSaudiElectronicsVideo.url, checks: ["1080p", "5ث", "9:16", "استخدام منتج"], verdict: "اختبار إطلاق", score: 81, decision: "تُراجع دقة المنتج وحركة اليد قبل اعتماد قالب المتاجر التقنية" },
-    { label: "هدايا فاخرة", url: pilotSaudiGiftsVideo.url, checks: ["1080p", "5ث", "9:16", "مناسبات"], verdict: "اختبار إطلاق", score: 83, decision: "مرشحة كقالب تجاري إذا ظل الصندوق والمنتج واضحين من أول ثانية" },
+    { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "مرجع فني", score: 84, decision: "صالح كمرجع استقرار تقني، وليس قالب إطلاق عام." },
+    { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "هوية المنتج"], verdict: "مستبعد مؤقتاً", score: 78, decision: "أقل من بوابة 80%؛ يُعاد ضبط وضوح المنتج قبل إعادته للواجهة العامة." },
+    { label: "عباية راقية", url: pilotSaudiAbayaVideo.url, checks: ["1080p", "5ث", "9:16", "أزياء محتشمة"], verdict: "احتياطي", score: 80, decision: "يجتاز الحد الأدنى، لكنه يبقى احتياطياً حتى تتكرر سلامة الحركة والقماش." },
+    { label: "قهوة عربية", url: pilotSaudiCoffeeVideo.url, checks: ["1080p", "5ث", "9:16", "ضيافة سعودية", "معتمد"], verdict: "قالب إطلاق", score: 82, decision: "معتمد كقالب إطلاق ثانوي: آمن سعودياً، واضح الضيافة، وقابل للتكييف مع منتجات متعددة." },
+    { label: "إلكترونيات", url: pilotSaudiElectronicsVideo.url, checks: ["1080p", "5ث", "9:16", "استخدام منتج"], verdict: "احتياطي", score: 81, decision: "صالح كمسار لاحق، لكن لا يُفتح عاماً قبل تكرار اختبار دقة المنتج وحركة اليد." },
+    { label: "هدايا فاخرة", url: pilotSaudiGiftsVideo.url, checks: ["1080p", "5ث", "9:16", "مناسبات", "معتمد"], verdict: "قالب إطلاق", score: 83, decision: "معتمد كقالب إطلاق أساسي لأنه الأعلى تسويقياً والأوضح من أول ثانية." },
   ];
   const averageScore = Math.round(proofSamples.reduce((sum, sample) => sum + sample.score, 0) / proofSamples.length);
   return (
@@ -401,11 +401,11 @@ function PilotProofPanel() {
             <Badge variant="secondary">مسار عمودي فقط</Badge>
             <Badge variant="secondary">متوسط أولي {averageScore.toLocaleString("ar-SA")}%</Badge>
           </div>
-          <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: المسار التقني صالح، لكن لا تُعتمد المصفوفة تجارياً حتى تسجل كل عينة وضوح المنتج، طبيعية الأسلوب السعودي، سلامة اليدين والوجه، وقابلية النشر.</p>
+          <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: تم إغلاق نسخة الإطلاق على {SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS.length.toLocaleString("ar-SA")} قالبين فقط بحد أدنى {SAUDI_VIDEO_LAUNCH_DECISION.minimumPublishableScore.toLocaleString("ar-SA")}%؛ أي قالب أقل من ذلك يبقى داخلياً حتى إعادة الاختبار.</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>اعتمد</strong><p className="mt-1 text-muted-foreground">9:16، مدة قصيرة، فيديو مباشر داخل لوحة الإدارة.</p></div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>لا توسّع عشوائي</strong><p className="mt-1 text-muted-foreground">أي عينة إضافية يجب أن تُبنى على أفضل قالبين أداءً فقط.</p></div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">فرز أفضل قالبين، ثم تثبيت نسخة الإطلاق وتحديث واجهة المستخدم العامة.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>اعتمد للإطلاق</strong><p className="mt-1 text-muted-foreground">هدايا فاخرة + قهوة عربية فقط في واجهة المستخدم العامة.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>حُذف المسار القديم</strong><p className="mt-1 text-muted-foreground">لم تعد كل القوالب التجريبية ظاهرة للمستخدم قبل الاعتماد.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">قياس أول توليدات حقيقية ثم إعادة إدخال القطاعات الاحتياطية تدريجياً.</p></div>
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
