@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Clapperboard, Crown, Download, Film, ImageUp, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Upload, Zap } from "lucide-react";
+import { Clapperboard, Crown, Download, Film, ImageUp, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Upload, Wand2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { videoTierDuration } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_PERSONAS } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES } from "@/lib/saudi-video-test";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -99,6 +99,7 @@ function GenerateVideoPage() {
   const [speakerImageUrl, setSpeakerImageUrl] = useState("");
   const [productImageUrl, setProductImageUrl] = useState("");
   const [selectedPersonaId, setSelectedPersonaId] = useState<string>(PERSONAS[0].id);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(SAUDI_VIDEO_PROMPT_TEMPLATES[0].id);
   const [uploadingInput, setUploadingInput] = useState<"speaker" | "product" | null>(null);
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<VideoJob[]>([]);
@@ -115,8 +116,14 @@ function GenerateVideoPage() {
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
   const productImageRequired = isPaidPlan && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
+  const selectedTemplate = SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[0];
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
+
+  const applyTemplate = () => {
+    setPrompt(selectedTemplate.prompt);
+    toast.success("تم تطبيق قالب برومبت سعودي مدروس");
+  };
 
   const loadJobs = async () => {
     try {
@@ -310,6 +317,26 @@ function GenerateVideoPage() {
                 );
                 })}
               </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-secondary/20 p-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <Label>قوالب PixVerse v6 السعودية</Label>
+                <p className="mt-1 text-xs text-muted-foreground">اختر قالباً حسب القطاع ثم عدّل النص قبل التوليد.</p>
+              </div>
+              <Button type="button" size="sm" variant="outline" onClick={applyTemplate} className="w-fit gap-1">
+                <Wand2 className="h-3.5 w-3.5" /> تطبيق القالب
+              </Button>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_120px]">
+              <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm">
+                {SAUDI_VIDEO_PROMPT_TEMPLATES.map((template) => (
+                  <option key={template.id} value={template.id}>{template.sector} — {template.label}</option>
+                ))}
+              </select>
+              <div className="flex items-center justify-center rounded-md border border-border bg-card px-3 text-xs font-bold text-muted-foreground">مخاطرة: {selectedTemplate.risk}</div>
             </div>
           </div>
 

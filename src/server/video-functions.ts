@@ -237,7 +237,8 @@ function providerSupports(config: VideoProviderConfig, input: z.infer<typeof vid
     (input.aspectRatio === "16:9" && config.supports_16_9);
   const needsReferenceImage = Boolean(input.startingFrameUrl || input.speakerImageUrl || input.productImageUrl);
   const needsTwoImages = Boolean(input.speakerImageUrl && input.productImageUrl);
-  const supportsTwoImages = !needsTwoImages || ((config.metadata?.supports_two_images as boolean | undefined) === true);
+  const canCollapseToPrimaryImage = config.provider_key === "fal_ai" && config.metadata?.model_family === "pixverse_v6";
+  const supportsTwoImages = !needsTwoImages || canCollapseToPrimaryImage || ((config.metadata?.supports_two_images as boolean | undefined) === true);
   const supportsFrame = !needsReferenceImage || config.supports_starting_frame;
   const cost = input.durationSeconds === 8 ? config.cost_8s : config.cost_5s;
   return config.enabled && config.public_enabled && supportsQuality && supportsAspect && supportsFrame && supportsTwoImages && cost > 0;
@@ -273,13 +274,13 @@ async function loadProviderConfigs(input: z.infer<typeof videoInputSchema>) {
 function defaultReplicateConfig(): VideoProviderConfig {
   return {
     provider_key: "replicate",
-    display_name_admin: "Replicate / Google Veo via Replicate",
+    display_name_admin: "Replicate backup video provider",
     enabled: true,
     public_enabled: true,
     supported_qualities: ["fast", "lite", "quality"],
     priority: 10,
     cost_5s: 150,
-    cost_8s: 450,
+    cost_8s: 800,
     supports_9_16: true,
     supports_1_1: true,
     supports_16_9: true,
@@ -302,9 +303,7 @@ async function markProviderFailure(providerKey: string, error: unknown) {
 }
 
 function videoDurationPayload(durationSeconds: VideoDuration) {
-  // fal.ai Veo accepts 4s/6s/8s. Our public tier is labeled 5s,
-  // so route it to the closest supported short render length.
-  return durationSeconds === 8 ? "8s" : "4s";
+  return durationSeconds === 8 ? "8s" : "5s";
 }
 
 async function markProviderSuccess(providerKey: string) {
@@ -395,8 +394,6 @@ const falProvider: VideoProvider = {
         duration: videoDurationPayload(input.durationSeconds),
         resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
         image_url: primaryReferenceImage(input),
-        speaker_image_url: input.speakerImageUrl || undefined,
-        product_image_url: input.productImageUrl || undefined,
         negative_prompt: PIXVERSE_NEGATIVE_PROMPT,
         generate_audio_switch: true,
         generate_multi_clip_switch: input.quality !== "fast",

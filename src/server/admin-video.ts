@@ -26,7 +26,7 @@ const TestProviderInput = z.object({
 });
 
 const SaudiFalPromptPreviewInput = z.object({
-  modelId: z.string().min(3).max(180).default("fal-ai/veo3/fast"),
+  modelId: z.string().min(3).max(180).default("fal-ai/pixverse/v6/image-to-video"),
   personaId: z.enum(["male-young", "male-premium", "female-abaya", "retail-seller"]).default("male-young"),
   scenarioId: z.enum(["perfume", "abaya", "arabic-coffee", "electronics"]).default("perfume"),
   includeProductImage: z.boolean().default(true),
@@ -498,7 +498,7 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
     const model = FAL_VIDEO_TEST_MODELS.find((item) => item.id === data.modelId) ?? FAL_VIDEO_TEST_MODELS[0];
     const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === data.personaId) ?? SAUDI_VIDEO_PERSONAS[0];
     const scenario = SAUDI_VIDEO_TEST_SCENARIOS.find((item) => item.id === data.scenarioId) ?? SAUDI_VIDEO_TEST_SCENARIOS[0];
-    const includeProductImage = Boolean(data.includeProductImage && data.productImageUrl && model.supportsTwoImages);
+    const includeProductImage = Boolean(data.includeProductImage && data.productImageUrl && model.supportsProductImage);
     const prompt = buildSaudiFalTestPrompt({ personaBrief: persona.brief, scenarioId: scenario.id, includeProductImage, includeVoice: data.includeVoice && model.supportsVoice });
     const imageEvaluation = evaluateSaudiVideoImage({ hasProductImage: includeProductImage, personaLabel: persona.label });
     const startedAt = Date.now();
@@ -511,10 +511,13 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
         body: JSON.stringify({
           prompt,
           aspect_ratio: "9:16",
-          duration: model.id.includes("veo3") ? "4s" : "5s",
-          image_url: data.personaImageUrl,
-          speaker_image_url: data.personaImageUrl,
-          product_image_url: includeProductImage ? data.productImageUrl : undefined,
+          duration: "5s",
+          resolution: "540p",
+          image_url: includeProductImage ? data.productImageUrl : data.personaImageUrl,
+          negative_prompt: "distorted face, deformed hands, unreadable Arabic text, white cutout background, unrealistic product",
+          generate_audio_switch: model.supportsVoice,
+          generate_multi_clip_switch: true,
+          thinking_type: "enabled",
         }),
       });
       const text = await response.text();
