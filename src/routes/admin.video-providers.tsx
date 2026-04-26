@@ -205,7 +205,7 @@ function AdminVideoProvidersPage() {
                   <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs leading-6 text-muted-foreground">
                     <div className="flex flex-wrap gap-2">
                       {provider.supported_qualities.map((quality) => (
-                        <Badge key={quality} variant="secondary">{quality === "quality" || quality === "fast" ? VIDEO_QUALITY_LABELS[quality] : "متوازن"}</Badge>
+                        <Badge key={quality} variant="secondary">{quality === "quality" || quality === "fast" || quality === "lite" ? VIDEO_QUALITY_LABELS[quality] : "متوازن"}</Badge>
                       ))}
                     </div>
                     <p className="mt-2">5ث: <strong>{provider.cost_5s.toLocaleString("ar-SA")}</strong> نقطة · 8ث: <strong>{provider.cost_8s.toLocaleString("ar-SA")}</strong> نقطة</p>
