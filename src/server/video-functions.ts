@@ -85,11 +85,34 @@ type ProviderAttempt = {
   reason?: string;
 };
 
+type VideoEntitlement = {
+  video_fast_allowed: boolean;
+  video_quality_allowed: boolean;
+  max_video_duration_seconds: number;
+};
+
 type VideoProvider = {
   key: string;
   createJob(input: z.infer<typeof videoInputSchema>, config: VideoProviderConfig): Promise<ProviderCreateResult>;
   refreshJob(providerJobId: string, row: VideoJobRow): Promise<ProviderRefreshResult>;
 };
+
+async function getVideoEntitlement(db: DbClient): Promise<VideoEntitlement> {
+  const { data, error } = await db.rpc("plan_entitlement_for_user");
+  if (error) throw new Error(`فشل التحقق من صلاحيات الفيديو: ${error.message}`);
+  const row = data as VideoEntitlement | null;
+  return {
+    video_fast_allowed: row?.video_fast_allowed ?? false,
+    video_quality_allowed: row?.video_quality_allowed ?? false,
+    max_video_duration_seconds: row?.max_video_duration_seconds ?? 5,
+  };
+}
+
+function assertVideoEntitlement(entitlement: VideoEntitlement, input: z.infer<typeof videoInputSchema>) {
+  if (!entitlement.video_fast_allowed) throw new Error("video_fast_not_allowed");
+  if (input.quality === "quality" && !entitlement.video_quality_allowed) throw new Error("video_quality_not_allowed");
+  if (input.durationSeconds > entitlement.max_video_duration_seconds) throw new Error("video_duration_not_allowed");
+}
 
 class ProviderCommittedFailure extends Error {
   constructor(message: string) {
@@ -198,9 +221,11 @@ function providerSupports(config: VideoProviderConfig, input: z.infer<typeof vid
     (input.aspectRatio === "1:1" && config.supports_1_1) ||
     (input.aspectRatio === "16:9" && config.supports_16_9);
   const needsReferenceImage = Boolean(input.startingFrameUrl || input.speakerImageUrl || input.productImageUrl);
+  const needsTwoImages = Boolean(input.speakerImageUrl && input.productImageUrl);
+  const supportsTwoImages = !needsTwoImages || ((config.metadata?.supports_two_images as boolean | undefined) === true);
   const supportsFrame = !needsReferenceImage || config.supports_starting_frame;
   const cost = input.durationSeconds === 8 ? config.cost_8s : config.cost_5s;
-  return config.enabled && config.public_enabled && supportsQuality && supportsAspect && supportsFrame && cost > 0;
+  return config.enabled && config.public_enabled && supportsQuality && supportsAspect && supportsFrame && supportsTwoImages && cost > 0;
 }
 
 function providerPriorityScore(config: VideoProviderConfig) {
