@@ -450,6 +450,22 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
     return { provider: updated as AdminVideoProviderConfig, result };
   });
 
+export const previewSaudiFalVideoTestPrompt = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => SaudiFalPromptPreviewInput.parse(input ?? {}))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<SaudiFalPromptPreview> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const model = FAL_VIDEO_TEST_MODELS.find((item) => item.id === data.modelId) ?? FAL_VIDEO_TEST_MODELS[0];
+    const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === data.personaId) ?? SAUDI_VIDEO_PERSONAS[0];
+    const scenario = SAUDI_VIDEO_TEST_SCENARIOS.find((item) => item.id === data.scenarioId) ?? SAUDI_VIDEO_TEST_SCENARIOS[0];
+    const prompt = buildSaudiFalTestPrompt({ personaBrief: persona.brief, scenarioId: scenario.id, includeProductImage: data.includeProductImage, includeVoice: data.includeVoice && model.supportsVoice });
+    const imageEvaluation = evaluateSaudiVideoImage({ hasProductImage: data.includeProductImage, personaLabel: persona.label });
+
+    return { prompt, model, persona, scenario, imageEvaluation };
+  });
+
 export const testVideoRouterDryRun = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => TestVideoRouterInput.parse(input ?? {}))
   .middleware([requireSupabaseAuth])
