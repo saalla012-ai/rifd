@@ -385,7 +385,7 @@ function LaunchTemplatePerformancePanel({ templates }: { templates: SaudiLaunchT
             </div>
             <p className="mt-2 text-muted-foreground">إجمالي: {template.total.toLocaleString("ar-SA")} · مكتمل: {template.completed.toLocaleString("ar-SA")} · قيد المعالجة: {template.processing.toLocaleString("ar-SA")} · مسترد/فشل: {(template.refunded + template.failed).toLocaleString("ar-SA")}</p>
             <p className="mt-1 text-muted-foreground">إكمال: {template.publishableRate.toLocaleString("ar-SA")}% · فشل/استرداد: {template.failureRate.toLocaleString("ar-SA")}% · متوسط التكلفة: {template.avgCostUsd === null ? "—" : `$${template.avgCostUsd}`}</p>
-            <p className="mt-1 text-muted-foreground">متوسط التكلفة: {template.avgCostUsd === null ? "—" : `$${template.avgCostUsd}`} · آخر استخدام: {fmtDate(template.lastAt)}</p>
+            <p className="mt-1 text-muted-foreground">آخر استخدام: {fmtDate(template.lastAt)}</p>
             <div className="mt-2 flex flex-wrap gap-1.5">{template.gateNotes.map((note) => <Badge key={`${template.templateId}-${note}`} variant="secondary">{note}</Badge>)}</div>
           </div>
         )) : (
