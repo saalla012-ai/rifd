@@ -52,7 +52,7 @@ function AdminVideoProvidersPage() {
   const testRouter = useServerFn(testVideoRouterDryRun);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
-  const [routerResult, setRouterResult] = useState<AdminVideoRouterTestResult | null>(null);
+  const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
@@ -111,14 +111,14 @@ function AdminVideoProvidersPage() {
     try {
       const headers = await authHeaders();
       const scenarios = [
-        { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false, imageCount: 0 },
-        { quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true, imageCount: 1 },
-        { quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true, imageCount: 2 },
+        { label: "سريع 5ث بلا صور", quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false, imageCount: 0 },
+        { label: "إعلاني 8ث بصورة منتج", quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true, imageCount: 1 },
+        { label: "احترافي 8ث بشخص ومنتج", quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true, imageCount: 2 },
       ] as const;
-      const result = await testRouter({ data: scenarios[0], headers });
-      await Promise.all(scenarios.slice(1).map((scenario) => testRouter({ data: scenario, headers })));
-      setRouterResult(result);
-      toast[result.ok ? "success" : "error"](result.ok ? "تم اختبار 3 مسارات للراوتر" : "لا يوجد مزود مؤهل للمسار الأساسي");
+      const results = await Promise.all(scenarios.map(async ({ label, ...scenario }) => ({ ...(await testRouter({ data: scenario, headers })), scenarioLabel: label })));
+      setRouterResults(results);
+      const passed = results.filter((result) => result.ok).length;
+      toast[passed === results.length ? "success" : "error"](`نجح ${passed.toLocaleString("ar-SA")} من ${results.length.toLocaleString("ar-SA")} مسارات للراوتر`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل اختبار الراوتر");
     } finally {
