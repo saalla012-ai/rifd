@@ -644,8 +644,8 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     const samples = selectedTemplates.map((templateId, index) => {
       const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
       const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
-      const quality = index < 3 ? "fast" : index < 8 ? "lite" : "quality";
-      const durationSeconds = quality === "fast" ? 5 : 8;
+      const quality: "fast" | "lite" | "quality" = index < 3 ? "fast" : index < 8 ? "lite" : "quality";
+      const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
       return {
         sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
         templateId: template.id,
