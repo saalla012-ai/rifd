@@ -23,7 +23,14 @@ import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
-type VideoSearch = { prompt?: string; campaignPackId?: string };
+type VideoSearch = {
+  prompt?: string;
+  campaignPackId?: string;
+  quality?: VideoQuality;
+  aspectRatio?: AspectRatio;
+  selectedPersonaId?: string;
+  source?: "medium-test";
+};
 
 const QUALITY = {
   fast: { label: "سريع", icon: Zap, note: "للتجربة والمحتوى اليومي بتكلفة أقل" },
@@ -65,6 +72,10 @@ export const Route = createFileRoute("/dashboard/generate-video")({
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
+    quality: s.quality === "fast" || s.quality === "lite" || s.quality === "quality" ? s.quality : undefined,
+    aspectRatio: s.aspectRatio === "9:16" || s.aspectRatio === "1:1" || s.aspectRatio === "16:9" ? s.aspectRatio : undefined,
+    selectedPersonaId: typeof s.selectedPersonaId === "string" ? s.selectedPersonaId : undefined,
+    source: s.source === "medium-test" ? "medium-test" : undefined,
   }),
   component: GenerateVideoPage,
 });
@@ -97,13 +108,13 @@ function GenerateVideoPage() {
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
   const { data: credits, loading: creditsLoading, refresh: refreshCredits } = useCreditsSummary();
-  const [quality, setQuality] = useState<VideoQuality>("fast");
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
+  const [quality, setQuality] = useState<VideoQuality>(search.quality ?? "fast");
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(search.aspectRatio ?? "9:16");
   const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [startingFrameUrl, setStartingFrameUrl] = useState("");
   const [speakerImageUrl, setSpeakerImageUrl] = useState("");
   const [productImageUrl, setProductImageUrl] = useState("");
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(PERSONAS[0].id);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(search.selectedPersonaId && PERSONAS.some((persona) => persona.id === search.selectedPersonaId) ? search.selectedPersonaId : PERSONAS[0].id);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0].id);
   const [uploadingInput, setUploadingInput] = useState<"speaker" | "product" | null>(null);
   const [loading, setLoading] = useState(false);
@@ -125,6 +136,7 @@ function GenerateVideoPage() {
   const productImageRequired = isPaidPlan && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
+  const internalMediumTestMode = search.source === "medium-test";
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -186,7 +198,7 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId, campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
