@@ -19,6 +19,8 @@ import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
 import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
+import pilotSaudiOfficeContactSheet from "@/assets/pilot-saudi-office-vertical-contact-sheet.jpg";
+import pilotSaudiOfficeVideo from "@/assets/pilot-saudi-office-vertical-9x16.mp4.asset.json";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -272,6 +274,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          <PilotProofPanel />
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
           <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
