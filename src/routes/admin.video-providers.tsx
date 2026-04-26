@@ -19,8 +19,8 @@ import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
 import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
-import pilotSaudiOfficeContactSheet from "@/assets/pilot-saudi-office-vertical-contact-sheet.jpg";
 import pilotSaudiOfficeVideo from "@/assets/pilot-saudi-office-vertical-9x16.mp4.asset.json";
+import pilotSaudiPerfumeVideo from "@/assets/pilot-saudi-perfume-vertical-9x16.mp4.asset.json";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -372,26 +372,40 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
 }
 
 function PilotProofPanel() {
-  const videoUrl = pilotSaudiOfficeVideo.url;
-  const checks = ["H.264", "1088×1920", "5.04ث", "9:16"];
+  const proofSamples = [
+    { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "دليل تقني أولي" },
+    { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "توسيع مصفوفة"], verdict: "قيد التقييم التسويقي" },
+  ];
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="font-extrabold">دليل العينة العمودية المعتمدة</h2>
-              <p className="mt-1 text-xs text-muted-foreground">عينة مكتب سعودي تحققت فنياً كبداية اختبار الإطلاق: الهدف الآن تقييم القابلية التسويقية قبل توسيع التوليد.</p>
+              <h2 className="font-extrabold">دليل عينات الفيديو العمودية</h2>
+              <p className="mt-1 text-xs text-muted-foreground">تم نقل المرحلة من عينة تحقق واحدة إلى بداية مصفوفة فعلية: مكتب سعودي + عطر فاخر، مع إبقاء الاعتماد النهائي مشروطاً بدرجات التسويق والنشر.</p>
             </div>
             <Badge className="bg-success/15 text-success">بوابة 9:16 مجتازة</Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {checks.map((check) => <Badge key={check} variant="secondary">{check}</Badge>)}
+            <Badge variant="secondary">عينتان فعليتان</Badge>
+            <Badge variant="secondary">مسار عمودي فقط</Badge>
+            <Badge variant="secondary">تقييم قبل التوسع الكامل</Badge>
           </div>
-          <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: صالحة كدليل تقني أولي، وليست اعتماداً نهائياً للمصفوفة حتى تُسجّل درجات وضوح المنتج، طبيعية الأسلوب السعودي، سلامة اليدين والوجه، وقابلية النشر.</p>
-          <a href={videoUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex text-xs font-bold text-primary underline-offset-4 hover:underline">فتح ملف الفيديو للمراجعة</a>
+          <p className="mt-3 text-xs leading-6 text-muted-foreground">قرار الجودة: المسار التقني صالح، لكن لا تُعتمد المصفوفة تجارياً حتى تسجل كل عينة وضوح المنتج، طبيعية الأسلوب السعودي، سلامة اليدين والوجه، وقابلية النشر.</p>
         </div>
-        <img src={pilotSaudiOfficeContactSheet} alt="لقطات مراجعة من عينة فيديو سعودية عمودية" className="h-auto w-full rounded-lg border border-border bg-secondary/30 object-cover" loading="lazy" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          {proofSamples.map((sample) => (
+            <article key={sample.label} className="rounded-lg border border-border bg-secondary/30 p-2">
+              <video src={sample.url} className="aspect-[9/16] w-full rounded-md bg-background object-cover" muted playsInline controls preload="metadata" />
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+                <strong className="me-auto">{sample.label}</strong>
+                <Badge variant="secondary">{sample.verdict}</Badge>
+                {sample.checks.map((check) => <Badge key={`${sample.label}-${check}`} variant="outline">{check}</Badge>)}
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
