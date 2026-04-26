@@ -15,7 +15,7 @@ import {
   InsufficientCreditsError,
 } from "./credits";
 import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PROMPT_TEMPLATES, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
