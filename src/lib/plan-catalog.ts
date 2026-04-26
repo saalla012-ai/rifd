@@ -34,7 +34,6 @@ export type PlanCatalogEntry = {
   monthlyCredits: number;
   dailyTextCap: number;
   dailyImageCap: number;
-  dailyVideoCap: number;
   imageProAllowed: boolean;
   videoFastAllowed: boolean;
   videoQualityAllowed: boolean;
@@ -53,7 +52,6 @@ export const PLAN_CATALOG = [
     monthlyCredits: 150,
     dailyTextCap: 10,
     dailyImageCap: 2,
-    dailyVideoCap: 0,
     imageProAllowed: false,
     videoFastAllowed: true,
     videoQualityAllowed: false,
@@ -69,11 +67,10 @@ export const PLAN_CATALOG = [
     monthlyCredits: 2000,
     dailyTextCap: 100,
     dailyImageCap: 20,
-    dailyVideoCap: 3,
     imageProAllowed: false,
     videoFastAllowed: true,
     videoQualityAllowed: false,
-    maxVideoDurationSeconds: 5,
+    maxVideoDurationSeconds: 8,
     tagline: "لبداية فيديو سريع منتظمة بلا تكلفة احترافية",
   },
   {
@@ -85,7 +82,6 @@ export const PLAN_CATALOG = [
     monthlyCredits: 6000,
     dailyTextCap: 250,
     dailyImageCap: 50,
-    dailyVideoCap: 6,
     imageProAllowed: true,
     videoFastAllowed: true,
     videoQualityAllowed: false,
@@ -102,7 +98,6 @@ export const PLAN_CATALOG = [
     monthlyCredits: 14000,
     dailyTextCap: 600,
     dailyImageCap: 100,
-    dailyVideoCap: 12,
     imageProAllowed: true,
     videoFastAllowed: true,
     videoQualityAllowed: true,
@@ -119,7 +114,6 @@ export const PLAN_CATALOG = [
     monthlyCredits: 40000,
     dailyTextCap: 1000,
     dailyImageCap: 150,
-    dailyVideoCap: 20,
     imageProAllowed: true,
     videoFastAllowed: true,
     videoQualityAllowed: true,
