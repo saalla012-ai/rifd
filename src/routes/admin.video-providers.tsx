@@ -372,19 +372,21 @@ function LaunchTemplatePerformancePanel({ templates }: { templates: SaudiLaunchT
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="font-extrabold">قياس أداء قوالب الإطلاق</h2>
-          <p className="mt-1 text-xs text-muted-foreground">يتتبع القالب المستخدم داخل metadata لكل مهمة فيديو حتى يكون توسيع القطاعات مبنياً على نتائج فعلية.</p>
+          <p className="mt-1 text-xs text-muted-foreground">بوابة تشغيل فعلية: لا يُفتح أي قالب احتياطي قبل عينة كافية، إكمال 80%+، فشل/استرداد منخفض، وتكلفة مستقرة.</p>
         </div>
-        <Badge className="bg-primary/15 text-primary">{visibleTemplates.length.toLocaleString("ar-SA")} قالب نشط</Badge>
+        <Badge className={cn(visibleTemplates.every((template) => template.expansionEligible) ? "bg-success/15 text-success" : "bg-gold/15 text-gold")}>{visibleTemplates.filter((template) => template.expansionEligible).length.toLocaleString("ar-SA")}/{visibleTemplates.length.toLocaleString("ar-SA")} مؤهل للتوسع</Badge>
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {visibleTemplates.length > 0 ? visibleTemplates.map((template) => (
           <div key={template.templateId} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong>{template.templateId}</strong>
-              <Badge className={cn(template.publishableRate >= 80 ? "bg-success/15 text-success" : "bg-gold/15 text-gold")}>{template.publishableRate.toLocaleString("ar-SA")}% مكتمل</Badge>
+              <Badge className={cn(template.expansionEligible ? "bg-success/15 text-success" : template.minSampleReached ? "bg-warning/20 text-warning-foreground" : "bg-gold/15 text-gold")}>{template.expansionEligible ? "جاهز للتوسع" : template.minSampleReached ? "تحت المراقبة" : "جمع بيانات"}</Badge>
             </div>
-            <p className="mt-2 text-muted-foreground">إجمالي: {template.total.toLocaleString("ar-SA")} · مكتمل: {template.completed.toLocaleString("ar-SA")} · مسترد: {template.refunded.toLocaleString("ar-SA")} · فشل: {template.failed.toLocaleString("ar-SA")}</p>
+            <p className="mt-2 text-muted-foreground">إجمالي: {template.total.toLocaleString("ar-SA")} · مكتمل: {template.completed.toLocaleString("ar-SA")} · قيد المعالجة: {template.processing.toLocaleString("ar-SA")} · مسترد/فشل: {(template.refunded + template.failed).toLocaleString("ar-SA")}</p>
+            <p className="mt-1 text-muted-foreground">إكمال: {template.publishableRate.toLocaleString("ar-SA")}% · فشل/استرداد: {template.failureRate.toLocaleString("ar-SA")}% · متوسط التكلفة: {template.avgCostUsd === null ? "—" : `$${template.avgCostUsd}`}</p>
             <p className="mt-1 text-muted-foreground">متوسط التكلفة: {template.avgCostUsd === null ? "—" : `$${template.avgCostUsd}`} · آخر استخدام: {fmtDate(template.lastAt)}</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">{template.gateNotes.map((note) => <Badge key={`${template.templateId}-${note}`} variant="secondary">{note}</Badge>)}</div>
           </div>
         )) : (
           <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs text-muted-foreground md:col-span-2">لا توجد توليدات فعلية بالقالبين المعتمدين بعد. القياس جاهز وسيبدأ تلقائياً مع أول مهمة فيديو جديدة.</div>
