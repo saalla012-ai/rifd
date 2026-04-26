@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -22,6 +23,14 @@ const ProviderUpdateInput = z.object({
 
 const TestProviderInput = z.object({
   providerKey: z.string().min(2).max(80),
+});
+
+const SaudiFalPromptPreviewInput = z.object({
+  modelId: z.string().min(3).max(180).default("fal-ai/veo3/fast"),
+  personaId: z.enum(["male-young", "male-premium", "female-abaya", "retail-seller"]).default("male-young"),
+  scenarioId: z.enum(["perfume", "abaya", "arabic-coffee", "electronics"]).default("perfume"),
+  includeProductImage: z.boolean().default(true),
+  includeVoice: z.boolean().default(true),
 });
 
 const TestVideoRouterInput = z.object({
@@ -132,6 +141,14 @@ export type AdminVideoProviderTestResult = {
   latencyMs: number;
   message: string;
   checkedAt: string;
+};
+
+export type SaudiFalPromptPreview = {
+  prompt: string;
+  model: typeof FAL_VIDEO_TEST_MODELS[number];
+  persona: typeof SAUDI_VIDEO_PERSONAS[number];
+  scenario: typeof SAUDI_VIDEO_TEST_SCENARIOS[number];
+  imageEvaluation: { score: number; recommendation: string };
 };
 
 export type AdminVideoRouterTestResult = {
