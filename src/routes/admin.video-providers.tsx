@@ -307,7 +307,7 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
-function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { draft: SaudiFalDraft; preview: SaudiFalPromptPreview | null; loading: boolean; onDraft: (next: SaudiFalDraft) => void; onPreview: () => void }) {
+function SaudiFalTestPanel({ draft, productImageUrl, preview, testResult, loading, running, onDraft, onProductImageUrl, onPreview, onRun }: { draft: SaudiFalDraft; productImageUrl: string; preview: SaudiFalPromptPreview | null; testResult: SaudiFalModelTestResult | null; loading: boolean; running: boolean; onDraft: (next: SaudiFalDraft) => void; onProductImageUrl: (value: string) => void; onPreview: () => void; onRun: () => void }) {
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -315,9 +315,10 @@ function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { dr
           <h2 className="font-extrabold">اختبار fal.ai بالصور الحالية</h2>
           <p className="mt-1 text-xs text-muted-foreground">يستخدم شخصيات قسم الفيديو نفسها مع برومبت سعودي واضح للحركة والصوت قبل أي اعتماد إنتاجي.</p>
         </div>
-        <Button type="button" size="sm" onClick={onPreview} disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clapperboard className="h-4 w-4" />} تجهيز البرومبت
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onPreview} disabled={loading || running}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clapperboard className="h-4 w-4" />} تجهيز البرومبت</Button>
+          <Button type="button" size="sm" onClick={onRun} disabled={loading || running}>{running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار فعلي</Button>
+        </div>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <SelectBox label="النموذج" value={draft.modelId} onChange={(modelId) => onDraft({ ...draft, modelId })} options={FAL_VIDEO_TEST_MODELS.map((model) => ({ value: model.id, label: model.label }))} />
@@ -325,12 +326,19 @@ function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { dr
         <SelectBox label="السيناريو السعودي" value={draft.scenarioId} onChange={(scenarioId) => onDraft({ ...draft, scenarioId })} options={SAUDI_VIDEO_TEST_SCENARIOS.map((scenario) => ({ value: scenario.id, label: scenario.label }))} />
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="block rounded-lg border border-border bg-secondary/30 p-3">
+          <span className="text-sm font-bold">رابط صورة المنتج الاختيارية</span>
+          <Input value={productImageUrl} onChange={(event) => onProductImageUrl(event.target.value)} placeholder="https://..." className="mt-2 h-9 text-xs" />
+        </label>
         <ControlRow label="إضافة صورة منتج" hint="لقياس التزام النموذج بالمنتج داخل الإعلان">
           <Switch checked={draft.includeProductImage} onCheckedChange={(includeProductImage) => onDraft({ ...draft, includeProductImage })} />
         </ControlRow>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <ControlRow label="طلب صوت سعودي" hint="يطبّق فقط على النماذج التي تدعم الصوت">
           <Switch checked={draft.includeVoice} onCheckedChange={(includeVoice) => onDraft({ ...draft, includeVoice })} />
         </ControlRow>
+        {testResult && <div className={cn("rounded-lg border p-3 text-xs", testResult.ok ? "border-success/30 bg-success/10 text-success" : "border-destructive/30 bg-destructive/10 text-destructive")}>{testResult.ok ? `الحالة: ${testResult.status} · ${testResult.latencyMs}ms · $${testResult.estimatedCostUsd ?? "—"}` : testResult.error}</div>}
       </div>
       {preview && (
         <div className="mt-4 grid gap-3 lg:grid-cols-[220px_1fr]">
