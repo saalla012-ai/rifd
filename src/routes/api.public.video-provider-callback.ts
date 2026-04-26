@@ -125,7 +125,6 @@ export const Route = createFileRoute("/api/public/video-provider-callback")({
           ? await supabaseAdmin.rpc("refund_credits", { _ledger_id: job.ledger_id, _reason: "video_provider_callback_failed" })
           : { data: null, error: null };
         if (refundError && !/already_refunded/i.test(refundError.message)) return json(500, { error: "refund_failed" });
-        if (!refundError) await supabaseAdmin.rpc("release_video_daily_quota", { _user_id: job.user_id });
 
         const { data: updated, error } = await supabaseAdmin
           .from("video_jobs")
