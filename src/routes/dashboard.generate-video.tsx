@@ -299,15 +299,32 @@ function GenerateVideoPage() {
             />
           </div>
 
+          <div className="space-y-3">
+            <Label>شخصيات سعودية جاهزة</Label>
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+              {PERSONAS.map((persona) => (
+                <button key={persona.id} type="button" onClick={() => setSelectedPersonaId(persona.id)} className={cn("overflow-hidden rounded-lg border text-right transition-colors", selectedPersonaId === persona.id ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70")}> 
+                  <img src={persona.image} alt={persona.label} width={768} height={768} loading="lazy" className="aspect-square w-full object-cover" />
+                  <span className="block px-2 py-2 text-xs font-bold">{persona.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <ImageInputCard label="صورة الشخص المتحدث" value={speakerImageUrl} uploading={uploadingInput === "speaker"} onFile={(file) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
+            <ImageInputCard label="صورة المنتج" value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
+          </div>
+
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-foreground">سيتم خصم {selectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
               <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? "يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم" : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
-            <p className={cn("mt-2 text-xs", reachedDailyVideoLimit ? "font-bold text-destructive" : "text-muted-foreground")}>حد الفيديو اليومي: {dailyVideoUsed.toLocaleString("ar-SA")} / {dailyVideoCap.toLocaleString("ar-SA")}</p>
+            <p className="mt-2 text-xs text-muted-foreground">الاستخدام يعتمد على رصيد النقاط فقط، مع حماية تشغيلية للمهام المتزامنة.</p>
           </div>
 
-          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || reachedDailyVideoLimit || !selectedQualityAllowed || !selectedDurationAllowed} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || !selectedQualityAllowed || !selectedDurationAllowed} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
