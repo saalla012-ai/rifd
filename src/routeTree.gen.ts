@@ -55,6 +55,7 @@ import { Route as ApiTelegramDiscoverChatsRouteImport } from './routes/api.teleg
 import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as AdminVideoProvidersRouteImport } from './routes/admin.video-providers'
+import { Route as AdminVideoProvideRouteImport } from './routes/admin.video-provide'
 import { Route as AdminVideoJobsRouteImport } from './routes/admin.video-jobs'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminReconcileRouteImport } from './routes/admin.reconcile'
@@ -319,6 +320,11 @@ const AdminVideoProvidersRoute = AdminVideoProvidersRouteImport.update({
   path: '/admin/video-providers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVideoProvideRoute = AdminVideoProvideRouteImport.update({
+  id: '/admin/video-provide',
+  path: '/admin/video-provide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminVideoJobsRoute = AdminVideoJobsRouteImport.update({
   id: '/admin/video-jobs',
   path: '/admin/video-jobs',
@@ -511,6 +517,7 @@ export interface FileRoutesByFullPath {
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/video-jobs': typeof AdminVideoJobsRoute
+  '/admin/video-provide': typeof AdminVideoProvideRoute
   '/admin/video-providers': typeof AdminVideoProvidersRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -587,6 +594,7 @@ export interface FileRoutesByTo {
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/video-jobs': typeof AdminVideoJobsRoute
+  '/admin/video-provide': typeof AdminVideoProvideRoute
   '/admin/video-providers': typeof AdminVideoProvidersRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -665,6 +673,7 @@ export interface FileRoutesById {
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/video-jobs': typeof AdminVideoJobsRoute
+  '/admin/video-provide': typeof AdminVideoProvideRoute
   '/admin/video-providers': typeof AdminVideoProvidersRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -744,6 +753,7 @@ export interface FileRouteTypes {
     | '/admin/reconcile'
     | '/admin/subscriptions'
     | '/admin/video-jobs'
+    | '/admin/video-provide'
     | '/admin/video-providers'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -820,6 +830,7 @@ export interface FileRouteTypes {
     | '/admin/reconcile'
     | '/admin/subscriptions'
     | '/admin/video-jobs'
+    | '/admin/video-provide'
     | '/admin/video-providers'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -897,6 +908,7 @@ export interface FileRouteTypes {
     | '/admin/reconcile'
     | '/admin/subscriptions'
     | '/admin/video-jobs'
+    | '/admin/video-provide'
     | '/admin/video-providers'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -975,6 +987,7 @@ export interface RootRouteChildren {
   AdminReconcileRoute: typeof AdminReconcileRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminVideoJobsRoute: typeof AdminVideoJobsRoute
+  AdminVideoProvideRoute: typeof AdminVideoProvideRoute
   AdminVideoProvidersRoute: typeof AdminVideoProvidersRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
   ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
@@ -1325,6 +1338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVideoProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/video-provide': {
+      id: '/admin/video-provide'
+      path: '/admin/video-provide'
+      fullPath: '/admin/video-provide'
+      preLoaderRoute: typeof AdminVideoProvideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/video-jobs': {
       id: '/admin/video-jobs'
       path: '/admin/video-jobs'
@@ -1607,6 +1627,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReconcileRoute: AdminReconcileRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminVideoJobsRoute: AdminVideoJobsRoute,
+  AdminVideoProvideRoute: AdminVideoProvideRoute,
   AdminVideoProvidersRoute: AdminVideoProvidersRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,
   ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,
