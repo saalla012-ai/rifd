@@ -295,7 +295,9 @@ async function markProviderFailure(providerKey: string, error: unknown) {
 }
 
 function videoDurationPayload(durationSeconds: VideoDuration) {
-  return durationSeconds === 8 ? "8s" : "5s";
+  // fal.ai Veo accepts 4s/6s/8s. Our public tier is labeled 5s,
+  // so route it to the closest supported short render length.
+  return durationSeconds === 8 ? "8s" : "4s";
 }
 
 async function markProviderSuccess(providerKey: string) {
