@@ -301,6 +301,7 @@ function GenerateVideoPage() {
         <div>
           <h1 className="text-2xl font-extrabold">توليد فيديو</h1>
           <p className="mt-1 text-sm text-muted-foreground">حوّل وصف حملتك إلى لقطة فيديو قصيرة بنقاط فيديو واضحة قبل التنفيذ</p>
+          {internalMediumTestMode && <p className="mt-2 w-fit rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-xs font-bold text-gold">وضع اختبار داخلي: لن يُفتح القالب للعامة حتى يجتاز بوابة الالتزام 80%+</p>}
         </div>
         <Button asChild variant="outline" size="sm" className="w-fit gap-1">
           <Link to="/dashboard/credits"><Sparkles className="h-3.5 w-3.5" /> شحن نقاط الفيديو</Link>
@@ -415,7 +416,7 @@ function GenerateVideoPage() {
               onChange={(e) => setPrompt(e.target.value)}
               maxLength={1800}
               className="mt-2 min-h-36"
-              placeholder="مثلاً: لقطة عمودية لمنتج عطر فاخر على خلفية خضراء وذهبية، حركة كاميرا بطيئة، ظهور نص عرض محدود، نهاية بشعار المتجر وCTA للطلب عبر واتساب"
+              placeholder="مثلاً: لقطة عمودية لمنتج عطر فاخر على خلفية خضراء وذهبية، حركة كاميرا بطيئة، المنتج واضح طوال المشهد، دعوة مباشرة للطلب عبر واتساب"
             />
           </div>
 
@@ -487,18 +488,14 @@ function GenerateVideoPage() {
             </div>
             <div className="mt-3 flex aspect-[9/16] items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-secondary/30 text-center text-sm text-muted-foreground">
               {latestResult ? (
-                latestResult.startsWith("data:image") ? (
-                  <img src={latestResult} alt="معاينة الفيديو" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="relative h-full w-full">
-                    <video src={latestResult} controls playsInline preload="metadata" className="h-full w-full object-cover" onError={() => setPreviewError(true)} />
-                    {previewError && (
-                      <div className="absolute inset-x-3 bottom-3 rounded-lg border border-border bg-card/95 p-3 text-xs font-medium text-foreground shadow-soft">
-                        تعذر تشغيل المعاينة داخل الصفحة. استخدم زر فتح أو تحميل.
-                      </div>
-                    )}
-                  </div>
-                )
+                <div className="relative h-full w-full">
+                  <video src={latestResult} controls playsInline preload="metadata" className="h-full w-full object-cover" onError={() => setPreviewError(true)} />
+                  {previewError && (
+                    <div className="absolute inset-x-3 bottom-3 rounded-lg border border-border bg-card/95 p-3 text-xs font-medium text-foreground shadow-soft">
+                      تعذر تشغيل المعاينة داخل الصفحة. استخدم زر فتح أو تحميل.
+                    </div>
+                  )}
+                </div>
               ) : loading ? (
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               ) : (
