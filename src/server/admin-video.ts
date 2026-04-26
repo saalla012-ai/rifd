@@ -183,14 +183,6 @@ function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.i
   return { eligible: true, reason: provider.health_status === "unhealthy" ? "مؤهل لكن مؤخر بسبب حالة غير صحية" : "جاهز للراوتر" };
 }
 
-function providerCapabilities(provider: AdminVideoProviderConfig) {
-  const metadata = (provider.metadata as Record<string, unknown> | null) ?? {};
-  return {
-    supports_two_images: metadata.supports_two_images === true,
-    supports_voice: metadata.supports_voice === true,
-  };
-}
-
 function providerPriorityScore(provider: AdminVideoProviderConfig) {
   const healthPenalty = provider.health_status === "unhealthy" ? 10_000 : provider.health_status === "inactive" ? 20_000 : 0;
   return provider.priority + healthPenalty;
