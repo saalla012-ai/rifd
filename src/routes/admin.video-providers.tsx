@@ -328,6 +328,27 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
+function PilotAuditPanel({ audit }: { audit: SaudiVideoPilotAuditResult }) {
+  const topIssues = audit.findings.filter((item) => item.issues.length > 0).slice(0, 5);
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">تدقيق مكتبة البرومبتات السعودية</h2>
+          <p className="mt-1 text-xs text-muted-foreground">فحص جودة البرومبتات قبل الاختبار العملي: الصوت، المنتج، قيود التشوهات، ومنع النص العربي المرئي.</p>
+        </div>
+        <Badge className={cn(audit.readyForPilot ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{audit.passRate.toLocaleString("ar-SA")}% جاهزية</Badge>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{audit.passCount.toLocaleString("ar-SA")}/{audit.totalTemplates.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">قوالب اجتازت معيار 80%</p></div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{audit.sectorCoverage.length.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">قطاعات مغطاة</p></div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{Object.entries(audit.riskMix).map(([k, v]) => `${k}: ${v}`).join(" · ")}</strong><p className="mt-1 text-muted-foreground">توزيع المخاطر</p></div>
+      </div>
+      {topIssues.length > 0 && <div className="mt-3 space-y-2">{topIssues.map((item) => <div key={item.templateId} className="rounded-lg border border-border bg-background/60 p-3 text-xs"><strong>{item.label} — {item.score}%</strong><p className="mt-1 text-muted-foreground">{item.issues.join(" · ")}</p></div>)}</div>}
+    </section>
+  );
+}
+
 function SaudiFalTestPanel({ draft, productImageUrl, preview, testResult, loading, running, onDraft, onProductImageUrl, onPreview, onRun }: { draft: SaudiFalDraft; productImageUrl: string; preview: SaudiFalPromptPreview | null; testResult: SaudiFalModelTestResult | null; loading: boolean; running: boolean; onDraft: (next: SaudiFalDraft) => void; onProductImageUrl: (value: string) => void; onPreview: () => void; onRun: () => void }) {
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
