@@ -320,6 +320,26 @@ function GenerateVideoPage() {
             </div>
           </div>
 
+          <div className="rounded-lg border border-border bg-secondary/20 p-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <Label>قوالب PixVerse v6 السعودية</Label>
+                <p className="mt-1 text-xs text-muted-foreground">اختر قالباً حسب القطاع ثم عدّل النص قبل التوليد.</p>
+              </div>
+              <Button type="button" size="sm" variant="outline" onClick={applyTemplate} className="w-fit gap-1">
+                <Wand2 className="h-3.5 w-3.5" /> تطبيق القالب
+              </Button>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_120px]">
+              <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm">
+                {SAUDI_VIDEO_PROMPT_TEMPLATES.map((template) => (
+                  <option key={template.id} value={template.id}>{template.sector} — {template.label}</option>
+                ))}
+              </select>
+              <div className="flex items-center justify-center rounded-md border border-border bg-card px-3 text-xs font-bold text-muted-foreground">مخاطرة: {selectedTemplate.risk}</div>
+            </div>
+          </div>
+
           <div>
             <div className="flex items-center justify-between gap-2">
               <Label>وصف الفيديو</Label>
