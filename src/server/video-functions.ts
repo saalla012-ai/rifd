@@ -339,23 +339,6 @@ const falProvider: VideoProvider = {
   },
 };
 
-const manualBridgeProvider: VideoProvider = {
-  key: "google_flow_bridge",
-  async createJob(_input, config) {
-    return {
-      providerJobId: null,
-      status: "processing",
-      resultUrl: null,
-      manualRequired: true,
-      estimatedCostUsd: null,
-      metadata: { mode: config.mode, manual_required: true },
-    };
-  },
-  async refreshJob(_providerJobId, row) {
-    return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
-  },
-};
-
 function futureApiProvider(key: string, secretName: string): VideoProvider {
   return {
     key,
@@ -372,7 +355,6 @@ function futureApiProvider(key: string, secretName: string): VideoProvider {
 
 const PROVIDERS: Record<string, VideoProvider> = {
   fal_ai: falProvider,
-  google_flow_bridge: manualBridgeProvider,
   runway: futureApiProvider("runway", "RUNWAY_API_KEY"),
   luma: futureApiProvider("luma", "LUMA_API_KEY"),
   kling: futureApiProvider("kling", "KLING_API_KEY"),
