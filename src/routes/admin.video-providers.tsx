@@ -14,7 +14,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalPromptPreview } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview } from "@/server/admin-video";
+import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
+import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
+import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
+import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -43,6 +47,18 @@ const HEALTH_TONE: Record<string, string> = {
 };
 
 type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
+
+const PERSONA_IMAGES: Record<string, string> = {
+  "male-young": personaMaleYoung,
+  "male-premium": personaMalePremium,
+  "female-abaya": personaFemaleAbaya,
+  "retail-seller": personaRetailSeller,
+};
+
+function absoluteAssetUrl(value: string) {
+  if (/^https?:\/\//i.test(value)) return value;
+  return typeof window === "undefined" ? value : new URL(value, window.location.origin).toString();
+}
 
 function fmtDate(value: string | null) {
   return value ? new Date(value).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "—";
