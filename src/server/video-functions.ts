@@ -639,7 +639,6 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (isStale) {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_timeout") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
-      if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       const updated = await markProcessingJobRefunded({ jobId: row.id, refundLedgerId: effectiveRefundLedgerId, errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً." });
       return { job: updated };
     }
@@ -668,7 +667,6 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (prediction.status === "failed" || prediction.status === "canceled") {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_failed") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
-      if (refundLedgerId) await releaseVideoDailyQuota(supabaseAdmin, userId);
       const updated = await markProcessingJobRefunded({ jobId: row.id, refundLedgerId: effectiveRefundLedgerId, errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود" });
       return { job: updated };
     }
