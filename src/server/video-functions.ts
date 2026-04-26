@@ -148,6 +148,9 @@ const videoInputSchema = z.object({
   selectedPersonaId: z.string().trim().max(80).optional().or(z.literal("")),
   selectedTemplateId: z.string().trim().max(100).optional().or(z.literal("")),
   campaignPackId: z.string().uuid().optional(),
+  source: z.enum(["medium-test"]).optional(),
+  mediumTestSampleId: z.string().trim().max(40).optional().or(z.literal("")),
+  mediumTestTemplateId: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
 async function assertCampaignPackOwner(db: DbClient, userId: string, campaignPackId?: string) {
@@ -506,6 +509,14 @@ export const generateVideo = createServerFn({ method: "POST" })
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
       const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId);
+      const mediumTestMetadata = data.source === "medium-test"
+        ? {
+            source: "admin_medium_video_test",
+            medium_test: true,
+            medium_test_sample_id: data.mediumTestSampleId || null,
+            medium_test_template_id: data.mediumTestTemplateId || null,
+          }
+        : {};
       const watermarkRequired = profile?.plan === "free";
       const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
 
@@ -515,6 +526,7 @@ export const generateVideo = createServerFn({ method: "POST" })
         duration_seconds: data.durationSeconds,
         credit_scope: "video",
         ...baseMetadata,
+        ...mediumTestMetadata,
       });
       ledgerId = charge.ledgerId;
 
@@ -535,7 +547,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free", prompt_adherence_required: true, prompt_adherence_gate: "80%+" },
+          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free", prompt_adherence_required: true, prompt_adherence_gate: "80%+" },
         })
         .select("*")
         .single();

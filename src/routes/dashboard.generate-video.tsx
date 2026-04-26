@@ -30,6 +30,8 @@ type VideoSearch = {
   aspectRatio?: AspectRatio;
   selectedPersonaId?: string;
   source?: "medium-test";
+  mediumTestSampleId?: string;
+  mediumTestTemplateId?: string;
 };
 
 const QUALITY = {
@@ -76,6 +78,8 @@ export const Route = createFileRoute("/dashboard/generate-video")({
     aspectRatio: s.aspectRatio === "9:16" || s.aspectRatio === "1:1" || s.aspectRatio === "16:9" ? s.aspectRatio : undefined,
     selectedPersonaId: typeof s.selectedPersonaId === "string" ? s.selectedPersonaId : undefined,
     source: s.source === "medium-test" ? "medium-test" : undefined,
+    mediumTestSampleId: typeof s.mediumTestSampleId === "string" ? s.mediumTestSampleId : undefined,
+    mediumTestTemplateId: typeof s.mediumTestTemplateId === "string" ? s.mediumTestTemplateId : undefined,
   }),
   component: GenerateVideoPage,
 });
@@ -198,12 +202,12 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: search.mediumTestSampleId, mediumTestTemplateId: search.mediumTestTemplateId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
-      track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged, template_id: selectedTemplateId });
+      track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? search.mediumTestTemplateId ?? "medium-test" : selectedTemplateId, source: search.source });
       toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
       void refreshCredits();
       router.invalidate();

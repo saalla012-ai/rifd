@@ -49,9 +49,10 @@ const EvaluatePilotSampleInput = z.object({
   sampleId: z.string().trim().min(3).max(40),
   resultUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
   productClarity: z.number().int().min(1).max(5),
+  sceneAdherence: z.number().int().min(1).max(5).optional(),
+  motionAdherence: z.number().int().min(1).max(5).optional(),
   saudiDialect: z.number().int().min(1).max(5),
-  lipSync: z.number().int().min(1).max(5),
-  visualIntegrity: z.number().int().min(1).max(5),
+  negativeSafety: z.number().int().min(1).max(5).optional(),
   publishReadiness: z.number().int().min(1).max(5),
   promptAdherence: z.number().int().min(1).max(5).default(4),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
@@ -253,9 +254,10 @@ export type SaudiVideoPilotEvaluationResult = {
   sampleId: string;
   resultUrl?: string;
   productClarity: number;
+  sceneAdherence: number;
+  motionAdherence: number;
   saudiDialect: number;
-  lipSync: number;
-  visualIntegrity: number;
+  negativeSafety: number;
   publishReadiness: number;
   promptAdherence: number;
   notes?: string;
@@ -808,17 +810,21 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
-    const weights = { productClarity: 25, saudiDialect: 15, lipSync: 10, visualIntegrity: 20, publishReadiness: 30 } as const;
+    const sceneAdherence = data.sceneAdherence ?? 4;
+    const motionAdherence = data.motionAdherence ?? 4;
+    const negativeSafety = data.negativeSafety ?? 4;
+    const weights = { productClarity: 25, sceneAdherence: 20, motionAdherence: 15, saudiDialect: 15, negativeSafety: 15, publishReadiness: 10 } as const;
     const weightedScore =
       data.productClarity * weights.productClarity +
+      sceneAdherence * weights.sceneAdherence +
+      motionAdherence * weights.motionAdherence +
       data.saudiDialect * weights.saudiDialect +
-      data.lipSync * weights.lipSync +
-      data.visualIntegrity * weights.visualIntegrity +
+      negativeSafety * weights.negativeSafety +
       data.publishReadiness * weights.publishReadiness;
     const score = Math.round(weightedScore / 5);
-    const promptAdherenceScore = Math.round((data.promptAdherence / 5) * 100);
+    const promptAdherenceScore = Math.round(((data.productClarity * 25 + sceneAdherence * 20 + motionAdherence * 15 + data.saudiDialect * 15 + negativeSafety * 15 + data.promptAdherence * 10) / 5));
     const decision = score >= 80 && promptAdherenceScore >= 80 ? "publishable" : score >= 68 && promptAdherenceScore >= 65 ? "minor_revision" : "reject_or_reprompt";
-    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
+    const result = { ...data, sceneAdherence, motionAdherence, negativeSafety, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
     await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
     return result;
   });
