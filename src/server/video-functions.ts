@@ -520,7 +520,6 @@ export const generateVideo = createServerFn({ method: "POST" })
     const cost = videoCost(data.quality, data.durationSeconds);
     let ledgerId: string | null = null;
     let jobId: string | null = null;
-    let dailyQuotaConsumed = false;
 
     try {
       if (!(await operationalSwitchEnabled(supabase, "video_enabled"))) throw new Error("video_fast_not_allowed");
@@ -530,15 +529,10 @@ export const generateVideo = createServerFn({ method: "POST" })
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
 
-      const dailyQuota = await consumeVideoDailyQuota(supabase, data.quality, data.durationSeconds);
-      dailyQuotaConsumed = true;
-
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
         aspect_ratio: data.aspectRatio,
         duration_seconds: data.durationSeconds,
-        daily_video_used: dailyQuota.used,
-        daily_video_cap: dailyQuota.cap,
         credit_scope: "video",
         ...baseMetadata,
       });
@@ -553,12 +547,15 @@ export const generateVideo = createServerFn({ method: "POST" })
           aspect_ratio: data.aspectRatio,
           duration_seconds: data.durationSeconds,
           starting_frame_url: data.startingFrameUrl || null,
+          speaker_image_url: data.speakerImageUrl || null,
+          product_image_url: data.productImageUrl || null,
+          selected_persona_id: data.selectedPersonaId || null,
           credits_charged: cost,
           ledger_id: ledgerId,
           status: "processing",
           provider: "router",
           estimated_cost_usd: DEFAULT_ESTIMATED_COST_USD[data.quality][data.durationSeconds],
-          metadata: { ...baseMetadata, router_version: 1, duration_aware_pricing: true },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true },
         })
         .select("*")
         .single();
@@ -599,7 +596,6 @@ export const generateVideo = createServerFn({ method: "POST" })
     } catch (e) {
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (ledgerId ? await getRefundLedgerId(supabaseAdmin, ledgerId) : null);
-      if (dailyQuotaConsumed && (!ledgerId || refundLedgerId)) await releaseVideoDailyQuota(supabaseAdmin, userId);
       if (jobId) {
         const { data: failedJob } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
         await markProcessingJobRefunded({
