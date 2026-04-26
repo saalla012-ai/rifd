@@ -535,7 +535,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free" },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free", prompt_adherence_required: true, prompt_adherence_gate: "80%+" },
         })
         .select("*")
         .single();
