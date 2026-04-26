@@ -151,7 +151,7 @@ function AdminVideoProvidersPage() {
       const scenarios = [
         { label: "سريع 5ث بلا صور", quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false, imageCount: 0 },
         { label: "إعلاني 8ث بصورة منتج", quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true, imageCount: 1 },
-        { label: "احترافي 8ث بشخص ومنتج", quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true, imageCount: 2 },
+        { label: "احترافي 8ث بشخص ومنتج", quality: "quality", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true, imageCount: 2 },
       ] as const;
       const results = await Promise.all(scenarios.map(async ({ label, ...scenario }) => ({ ...(await testRouter({ data: scenario, headers })), scenarioLabel: label })));
       setRouterResults(results);
@@ -396,7 +396,7 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-extrabold">مصفوفة الاختبار التجاري السعودي</h2>
-          <p className="mt-1 text-xs text-muted-foreground">عينات ممثلة قبل الإطلاق: قطاعات سعودية، شخصيات، جودات، ومعايير تقييم واضحة دون خصم نقاط.</p>
+          <p className="mt-1 text-xs text-muted-foreground">عينات ممثلة قبل الإطلاق: قطاعات سعودية، شخصيات، جودات، ومعيار 9:16 إلزامي للإعلانات العمودية دون خصم نقاط.</p>
         </div>
         <Badge className="bg-primary/15 text-primary">{matrix.totalSamples.toLocaleString("ar-SA")} عينات · ${matrix.estimatedCostUsd}</Badge>
       </div>
