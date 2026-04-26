@@ -109,6 +109,8 @@ function GenerateVideoPage() {
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<VideoJob[]>([]);
   const [activeJob, setActiveJob] = useState<VideoJob | null>(null);
+  const [previewError, setPreviewError] = useState(false);
+  const [downloadingVideo, setDownloadingVideo] = useState(false);
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
 
   const selectedQuality = QUALITY[quality];
@@ -123,7 +125,10 @@ function GenerateVideoPage() {
   const productImageRequired = isPaidPlan && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
-  const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
+  const latestResult = useMemo(() => {
+    const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
+    return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
+  }, [activeJob, jobs]);
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
 
   const applyTemplate = () => {
@@ -137,7 +142,8 @@ function GenerateVideoPage() {
       if (!session) return;
       const out = await listVideoJobsFn({ headers: { Authorization: `Bearer ${session.access_token}` } });
       setJobs(out.jobs);
-      if (!activeJob && out.jobs[0]) setActiveJob(out.jobs[0]);
+      const syncedActiveJob = activeJob ? out.jobs.find((job) => job.id === activeJob.id) : null;
+      setActiveJob(syncedActiveJob ?? out.jobs.find((job) => job.status === "completed" && job.result_url) ?? out.jobs[0] ?? null);
     } catch {
       // لا نزعج المستخدم عند فشل تحميل السجل المصغر
     }
@@ -152,6 +158,10 @@ function GenerateVideoPage() {
     const id = window.setInterval(() => void refreshActiveJob(false), 8_000);
     return () => window.clearInterval(id);
   }, [activeJob?.id, activeJob?.status]);
+
+  useEffect(() => {
+    setPreviewError(false);
+  }, [latestResult]);
 
   const generate = async () => {
     if (prompt.trim().length < 10) {
@@ -210,9 +220,34 @@ function GenerateVideoPage() {
       setActiveJob(out.job);
       setJobs((current) => current.map((job) => job.id === out.job.id ? out.job : job));
       if (out.job.status !== "processing") void refreshCredits();
+      if (out.job.status === "completed" && out.job.result_url) toast.success("الفيديو جاهز للمعاينة والتحميل");
       if (showToast) toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
+    }
+  };
+
+  const downloadLatestVideo = async () => {
+    if (!latestResult) return;
+    setDownloadingVideo(true);
+    try {
+      const response = await fetch(latestResult, { mode: "cors" });
+      if (!response.ok) throw new Error("download_failed");
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = `rifd-video-${activeJob?.id?.slice(0, 8) ?? Date.now()}.mp4`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+      toast.success("بدأ تحميل الفيديو");
+    } catch {
+      window.open(latestResult, "_blank", "noopener,noreferrer");
+      toast.message("فتحنا الفيديو في تبويب جديد؛ استخدم حفظ الملف إذا منع المتصفح التحميل المباشر.");
+    } finally {
+      setDownloadingVideo(false);
     }
   };
 
@@ -419,23 +454,37 @@ function GenerateVideoPage() {
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
-              {activeJob?.status === "processing" && (
-                <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
-                  <RefreshCw className="h-3 w-3" /> تحديث
-                </button>
-              )}
-              {latestResult && (
-                <a href={latestResult} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
-                  <Download className="h-3 w-3" /> فتح
-                </a>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {activeJob?.status === "processing" && (
+                  <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                    <RefreshCw className="h-3 w-3" /> تحديث
+                  </button>
+                )}
+                {latestResult && (
+                  <>
+                    <button type="button" onClick={() => void downloadLatestVideo()} disabled={downloadingVideo} className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-bold text-primary-foreground hover:opacity-90 disabled:opacity-60">
+                      {downloadingVideo ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />} تحميل
+                    </button>
+                    <a href={latestResult} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
+                      فتح
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
             <div className="mt-3 flex aspect-[9/16] items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-secondary/30 text-center text-sm text-muted-foreground">
               {latestResult ? (
                 latestResult.startsWith("data:image") ? (
                   <img src={latestResult} alt="معاينة الفيديو" className="h-full w-full object-cover" />
                 ) : (
-                  <video src={latestResult} controls className="h-full w-full object-cover" />
+                  <div className="relative h-full w-full">
+                    <video src={latestResult} controls playsInline preload="metadata" className="h-full w-full object-cover" onError={() => setPreviewError(true)} />
+                    {previewError && (
+                      <div className="absolute inset-x-3 bottom-3 rounded-lg border border-border bg-card/95 p-3 text-xs font-medium text-foreground shadow-soft">
+                        تعذر تشغيل المعاينة داخل الصفحة. استخدم زر فتح أو تحميل.
+                      </div>
+                    )}
+                  </div>
                 )
               ) : loading ? (
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -471,7 +520,7 @@ function GenerateVideoPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold">{job.quality === "quality" ? "احترافي" : job.quality === "lite" ? "إعلاني" : "سريع"}</span>
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{STATUS_LABEL[job.status] ?? job.status}</span>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold">{job.status === "completed" && job.result_url ? "جاهز للمعاينة" : STATUS_LABEL[job.status] ?? job.status}</span>
                     </div>
                     <p className="mt-1 line-clamp-2 text-muted-foreground">{job.prompt}</p>
                   {job.error_message && <p className="mt-1 line-clamp-2 text-[10px] font-medium text-destructive">{job.error_message}</p>}
