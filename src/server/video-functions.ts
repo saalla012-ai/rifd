@@ -26,11 +26,16 @@ const REPLICATE_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   quality: "google/veo-3",
 };
 
-const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, Record<VideoDuration, number>> = {
-  fast: { 5: 0.5, 8: 0.8 },
-  lite: { 5: 0.8, 8: 1.2 },
-  quality: { 5: 2.0, 8: 3.2 },
+const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
+  fast: 0.5,
+  lite: 1.2,
+  quality: 3.2,
 };
+
+function estimatedVideoCostUsd(quality: VideoQuality, durationSeconds: VideoDuration) {
+  if (!isValidVideoTierSelection(quality, durationSeconds)) throw new Error("invalid_video_tier_duration");
+  return DEFAULT_ESTIMATED_COST_USD[quality];
+}
 
 type DbClient = SupabaseClient<Database>;
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
@@ -332,7 +337,7 @@ const replicateProvider: VideoProvider = {
       providerJobId: prediction.id ?? null,
       status: (prediction.status ?? "processing") as ProviderStatus,
       resultUrl: typeof output === "string" ? output : null,
-      estimatedCostUsd: DEFAULT_ESTIMATED_COST_USD[input.quality][input.durationSeconds],
+      estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds),
       metadata: { model },
     };
   },
