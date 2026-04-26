@@ -237,6 +237,7 @@ function PricingPage() {
                     <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                       <p>{plan.videoFastAllowed ? `سريع: ${videoCreditCost("fast", 5).toLocaleString("ar-SA")} نقطة` : "الفيديو غير متاح"}</p>
                       <p>{plan.videoQualityAllowed ? `احترافي: ${videoCreditCost("quality", 8).toLocaleString("ar-SA")} نقطة` : `إعلاني: ${videoCreditCost("lite", 8).toLocaleString("ar-SA")} نقطة`}</p>
+                      <p className="font-bold text-foreground">تقريبياً: {formatPlanNumber(Math.floor(plan.monthlyCredits / videoCreditCost("fast", 5)))} سريع أو {formatPlanNumber(Math.floor(plan.monthlyCredits / videoCreditCost("lite", 8)))} إعلاني</p>
                     </div>
                   </div>
 
