@@ -229,7 +229,6 @@ function providerPriorityScore(provider: AdminVideoProviderConfig) {
 function providerSecretName(providerKey: string) {
   return ({
     fal_ai: "FAL_API_KEY",
-    google_veo_api: "GOOGLE_VEO_API_KEY",
     runway: "RUNWAY_API_KEY",
     luma: "LUMA_API_KEY",
     kling: "KLING_API_KEY",
