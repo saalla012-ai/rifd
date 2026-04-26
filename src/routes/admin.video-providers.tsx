@@ -282,6 +282,7 @@ function AdminVideoProvidersPage() {
       ) : (
         <>
           <PilotProofPanel />
+          <LaunchTemplatePerformancePanel templates={templatePerformance} />
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
           <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
@@ -360,6 +361,36 @@ function AdminVideoProvidersPage() {
         </>
       )}
     </DashboardShell>
+  );
+}
+
+function LaunchTemplatePerformancePanel({ templates }: { templates: SaudiLaunchTemplatePerformance[] }) {
+  const approvedIds = new Set(SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]);
+  const visibleTemplates = templates.filter((template) => approvedIds.has(template.templateId));
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">قياس أداء قوالب الإطلاق</h2>
+          <p className="mt-1 text-xs text-muted-foreground">يتتبع القالب المستخدم داخل metadata لكل مهمة فيديو حتى يكون توسيع القطاعات مبنياً على نتائج فعلية.</p>
+        </div>
+        <Badge className="bg-primary/15 text-primary">{visibleTemplates.length.toLocaleString("ar-SA")} قالب نشط</Badge>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {visibleTemplates.length > 0 ? visibleTemplates.map((template) => (
+          <div key={template.templateId} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong>{template.templateId}</strong>
+              <Badge className={cn(template.publishableRate >= 80 ? "bg-success/15 text-success" : "bg-gold/15 text-gold")}>{template.publishableRate.toLocaleString("ar-SA")}% مكتمل</Badge>
+            </div>
+            <p className="mt-2 text-muted-foreground">إجمالي: {template.total.toLocaleString("ar-SA")} · مكتمل: {template.completed.toLocaleString("ar-SA")} · مسترد: {template.refunded.toLocaleString("ar-SA")} · فشل: {template.failed.toLocaleString("ar-SA")}</p>
+            <p className="mt-1 text-muted-foreground">متوسط التكلفة: {template.avgCostUsd === null ? "—" : `$${template.avgCostUsd}`} · آخر استخدام: {fmtDate(template.lastAt)}</p>
+          </div>
+        )) : (
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs text-muted-foreground md:col-span-2">لا توجد توليدات فعلية بالقالبين المعتمدين بعد. القياس جاهز وسيبدأ تلقائياً مع أول مهمة فيديو جديدة.</div>
+        )}
+      </div>
+    </section>
   );
 }
 
