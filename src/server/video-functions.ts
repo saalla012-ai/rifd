@@ -20,12 +20,6 @@ const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
 const TERMINAL_PROVIDER_STATUSES = new Set(["succeeded", "failed", "canceled"]);
 
-const REPLICATE_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
-  fast: "google/veo-3-fast",
-  lite: "google/veo-3-fast",
-  quality: "google/veo-3",
-};
-
 const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
   fast: 0.2,
   lite: 0.25,
@@ -262,33 +256,13 @@ async function loadProviderConfigs(input: z.infer<typeof videoInputSchema>) {
 
   if (error) {
     console.error(`video_provider_configs read failed: ${error.message}`);
-    return [defaultReplicateConfig()];
+    return [];
   }
 
   const rows = ((data as VideoProviderConfig[] | null) ?? [])
     .filter((config) => providerSupports(config, input))
     .sort((a, b) => providerPriorityScore(a) - providerPriorityScore(b));
-  return rows.length > 0 ? rows : [defaultReplicateConfig()].filter((config) => providerSupports(config, input));
-}
-
-function defaultReplicateConfig(): VideoProviderConfig {
-  return {
-    provider_key: "replicate",
-    display_name_admin: "Replicate backup video provider",
-    enabled: true,
-    public_enabled: true,
-    supported_qualities: ["fast", "lite", "quality"],
-    priority: 10,
-    cost_5s: 150,
-    cost_8s: 800,
-    supports_9_16: true,
-    supports_1_1: true,
-    supports_16_9: true,
-    supports_starting_frame: true,
-    mode: "api",
-    health_status: "active",
-    metadata: { fallback: true },
-  };
+  return rows;
 }
 
 async function markProviderFailure(providerKey: string, error: unknown) {
