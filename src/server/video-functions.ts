@@ -85,6 +85,8 @@ type ProviderAttempt = {
   reason?: string;
 };
 
+type VideoInput = z.infer<typeof videoInputSchema> & { watermarkRequired?: boolean };
+
 type VideoEntitlement = {
   video_fast_allowed: boolean;
   video_quality_allowed: boolean;
@@ -93,7 +95,7 @@ type VideoEntitlement = {
 
 type VideoProvider = {
   key: string;
-  createJob(input: z.infer<typeof videoInputSchema>, config: VideoProviderConfig): Promise<ProviderCreateResult>;
+  createJob(input: VideoInput, config: VideoProviderConfig): Promise<ProviderCreateResult>;
   refreshJob(providerJobId: string, row: VideoJobRow): Promise<ProviderRefreshResult>;
 };
 
@@ -192,7 +194,7 @@ function personaPrompt(personaId?: string) {
   } as Record<string, string>)[personaId ?? ""] ?? "";
 }
 
-function buildSaudiVideoPrompt(input: z.infer<typeof videoInputSchema>) {
+function buildSaudiVideoPrompt(input: VideoInput) {
   const persona = personaPrompt(input.selectedPersonaId);
   const imageBrief = [
     input.speakerImageUrl ? "استخدم صورة الشخص كمرجع للشخصية المتحدثة." : persona,
@@ -202,10 +204,11 @@ function buildSaudiVideoPrompt(input: z.infer<typeof videoInputSchema>) {
     "إعلان فيديو سعودي قصير عالي التحويل للسوق السعودي. صوت عربي سعودي واضح وطبيعي إذا كان الصوت مدعوماً. بنية الإعلان: خطاف قوي، فائدة ملموسة، لقطة منتج جذابة، دعوة إجراء مباشرة. حافظ على مظهر محتشم وواقعي وابتعد عن المبالغة غير الموثوقة.",
     imageBrief,
     input.prompt,
+    input.watermarkRequired ? "أضف علامة مائية صغيرة ونظيفة بحروف لاتينية فقط: RIFD في الزاوية السفلية، بدون أي نص عربي داخل الفيديو." : "",
   ].filter(Boolean).join("\n\n");
 }
 
-function primaryReferenceImage(input: z.infer<typeof videoInputSchema>) {
+function primaryReferenceImage(input: VideoInput) {
   return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
 }
 
