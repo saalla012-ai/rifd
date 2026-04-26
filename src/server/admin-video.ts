@@ -747,7 +747,6 @@ export const auditSaudiVideoPilotLibrary = createServerFn({ method: "POST" })
       if (!/المنتج/.test(prompt)) issues.push("تركيز المنتج غير كافٍ");
       if (prompt.length < 280) issues.push("البرومبت قصير وقد يعطي نتيجة عامة");
       const score = Math.max(0, 100 - issues.length * 14 - (template.risk === "عالٍ" ? 8 : template.risk === "متوسط" ? 3 : 0));
-      const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
       return {
         templateId: template.id,
         label: template.label,
@@ -861,6 +860,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const job = jobsBySample.get(sampleId) ?? null;
       const requiredProductImage = quality !== "fast";
       const missingProductImage = Boolean(job && requiredProductImage && !job.product_image_url);
+      const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
       return {
         sampleId,
         templateId: template.id,
