@@ -388,7 +388,7 @@ const falProvider: VideoProvider = {
     const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
-    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: DEFAULT_ESTIMATED_COST_USD[input.quality][input.durationSeconds], metadata: { model, fal_result_shape: Object.keys(result) } };
+    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(_providerJobId, row) {
     return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
@@ -593,7 +593,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           ledger_id: ledgerId,
           status: "processing",
           provider: "router",
-          estimated_cost_usd: DEFAULT_ESTIMATED_COST_USD[data.quality][data.durationSeconds],
+          estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
           metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true },
         })
         .select("*")
@@ -622,7 +622,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           result_url: routed.result.resultUrl,
           status: finalStatus,
           completed_at: finalStatus === "completed" ? new Date().toISOString() : null,
-          estimated_cost_usd: routed.result.estimatedCostUsd ?? DEFAULT_ESTIMATED_COST_USD[data.quality][data.durationSeconds],
+          estimated_cost_usd: routed.result.estimatedCostUsd ?? estimatedVideoCostUsd(data.quality, data.durationSeconds),
           metadata: metadata as Json,
         })
         .eq("id", job.id)
