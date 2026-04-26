@@ -124,8 +124,9 @@ function assertProductImagePolicy(plan: string | null | undefined, input: z.infe
   }
 }
 
-function assertLaunchTemplatePolicy(templateId?: string) {
+function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test") {
   if (!templateId) return "custom";
+  if (templateId === "custom" && source === "medium-test") return "custom";
   if ((SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]).includes(templateId)) return templateId;
   throw new Error("video_template_not_publicly_approved");
 }
@@ -508,7 +509,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
-      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId);
+      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source);
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
