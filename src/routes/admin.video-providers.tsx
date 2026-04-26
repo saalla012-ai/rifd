@@ -53,7 +53,7 @@ const HEALTH_TONE: Record<string, string> = {
 };
 
 type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
-type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; saudiDialect: number; lipSync: number; visualIntegrity: number; publishReadiness: number; promptAdherence: number; notes: string };
+type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; sceneAdherence: number; motionAdherence: number; saudiDialect: number; negativeSafety: number; publishReadiness: number; promptAdherence: number; notes: string };
 
 const PERSONA_IMAGES: Record<string, string> = {
   "male-young": personaMaleYoung,
@@ -519,7 +519,7 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
                 <Textarea readOnly dir="rtl" value={sample.finalPrompt} className="mt-2 min-h-40 text-xs leading-6" />
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                    <Link to="/dashboard/generate-video" search={{ prompt: sample.generationPayload.prompt, quality: sample.generationPayload.quality, aspectRatio: sample.generationPayload.aspectRatio, selectedPersonaId: sample.generationPayload.selectedPersonaId, source: "medium-test" }} target="_blank">فتح للتوليد</Link>
+                    <Link to="/dashboard/generate-video" search={{ prompt: sample.generationPayload.prompt, quality: sample.generationPayload.quality, aspectRatio: sample.generationPayload.aspectRatio, selectedPersonaId: sample.generationPayload.selectedPersonaId, source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">فتح للتوليد</Link>
                   </Button>
                   {sample.generationPayload.requiresProductImage && <Badge className="bg-gold/15 text-gold">أضف صورة منتج قبل التشغيل</Badge>}
                 </div>
@@ -532,8 +532,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
 }
 
 function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
-  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, saudiDialect: 4, lipSync: 4, visualIntegrity: 4, publishReadiness: 4, promptAdherence: 4, notes: "" });
-  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "saudiDialect" | "lipSync" | "visualIntegrity" | "publishReadiness" | "promptAdherence">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
+  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, promptAdherence: 4, notes: "" });
+  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "sceneAdherence" | "motionAdherence" | "saudiDialect" | "negativeSafety" | "publishReadiness" | "promptAdherence">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
