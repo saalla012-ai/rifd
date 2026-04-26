@@ -21,6 +21,8 @@ import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
 import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 import pilotSaudiOfficeVideo from "@/assets/pilot-saudi-office-vertical-9x16.mp4.asset.json";
 import pilotSaudiPerfumeVideo from "@/assets/pilot-saudi-perfume-vertical-9x16.mp4.asset.json";
+import pilotSaudiAbayaVideo from "@/assets/pilot-saudi-abaya-vertical-9x16.mp4.asset.json";
+import pilotSaudiCoffeeVideo from "@/assets/pilot-saudi-coffee-vertical-9x16.mp4.asset.json";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -375,6 +377,8 @@ function PilotProofPanel() {
   const proofSamples = [
     { label: "مكتب سعودي", url: pilotSaudiOfficeVideo.url, checks: ["H.264", "1088×1920", "5.04ث", "9:16"], verdict: "مجتاز فنياً", score: 84, decision: "يُستخدم كمرجع تقني لا كإعلان نهائي" },
     { label: "عطر فاخر", url: pilotSaudiPerfumeVideo.url, checks: ["1080p", "5ث", "9:16", "توسيع مصفوفة"], verdict: "قيد الاعتماد", score: 78, decision: "يحتاج تقييم وضوح المنتج والهوية قبل نسخ البرومبت" },
+    { label: "عباية راقية", url: pilotSaudiAbayaVideo.url, checks: ["1080p", "5ث", "9:16", "أزياء محتشمة"], verdict: "قيد الاعتماد", score: 80, decision: "تُراجع سلامة الحركة والاحتشام وتفاصيل القماش قبل اعتماد قالب الأزياء" },
+    { label: "قهوة عربية", url: pilotSaudiCoffeeVideo.url, checks: ["1080p", "5ث", "9:16", "ضيافة سعودية"], verdict: "قيد الاعتماد", score: 82, decision: "مرشحة للتوسع إذا بقي المنتج واضحاً واللقطة طبيعية دون تشوه اليدين" },
   ];
   const averageScore = Math.round(proofSamples.reduce((sum, sample) => sum + sample.score, 0) / proofSamples.length);
   return (
@@ -384,12 +388,12 @@ function PilotProofPanel() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="font-extrabold">دليل عينات الفيديو العمودية</h2>
-              <p className="mt-1 text-xs text-muted-foreground">تم نقل المرحلة من عينة تحقق واحدة إلى بداية مصفوفة فعلية: مكتب سعودي + عطر فاخر، مع إبقاء الاعتماد النهائي مشروطاً بدرجات التسويق والنشر.</p>
+              <p className="mt-1 text-xs text-muted-foreground">تم نقل المرحلة من عينة تحقق واحدة إلى أربع عينات فعلية: مكتب، عطر، عباية، وقهوة؛ مع إبقاء الاعتماد النهائي مشروطاً بدرجات التسويق والنشر.</p>
             </div>
             <Badge className="bg-success/15 text-success">بوابة 9:16 مجتازة</Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Badge variant="secondary">عينتان فعليتان</Badge>
+            <Badge variant="secondary">٤ عينات فعلية</Badge>
             <Badge variant="secondary">مسار عمودي فقط</Badge>
             <Badge variant="secondary">متوسط أولي {averageScore.toLocaleString("ar-SA")}%</Badge>
           </div>
@@ -397,7 +401,7 @@ function PilotProofPanel() {
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>اعتمد</strong><p className="mt-1 text-muted-foreground">9:16، مدة قصيرة، فيديو مباشر داخل لوحة الإدارة.</p></div>
             <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>لا توسّع بعد</strong><p className="mt-1 text-muted-foreground">لا نولد 15 عينة قبل تقييم وضوح المنتج والوجه واليدين.</p></div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">اعتماد/تعديل برومبت العطر ثم إطلاق قطاعات العبايات والقهوة.</p></div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>الخطوة التالية</strong><p className="mt-1 text-muted-foreground">اعتماد أفضل قالبين ثم توليد الإلكترونيات والهدايا كآخر عينة قبل الإطلاق.</p></div>
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
