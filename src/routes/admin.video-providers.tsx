@@ -52,7 +52,7 @@ function AdminVideoProvidersPage() {
   const testRouter = useServerFn(testVideoRouterDryRun);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
-  const [routerResult, setRouterResult] = useState<AdminVideoRouterTestResult | null>(null);
+  const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
@@ -111,14 +111,14 @@ function AdminVideoProvidersPage() {
     try {
       const headers = await authHeaders();
       const scenarios = [
-        { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false, imageCount: 0 },
-        { quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true, imageCount: 1 },
-        { quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true, imageCount: 2 },
+        { label: "سريع 5ث بلا صور", quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false, imageCount: 0 },
+        { label: "إعلاني 8ث بصورة منتج", quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true, imageCount: 1 },
+        { label: "احترافي 8ث بشخص ومنتج", quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true, imageCount: 2 },
       ] as const;
-      const result = await testRouter({ data: scenarios[0], headers });
-      await Promise.all(scenarios.slice(1).map((scenario) => testRouter({ data: scenario, headers })));
-      setRouterResult(result);
-      toast[result.ok ? "success" : "error"](result.ok ? "تم اختبار 3 مسارات للراوتر" : "لا يوجد مزود مؤهل للمسار الأساسي");
+      const results = await Promise.all(scenarios.map(async ({ label, ...scenario }) => ({ ...(await testRouter({ data: scenario, headers })), scenarioLabel: label })));
+      setRouterResults(results);
+      const passed = results.filter((result) => result.ok).length;
+      toast[passed === results.length ? "success" : "error"](`نجح ${passed.toLocaleString("ar-SA")} من ${results.length.toLocaleString("ar-SA")} مسارات للراوتر`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل اختبار الراوتر");
     } finally {
@@ -157,7 +157,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
-          {routerResult && <RouterResultPanel result={routerResult} />}
+          {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
           </div>
@@ -249,24 +249,35 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
-function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
+function RouterResultPanel({ results }: { results: Array<AdminVideoRouterTestResult & { scenarioLabel: string }> }) {
+  const allPassed = results.every((result) => result.ok);
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-extrabold">نتيجة اختبار الراوتر</h2>
-          <p className="mt-1 text-xs text-muted-foreground">مسار آمن: سريع/إعلاني/احترافي مع 0–2 صور، دون إنشاء فيديو أو خصم نقاط</p>
+          <p className="mt-1 text-xs text-muted-foreground">مسارات آمنة: سريع/إعلاني/احترافي مع 0–2 صور، دون إنشاء فيديو أو خصم نقاط</p>
         </div>
-        <Badge className={cn(result.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{result.ok ? `المختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل"}</Badge>
+        <Badge className={cn(allPassed ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{allPassed ? "كل المسارات جاهزة" : "يوجد مسار يحتاج ضبط"}</Badge>
       </div>
-      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-        {result.candidates.map((candidate) => (
-          <div key={candidate.providerKey} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-bold">{candidate.displayName}</span>
-              <Badge variant="secondary">#{candidate.effectivePriority === candidate.priority ? candidate.priority : `${candidate.priority}→${candidate.effectivePriority}`}</Badge>
+      <div className="mt-3 space-y-3">
+        {results.map((result) => (
+          <div key={result.scenarioLabel} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <span className="font-extrabold">{result.scenarioLabel}</span>
+              <Badge className={cn(result.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{result.ok ? `المختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل"}</Badge>
             </div>
-            <p className="mt-1 text-muted-foreground">{candidate.mode} · {candidate.reason}</p>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+              {result.candidates.map((candidate) => (
+                <div key={candidate.providerKey} className="rounded-md border border-border bg-background/60 p-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold">{candidate.displayName}</span>
+                    <Badge variant="secondary">#{candidate.effectivePriority === candidate.priority ? candidate.priority : `${candidate.priority}→${candidate.effectivePriority}`}</Badge>
+                  </div>
+                  <p className="mt-1 text-muted-foreground">{candidate.mode} · {candidate.reason}</p>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>

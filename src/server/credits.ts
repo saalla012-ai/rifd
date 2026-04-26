@@ -205,8 +205,6 @@ export const getCreditsSummary = createServerFn({ method: "POST" })
       daily_text_cap: number;
       daily_image_used: number;
       daily_image_cap: number;
-      daily_video_used: number;
-      daily_video_cap: number;
       plan: "free" | "starter" | "growth" | "pro" | "business";
       image_pro_allowed?: boolean;
       video_fast_allowed?: boolean;

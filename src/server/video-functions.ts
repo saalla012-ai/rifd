@@ -264,7 +264,7 @@ function defaultReplicateConfig(): VideoProviderConfig {
     supported_qualities: ["fast", "lite", "quality"],
     priority: 10,
     cost_5s: 150,
-    cost_8s: 240,
+    cost_8s: 450,
     supports_9_16: true,
     supports_1_1: true,
     supports_16_9: true,
