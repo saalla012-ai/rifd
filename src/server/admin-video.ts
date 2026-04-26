@@ -195,6 +195,7 @@ export type SaudiVideoPilotMatrixResult = {
   checkedAt: string;
   totalSamples: number;
   estimatedCostUsd: number;
+  requiredPublishableRate: number;
   readinessGate: string;
   samples: Array<{
     sampleId: string;
@@ -206,6 +207,8 @@ export type SaudiVideoPilotMatrixResult = {
     quality: "fast" | "lite" | "quality";
     durationSeconds: 5 | 8;
     requiresProductImage: boolean;
+    objective: string;
+    mustPass: string[];
     scorecard: string[];
   }>;
 };
@@ -660,13 +663,20 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const selectedTemplates = ["perfume-premium-hook", "abaya-elegance", "coffee-hospitality", "electronics-benefit", "beauty-skincare", "gifts-luxury", "home-decor", "limited-offer", "premium-testimonial", "ramadan-offer"];
+    const selectedTemplates = [
+      "perfume-premium-hook", "perfume-oud-story", "abaya-elegance", "abaya-launch", "coffee-hospitality",
+      "electronics-benefit", "beauty-skincare", "gifts-luxury", "home-decor", "limited-offer",
+      "premium-testimonial", "ramadan-offer", "restaurant-offer", "jewelry", "phone-case",
+    ];
     const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
     const samples = selectedTemplates.map((templateId, index) => {
       const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
       const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
-      const quality: "fast" | "lite" | "quality" = index < 3 ? "fast" : index < 8 ? "lite" : "quality";
+      const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
       const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
+      const mustPass = template.risk === "عالٍ"
+        ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
+        : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"];
       return {
         sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
         templateId: template.id,
@@ -677,6 +687,8 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
         quality,
         durationSeconds,
         requiresProductImage: quality !== "fast",
+        objective: quality === "quality" ? "قياس صلاحية إعلان مدفوع عالي الجودة" : quality === "lite" ? "قياس إعلان يومي قابل للنشر" : "قياس سرعة الفكرة وسلامة الهوية السعودية",
+        mustPass,
         scorecard: ["وضوح المنتج", "طبيعية اللهجة السعودية", "مزامنة الشفاه", "سلامة اليدين والوجه", "قابلية النشر التجاري"],
       };
     });
@@ -684,7 +696,8 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
       checkedAt: new Date().toISOString(),
       totalSamples: samples.length,
       estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.quality === "quality" ? 0.45 : sample.quality === "lite" ? 0.25 : 0.2), 0).toFixed(2)),
-      readinessGate: "يبدأ التنفيذ الفعلي عندما تكون fal_ai نشطة، والراوتر يمرر 3/3 مسارات، ومكتبة البرومبتات تحقق 80%+.",
+      requiredPublishableRate: 80,
+      readinessGate: "يبدأ التنفيذ الفعلي عندما تكون fal_ai نشطة، والراوتر يمرر 3/3 مسارات، ومكتبة البرومبتات تحقق 80%+، ثم لا نعتمد الإطلاق إلا إذا كانت 80% من العينات صالحة للنشر أو تحتاج تعديلاً بسيطاً فقط.",
       samples,
     };
 
