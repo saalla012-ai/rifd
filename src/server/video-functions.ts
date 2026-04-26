@@ -6,16 +6,13 @@ import type { Database, Json } from "@/integrations/supabase/types";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   consume,
-  consumeVideoDailyQuota,
   getRefundLedgerId,
   operationalSwitchEnabled,
   refund,
-  releaseVideoDailyQuota,
   videoCost,
   type VideoQuality,
   type VideoDuration,
   InsufficientCreditsError,
-  VideoDailyQuotaExceededError,
 } from "./credits";
 
 const MAX_PROCESSING_MINUTES = 20;
@@ -24,11 +21,13 @@ const TERMINAL_PROVIDER_STATUSES = new Set(["succeeded", "failed", "canceled"]);
 
 const REPLICATE_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "google/veo-3-fast",
+  lite: "google/veo-3-fast",
   quality: "google/veo-3",
 };
 
 const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, Record<VideoDuration, number>> = {
   fast: { 5: 0.5, 8: 0.8 },
+  lite: { 5: 0.8, 8: 1.2 },
   quality: { 5: 2.0, 8: 3.2 },
 };
 
@@ -101,10 +100,13 @@ class ProviderCommittedFailure extends Error {
 
 const videoInputSchema = z.object({
   prompt: z.string().trim().min(10, "اكتب وصف فيديو أوضح").max(1800, "وصف الفيديو طويل جداً"),
-  quality: z.enum(["fast", "quality"]),
+  quality: z.enum(["fast", "lite", "quality"]),
   aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
   durationSeconds: z.union([z.literal(5), z.literal(8)]).default(5),
   startingFrameUrl: z.string().url().optional().or(z.literal("")),
+  speakerImageUrl: z.string().url().optional().or(z.literal("")),
+  productImageUrl: z.string().url().optional().or(z.literal("")),
+  selectedPersonaId: z.string().trim().max(80).optional().or(z.literal("")),
   campaignPackId: z.string().uuid().optional(),
 });
 
