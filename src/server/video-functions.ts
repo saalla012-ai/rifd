@@ -279,10 +279,10 @@ const replicateProvider: VideoProvider = {
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Prefer: "wait=60" },
       body: JSON.stringify({
         input: {
-          prompt: input.prompt,
+          prompt: buildSaudiVideoPrompt(input),
           aspect_ratio: input.aspectRatio,
           duration: input.durationSeconds,
-          image: input.startingFrameUrl || undefined,
+          image: primaryReferenceImage(input),
         },
       }),
     });
@@ -319,6 +319,44 @@ const replicateProvider: VideoProvider = {
   },
 };
 
+const FAL_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
+  fast: "fal-ai/veo3/fast",
+  lite: "fal-ai/veo3/fast",
+  quality: "fal-ai/veo3",
+};
+
+const falProvider: VideoProvider = {
+  key: "fal_ai",
+  async createJob(input) {
+    const token = process.env.FAL_API_KEY;
+    if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
+    const model = FAL_MODEL_BY_QUALITY[input.quality];
+    const response = await fetch(`https://fal.run/${model}`, {
+      method: "POST",
+      headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: buildSaudiVideoPrompt(input),
+        aspect_ratio: input.aspectRatio,
+        duration: `${input.durationSeconds}s`,
+        image_url: primaryReferenceImage(input),
+        speaker_image_url: input.speakerImageUrl || undefined,
+        product_image_url: input.productImageUrl || undefined,
+      }),
+    });
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`فشل مزوّد الفيديو (${response.status}): ${text.slice(0, 300)}`);
+    }
+    const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
+    if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
+    const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
+    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: DEFAULT_ESTIMATED_COST_USD[input.quality][input.durationSeconds], metadata: { model, fal_result_shape: Object.keys(result) } };
+  },
+  async refreshJob(_providerJobId, row) {
+    return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
+  },
+};
+
 const manualBridgeProvider: VideoProvider = {
   key: "google_flow_bridge",
   async createJob(_input, config) {
@@ -351,6 +389,7 @@ function futureApiProvider(key: string, secretName: string): VideoProvider {
 }
 
 const PROVIDERS: Record<string, VideoProvider> = {
+  fal_ai: falProvider,
   replicate: replicateProvider,
   google_flow_bridge: manualBridgeProvider,
   google_veo_api: futureApiProvider("google_veo_api", "GOOGLE_VEO_API_KEY"),
