@@ -171,12 +171,12 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
-      track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged });
+      track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged, template_id: selectedTemplateId });
       toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
       void refreshCredits();
       router.invalidate();

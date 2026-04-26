@@ -139,6 +139,7 @@ const videoInputSchema = z.object({
   speakerImageUrl: z.string().url().optional().or(z.literal("")),
   productImageUrl: z.string().url().optional().or(z.literal("")),
   selectedPersonaId: z.string().trim().max(80).optional().or(z.literal("")),
+  selectedTemplateId: z.string().trim().max(100).optional().or(z.literal("")),
   campaignPackId: z.string().uuid().optional(),
 });
 
@@ -494,6 +495,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
+      const selectedTemplateId = data.selectedTemplateId || "custom";
       const watermarkRequired = profile?.plan === "free";
       const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
 
@@ -523,7 +525,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free" },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free" },
         })
         .select("*")
         .single();

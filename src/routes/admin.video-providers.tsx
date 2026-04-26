@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
+import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listSaudiLaunchTemplatePerformance, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiLaunchTemplatePerformance, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -74,6 +74,7 @@ function fmtDate(value: string | null) {
 function AdminVideoProvidersPage() {
   const fetchProviders = useServerFn(listVideoProviderConfigs);
   const fetchAttempts = useServerFn(listVideoProviderAttemptSummary);
+  const fetchLaunchTemplatePerformance = useServerFn(listSaudiLaunchTemplatePerformance);
   const updateProvider = useServerFn(updateVideoProviderConfig);
   const testProvider = useServerFn(testVideoProviderConnection);
   const testRouter = useServerFn(testVideoRouterDryRun);
@@ -84,6 +85,7 @@ function AdminVideoProvidersPage() {
   const evaluatePilotSample = useServerFn(evaluateSaudiVideoPilotSample);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
+  const [templatePerformance, setTemplatePerformance] = useState<SaudiLaunchTemplatePerformance[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [pilotAudit, setPilotAudit] = useState<SaudiVideoPilotAuditResult | null>(null);
   const [pilotMatrix, setPilotMatrix] = useState<SaudiVideoPilotMatrixResult | null>(null);
@@ -112,9 +114,10 @@ function AdminVideoProvidersPage() {
     setLoading(true);
     try {
       const headers = await authHeaders();
-      const [providerResult, attemptResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers })]);
+      const [providerResult, attemptResult, templateResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers }), fetchLaunchTemplatePerformance({ headers })]);
       setProviders(providerResult.providers);
       setAttempts(attemptResult.attempts);
+      setTemplatePerformance(templateResult.templates);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تحميل مزودي الفيديو");
     } finally {
@@ -279,6 +282,7 @@ function AdminVideoProvidersPage() {
       ) : (
         <>
           <PilotProofPanel />
+          <LaunchTemplatePerformancePanel templates={templatePerformance} />
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
           <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
@@ -357,6 +361,36 @@ function AdminVideoProvidersPage() {
         </>
       )}
     </DashboardShell>
+  );
+}
+
+function LaunchTemplatePerformancePanel({ templates }: { templates: SaudiLaunchTemplatePerformance[] }) {
+  const approvedIds = new Set(SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]);
+  const visibleTemplates = templates.filter((template) => approvedIds.has(template.templateId));
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">قياس أداء قوالب الإطلاق</h2>
+          <p className="mt-1 text-xs text-muted-foreground">يتتبع القالب المستخدم داخل metadata لكل مهمة فيديو حتى يكون توسيع القطاعات مبنياً على نتائج فعلية.</p>
+        </div>
+        <Badge className="bg-primary/15 text-primary">{visibleTemplates.length.toLocaleString("ar-SA")} قالب نشط</Badge>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {visibleTemplates.length > 0 ? visibleTemplates.map((template) => (
+          <div key={template.templateId} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong>{template.templateId}</strong>
+              <Badge className={cn(template.publishableRate >= 80 ? "bg-success/15 text-success" : "bg-gold/15 text-gold")}>{template.publishableRate.toLocaleString("ar-SA")}% مكتمل</Badge>
+            </div>
+            <p className="mt-2 text-muted-foreground">إجمالي: {template.total.toLocaleString("ar-SA")} · مكتمل: {template.completed.toLocaleString("ar-SA")} · مسترد: {template.refunded.toLocaleString("ar-SA")} · فشل: {template.failed.toLocaleString("ar-SA")}</p>
+            <p className="mt-1 text-muted-foreground">متوسط التكلفة: {template.avgCostUsd === null ? "—" : `$${template.avgCostUsd}`} · آخر استخدام: {fmtDate(template.lastAt)}</p>
+          </div>
+        )) : (
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs text-muted-foreground md:col-span-2">لا توجد توليدات فعلية بالقالبين المعتمدين بعد. القياس جاهز وسيبدأ تلقائياً مع أول مهمة فيديو جديدة.</div>
+        )}
+      </div>
+    </section>
   );
 }
 
