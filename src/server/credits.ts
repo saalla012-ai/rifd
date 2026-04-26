@@ -60,17 +60,6 @@ export class ImageQuotaExceededError extends Error {
   }
 }
 
-export class VideoDailyQuotaExceededError extends Error {
-  used: number;
-  cap: number;
-  constructor(used: number, cap: number) {
-    super(`video_daily_quota_exceeded: used=${used} cap=${cap}`);
-    this.name = "VideoDailyQuotaExceededError";
-    this.used = used;
-    this.cap = cap;
-  }
-}
-
 // ============================================================
 // Helpers يستدعيها ai-functions داخل handler واحد
 // ============================================================
@@ -181,25 +170,6 @@ export async function consumeImageQuota(db: DbClient, quality: "flash" | "pro" =
 
   if (!row.allowed) throw new ImageQuotaExceededError(row.used, row.daily_cap);
   return { used: row.used, cap: row.daily_cap };
-}
-
-export async function consumeVideoDailyQuota(db: DbClient, quality: VideoQuality = "fast", duration: VideoDuration = 5): Promise<{ used: number; cap: number }> {
-  const { data, error } = await (db as unknown as { rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> }).rpc("consume_video_daily_quota", {
-    _quality: quality,
-    _duration_seconds: duration,
-  });
-  if (error) throw new Error(`فشل التحقق من حد الفيديو اليومي: ${error.message}`);
-
-  const row = (data as Array<{ allowed: boolean; used: number; daily_cap: number }>)?.[0];
-  if (!row) throw new Error("استجابة فارغة من حد الفيديو اليومي");
-
-  if (!row.allowed) throw new VideoDailyQuotaExceededError(row.used, row.daily_cap);
-  return { used: row.used, cap: row.daily_cap };
-}
-
-export async function releaseVideoDailyQuota(db: DbClient, userId?: string): Promise<void> {
-  const { error } = await db.rpc("release_video_daily_quota", { _user_id: userId });
-  if (error) console.error(`release_video_daily_quota failed: ${error.message}`);
 }
 
 export async function releaseImageDailyQuota(db: DbClient, userId?: string): Promise<void> {

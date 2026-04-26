@@ -197,7 +197,8 @@ function providerSupports(config: VideoProviderConfig, input: z.infer<typeof vid
     (input.aspectRatio === "9:16" && config.supports_9_16) ||
     (input.aspectRatio === "1:1" && config.supports_1_1) ||
     (input.aspectRatio === "16:9" && config.supports_16_9);
-  const supportsFrame = !input.startingFrameUrl || config.supports_starting_frame;
+  const needsReferenceImage = Boolean(input.startingFrameUrl || input.speakerImageUrl || input.productImageUrl);
+  const supportsFrame = !needsReferenceImage || config.supports_starting_frame;
   const cost = input.durationSeconds === 8 ? config.cost_8s : config.cost_5s;
   return config.enabled && config.public_enabled && supportsQuality && supportsAspect && supportsFrame && cost > 0;
 }
@@ -235,7 +236,7 @@ function defaultReplicateConfig(): VideoProviderConfig {
     display_name_admin: "Replicate / Google Veo via Replicate",
     enabled: true,
     public_enabled: true,
-    supported_qualities: ["fast", "quality"],
+    supported_qualities: ["fast", "lite", "quality"],
     priority: 10,
     cost_5s: 150,
     cost_8s: 240,
@@ -258,6 +259,10 @@ async function markProviderFailure(providerKey: string, error: unknown) {
       last_error_message: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500),
     })
     .eq("provider_key", providerKey);
+}
+
+function videoDurationPayload(durationSeconds: VideoDuration) {
+  return durationSeconds === 8 ? "8s" : "5s";
 }
 
 async function markProviderSuccess(providerKey: string) {
@@ -337,7 +342,7 @@ const falProvider: VideoProvider = {
       body: JSON.stringify({
         prompt: buildSaudiVideoPrompt(input),
         aspect_ratio: input.aspectRatio,
-        duration: `${input.durationSeconds}s`,
+        duration: videoDurationPayload(input.durationSeconds),
         image_url: primaryReferenceImage(input),
         speaker_image_url: input.speakerImageUrl || undefined,
         product_image_url: input.productImageUrl || undefined,

@@ -35,7 +35,6 @@ function UsagePage() {
 
   const textPct = Math.min(100, ((data?.dailyTextUsed ?? 0) / Math.max(1, data?.dailyTextCap ?? 1)) * 100);
   const imgPct = Math.min(100, ((data?.dailyImageUsed ?? 0) / Math.max(1, data?.dailyImageCap ?? 1)) * 100);
-  const videoPct = Math.min(100, ((data?.dailyVideoUsed ?? 0) / Math.max(1, data?.dailyVideoCap ?? 1)) * 100);
   const plan = data?.plan ?? "free";
   const remainingFastVideos = estimateVideoCount(data?.totalCredits ?? 0, "fast", 5);
   const remainingQualityVideos = data?.videoQualityAllowed ? estimateVideoCount(data?.totalCredits ?? 0, "quality", 5) : 0;
@@ -77,10 +76,9 @@ function UsagePage() {
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 shadow-soft lg:col-span-2">
           <div className="flex flex-wrap items-start justify-between gap-3 text-sm">
-            <span className="inline-flex items-center gap-2 font-bold"><Film className="h-4 w-4 text-primary" /> حد الفيديو اليومي</span>
-            <span>{fmt(data?.dailyVideoUsed ?? 0)} / {fmt(data?.dailyVideoCap ?? 0)}</span>
+            <span className="inline-flex items-center gap-2 font-bold"><Film className="h-4 w-4 text-primary" /> تقدير الرصيد الحالي للفيديو</span>
+            <span>{fmt(data?.totalCredits ?? 0)} نقطة</span>
           </div>
-          <Progress value={videoPct} className="mt-3" />
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
             <div className="rounded-lg bg-background/70 p-3">{VIDEO_QUALITY_LABELS.fast} 5ث: <strong>{videoCreditCost("fast", 5)} نقطة</strong> · متبقٍ تقريباً {fmt(remainingFastVideos)} فيديو</div>
             <div className="rounded-lg bg-background/70 p-3">{VIDEO_QUALITY_LABELS.quality} 5ث: <strong>{videoCreditCost("quality", 5)} نقطة</strong> · {data?.videoQualityAllowed ? `متبقٍ تقريباً ${fmt(remainingQualityVideos)} فيديو` : "غير متاح في باقتك"}</div>

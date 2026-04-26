@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { PLAN_CATALOG, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
+import { PLAN_CATALOG, VIDEO_QUALITY_LABELS, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
 
 const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
 const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
@@ -51,11 +51,18 @@ export const Route = createFileRoute("/pricing")({
 });
 
 function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
+  const usageLabel: Record<string, string> = {
+    free: "فيديو محدود للتجربة حسب الرصيد",
+    starter: "استخدام فيديو محدود حسب الرصيد",
+    growth: "استخدام فيديو متوسط حسب الرصيد",
+    pro: "استخدام فيديو متقدم حسب الرصيد",
+    business: "بدون حد عملي داخل الرصيد",
+  };
   return [
     `${formatPlanNumber(plan.dailyTextCap)} نص يومياً`,
     `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
-    plan.dailyVideoCap > 0 ? `${formatPlanNumber(plan.dailyVideoCap)} فيديو يومياً حتى ${plan.maxVideoDurationSeconds} ث` : "الفيديو غير متاح في المجاني",
-    plan.videoQualityAllowed ? "سريع واحترافي حسب النقاط" : "سريع فقط حسب النقاط",
+    usageLabel[plan.id],
+    plan.videoQualityAllowed ? "سريع وإعلاني واحترافي حسب النقاط" : "سريع وإعلاني حسب النقاط",
   ];
 }
 
@@ -168,8 +175,6 @@ function PricingPage() {
               const isPremium = plan.tier === "premium" || plan.tier === "scale";
               const badge = "badge" in plan ? plan.badge : undefined;
               const cta = plan.id === "free" ? "ابدأ مجاناً" : `اشترك في ${plan.name}`;
-              const fastVideos = estimateVideoCount(plan.monthlyCredits, "fast", 5);
-              const qualityVideos = plan.videoQualityAllowed ? estimateVideoCount(plan.monthlyCredits, "quality", 5) : 0;
               return (
                 <article
                   key={plan.id}
@@ -209,8 +214,8 @@ function PricingPage() {
                       <Zap className="h-4 w-4" /> {formatPlanNumber(plan.monthlyCredits)} نقطة فيديو
                     </div>
                     <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                      <p>{plan.videoFastAllowed ? `حتى ${formatPlanNumber(fastVideos)} فيديو سريع 5ث` : "الفيديو غير متاح"}</p>
-                      <p>{plan.videoQualityAllowed ? `حتى ${formatPlanNumber(qualityVideos)} فيديو احترافي 5ث` : "الاحترافي غير متاح"}</p>
+                      <p>{plan.videoFastAllowed ? `سريع: ${videoCreditCost("fast", 5).toLocaleString("ar-SA")} نقطة` : "الفيديو غير متاح"}</p>
+                      <p>{plan.videoQualityAllowed ? `احترافي: ${videoCreditCost("quality", 5).toLocaleString("ar-SA")} نقطة` : `إعلاني: ${videoCreditCost("lite", 5).toLocaleString("ar-SA")} نقطة`}</p>
                     </div>
                   </div>
 
