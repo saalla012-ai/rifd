@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
+  BadgeCheck,
   Check,
   Crown,
   Film,
@@ -51,6 +52,8 @@ export const Route = createFileRoute("/pricing")({
 });
 
 function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
+  const estimatedFastVideos = Math.floor(plan.monthlyCredits / videoCreditCost("fast", 5));
+  const estimatedAdVideos = Math.floor(plan.monthlyCredits / videoCreditCost("lite", 8));
   const usageLabel: Record<string, string> = {
     free: "فيديو محدود للتجربة حسب الرصيد",
     starter: "استخدام فيديو محدود حسب الرصيد",
@@ -61,9 +64,10 @@ function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
   return [
     `${formatPlanNumber(plan.dailyTextCap)} نص يومياً`,
     `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
-    usageLabel[plan.id],
+    `${usageLabel[plan.id]}: حتى ${formatPlanNumber(estimatedFastVideos)} سريع أو ${formatPlanNumber(estimatedAdVideos)} إعلاني شهرياً تقريباً`,
     plan.videoQualityAllowed ? "سريع وإعلاني واحترافي حسب النقاط" : "سريع وإعلاني حسب النقاط",
-    plan.id === "free" ? "فيديو بعلامة رِفد المائية" : "بدون علامة مائية ونقاط الباقة لا ترحل بعد 30 يوم",
+    plan.id === "free" ? "فيديو بعلامة Rifd المائية" : "بدون علامة مائية، مع إلزام صورة المنتج لجودة إعلان أعلى",
+    "نقاط الباقة لا ترحل بعد 30 يوم؛ نقاط الشحن الإضافية منفصلة",
   ];
 }
 
