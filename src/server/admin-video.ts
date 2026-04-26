@@ -174,6 +174,17 @@ export type AdminVideoRouterTestResult = {
   candidates: Array<{ providerKey: string; displayName: string; priority: number; effectivePriority: number; mode: string; eligible: boolean; reason: string }>;
 };
 
+export type SaudiVideoPilotAuditResult = {
+  checkedAt: string;
+  totalTemplates: number;
+  passCount: number;
+  passRate: number;
+  readyForPilot: boolean;
+  sectorCoverage: string[];
+  riskMix: Record<string, number>;
+  findings: Array<{ templateId: string; label: string; sector: string; risk: string; score: number; issues: string[]; recommendation: string }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
