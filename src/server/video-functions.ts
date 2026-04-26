@@ -273,13 +273,13 @@ async function loadProviderConfigs(input: z.infer<typeof videoInputSchema>) {
 function defaultReplicateConfig(): VideoProviderConfig {
   return {
     provider_key: "replicate",
-    display_name_admin: "Replicate / Google Veo via Replicate",
+    display_name_admin: "Replicate backup video provider",
     enabled: true,
     public_enabled: true,
     supported_qualities: ["fast", "lite", "quality"],
     priority: 10,
     cost_5s: 150,
-    cost_8s: 450,
+    cost_8s: 800,
     supports_9_16: true,
     supports_1_1: true,
     supports_16_9: true,
@@ -302,9 +302,7 @@ async function markProviderFailure(providerKey: string, error: unknown) {
 }
 
 function videoDurationPayload(durationSeconds: VideoDuration) {
-  // fal.ai Veo accepts 4s/6s/8s. Our public tier is labeled 5s,
-  // so route it to the closest supported short render length.
-  return durationSeconds === 8 ? "8s" : "4s";
+  return durationSeconds === 8 ? "8s" : "5s";
 }
 
 async function markProviderSuccess(providerKey: string) {
