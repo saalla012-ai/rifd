@@ -531,18 +531,19 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
           <h2 className="font-extrabold">تقييم نتيجة عينة فعلية</h2>
           <p className="mt-1 text-xs text-muted-foreground">حوّل مشاهدة الفيديو إلى قرار إطلاق واضح: صالح للنشر، يحتاج تعديل بسيط، أو يعاد توليده.</p>
         </div>
-        {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> {result.score.toLocaleString("ar-SA")}%</Badge>}
+        {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> نشر {result.score.toLocaleString("ar-SA")}% · التزام {result.promptAdherenceScore.toLocaleString("ar-SA")}%</Badge>}
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[140px_minmax(0,1fr)]">
         <Input value={draft.sampleId} onChange={(event) => setDraft({ ...draft, sampleId: event.target.value })} className="h-9 text-xs" />
         <Input dir="ltr" value={draft.resultUrl} onChange={(event) => setDraft({ ...draft, resultUrl: event.target.value })} placeholder="https:// video result" className="h-9 text-left text-xs" />
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-5">
+      <div className="mt-3 grid gap-2 sm:grid-cols-6">
         <ScoreInput label="المنتج" value={draft.productClarity} onChange={(value) => setScore("productClarity", value)} />
         <ScoreInput label="اللهجة" value={draft.saudiDialect} onChange={(value) => setScore("saudiDialect", value)} />
         <ScoreInput label="الشفاه" value={draft.lipSync} onChange={(value) => setScore("lipSync", value)} />
         <ScoreInput label="السلامة" value={draft.visualIntegrity} onChange={(value) => setScore("visualIntegrity", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
+        <ScoreInput label="تنفيذ البرومبت" value={draft.promptAdherence} onChange={(value) => setScore("promptAdherence", value)} />
       </div>
       <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
       <Button type="button" size="sm" onClick={() => onSubmit(draft)} disabled={saving} className="mt-3 gap-1">
