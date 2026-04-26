@@ -14,7 +14,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalPromptPreview } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview } from "@/server/admin-video";
+import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
+import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
+import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
+import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -44,6 +48,18 @@ const HEALTH_TONE: Record<string, string> = {
 
 type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
 
+const PERSONA_IMAGES: Record<string, string> = {
+  "male-young": personaMaleYoung,
+  "male-premium": personaMalePremium,
+  "female-abaya": personaFemaleAbaya,
+  "retail-seller": personaRetailSeller,
+};
+
+function absoluteAssetUrl(value: string) {
+  if (/^https?:\/\//i.test(value)) return value;
+  return typeof window === "undefined" ? value : new URL(value, window.location.origin).toString();
+}
+
 function fmtDate(value: string | null) {
   return value ? new Date(value).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "—";
 }
@@ -55,16 +71,20 @@ function AdminVideoProvidersPage() {
   const testProvider = useServerFn(testVideoProviderConnection);
   const testRouter = useServerFn(testVideoRouterDryRun);
   const previewSaudiFalPrompt = useServerFn(previewSaudiFalVideoTestPrompt);
+  const runSaudiFalTest = useServerFn(runSaudiFalVideoModelTest);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
+  const [falTestResult, setFalTestResult] = useState<SaudiFalModelTestResult | null>(null);
   const [falDraft, setFalDraft] = useState<SaudiFalDraft>({ modelId: FAL_VIDEO_TEST_MODELS[0].id, personaId: SAUDI_VIDEO_PERSONAS[0].id, scenarioId: SAUDI_VIDEO_TEST_SCENARIOS[0].id, includeProductImage: true, includeVoice: true });
+  const [productImageUrl, setProductImageUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testingRouter, setTestingRouter] = useState(false);
   const [loadingFalPreview, setLoadingFalPreview] = useState(false);
+  const [runningFalTest, setRunningFalTest] = useState(false);
 
   async function authHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -148,6 +168,21 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function runFalModelTest() {
+    setRunningFalTest(true);
+    try {
+      const headers = await authHeaders();
+      const result = await runSaudiFalTest({ data: { ...falDraft, personaImageUrl: absoluteAssetUrl(PERSONA_IMAGES[falDraft.personaId]), productImageUrl }, headers });
+      setFalTestResult(result);
+      setFalPreview(result);
+      toast[result.ok ? "success" : "error"](result.ok ? "تم إرسال اختبار fal.ai الفعلي" : result.error ?? "فشل اختبار النموذج");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل اختبار fal.ai الفعلي");
+    } finally {
+      setRunningFalTest(false);
+    }
+  }
+
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -179,7 +214,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
-          <SaudiFalTestPanel draft={falDraft} preview={falPreview} loading={loadingFalPreview} onDraft={setFalDraft} onPreview={() => void buildFalPromptPreview()} />
+          <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
@@ -272,7 +307,7 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
-function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { draft: SaudiFalDraft; preview: SaudiFalPromptPreview | null; loading: boolean; onDraft: (next: SaudiFalDraft) => void; onPreview: () => void }) {
+function SaudiFalTestPanel({ draft, productImageUrl, preview, testResult, loading, running, onDraft, onProductImageUrl, onPreview, onRun }: { draft: SaudiFalDraft; productImageUrl: string; preview: SaudiFalPromptPreview | null; testResult: SaudiFalModelTestResult | null; loading: boolean; running: boolean; onDraft: (next: SaudiFalDraft) => void; onProductImageUrl: (value: string) => void; onPreview: () => void; onRun: () => void }) {
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -280,9 +315,10 @@ function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { dr
           <h2 className="font-extrabold">اختبار fal.ai بالصور الحالية</h2>
           <p className="mt-1 text-xs text-muted-foreground">يستخدم شخصيات قسم الفيديو نفسها مع برومبت سعودي واضح للحركة والصوت قبل أي اعتماد إنتاجي.</p>
         </div>
-        <Button type="button" size="sm" onClick={onPreview} disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clapperboard className="h-4 w-4" />} تجهيز البرومبت
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onPreview} disabled={loading || running}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clapperboard className="h-4 w-4" />} تجهيز البرومبت</Button>
+          <Button type="button" size="sm" onClick={onRun} disabled={loading || running}>{running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار فعلي</Button>
+        </div>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <SelectBox label="النموذج" value={draft.modelId} onChange={(modelId) => onDraft({ ...draft, modelId })} options={FAL_VIDEO_TEST_MODELS.map((model) => ({ value: model.id, label: model.label }))} />
@@ -290,12 +326,19 @@ function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { dr
         <SelectBox label="السيناريو السعودي" value={draft.scenarioId} onChange={(scenarioId) => onDraft({ ...draft, scenarioId })} options={SAUDI_VIDEO_TEST_SCENARIOS.map((scenario) => ({ value: scenario.id, label: scenario.label }))} />
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="block rounded-lg border border-border bg-secondary/30 p-3">
+          <span className="text-sm font-bold">رابط صورة المنتج الاختيارية</span>
+          <Input value={productImageUrl} onChange={(event) => onProductImageUrl(event.target.value)} placeholder="https://..." className="mt-2 h-9 text-xs" />
+        </label>
         <ControlRow label="إضافة صورة منتج" hint="لقياس التزام النموذج بالمنتج داخل الإعلان">
           <Switch checked={draft.includeProductImage} onCheckedChange={(includeProductImage) => onDraft({ ...draft, includeProductImage })} />
         </ControlRow>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <ControlRow label="طلب صوت سعودي" hint="يطبّق فقط على النماذج التي تدعم الصوت">
           <Switch checked={draft.includeVoice} onCheckedChange={(includeVoice) => onDraft({ ...draft, includeVoice })} />
         </ControlRow>
+        {testResult && <div className={cn("rounded-lg border p-3 text-xs", testResult.ok ? "border-success/30 bg-success/10 text-success" : "border-destructive/30 bg-destructive/10 text-destructive")}>{testResult.ok ? `الحالة: ${testResult.status} · ${testResult.latencyMs}ms · $${testResult.estimatedCostUsd ?? "—"}` : testResult.error}</div>}
       </div>
       {preview && (
         <div className="mt-4 grid gap-3 lg:grid-cols-[220px_1fr]">

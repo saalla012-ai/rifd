@@ -33,6 +33,11 @@ const SaudiFalPromptPreviewInput = z.object({
   includeVoice: z.boolean().default(true),
 });
 
+const SaudiFalModelTestInput = SaudiFalPromptPreviewInput.extend({
+  personaImageUrl: z.string().url().max(2000),
+  productImageUrl: z.string().url().max(2000).optional().or(z.literal("")),
+});
+
 const TestVideoRouterInput = z.object({
   quality: z.enum(["fast", "lite", "quality"]).default("fast"),
   aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
@@ -151,6 +156,17 @@ export type SaudiFalPromptPreview = {
   imageEvaluation: { score: number; recommendation: string };
 };
 
+export type SaudiFalModelTestResult = SaudiFalPromptPreview & {
+  ok: boolean;
+  status: "submitted" | "completed" | "failed";
+  requestId: string | null;
+  resultUrl: string | null;
+  latencyMs: number;
+  estimatedCostUsd: number | null;
+  error: string | null;
+  checkedAt: string;
+};
+
 export type AdminVideoRouterTestResult = {
   ok: boolean;
   selectedProvider: string | null;
@@ -219,6 +235,10 @@ function providerSecretName(providerKey: string) {
     luma: "LUMA_API_KEY",
     kling: "KLING_API_KEY",
   } as Record<string, string | undefined>)[providerKey];
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
 }
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
@@ -464,6 +484,52 @@ export const previewSaudiFalVideoTestPrompt = createServerFn({ method: "POST" })
     const imageEvaluation = evaluateSaudiVideoImage({ hasProductImage: data.includeProductImage, personaLabel: persona.label });
 
     return { prompt, model, persona, scenario, imageEvaluation };
+  });
+
+export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => SaudiFalModelTestInput.parse(input ?? {}))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<SaudiFalModelTestResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+    const token = process.env.FAL_API_KEY;
+    if (!token) throw new Error("مفتاح fal.ai غير متوفر في الأسرار");
+
+    const model = FAL_VIDEO_TEST_MODELS.find((item) => item.id === data.modelId) ?? FAL_VIDEO_TEST_MODELS[0];
+    const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === data.personaId) ?? SAUDI_VIDEO_PERSONAS[0];
+    const scenario = SAUDI_VIDEO_TEST_SCENARIOS.find((item) => item.id === data.scenarioId) ?? SAUDI_VIDEO_TEST_SCENARIOS[0];
+    const includeProductImage = Boolean(data.includeProductImage && data.productImageUrl && model.supportsTwoImages);
+    const prompt = buildSaudiFalTestPrompt({ personaBrief: persona.brief, scenarioId: scenario.id, includeProductImage, includeVoice: data.includeVoice && model.supportsVoice });
+    const imageEvaluation = evaluateSaudiVideoImage({ hasProductImage: includeProductImage, personaLabel: persona.label });
+    const startedAt = Date.now();
+    const checkedAt = new Date().toISOString();
+
+    try {
+      const response = await fetch(`https://fal.run/${model.id}`, {
+        method: "POST",
+        headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          aspect_ratio: "9:16",
+          duration: model.id.includes("veo3") ? "4s" : "5s",
+          image_url: data.personaImageUrl,
+          speaker_image_url: data.personaImageUrl,
+          product_image_url: includeProductImage ? data.productImageUrl : undefined,
+        }),
+      });
+      const text = await response.text();
+      let result: { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
+      try { result = text ? JSON.parse(text) as typeof result : {}; } catch { result = { error: text.slice(0, 500) }; }
+      if (!response.ok || result.error) throw new Error(result.error || `fal.ai ${response.status}: ${text.slice(0, 500)}`);
+      const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
+      const out = { ok: true, status: resultUrl ? "completed" : "submitted", requestId: result.request_id ?? null, resultUrl, latencyMs: Date.now() - startedAt, estimatedCostUsd: model.estimatedUsd, error: null, checkedAt, prompt, model, persona, scenario, imageEvaluation } satisfies SaudiFalModelTestResult;
+      await logAdminAudit({ adminId: userId, action: "run_saudi_fal_video_model_test", targetTable: "video_provider_configs", targetId: model.id, after: out as unknown as Json });
+      return out;
+    } catch (error) {
+      const out = { ok: false, status: "failed", requestId: null, resultUrl: null, latencyMs: Date.now() - startedAt, estimatedCostUsd: model.estimatedUsd, error: errorMessage(error), checkedAt, prompt, model, persona, scenario, imageEvaluation } satisfies SaudiFalModelTestResult;
+      await logAdminAudit({ adminId: userId, action: "run_saudi_fal_video_model_test_failed", targetTable: "video_provider_configs", targetId: model.id, after: out as unknown as Json });
+      return out;
+    }
   });
 
 export const testVideoRouterDryRun = createServerFn({ method: "POST" })
