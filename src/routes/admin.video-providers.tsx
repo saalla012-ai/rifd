@@ -78,7 +78,7 @@ function AdminVideoProvidersPage() {
     }
   }
 
-  async function save(providerKey: string, patch: { enabled?: boolean; publicEnabled?: boolean; priority?: number }) {
+  async function save(providerKey: string, patch: { enabled?: boolean; publicEnabled?: boolean; priority?: number; cost5s?: number; cost8s?: number }) {
     setSavingKey(providerKey);
     try {
       const headers = await authHeaders();
@@ -110,9 +110,15 @@ function AdminVideoProvidersPage() {
     setTestingRouter(true);
     try {
       const headers = await authHeaders();
-      const result = await testRouter({ data: { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false }, headers });
+      const scenarios = [
+        { quality: "fast", aspectRatio: "9:16", durationSeconds: 5, hasStartingFrame: false },
+        { quality: "lite", aspectRatio: "9:16", durationSeconds: 8, hasStartingFrame: true },
+        { quality: "quality", aspectRatio: "16:9", durationSeconds: 8, hasStartingFrame: true },
+      ] as const;
+      const result = await testRouter({ data: scenarios[0], headers });
+      await Promise.all(scenarios.slice(1).map((scenario) => testRouter({ data: scenario, headers })));
       setRouterResult(result);
-      toast[result.ok ? "success" : "error"](result.ok ? `الراوتر اختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل لهذا المسار");
+      toast[result.ok ? "success" : "error"](result.ok ? "تم اختبار 3 مسارات للراوتر" : "لا يوجد مزود مؤهل للمسار الأساسي");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل اختبار الراوتر");
     } finally {
@@ -208,7 +214,11 @@ function AdminVideoProvidersPage() {
                         <Badge key={quality} variant="secondary">{quality === "quality" || quality === "fast" || quality === "lite" ? VIDEO_QUALITY_LABELS[quality] : "متوازن"}</Badge>
                       ))}
                     </div>
-                    <p className="mt-2">5ث: <strong>{provider.cost_5s.toLocaleString("ar-SA")}</strong> نقطة · 8ث: <strong>{provider.cost_8s.toLocaleString("ar-SA")}</strong> نقطة</p>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      <CostInput label="تكلفة 5ث" value={provider.cost_5s} disabled={saving} onCommit={(value) => void save(provider.provider_key, { cost5s: value })} />
+                      <CostInput label="تكلفة 8ث" value={provider.cost_8s} disabled={saving} onCommit={(value) => void save(provider.provider_key, { cost8s: value })} />
+                    </div>
+                    <ProviderCapabilities metadata={provider.metadata} provider={provider} />
                     <p>آخر نجاح: {fmtDate(provider.last_success_at)} · آخر خطأ: {fmtDate(provider.last_error_at)}</p>
                     <LastConnectionTest metadata={provider.metadata} />
                     {provider.last_error_message && <p className="mt-1 flex items-start gap-1 text-destructive"><AlertTriangle className="mt-1 h-3.5 w-3.5" /> {provider.last_error_message}</p>}
@@ -262,6 +272,34 @@ function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
       </div>
     </section>
   );
+}
+
+function CostInput({ label, value, disabled, onCommit }: { label: string; value: number; disabled: boolean; onCommit: (value: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => setDraft(String(value)), [value]);
+  const commit = () => {
+    const next = Number(draft);
+    if (Number.isFinite(next) && next >= 0 && next !== value) onCommit(Math.round(next));
+  };
+  return (
+    <label className="block">
+      <span className="text-[10px] font-bold text-muted-foreground">{label}</span>
+      <Input value={draft} type="number" min={0} max={100000} disabled={disabled} onChange={(event) => setDraft(event.target.value)} onBlur={commit} className="mt-1 h-8 text-xs" />
+    </label>
+  );
+}
+
+function ProviderCapabilities({ metadata, provider }: { metadata: AdminVideoProviderConfig["metadata"]; provider: AdminVideoProviderConfig }) {
+  const data = (metadata as { supports_two_images?: boolean; supports_voice?: boolean } | null) ?? {};
+  const caps = [
+    provider.supports_starting_frame ? "صورة مرجعية" : "بدون صور",
+    data.supports_two_images ? "صورتان" : "صورة واحدة",
+    data.supports_voice ? "صوت" : "بدون صوت مؤكد",
+    provider.supports_9_16 ? "9:16" : null,
+    provider.supports_1_1 ? "1:1" : null,
+    provider.supports_16_9 ? "16:9" : null,
+  ].filter(Boolean);
+  return <p className="mt-2">القدرات: {caps.join(" · ")}</p>;
 }
 
 function LastConnectionTest({ metadata }: { metadata: AdminVideoProviderConfig["metadata"] }) {

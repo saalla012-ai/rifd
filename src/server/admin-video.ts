@@ -15,6 +15,8 @@ const ProviderUpdateInput = z.object({
   enabled: z.boolean().optional(),
   publicEnabled: z.boolean().optional(),
   priority: z.number().int().min(1).max(1000).optional(),
+  cost5s: z.number().int().min(0).max(100000).optional(),
+  cost8s: z.number().int().min(0).max(100000).optional(),
 });
 
 const TestProviderInput = z.object({
@@ -97,6 +99,8 @@ export type AdminVideoProviderConfig = {
   supports_1_1: boolean;
   supports_16_9: boolean;
   supports_starting_frame: boolean;
+  supports_two_images?: boolean;
+  supports_voice?: boolean;
   mode: "api" | "bridge" | "manual";
   health_status: "active" | "inactive" | "testing" | "manual_required" | "unhealthy";
   last_success_at: string | null;
@@ -337,6 +341,8 @@ export const updateVideoProviderConfig = createServerFn({ method: "POST" })
     if (typeof data.enabled === "boolean") patch.enabled = data.enabled;
     if (typeof data.publicEnabled === "boolean") patch.public_enabled = data.publicEnabled;
     if (typeof data.priority === "number") patch.priority = data.priority;
+    if (typeof data.cost5s === "number") patch.cost_5s = data.cost5s;
+    if (typeof data.cost8s === "number") patch.cost_8s = data.cost8s;
     if (Object.keys(patch).length === 0) throw new Error("لا توجد تغييرات للحفظ");
 
     const { data: updated, error } = await (supabaseAdmin as unknown as {
