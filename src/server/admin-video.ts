@@ -280,7 +280,7 @@ export type SaudiVideoMediumBatchResult = {
   estimatedCostUsd: number;
   executionRate: number;
   completionRate: number;
-  releaseGate: "not_started" | "running" | "ready_for_review" | "ready_for_expansion" | "blocked";
+  releaseGate: "not_started" | "running" | "ready_for_review" | "needs_iteration" | "ready_for_expansion" | "blocked";
   releaseGateReason: string;
   nextAction: string;
   samples: Array<{
@@ -901,13 +901,16 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const publishable = samples.filter((sample) => sample.releaseDecision === "publishable").length;
     const needsRevision = samples.filter((sample) => sample.releaseDecision === "minor_revision").length;
     const rejected = samples.filter((sample) => sample.releaseDecision === "reject_or_reprompt").length;
-    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 2 || rejected > 0 ? "blocked" : evaluated === samples.length && publishable >= Math.ceil(samples.length * 0.8) ? "ready_for_expansion" : completed === samples.length ? "ready_for_review" : "running";
+    const minimumPublishable = Math.ceil(samples.length * 0.8);
+    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 2 || rejected > 0 ? "blocked" : evaluated === samples.length && publishable >= minimumPublishable ? "ready_for_expansion" : evaluated === samples.length ? "needs_iteration" : completed === samples.length ? "ready_for_review" : "running";
     const releaseGateReason = releaseGate === "not_started"
       ? "لم تُسجّل أي مهمة موسومة للاختبار المتوسط بعد؛ لا يوجد دليل عملي يسمح بقرار تجاري."
       : releaseGate === "blocked"
         ? "الدفعة متوقفة للمراجعة بسبب فشل/استرداد مرتفع أو عينة تتطلب صورة منتج ولم تُرفق بها."
         : releaseGate === "ready_for_expansion"
           ? "اكتمل تقييم الدفعة وحققت بوابة 80%+؛ القوالب الصالحة جاهزة لاختبار تكرار أوسع قبل الفتح العام."
+        : releaseGate === "needs_iteration"
+          ? "اكتمل التقييم لكن نسبة القوالب الصالحة أقل من بوابة 80%؛ يلزم ضبط البرومبتات قبل أي توسع."
         : releaseGate === "ready_for_review"
           ? "كل العينات المخططة اكتملت ولديها نتائج؛ انتقل الآن إلى تقييم كل فيديو ببوابة 80%+."
           : "الدفعة بدأت لكنها لم تكتمل؛ أكمل توليد العينات الناقصة أو حدّث المهام قيد المعالجة.";
@@ -917,6 +920,8 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         ? "أصلح العينات المتوقفة أولاً: أعد توليد ما فشل، وأرفق صورة منتج واضحة للعينات الإعلانية/الاحترافية قبل التقييم."
         : releaseGate === "ready_for_expansion"
           ? "انقل العينات القابلة للنشر فقط إلى اختبار 5 عينات إضافية لكل قالب، واترك القوالب ذات التعديل أو الرفض مخفية."
+        : releaseGate === "needs_iteration"
+          ? "ابدأ بإعادة صياغة عينات التعديل، ثم أعد توليدها كدفعة مصغرة قبل تكرار اختبار التوسيع."
         : releaseGate === "ready_for_review"
           ? "قيّم كل عينة عبر نموذج التقييم: المنتج، المشهد، الحركة، اللهجة، الممنوعات، وقابلية النشر؛ لا تعتمد إلا 80%+."
           : "تابع توليد العينات غير المكتملة ثم اضغط تدقيق الدفعة حتى تتحول الحالة إلى جاهزة للتقييم.";
