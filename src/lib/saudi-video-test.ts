@@ -58,6 +58,21 @@ export const SAUDI_VIDEO_PROMPT_TEMPLATES: SaudiVideoPromptTemplate[] = [
   { id: "premium-testimonial", label: "توصية فاخرة", sector: "عام", risk: "متوسط", prompt: saudiPrompt("مكتب سعودي فاخر", "المتحدث يبدأ مباشرة بتوصية طبيعية دون مبالغة.", "حركة يد هادئة نحو المنتج ثم لقطة قريبة له.", "جربته وفرق معي… إذا يناسبك لا تفوته.") },
 ];
 
+export const SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS = ["gifts-luxury", "coffee-hospitality"] as const;
+
+export const SAUDI_VIDEO_LAUNCH_DECISION = {
+  progress: 100,
+  approvedAt: "2026-04-26",
+  primaryTemplateId: "gifts-luxury",
+  secondaryTemplateId: "coffee-hospitality",
+  minimumPublishableScore: 80,
+  rationale: "اعتماد قالب الهدايا الفاخرة كقالب إطلاق أول لأنه الأعلى تسويقياً بين العينات، مع قالب القهوة العربية كمرجع سعودي آمن للضيافة والمنتج الواضح. تُستبعد القوالب الأقل من 80% من الواجهة العامة حتى تُعاد صياغتها أو اختبارها.",
+} as const;
+
+export const SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES = SAUDI_VIDEO_PROMPT_TEMPLATES.filter((template) =>
+  (SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]).includes(template.id)
+);
+
 export function buildSaudiFalTestPrompt(input: { personaBrief: string; scenarioId: SaudiVideoScenarioId; includeProductImage: boolean; includeVoice: boolean }) {
   const scenario = SAUDI_VIDEO_TEST_SCENARIOS.find((item) => item.id === input.scenarioId) ?? SAUDI_VIDEO_TEST_SCENARIOS[0];
   return [
