@@ -277,8 +277,8 @@ function PricingPage() {
             </div>
             <div className="rounded-2xl border border-border bg-card p-5">
               <Star className="h-6 w-6 text-success" />
-              <h2 className="mt-3 font-extrabold">ضمان 14 يوم</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">ابدأ بوضوح، وراجع التجربة خلال أول أسبوعين حسب سياسة الاسترجاع.</p>
+              <h2 className="mt-3 font-extrabold">فرق واضح بين المجاني والمدفوع</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">المجاني للتجربة بعلامة Rifd، والمدفوع لفيديوهات نظيفة مع صورة منتج إلزامية لنتائج أقرب للإعلان الحقيقي.</p>
             </div>
           </div>
 
