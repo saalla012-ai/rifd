@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
+import { isValidVideoTierSelection } from "@/lib/plan-catalog";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -172,6 +173,7 @@ function appendConnectionTest(metadata: Json | null, result: AdminVideoProviderT
 }
 
 function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.infer<typeof TestVideoRouterInput>) {
+  if (!isValidVideoTierSelection(input.quality, input.durationSeconds)) return { eligible: false, reason: "تركيبة الجودة/المدة غير معتمدة" };
   if (!provider.enabled) return { eligible: false, reason: "متوقف داخلياً" };
   if (!provider.public_enabled) return { eligible: false, reason: "غير متاح للطلبات" };
   if (!provider.supported_qualities.includes(input.quality)) return { eligible: false, reason: "الجودة غير مدعومة" };
