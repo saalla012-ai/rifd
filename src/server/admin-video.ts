@@ -279,6 +279,9 @@ export type SaudiVideoMediumBatchResult = {
   processing: number;
   failedOrRefunded: number;
   missingProductImage: number;
+  remainingToGenerate: number;
+  remainingToEvaluate: number;
+  blockingIssues: number;
   estimatedCostUsd: number;
   executionRate: number;
   completionRate: number;
@@ -897,15 +900,18 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const processing = samples.filter((sample) => sample.status === "processing" || sample.status === "pending").length;
     const failedOrRefunded = samples.filter((sample) => sample.status === "failed" || sample.status === "refunded" || sample.status === "cancelled").length;
     const missingProductImage = samples.filter((sample) => sample.issue === "صورة المنتج الإلزامية غير مرفقة").length;
+    const remainingToGenerate = samples.length - generated;
     const executionRate = Math.round((generated / Math.max(samples.length, 1)) * 100);
     const completionRate = Math.round((completed / Math.max(samples.length, 1)) * 100);
     const evaluated = samples.filter((sample) => sample.releaseDecision).length;
     const publishable = samples.filter((sample) => sample.releaseDecision === "publishable").length;
     const needsRevision = samples.filter((sample) => sample.releaseDecision === "minor_revision").length;
     const rejected = samples.filter((sample) => sample.releaseDecision === "reject_or_reprompt").length;
+    const remainingToEvaluate = samples.length - evaluated;
+    const blockingIssues = missingProductImage + failedOrRefunded + rejected;
     const minimumPublishable = Math.ceil(samples.length * 0.8);
     const commercialValidityRate = Math.round((publishable / Math.max(samples.length, 1)) * 100);
-    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 0 || rejected > 0 ? "blocked" : evaluated === samples.length && publishable >= minimumPublishable ? "ready_for_expansion" : evaluated === samples.length ? "needs_iteration" : completed === samples.length ? "ready_for_review" : "running";
+    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : blockingIssues > 0 ? "blocked" : evaluated === samples.length && publishable >= minimumPublishable ? "ready_for_expansion" : evaluated === samples.length ? "needs_iteration" : completed === samples.length ? "ready_for_review" : "running";
     const releaseGateReason = releaseGate === "not_started"
       ? "لم تُسجّل أي مهمة موسومة للاختبار المتوسط بعد؛ لا يوجد دليل عملي يسمح بقرار تجاري."
       : releaseGate === "blocked"
@@ -928,7 +934,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         : releaseGate === "ready_for_review"
           ? "قيّم كل عينة عبر نموذج التقييم: المنتج، المشهد، الحركة، اللهجة، الممنوعات، وقابلية النشر؛ لا تعتمد إلا 80%+."
           : "تابع توليد العينات غير المكتملة ثم اضغط تدقيق الدفعة حتى تتحول الحالة إلى جاهزة للتقييم.";
-    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, missingProductImage, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
+    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, missingProductImage, remainingToGenerate, remainingToEvaluate, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
 
     await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
