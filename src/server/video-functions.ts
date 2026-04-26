@@ -320,11 +320,12 @@ const falProvider: VideoProvider = {
     const token = process.env.FAL_API_KEY;
     if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
     const model = FAL_MODEL_BY_QUALITY[input.quality];
-    const response = await fetch(`https://fal.run/${model}`, {
+      const finalProviderPrompt = buildSaudiVideoPrompt(input);
+      const response = await fetch(`https://fal.run/${model}`, {
       method: "POST",
       headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        prompt: buildSaudiVideoPrompt(input),
+          prompt: finalProviderPrompt,
         aspect_ratio: input.aspectRatio,
         duration: videoDurationPayload(input.durationSeconds),
         resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
@@ -342,7 +343,7 @@ const falProvider: VideoProvider = {
     const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
-    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, fal_result_shape: Object.keys(result) } };
+    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(_providerJobId, row) {
     return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
