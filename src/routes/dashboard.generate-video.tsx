@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Clapperboard, Crown, Download, Film, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Clapperboard, Crown, Download, Film, ImageUp, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Upload, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -13,16 +13,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
+import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
+import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
+import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
+import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 
-type VideoQuality = "fast" | "quality";
+type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
 type VideoSearch = { prompt?: string; campaignPackId?: string };
 
 const QUALITY = {
   fast: { label: "سريع", icon: Zap, note: "للتجربة والمحتوى اليومي بتكلفة أقل" },
-  quality: { label: "احترافي", icon: Crown, note: "للقطات النهائية والإعلانات المدفوعة" },
+  lite: { label: "إعلاني", icon: Clapperboard, note: "لقطة بيع قصيرة للسوق السعودي" },
+  quality: { label: "احترافي", icon: Crown, note: "لإعلانات Pro وBusiness عالية التحويل" },
 } satisfies Record<VideoQuality, { label: string; icon: typeof Zap; note: string }>;
+
+const PERSONAS = [
+  { id: "male-young", label: "متحدث سعودي شاب", image: personaMaleYoung },
+  { id: "male-premium", label: "رجل سعودي فاخر", image: personaMalePremium },
+  { id: "female-abaya", label: "متحدثة سعودية", image: personaFemaleAbaya },
+  { id: "retail-seller", label: "بائع داخل متجر", image: personaRetailSeller },
+] as const;
 
 const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
   { value: "9:16", label: "Reels / TikTok", hint: "عمودي" },
