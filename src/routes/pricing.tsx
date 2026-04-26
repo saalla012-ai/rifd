@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
+  BadgeCheck,
   Check,
   Crown,
   Film,
@@ -51,6 +52,8 @@ export const Route = createFileRoute("/pricing")({
 });
 
 function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
+  const estimatedFastVideos = Math.floor(plan.monthlyCredits / videoCreditCost("fast", 5));
+  const estimatedAdVideos = Math.floor(plan.monthlyCredits / videoCreditCost("lite", 8));
   const usageLabel: Record<string, string> = {
     free: "فيديو محدود للتجربة حسب الرصيد",
     starter: "استخدام فيديو محدود حسب الرصيد",
@@ -61,9 +64,10 @@ function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
   return [
     `${formatPlanNumber(plan.dailyTextCap)} نص يومياً`,
     `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
-    usageLabel[plan.id],
+    `${usageLabel[plan.id]}: حتى ${formatPlanNumber(estimatedFastVideos)} سريع أو ${formatPlanNumber(estimatedAdVideos)} إعلاني شهرياً تقريباً`,
     plan.videoQualityAllowed ? "سريع وإعلاني واحترافي حسب النقاط" : "سريع وإعلاني حسب النقاط",
-    plan.id === "free" ? "فيديو بعلامة رِفد المائية" : "بدون علامة مائية ونقاط الباقة لا ترحل بعد 30 يوم",
+    plan.id === "free" ? "فيديو بعلامة Rifd المائية" : "بدون علامة مائية، مع إلزام صورة المنتج لجودة إعلان أعلى",
+    "نقاط الباقة لا ترحل بعد 30 يوم؛ نقاط الشحن الإضافية منفصلة",
   ];
 }
 
@@ -125,6 +129,18 @@ function PricingPage() {
           <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
             اختر باقتك حسب رصيد نقاط الفيديو. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
           </p>
+
+          <div className="mx-auto mt-5 grid max-w-3xl gap-2 text-right sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-5 text-muted-foreground">
+              <BadgeCheck className="mb-2 h-4 w-4 text-success" /> المدفوع بدون علامة مائية وقابل للنشر باسم متجرك.
+            </div>
+            <div className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-5 text-muted-foreground">
+              <Film className="mb-2 h-4 w-4 text-primary" /> صورة المنتج مطلوبة في المدفوع لتقليل النتائج العامة.
+            </div>
+            <div className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-5 text-muted-foreground">
+              <Gift className="mb-2 h-4 w-4 text-gold" /> رصيد الباقة يتجدد كل 30 يوم دون ترحيل.
+            </div>
+          </div>
 
           <div className="mx-auto mt-5 flex min-h-[3.75rem] max-w-md items-center justify-center">
             <Suspense fallback={<div className="h-12 w-full rounded-xl border border-border bg-card/70" aria-hidden="true" />}>
@@ -221,6 +237,7 @@ function PricingPage() {
                     <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                       <p>{plan.videoFastAllowed ? `سريع: ${videoCreditCost("fast", 5).toLocaleString("ar-SA")} نقطة` : "الفيديو غير متاح"}</p>
                       <p>{plan.videoQualityAllowed ? `احترافي: ${videoCreditCost("quality", 8).toLocaleString("ar-SA")} نقطة` : `إعلاني: ${videoCreditCost("lite", 8).toLocaleString("ar-SA")} نقطة`}</p>
+                      <p className="font-bold text-foreground">تقريبياً: {formatPlanNumber(Math.floor(plan.monthlyCredits / videoCreditCost("fast", 5)))} سريع أو {formatPlanNumber(Math.floor(plan.monthlyCredits / videoCreditCost("lite", 8)))} إعلاني</p>
                     </div>
                   </div>
 
@@ -260,8 +277,8 @@ function PricingPage() {
             </div>
             <div className="rounded-2xl border border-border bg-card p-5">
               <Star className="h-6 w-6 text-success" />
-              <h2 className="mt-3 font-extrabold">ضمان 14 يوم</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">ابدأ بوضوح، وراجع التجربة خلال أول أسبوعين حسب سياسة الاسترجاع.</p>
+              <h2 className="mt-3 font-extrabold">فرق واضح بين المجاني والمدفوع</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">المجاني للتجربة بعلامة Rifd، والمدفوع لفيديوهات نظيفة مع صورة منتج إلزامية لنتائج أقرب للإعلان الحقيقي.</p>
             </div>
           </div>
 
