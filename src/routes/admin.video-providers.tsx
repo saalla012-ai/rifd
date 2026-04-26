@@ -547,7 +547,7 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
         <Input value={draft.sampleId} onChange={(event) => setDraft({ ...draft, sampleId: event.target.value })} className="h-9 text-xs" />
         <Input dir="ltr" value={draft.resultUrl} onChange={(event) => setDraft({ ...draft, resultUrl: event.target.value })} placeholder="https:// video result" className="h-9 text-left text-xs" />
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-7">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <ScoreInput label="المنتج" value={draft.productClarity} onChange={(value) => setScore("productClarity", value)} />
         <ScoreInput label="المشهد" value={draft.sceneAdherence} onChange={(value) => setScore("sceneAdherence", value)} />
         <ScoreInput label="الحركة" value={draft.motionAdherence} onChange={(value) => setScore("motionAdherence", value)} />
