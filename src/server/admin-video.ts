@@ -785,7 +785,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
         scorecard: SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD.map((item) => `${item.label} ${item.weight}%`),
         promptAdherenceGate: "لا يُقبل القالب إذا تجاهل المنتج أو الصوت أو الحركة الأساسية حتى لو كان الفيديو جميلاً بصرياً.",
         finalPrompt,
-        generationPayload: { prompt: finalPrompt, quality, aspectRatio: expectedAspectRatio, durationSeconds, selectedPersonaId: persona.id, selectedTemplateId: "custom", requiresProductImage: quality !== "fast" },
+        generationPayload: { prompt: finalPrompt, quality, aspectRatio: expectedAspectRatio, durationSeconds, selectedPersonaId: persona.id, selectedTemplateId: "custom" as const, requiresProductImage: quality !== "fast" },
       };
     });
     const result: SaudiVideoPilotMatrixResult = {
