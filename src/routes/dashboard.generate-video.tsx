@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { videoTierDuration } from "@/lib/plan-catalog";
+import { SAUDI_VIDEO_PERSONAS } from "@/lib/saudi-video-test";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -30,12 +31,14 @@ const QUALITY = {
   quality: { label: "احترافي", icon: Crown, note: "لإعلانات Pro وBusiness عالية التحويل" },
 } satisfies Record<VideoQuality, { label: string; icon: typeof Zap; note: string }>;
 
-const PERSONAS = [
-  { id: "male-young", label: "متحدث سعودي شاب", image: personaMaleYoung },
-  { id: "male-premium", label: "رجل سعودي فاخر", image: personaMalePremium },
-  { id: "female-abaya", label: "متحدثة سعودية", image: personaFemaleAbaya },
-  { id: "retail-seller", label: "بائع داخل متجر", image: personaRetailSeller },
-] as const;
+const PERSONA_IMAGES = {
+  "male-young": personaMaleYoung,
+  "male-premium": personaMalePremium,
+  "female-abaya": personaFemaleAbaya,
+  "retail-seller": personaRetailSeller,
+} as const;
+
+const PERSONAS = SAUDI_VIDEO_PERSONAS.map((persona) => ({ ...persona, image: PERSONA_IMAGES[persona.id] }));
 
 const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
   { value: "9:16", label: "Reels / TikTok", hint: "عمودي" },
