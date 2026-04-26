@@ -253,9 +253,10 @@ export type SaudiVideoPilotEvaluationResult = {
   sampleId: string;
   resultUrl?: string;
   productClarity: number;
+  sceneAdherence: number;
+  motionAdherence: number;
   saudiDialect: number;
-  lipSync: number;
-  visualIntegrity: number;
+  negativeSafety: number;
   publishReadiness: number;
   promptAdherence: number;
   notes?: string;
@@ -808,17 +809,21 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
-    const weights = { productClarity: 25, saudiDialect: 15, lipSync: 10, visualIntegrity: 20, publishReadiness: 30 } as const;
+    const sceneAdherence = data.sceneAdherence ?? data.visualIntegrity;
+    const motionAdherence = data.motionAdherence ?? data.lipSync;
+    const negativeSafety = data.negativeSafety ?? data.visualIntegrity;
+    const weights = { productClarity: 25, sceneAdherence: 20, motionAdherence: 15, saudiDialect: 15, negativeSafety: 15, publishReadiness: 10 } as const;
     const weightedScore =
       data.productClarity * weights.productClarity +
+      sceneAdherence * weights.sceneAdherence +
+      motionAdherence * weights.motionAdherence +
       data.saudiDialect * weights.saudiDialect +
-      data.lipSync * weights.lipSync +
-      data.visualIntegrity * weights.visualIntegrity +
+      negativeSafety * weights.negativeSafety +
       data.publishReadiness * weights.publishReadiness;
     const score = Math.round(weightedScore / 5);
-    const promptAdherenceScore = Math.round((data.promptAdherence / 5) * 100);
+    const promptAdherenceScore = Math.round(((data.productClarity * 25 + sceneAdherence * 20 + motionAdherence * 15 + data.saudiDialect * 15 + negativeSafety * 15 + data.promptAdherence * 10) / 5));
     const decision = score >= 80 && promptAdherenceScore >= 80 ? "publishable" : score >= 68 && promptAdherenceScore >= 65 ? "minor_revision" : "reject_or_reprompt";
-    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
+    const result = { ...data, sceneAdherence, motionAdherence, negativeSafety, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
     await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
     return result;
   });
