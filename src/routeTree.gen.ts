@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VsChatgptRouteImport } from './routes/vs-chatgpt'
 import { Route as VideoProvidersRouteImport } from './routes/video-providers'
+import { Route as VideoProviderRouteImport } from './routes/video-provider'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProofCenterRouteImport } from './routes/proof-center'
@@ -55,6 +56,7 @@ import { Route as ApiTelegramDiscoverChatsRouteImport } from './routes/api.teleg
 import { Route as ApiSetupNotifyConfigRouteImport } from './routes/api.setup-notify-config'
 import { Route as ApiNotifyTelegramAdminRouteImport } from './routes/api.notify-telegram-admin'
 import { Route as AdminVideoProvidersRouteImport } from './routes/admin.video-providers'
+import { Route as AdminVideoProviderRouteImport } from './routes/admin.video-provider'
 import { Route as AdminVideoProvideRouteImport } from './routes/admin.video-provide'
 import { Route as AdminVideoJobsRouteImport } from './routes/admin.video-jobs'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
@@ -94,6 +96,11 @@ const VsChatgptRoute = VsChatgptRouteImport.update({
 const VideoProvidersRoute = VideoProvidersRouteImport.update({
   id: '/video-providers',
   path: '/video-providers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideoProviderRoute = VideoProviderRouteImport.update({
+  id: '/video-provider',
+  path: '/video-provider',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -320,6 +327,11 @@ const AdminVideoProvidersRoute = AdminVideoProvidersRouteImport.update({
   path: '/admin/video-providers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVideoProviderRoute = AdminVideoProviderRouteImport.update({
+  id: '/admin/video-provider',
+  path: '/admin/video-provider',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminVideoProvideRoute = AdminVideoProvideRouteImport.update({
   id: '/admin/video-provide',
   path: '/admin/video-provide',
@@ -500,6 +512,7 @@ export interface FileRoutesByFullPath {
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/video-provider': typeof VideoProviderRoute
   '/video-providers': typeof VideoProvidersRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
@@ -518,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/video-jobs': typeof AdminVideoJobsRoute
   '/admin/video-provide': typeof AdminVideoProvideRoute
+  '/admin/video-provider': typeof AdminVideoProviderRoute
   '/admin/video-providers': typeof AdminVideoProvidersRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -577,6 +591,7 @@ export interface FileRoutesByTo {
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/video-provider': typeof VideoProviderRoute
   '/video-providers': typeof VideoProvidersRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
@@ -595,6 +610,7 @@ export interface FileRoutesByTo {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/video-jobs': typeof AdminVideoJobsRoute
   '/admin/video-provide': typeof AdminVideoProvideRoute
+  '/admin/video-provider': typeof AdminVideoProviderRoute
   '/admin/video-providers': typeof AdminVideoProvidersRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -656,6 +672,7 @@ export interface FileRoutesById {
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/video-provider': typeof VideoProviderRoute
   '/video-providers': typeof VideoProvidersRoute
   '/vs-chatgpt': typeof VsChatgptRoute
   '/admin/ab-tests': typeof AdminAbTestsRoute
@@ -674,6 +691,7 @@ export interface FileRoutesById {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/video-jobs': typeof AdminVideoJobsRoute
   '/admin/video-provide': typeof AdminVideoProvideRoute
+  '/admin/video-provider': typeof AdminVideoProviderRoute
   '/admin/video-providers': typeof AdminVideoProvidersRoute
   '/api/notify-telegram-admin': typeof ApiNotifyTelegramAdminRoute
   '/api/setup-notify-config': typeof ApiSetupNotifyConfigRoute
@@ -736,6 +754,7 @@ export interface FileRouteTypes {
     | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
+    | '/video-provider'
     | '/video-providers'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
@@ -754,6 +773,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/admin/video-jobs'
     | '/admin/video-provide'
+    | '/admin/video-provider'
     | '/admin/video-providers'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -813,6 +833,7 @@ export interface FileRouteTypes {
     | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
+    | '/video-provider'
     | '/video-providers'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
@@ -831,6 +852,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/admin/video-jobs'
     | '/admin/video-provide'
+    | '/admin/video-provider'
     | '/admin/video-providers'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -891,6 +913,7 @@ export interface FileRouteTypes {
     | '/proof-center'
     | '/reset-password'
     | '/unsubscribe'
+    | '/video-provider'
     | '/video-providers'
     | '/vs-chatgpt'
     | '/admin/ab-tests'
@@ -909,6 +932,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/admin/video-jobs'
     | '/admin/video-provide'
+    | '/admin/video-provider'
     | '/admin/video-providers'
     | '/api/notify-telegram-admin'
     | '/api/setup-notify-config'
@@ -970,6 +994,7 @@ export interface RootRouteChildren {
   ProofCenterRoute: typeof ProofCenterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  VideoProviderRoute: typeof VideoProviderRoute
   VideoProvidersRoute: typeof VideoProvidersRoute
   VsChatgptRoute: typeof VsChatgptRoute
   AdminAbTestsRoute: typeof AdminAbTestsRoute
@@ -988,6 +1013,7 @@ export interface RootRouteChildren {
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminVideoJobsRoute: typeof AdminVideoJobsRoute
   AdminVideoProvideRoute: typeof AdminVideoProvideRoute
+  AdminVideoProviderRoute: typeof AdminVideoProviderRoute
   AdminVideoProvidersRoute: typeof AdminVideoProvidersRoute
   ApiNotifyTelegramAdminRoute: typeof ApiNotifyTelegramAdminRoute
   ApiSetupNotifyConfigRoute: typeof ApiSetupNotifyConfigRoute
@@ -1028,6 +1054,13 @@ declare module '@tanstack/react-router' {
       path: '/video-providers'
       fullPath: '/video-providers'
       preLoaderRoute: typeof VideoProvidersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/video-provider': {
+      id: '/video-provider'
+      path: '/video-provider'
+      fullPath: '/video-provider'
+      preLoaderRoute: typeof VideoProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/unsubscribe': {
@@ -1338,6 +1371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVideoProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/video-provider': {
+      id: '/admin/video-provider'
+      path: '/admin/video-provider'
+      fullPath: '/admin/video-provider'
+      preLoaderRoute: typeof AdminVideoProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/video-provide': {
       id: '/admin/video-provide'
       path: '/admin/video-provide'
@@ -1610,6 +1650,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProofCenterRoute: ProofCenterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  VideoProviderRoute: VideoProviderRoute,
   VideoProvidersRoute: VideoProvidersRoute,
   VsChatgptRoute: VsChatgptRoute,
   AdminAbTestsRoute: AdminAbTestsRoute,
@@ -1628,6 +1669,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminVideoJobsRoute: AdminVideoJobsRoute,
   AdminVideoProvideRoute: AdminVideoProvideRoute,
+  AdminVideoProviderRoute: AdminVideoProviderRoute,
   AdminVideoProvidersRoute: AdminVideoProvidersRoute,
   ApiNotifyTelegramAdminRoute: ApiNotifyTelegramAdminRoute,
   ApiSetupNotifyConfigRoute: ApiSetupNotifyConfigRoute,
