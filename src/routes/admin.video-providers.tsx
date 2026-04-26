@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, ArrowUpDown, CheckCircle2, Clapperboard, ClipboardCheck, Loader2, RefreshCw, Target, Wifi } from "lucide-react";
+import { Activity, AlertTriangle, ArrowUpDown, CheckCircle2, Clapperboard, ClipboardCheck, Gauge, Loader2, RefreshCw, Target, Wifi } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiVideoPilotAuditResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
+import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -47,6 +47,7 @@ const HEALTH_TONE: Record<string, string> = {
 };
 
 type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
+type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; saudiDialect: number; lipSync: number; visualIntegrity: number; publishReadiness: number; notes: string };
 
 const PERSONA_IMAGES: Record<string, string> = {
   "male-young": personaMaleYoung,
@@ -74,11 +75,13 @@ function AdminVideoProvidersPage() {
   const runSaudiFalTest = useServerFn(runSaudiFalVideoModelTest);
   const auditPilotLibrary = useServerFn(auditSaudiVideoPilotLibrary);
   const buildPilotMatrix = useServerFn(buildSaudiVideoPilotMatrix);
+  const evaluatePilotSample = useServerFn(evaluateSaudiVideoPilotSample);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [pilotAudit, setPilotAudit] = useState<SaudiVideoPilotAuditResult | null>(null);
   const [pilotMatrix, setPilotMatrix] = useState<SaudiVideoPilotMatrixResult | null>(null);
+  const [pilotEvaluation, setPilotEvaluation] = useState<SaudiVideoPilotEvaluationResult | null>(null);
   const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
   const [falTestResult, setFalTestResult] = useState<SaudiFalModelTestResult | null>(null);
   const [falDraft, setFalDraft] = useState<SaudiFalDraft>({ modelId: FAL_VIDEO_TEST_MODELS[0].id, personaId: SAUDI_VIDEO_PERSONAS[0].id, scenarioId: SAUDI_VIDEO_TEST_SCENARIOS[0].id, includeProductImage: true, includeVoice: true });
@@ -89,6 +92,7 @@ function AdminVideoProvidersPage() {
   const [testingRouter, setTestingRouter] = useState(false);
   const [auditingPilot, setAuditingPilot] = useState(false);
   const [buildingMatrix, setBuildingMatrix] = useState(false);
+  const [evaluatingPilot, setEvaluatingPilot] = useState(false);
   const [loadingFalPreview, setLoadingFalPreview] = useState(false);
   const [runningFalTest, setRunningFalTest] = useState(false);
 
@@ -188,6 +192,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function submitPilotEvaluation(draft: PilotEvaluationDraft) {
+    setEvaluatingPilot(true);
+    try {
+      const headers = await authHeaders();
+      const result = await evaluatePilotSample({ data: draft, headers });
+      setPilotEvaluation(result);
+      toast[result.decision === "publishable" ? "success" : "warning"](`تقييم العينة: ${result.score.toLocaleString("ar-SA")}%`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل حفظ تقييم العينة");
+    } finally {
+      setEvaluatingPilot(false);
+    }
+  }
+
   async function buildFalPromptPreview() {
     setLoadingFalPreview(true);
     try {
@@ -256,6 +274,7 @@ function AdminVideoProvidersPage() {
         <>
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
+          <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
@@ -394,6 +413,46 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
         ))}
       </div>
     </section>
+  );
+}
+
+function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
+  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, saudiDialect: 4, lipSync: 4, visualIntegrity: 4, publishReadiness: 4, notes: "" });
+  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "saudiDialect" | "lipSync" | "visualIntegrity" | "publishReadiness">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">تقييم نتيجة عينة فعلية</h2>
+          <p className="mt-1 text-xs text-muted-foreground">حوّل مشاهدة الفيديو إلى قرار إطلاق واضح: صالح للنشر، يحتاج تعديل بسيط، أو يعاد توليده.</p>
+        </div>
+        {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> {result.score.toLocaleString("ar-SA")}%</Badge>}
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-[140px_minmax(0,1fr)]">
+        <Input value={draft.sampleId} onChange={(event) => setDraft({ ...draft, sampleId: event.target.value })} className="h-9 text-xs" />
+        <Input dir="ltr" value={draft.resultUrl} onChange={(event) => setDraft({ ...draft, resultUrl: event.target.value })} placeholder="https:// video result" className="h-9 text-left text-xs" />
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-5">
+        <ScoreInput label="المنتج" value={draft.productClarity} onChange={(value) => setScore("productClarity", value)} />
+        <ScoreInput label="اللهجة" value={draft.saudiDialect} onChange={(value) => setScore("saudiDialect", value)} />
+        <ScoreInput label="الشفاه" value={draft.lipSync} onChange={(value) => setScore("lipSync", value)} />
+        <ScoreInput label="السلامة" value={draft.visualIntegrity} onChange={(value) => setScore("visualIntegrity", value)} />
+        <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
+      </div>
+      <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
+      <Button type="button" size="sm" onClick={() => onSubmit(draft)} disabled={saving} className="mt-3 gap-1">
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />} حفظ تقييم العينة
+      </Button>
+    </section>
+  );
+}
+
+function ScoreInput({ label, value, onChange }: { label: string; value: number; onChange: (value: string) => void }) {
+  return (
+    <label className="block rounded-lg border border-border bg-secondary/30 p-2 text-xs">
+      <span className="font-bold text-muted-foreground">{label}</span>
+      <Input type="number" min={1} max={5} value={value} onChange={(event) => onChange(event.target.value)} className="mt-1 h-8" />
+    </label>
   );
 }
 

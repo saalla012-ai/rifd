@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
@@ -46,15 +45,22 @@ const TestVideoRouterInput = z.object({
   imageCount: z.union([z.literal(0), z.literal(1), z.literal(2)]).default(0),
 });
 
-const CompleteManualVideoJobInput = z.object({
-  jobId: z.string().uuid(),
-  resultUrl: z.string().trim().url().max(2000),
+const EvaluatePilotSampleInput = z.object({
+  sampleId: z.string().trim().min(3).max(40),
+  resultUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
+  productClarity: z.number().int().min(1).max(5),
+  saudiDialect: z.number().int().min(1).max(5),
+  lipSync: z.number().int().min(1).max(5),
+  visualIntegrity: z.number().int().min(1).max(5),
+  publishReadiness: z.number().int().min(1).max(5),
+  notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
-const RefundVideoJobInput = z.object({
-  jobId: z.string().uuid(),
-  reason: z.string().trim().min(3).max(240).default("تعذر تنفيذ مهمة الفيديو يدوياً"),
-});
+
+async function getSupabaseAdmin() {
+  const mod = await import("@/integrations/supabase/client.server");
+  return mod.supabaseAdmin;
+}
 
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
@@ -204,6 +210,20 @@ export type SaudiVideoPilotMatrixResult = {
   }>;
 };
 
+export type SaudiVideoPilotEvaluationResult = {
+  sampleId: string;
+  resultUrl?: string;
+  productClarity: number;
+  saudiDialect: number;
+  lipSync: number;
+  visualIntegrity: number;
+  publishReadiness: number;
+  notes?: string;
+  score: number;
+  decision: "publishable" | "minor_revision" | "reject_or_reprompt";
+  evaluatedAt: string;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -216,7 +236,7 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
 
 function isManualBridgeJob(row: VideoJobRow): boolean {
   const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
-  return row.provider === "google_flow_bridge" || metadata.manual_required === true;
+  return metadata.manual_required === true;
 }
 
 function appendProviderAttempt(metadata: Json | null, attempt: ProviderAttempt) {
@@ -273,11 +293,11 @@ function errorMessage(error: unknown) {
 
 async function refundVideoCreditsOnce(ledgerId: string | null) {
   if (!ledgerId) return { refundId: null as string | null, newlyRefunded: false };
-  const { data: refundId, error } = await supabaseAdmin.rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
+  const { data: refundId, error } = await (await getSupabaseAdmin()).rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
   if (!error) return { refundId: refundId as string, newlyRefunded: true };
   if (!/already_refunded/i.test(error.message)) throw new Error(`فشل رد النقاط: ${error.message}`);
 
-  const { data: ledger } = await supabaseAdmin.from("credit_ledger").select("refund_ledger_id").eq("id", ledgerId).maybeSingle();
+  const { data: ledger } = await (await getSupabaseAdmin()).from("credit_ledger").select("refund_ledger_id").eq("id", ledgerId).maybeSingle();
   return { refundId: ledger?.refund_ledger_id ?? null, newlyRefunded: false };
 }
 
@@ -301,7 +321,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
 
     const userIds = Array.from(new Set((rows ?? []).map((r) => r.user_id)));
     const { data: profs } = userIds.length
-      ? await supabaseAdmin.from("profiles").select("id, email, store_name").in("id", userIds)
+      ? await (await getSupabaseAdmin()).from("profiles").select("id, email, store_name").in("id", userIds)
       : { data: [] as { id: string; email: string | null; store_name: string | null }[] };
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
 
@@ -309,12 +329,12 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const counts: Record<string, number> = { processing: 0, completed: 0, refunded: 0, failed: 0 };
     await Promise.all(
       statusList.map(async (status) => {
-        const { count } = await supabaseAdmin.from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
+        const { count } = await (await getSupabaseAdmin()).from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
         counts[status] = count ?? 0;
       })
     );
 
-    const { count: totalCount } = await supabaseAdmin.from("video_jobs").select("id", { count: "exact", head: true });
+    const { count: totalCount } = await (await getSupabaseAdmin()).from("video_jobs").select("id", { count: "exact", head: true });
     const statsRows = rows ?? [];
     const stats: AdminVideoStats = {
       total: totalCount ?? statsRows.length,
@@ -338,7 +358,7 @@ export const listVideoProviderConfigs = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const { data, error } = await (supabaseAdmin as unknown as {
+    const { data, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { select: (columns: string) => { order: (column: string, opts: { ascending: boolean }) => Promise<{ data: unknown; error: { message: string } | null }> } };
     })
       .from("video_provider_configs")
@@ -417,7 +437,7 @@ export const updateVideoProviderConfig = createServerFn({ method: "POST" })
     if (typeof data.cost8s === "number") patch.cost_8s = data.cost8s;
     if (Object.keys(patch).length === 0) throw new Error("لا توجد تغييرات للحفظ");
 
-    const { data: updated, error } = await (supabaseAdmin as unknown as {
+    const { data: updated, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => { select: (columns: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } } };
     })
       .from("video_provider_configs")
@@ -444,7 +464,7 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const { data: current, error: readError } = await (supabaseAdmin as unknown as {
+    const { data: current, error: readError } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { select: (columns: string) => { eq: (column: string, value: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } };
     })
       .from("video_provider_configs")
@@ -486,7 +506,7 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
       metadata: appendConnectionTest(provider.metadata, result),
     };
 
-    const { data: updated, error } = await (supabaseAdmin as unknown as {
+    const { data: updated, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => { select: (columns: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } } } };
     })
       .from("video_provider_configs")
@@ -572,7 +592,7 @@ export const testVideoRouterDryRun = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const { data: rows, error } = await (supabaseAdmin as unknown as {
+    const { data: rows, error } = await (await getSupabaseAdmin() as unknown as {
       from: (table: string) => { select: (columns: string) => { order: (column: string, opts: { ascending: boolean }) => Promise<{ data: unknown; error: { message: string } | null }> } };
     })
       .from("video_provider_configs")
@@ -671,70 +691,16 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     return result;
   });
 
-export const completeManualVideoJob = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => CompleteManualVideoJobInput.parse(input))
+export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => EvaluatePilotSampleInput.parse(input))
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }): Promise<{ job: AdminVideoJob }> => {
+  .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
-
-    const { data: current, error: readError } = await supabaseAdmin
-      .from("video_jobs")
-      .select("*")
-      .eq("id", data.jobId)
-      .single();
-    if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
-    if (current.status !== "processing") throw new Error("لا يمكن إكمال مهمة ليست قيد المعالجة");
-    if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
-
-    const metadata = {
-      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: true, status: "manual_completed" }) as Record<string, unknown>),
-      manual_completed_by: userId,
-      manual_completed_at: new Date().toISOString(),
-      provider_status: "succeeded",
-    };
-
-    const { data: updated, error } = await supabaseAdmin
-      .from("video_jobs")
-      .update({ status: "completed", result_url: data.resultUrl, completed_at: new Date().toISOString(), error_message: null, metadata: metadata as Json })
-      .eq("id", data.jobId)
-      .eq("status", "processing")
-      .select("*")
-      .single();
-
-    if (error || !updated) throw new Error(`فشل إكمال مهمة الفيديو: ${error?.message ?? "استجابة فارغة"}`);
-    await logAdminAudit({ adminId: userId, action: "complete_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { result_url: data.resultUrl } as Json });
-    return { job: toAdminVideoJob(updated as VideoJobRow) };
-  });
-
-export const refundManualVideoJob = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => RefundVideoJobInput.parse(input))
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }): Promise<{ job: AdminVideoJob }> => {
-    const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    await assertAdmin(supabase, userId);
-
-    const { data: current, error: readError } = await supabaseAdmin.from("video_jobs").select("*").eq("id", data.jobId).single();
-    if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو: ${readError?.message ?? "غير موجودة"}`);
-    if (current.status !== "processing") throw new Error("لا يمكن رد نقاط مهمة ليست قيد المعالجة");
-    if (!isManualBridgeJob(current as VideoJobRow)) throw new Error("هذه المهمة ليست مخصصة للتنفيذ اليدوي");
-
-    const { refundId, newlyRefunded } = await refundVideoCreditsOnce(current.ledger_id);
-    const metadata = {
-      ...(appendProviderAttempt(current.metadata, { provider: current.provider, ok: false, status: "manual_refunded", error: data.reason }) as Record<string, unknown>),
-      manual_refunded_by: userId,
-      manual_refunded_at: new Date().toISOString(),
-      manual_refund_reason: data.reason,
-    };
-
-    const { data: updated, error } = await supabaseAdmin
-      .from("video_jobs")
-      .update({ status: "refunded", refund_ledger_id: refundId ?? current.refund_ledger_id, error_message: data.reason, metadata: metadata as Json })
-      .eq("id", data.jobId)
-      .select("*")
-      .single();
-
-    if (error || !updated) throw new Error(`فشل تحديث المهمة بعد رد النقاط: ${error?.message ?? "استجابة فارغة"}`);
-    await logAdminAudit({ adminId: userId, action: "refund_manual_video_job", targetTable: "video_jobs", targetId: data.jobId, after: { reason: data.reason, refund_ledger_id: refundId } as Json });
-    return { job: toAdminVideoJob(updated as VideoJobRow) };
+    const total = data.productClarity + data.saudiDialect + data.lipSync + data.visualIntegrity + data.publishReadiness;
+    const score = Math.round((total / 25) * 100);
+    const decision = score >= 80 ? "publishable" : score >= 68 ? "minor_revision" : "reject_or_reprompt";
+    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
+    await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
+    return result;
   });
