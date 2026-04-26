@@ -170,6 +170,28 @@ function GenerateVideoPage() {
     }
   };
 
+  const uploadInputImage = async (kind: "speaker" | "product", file?: File) => {
+    if (!file) return;
+    setUploadingInput(kind);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("سجّل الدخول أولاً");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `video-inputs/${session.user.id}/${kind}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("generated-images").upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw new Error(error.message);
+      const { data, error: signedError } = await supabase.storage.from("generated-images").createSignedUrl(path, 60 * 60 * 6);
+      if (signedError || !data?.signedUrl) throw new Error(signedError?.message ?? "فشل تجهيز رابط الصورة");
+      if (kind === "speaker") setSpeakerImageUrl(data.signedUrl);
+      else setProductImageUrl(data.signedUrl);
+      toast.success("تم تجهيز الصورة للفيديو");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل رفع الصورة");
+    } finally {
+      setUploadingInput(null);
+    }
+  };
+
   return (
     <DashboardShell>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
