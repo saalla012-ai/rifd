@@ -16,11 +16,11 @@ export const SAUDI_VIDEO_TEST_SCENARIOS: Array<{ id: SaudiVideoScenarioId; label
 ];
 
 export const FAL_VIDEO_TEST_MODELS = [
-  { id: "fal-ai/veo3/fast", label: "VEO 3 Fast", supportsVoice: true, supportsTwoImages: true },
-  { id: "fal-ai/veo3", label: "VEO 3", supportsVoice: true, supportsTwoImages: true },
-  { id: "fal-ai/kling-video/v2.1/standard/image-to-video", label: "Kling Standard I2V", supportsVoice: false, supportsTwoImages: false },
-  { id: "fal-ai/minimax/video-01/image-to-video", label: "MiniMax I2V", supportsVoice: false, supportsTwoImages: false },
-  { id: "fal-ai/pixverse/v4.5/image-to-video", label: "PixVerse I2V", supportsVoice: false, supportsTwoImages: false },
+  { id: "fal-ai/veo3/fast", label: "VEO 3 Fast", supportsVoice: true, supportsTwoImages: true, estimatedUsd: 0.5 },
+  { id: "fal-ai/veo3", label: "VEO 3", supportsVoice: true, supportsTwoImages: true, estimatedUsd: 3.2 },
+  { id: "fal-ai/kling-video/v2.1/standard/image-to-video", label: "Kling Standard I2V", supportsVoice: false, supportsTwoImages: false, estimatedUsd: 0.35 },
+  { id: "fal-ai/minimax/video-01/image-to-video", label: "MiniMax I2V", supportsVoice: false, supportsTwoImages: false, estimatedUsd: 0.3 },
+  { id: "fal-ai/pixverse/v4.5/image-to-video", label: "PixVerse I2V", supportsVoice: false, supportsTwoImages: false, estimatedUsd: 0.2 },
 ] as const;
 
 export function buildSaudiFalTestPrompt(input: { personaBrief: string; scenarioId: SaudiVideoScenarioId; includeProductImage: boolean; includeVoice: boolean }) {
