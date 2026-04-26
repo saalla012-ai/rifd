@@ -370,6 +370,33 @@ function PilotAuditPanel({ audit }: { audit: SaudiVideoPilotAuditResult }) {
   );
 }
 
+function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">مصفوفة الاختبار التجاري السعودي</h2>
+          <p className="mt-1 text-xs text-muted-foreground">عينات ممثلة قبل الإطلاق: قطاعات سعودية، شخصيات، جودات، ومعايير تقييم واضحة دون خصم نقاط.</p>
+        </div>
+        <Badge className="bg-primary/15 text-primary">{matrix.totalSamples.toLocaleString("ar-SA")} عينات · ${matrix.estimatedCostUsd}</Badge>
+      </div>
+      <p className="mt-3 rounded-lg border border-border bg-secondary/30 p-3 text-xs text-muted-foreground">{matrix.readinessGate}</p>
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {matrix.samples.map((sample) => (
+          <div key={sample.sampleId} className="rounded-lg border border-border bg-background/60 p-3 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong>{sample.sampleId} — {sample.label}</strong>
+              <Badge variant="secondary">{sample.quality} · {sample.durationSeconds}ث</Badge>
+            </div>
+            <p className="mt-1 text-muted-foreground">{sample.sector} · {sample.personaLabel} · {sample.requiresProductImage ? "صورة منتج إلزامية" : "عينة سريعة"}</p>
+            <p className="mt-2 text-muted-foreground">التقييم: {sample.scorecard.join(" · ")}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function SaudiFalTestPanel({ draft, productImageUrl, preview, testResult, loading, running, onDraft, onProductImageUrl, onPreview, onRun }: { draft: SaudiFalDraft; productImageUrl: string; preview: SaudiFalPromptPreview | null; testResult: SaudiFalModelTestResult | null; loading: boolean; running: boolean; onDraft: (next: SaudiFalDraft) => void; onProductImageUrl: (value: string) => void; onPreview: () => void; onRun: () => void }) {
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
