@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { PLAN_CATALOG, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
+import { PLAN_CATALOG, VIDEO_QUALITY_LABELS, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
 
 const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
 const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
