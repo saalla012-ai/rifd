@@ -413,8 +413,9 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
               <strong>{sample.sampleId} — {sample.label}</strong>
               <Badge variant="secondary">{sample.quality} · {sample.durationSeconds}ث</Badge>
             </div>
-            <p className="mt-1 text-muted-foreground">{sample.sector} · {sample.personaLabel} · {sample.requiresProductImage ? "صورة منتج إلزامية" : "عينة سريعة"}</p>
+            <p className="mt-1 text-muted-foreground">{sample.sector} · {sample.personaLabel} · {sample.expectedAspectRatio} · {sample.requiresProductImage ? "صورة منتج إلزامية" : "عينة سريعة"}</p>
             <p className="mt-2 font-semibold text-foreground">{sample.objective}</p>
+            <p className="mt-1 text-muted-foreground">بوابة فنية: {sample.technicalGate.join(" · ")}</p>
             <p className="mt-1 text-muted-foreground">شرط النجاح: {sample.mustPass.join(" · ")}</p>
             <p className="mt-2 text-muted-foreground">التقييم: {sample.scorecard.join(" · ")}</p>
           </div>
