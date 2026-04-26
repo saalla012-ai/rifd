@@ -272,7 +272,7 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
-function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { draft: { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean }; preview: SaudiFalPromptPreview | null; loading: boolean; onDraft: (next: { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean }) => void; onPreview: () => void }) {
+function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { draft: SaudiFalDraft; preview: SaudiFalPromptPreview | null; loading: boolean; onDraft: (next: SaudiFalDraft) => void; onPreview: () => void }) {
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
