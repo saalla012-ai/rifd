@@ -168,6 +168,21 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function runFalModelTest() {
+    setRunningFalTest(true);
+    try {
+      const headers = await authHeaders();
+      const result = await runSaudiFalTest({ data: { ...falDraft, personaImageUrl: absoluteAssetUrl(PERSONA_IMAGES[falDraft.personaId]), productImageUrl }, headers });
+      setFalTestResult(result);
+      setFalPreview(result);
+      toast[result.ok ? "success" : "error"](result.ok ? "تم إرسال اختبار fal.ai الفعلي" : result.error ?? "فشل اختبار النموذج");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل اختبار fal.ai الفعلي");
+    } finally {
+      setRunningFalTest(false);
+    }
+  }
+
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -199,7 +214,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
-          <SaudiFalTestPanel draft={falDraft} preview={falPreview} loading={loadingFalPreview} onDraft={setFalDraft} onPreview={() => void buildFalPromptPreview()} />
+          <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
