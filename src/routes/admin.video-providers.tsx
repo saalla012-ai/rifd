@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, AlertTriangle, ArrowUpDown, CheckCircle2, Clapperboard, Loader2, RefreshCw, Wifi } from "lucide-react";
+import { Activity, AlertTriangle, ArrowUpDown, CheckCircle2, Clapperboard, ClipboardCheck, Loader2, RefreshCw, Wifi } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview } from "@/server/admin-video";
+import { auditSaudiVideoPilotLibrary, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiVideoPilotAuditResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -72,9 +72,11 @@ function AdminVideoProvidersPage() {
   const testRouter = useServerFn(testVideoRouterDryRun);
   const previewSaudiFalPrompt = useServerFn(previewSaudiFalVideoTestPrompt);
   const runSaudiFalTest = useServerFn(runSaudiFalVideoModelTest);
+  const auditPilotLibrary = useServerFn(auditSaudiVideoPilotLibrary);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
+  const [pilotAudit, setPilotAudit] = useState<SaudiVideoPilotAuditResult | null>(null);
   const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
   const [falTestResult, setFalTestResult] = useState<SaudiFalModelTestResult | null>(null);
   const [falDraft, setFalDraft] = useState<SaudiFalDraft>({ modelId: FAL_VIDEO_TEST_MODELS[0].id, personaId: SAUDI_VIDEO_PERSONAS[0].id, scenarioId: SAUDI_VIDEO_TEST_SCENARIOS[0].id, includeProductImage: true, includeVoice: true });
@@ -83,6 +85,7 @@ function AdminVideoProvidersPage() {
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testingRouter, setTestingRouter] = useState(false);
+  const [auditingPilot, setAuditingPilot] = useState(false);
   const [loadingFalPreview, setLoadingFalPreview] = useState(false);
   const [runningFalTest, setRunningFalTest] = useState(false);
 
@@ -154,6 +157,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function auditPromptLibrary() {
+    setAuditingPilot(true);
+    try {
+      const headers = await authHeaders();
+      const result = await auditPilotLibrary({ headers });
+      setPilotAudit(result);
+      toast[result.readyForPilot ? "success" : "error"](`جاهزية مكتبة البرومبتات: ${result.passRate.toLocaleString("ar-SA")}%`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تدقيق مكتبة البرومبتات");
+    } finally {
+      setAuditingPilot(false);
+    }
+  }
+
   async function buildFalPromptPreview() {
     setLoadingFalPreview(true);
     try {
@@ -198,6 +215,9 @@ function AdminVideoProvidersPage() {
           <p className="mt-1 text-sm text-muted-foreground">تحكم داخلي بالمزودين، الأولوية، الصحة، والتفعيل دون كشف أي اسم تقني للمستخدم.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => void auditPromptLibrary()} disabled={loading || auditingPilot}>
+            {auditingPilot ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />} تدقيق مكتبة البرومبتات
+          </Button>
           <Button variant="default" size="sm" onClick={() => void testRouterPath()} disabled={loading || testingRouter}>
             {testingRouter ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />} اختبار الراوتر
           </Button>
@@ -214,6 +234,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
@@ -304,6 +325,27 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
       <p className="mt-1 truncate text-xs text-muted-foreground">آخر حالة: {attempt.lastStatus ?? "—"} · {fmtDate(attempt.lastAt)}</p>
       {attempt.topError && <p className="mt-1 line-clamp-1 text-xs text-destructive">أكثر خطأ: {attempt.topError}</p>}
     </div>
+  );
+}
+
+function PilotAuditPanel({ audit }: { audit: SaudiVideoPilotAuditResult }) {
+  const topIssues = audit.findings.filter((item) => item.issues.length > 0).slice(0, 5);
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">تدقيق مكتبة البرومبتات السعودية</h2>
+          <p className="mt-1 text-xs text-muted-foreground">فحص جودة البرومبتات قبل الاختبار العملي: الصوت، المنتج، قيود التشوهات، ومنع النص العربي المرئي.</p>
+        </div>
+        <Badge className={cn(audit.readyForPilot ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{audit.passRate.toLocaleString("ar-SA")}% جاهزية</Badge>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{audit.passCount.toLocaleString("ar-SA")}/{audit.totalTemplates.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">قوالب اجتازت معيار 80%</p></div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{audit.sectorCoverage.length.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">قطاعات مغطاة</p></div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{Object.entries(audit.riskMix).map(([k, v]) => `${k}: ${v}`).join(" · ")}</strong><p className="mt-1 text-muted-foreground">توزيع المخاطر</p></div>
+      </div>
+      {topIssues.length > 0 && <div className="mt-3 space-y-2">{topIssues.map((item) => <div key={item.templateId} className="rounded-lg border border-border bg-background/60 p-3 text-xs"><strong>{item.label} — {item.score}%</strong><p className="mt-1 text-muted-foreground">{item.issues.join(" · ")}</p></div>)}</div>}
+    </section>
   );
 }
 

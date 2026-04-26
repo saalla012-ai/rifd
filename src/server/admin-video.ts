@@ -5,7 +5,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -174,6 +174,17 @@ export type AdminVideoRouterTestResult = {
   candidates: Array<{ providerKey: string; displayName: string; priority: number; effectivePriority: number; mode: string; eligible: boolean; reason: string }>;
 };
 
+export type SaudiVideoPilotAuditResult = {
+  checkedAt: string;
+  totalTemplates: number;
+  passCount: number;
+  passRate: number;
+  readyForPilot: boolean;
+  sectorCoverage: string[];
+  riskMix: Record<string, number>;
+  findings: Array<{ templateId: string; label: string; sector: string; risk: string; score: number; issues: string[]; recommendation: string }>;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -229,7 +240,6 @@ function providerPriorityScore(provider: AdminVideoProviderConfig) {
 function providerSecretName(providerKey: string) {
   return ({
     fal_ai: "FAL_API_KEY",
-    google_veo_api: "GOOGLE_VEO_API_KEY",
     runway: "RUNWAY_API_KEY",
     luma: "LUMA_API_KEY",
     kling: "KLING_API_KEY",
@@ -558,6 +568,47 @@ export const testVideoRouterDryRun = createServerFn({ method: "POST" })
     const result = { ok: Boolean(selected), selectedProvider: selected?.providerKey ?? null, checkedAt: new Date().toISOString(), candidates };
 
     await logAdminAudit({ adminId: userId, action: "test_video_router_dry_run", targetTable: "video_provider_configs", targetId: selected?.providerKey ?? "none", after: result as unknown as Json });
+    return result;
+  });
+
+export const auditSaudiVideoPilotLibrary = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SaudiVideoPilotAuditResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const findings = SAUDI_VIDEO_PROMPT_TEMPLATES.map((template) => {
+      const issues: string[] = [];
+      const prompt = template.prompt;
+      if (!/الصوت:/.test(prompt)) issues.push("لا يحتوي تعليمات صوت واضحة");
+      if (!/تجنب:/.test(prompt)) issues.push("لا يحتوي قيود منع التشوهات");
+      if (!/النصوص العربية المرئية/.test(prompt)) issues.push("لا يمنع النص العربي المرئي بوضوح");
+      if (!/المنتج/.test(prompt)) issues.push("تركيز المنتج غير كافٍ");
+      if (prompt.length < 280) issues.push("البرومبت قصير وقد يعطي نتيجة عامة");
+      const score = Math.max(0, 100 - issues.length * 14 - (template.risk === "عالٍ" ? 8 : template.risk === "متوسط" ? 3 : 0));
+      return {
+        templateId: template.id,
+        label: template.label,
+        sector: template.sector,
+        risk: template.risk,
+        score,
+        issues,
+        recommendation: issues.length === 0 ? "جاهز للاختبار العملي" : "راجعه قبل اعتماده ضمن عينات الإطلاق",
+      };
+    });
+    const passCount = findings.filter((item) => item.score >= 80).length;
+    const result: SaudiVideoPilotAuditResult = {
+      checkedAt: new Date().toISOString(),
+      totalTemplates: findings.length,
+      passCount,
+      passRate: Math.round((passCount / Math.max(findings.length, 1)) * 100),
+      readyForPilot: passCount >= 24,
+      sectorCoverage: Array.from(new Set(findings.map((item) => item.sector))).sort((a, b) => a.localeCompare(b, "ar")),
+      riskMix: findings.reduce<Record<string, number>>((acc, item) => ({ ...acc, [item.risk]: (acc[item.risk] ?? 0) + 1 }), {}),
+      findings,
+    };
+
+    await logAdminAudit({ adminId: userId, action: "audit_saudi_video_pilot_library", targetTable: "video_provider_configs", targetId: "saudi_prompt_library", after: result as unknown as Json });
     return result;
   });
 

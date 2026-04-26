@@ -373,7 +373,6 @@ function futureApiProvider(key: string, secretName: string): VideoProvider {
 const PROVIDERS: Record<string, VideoProvider> = {
   fal_ai: falProvider,
   google_flow_bridge: manualBridgeProvider,
-  google_veo_api: futureApiProvider("google_veo_api", "GOOGLE_VEO_API_KEY"),
   runway: futureApiProvider("runway", "RUNWAY_API_KEY"),
   luma: futureApiProvider("luma", "LUMA_API_KEY"),
   kling: futureApiProvider("kling", "KLING_API_KEY"),
