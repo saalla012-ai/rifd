@@ -307,8 +307,9 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ rows: AdminVideoJob[]; stats: AdminVideoStats }> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
+    const admin = await getSupabaseAdmin();
 
-    let q = supabaseAdmin
+    let q = admin
       .from("video_jobs")
       .select("id, user_id, prompt, quality, aspect_ratio, duration_seconds, status, provider, provider_job_id, result_url, error_message, credits_charged, estimated_cost_usd, ledger_id, refund_ledger_id, metadata, created_at, completed_at")
       .order("created_at", { ascending: false })
@@ -319,9 +320,10 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const { data: rows, error } = await q;
     if (error) throw new Error(`فشل جلب مهام الفيديو: ${error.message}`);
 
-    const userIds = Array.from(new Set((rows ?? []).map((r) => r.user_id)));
+    const statsRows = ((rows ?? []) as VideoJobRow[]);
+    const userIds = Array.from(new Set(statsRows.map((r) => r.user_id)));
     const { data: profs } = userIds.length
-      ? await (await getSupabaseAdmin()).from("profiles").select("id, email, store_name").in("id", userIds)
+      ? await admin.from("profiles").select("id, email, store_name").in("id", userIds)
       : { data: [] as { id: string; email: string | null; store_name: string | null }[] };
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
 
@@ -329,13 +331,12 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const counts: Record<string, number> = { processing: 0, completed: 0, refunded: 0, failed: 0 };
     await Promise.all(
       statusList.map(async (status) => {
-        const { count } = await (await getSupabaseAdmin()).from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
+        const { count } = await admin.from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
         counts[status] = count ?? 0;
       })
     );
 
-    const { count: totalCount } = await (await getSupabaseAdmin()).from("video_jobs").select("id", { count: "exact", head: true });
-    const statsRows = rows ?? [];
+    const { count: totalCount } = await admin.from("video_jobs").select("id", { count: "exact", head: true });
     const stats: AdminVideoStats = {
       total: totalCount ?? statsRows.length,
       processing: counts.processing,
@@ -348,7 +349,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
 
     return {
       stats,
-      rows: statsRows.map((r) => toAdminVideoJob(r as VideoJobRow, profMap.get(r.user_id))),
+      rows: statsRows.map((r) => toAdminVideoJob(r, profMap.get(r.user_id))),
     };
   });
 
@@ -375,7 +376,7 @@ export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" }
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await (await getSupabaseAdmin())
       .from("video_jobs")
       .select("provider, metadata, created_at")
       .order("created_at", { ascending: false })
@@ -385,7 +386,7 @@ export const listVideoProviderAttemptSummary = createServerFn({ method: "POST" }
     const byProvider = new Map<string, { total: number; success: number; failed: number; latency: number[]; errors: Map<string, number>; lastStatus: string | null; lastAt: string | null }>();
     for (const row of data ?? []) {
       const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
-      const attempts = Array.isArray(metadata.provider_attempts) ? metadata.provider_attempts as ProviderAttempt[] : [{ provider: row.provider, ok: undefined, status: String(metadata.provider_status ?? "unknown"), finished_at: row.created_at }];
+      const attempts: ProviderAttempt[] = Array.isArray(metadata.provider_attempts) ? metadata.provider_attempts as ProviderAttempt[] : [{ provider: row.provider, ok: undefined, status: String(metadata.provider_status ?? "unknown"), finished_at: row.created_at }];
       for (const attempt of attempts) {
         const key = attempt.provider || row.provider || "unknown";
         const current = byProvider.get(key) ?? { total: 0, success: 0, failed: 0, latency: [], errors: new Map<string, number>(), lastStatus: null, lastAt: null };
