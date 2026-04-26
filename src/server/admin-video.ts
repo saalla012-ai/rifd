@@ -792,8 +792,9 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     await assertAdmin(supabase, userId);
     const total = data.productClarity + data.saudiDialect + data.lipSync + data.visualIntegrity + data.publishReadiness;
     const score = Math.round((total / 25) * 100);
-    const decision = score >= 80 ? "publishable" : score >= 68 ? "minor_revision" : "reject_or_reprompt";
-    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
+    const promptAdherenceScore = Math.round((data.promptAdherence / 5) * 100);
+    const decision = score >= 80 && promptAdherenceScore >= 80 ? "publishable" : score >= 68 && promptAdherenceScore >= 65 ? "minor_revision" : "reject_or_reprompt";
+    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
     await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
     return result;
   });
