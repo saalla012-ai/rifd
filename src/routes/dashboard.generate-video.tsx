@@ -246,9 +246,11 @@ function GenerateVideoPage() {
                     )}
                   >
                     <Icon className={cn("mb-2 h-5 w-5", key === "quality" ? "text-gold" : "text-primary")} />
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-extrabold">{option.label}</span>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">{(credits?.costs[key === "quality" ? "video_quality" : key === "lite" ? "video_lite" : "video_fast"] ?? 0).toLocaleString("ar-SA")} نقطة من 5ث</span>
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-bold">
+                        {(credits?.costs[key === "quality" ? "video_quality_8s" : key === "lite" ? "video_lite_8s" : "video_fast"] ?? 0).toLocaleString("ar-SA")} نقطة · {key === "fast" ? "من 5ث" : "8ث"}
+                      </span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{option.note}</p>
                   </button>
@@ -281,19 +283,23 @@ function GenerateVideoPage() {
             <div>
               <Label>المدة</Label>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                {[5, 8].map((duration) => (
+                {[5, 8].map((duration) => {
+                  const lockedByTier = duration === 5 && quality !== "fast";
+                  return (
                   <button
                     key={duration}
                     type="button"
-                    onClick={() => setDurationSeconds(duration as 5 | 8)}
+                    onClick={() => !lockedByTier && setDurationSeconds(duration as 5 | 8)}
+                    disabled={lockedByTier}
                     className={cn(
-                      "rounded-lg border px-3 py-4 text-sm font-bold transition-colors",
-                      durationSeconds === duration ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-secondary/70"
+                      "rounded-lg border px-3 py-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                      effectiveDurationSeconds === duration ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-secondary/70"
                     )}
                   >
                     {duration} ث
                   </button>
-                ))}
+                );
+                })}
               </div>
             </div>
           </div>
