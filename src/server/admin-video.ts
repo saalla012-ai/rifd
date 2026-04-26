@@ -513,7 +513,7 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
           aspect_ratio: "9:16",
           duration: "5s",
           resolution: "540p",
-          image_url: data.personaImageUrl,
+          image_url: includeProductImage ? data.productImageUrl : data.personaImageUrl,
           negative_prompt: "distorted face, deformed hands, unreadable Arabic text, white cutout background, unrealistic product",
           generate_audio_switch: model.supportsVoice,
           generate_multi_clip_switch: true,
