@@ -1299,14 +1299,6 @@ export type Database = {
           used: number
         }[]
       }
-      consume_video_daily_quota: {
-        Args: { _duration_seconds?: number; _quality?: string }
-        Returns: {
-          allowed: boolean
-          daily_cap: number
-          used: number
-        }[]
-      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1474,10 +1466,6 @@ export type Database = {
         Args: { _user_id?: string }
         Returns: undefined
       }
-      release_video_daily_quota: {
-        Args: { _user_id?: string }
-        Returns: undefined
-      }
       reset_monthly_credits: {
         Args: {
           _plan: Database["public"]["Enums"]["user_plan"]
@@ -1497,10 +1485,6 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
-      }
-      video_daily_cap_for_plan: {
-        Args: { _plan: Database["public"]["Enums"]["user_plan"] }
-        Returns: number
       }
     }
     Enums: {
