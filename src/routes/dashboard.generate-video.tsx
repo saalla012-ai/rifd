@@ -211,6 +211,7 @@ function GenerateVideoPage() {
   const refreshActiveJob = async (showToast = true) => {
     if (!activeJob) return;
     try {
+      const previousStatus = activeJob.status;
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await refreshVideoJobFn({
@@ -220,8 +221,8 @@ function GenerateVideoPage() {
       setActiveJob(out.job);
       setJobs((current) => current.map((job) => job.id === out.job.id ? out.job : job));
       if (out.job.status !== "processing") void refreshCredits();
-      if (out.job.status === "completed" && out.job.result_url) toast.success("الفيديو جاهز للمعاينة والتحميل");
-      if (showToast) toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
+      if (out.job.status === "completed" && out.job.result_url && previousStatus !== "completed") toast.success("الفيديو جاهز للمعاينة والتحميل");
+      else if (showToast) toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
     }

@@ -236,6 +236,16 @@ export type SaudiVideoPilotMatrixResult = {
     mustPass: string[];
     scorecard: string[];
     promptAdherenceGate: string;
+      finalPrompt: string;
+      generationPayload: {
+        prompt: string;
+        quality: "fast" | "lite" | "quality";
+        aspectRatio: "9:16" | "1:1" | "16:9";
+        durationSeconds: 5 | 8;
+        selectedPersonaId: string;
+        selectedTemplateId: "custom";
+        requiresProductImage: boolean;
+      };
   }>;
 };
 
@@ -752,6 +762,12 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
       const mustPass = template.risk === "عالٍ"
         ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
         : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"];
+      const finalPrompt = [
+        template.prompt,
+        `هدف العينة ${index + 1}: ${quality === "quality" ? "اختبار إعلان مدفوع عالي الجودة" : quality === "lite" ? "اختبار إعلان يومي قابل للنشر" : "اختبار سريع لسلامة الفكرة"}.`,
+        `الشخصية المرجعية: ${persona.brief}`,
+        "يجب تسجيل النتيجة في مصفوفة الاختبار المتوسط قبل فتح القالب للعامة.",
+      ].join("\n\n");
       return {
         sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
         templateId: template.id,
@@ -768,6 +784,8 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
         mustPass,
         scorecard: SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD.map((item) => `${item.label} ${item.weight}%`),
         promptAdherenceGate: "لا يُقبل القالب إذا تجاهل المنتج أو الصوت أو الحركة الأساسية حتى لو كان الفيديو جميلاً بصرياً.",
+        finalPrompt,
+        generationPayload: { prompt: finalPrompt, quality, aspectRatio: expectedAspectRatio, durationSeconds, selectedPersonaId: persona.id, selectedTemplateId: "custom" as const, requiresProductImage: quality !== "fast" },
       };
     });
     const result: SaudiVideoPilotMatrixResult = {
