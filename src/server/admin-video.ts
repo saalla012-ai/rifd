@@ -229,7 +229,6 @@ function providerPriorityScore(provider: AdminVideoProviderConfig) {
 function providerSecretName(providerKey: string) {
   return ({
     fal_ai: "FAL_API_KEY",
-    replicate: "REPLICATE_API_TOKEN",
     google_veo_api: "GOOGLE_VEO_API_KEY",
     runway: "RUNWAY_API_KEY",
     luma: "LUMA_API_KEY",
@@ -435,7 +434,7 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
     } else if (providerSecretName(provider.provider_key)) {
       const secretName = providerSecretName(provider.provider_key)!;
       const tokenReady = Boolean(process.env[secretName]);
-      const implemented = provider.provider_key === "fal_ai" || provider.provider_key === "replicate";
+      const implemented = provider.provider_key === "fal_ai";
       result = {
         providerKey: provider.provider_key,
         ok: tokenReady && implemented,
