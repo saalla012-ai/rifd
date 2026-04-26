@@ -26,11 +26,16 @@ const REPLICATE_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   quality: "google/veo-3",
 };
 
-const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, Record<VideoDuration, number>> = {
-  fast: { 5: 0.5, 8: 0.8 },
-  lite: { 5: 0.8, 8: 1.2 },
-  quality: { 5: 2.0, 8: 3.2 },
+const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
+  fast: 0.5,
+  lite: 1.2,
+  quality: 3.2,
 };
+
+function estimatedVideoCostUsd(quality: VideoQuality, durationSeconds: VideoDuration) {
+  if (!isValidVideoTierSelection(quality, durationSeconds)) throw new Error("invalid_video_tier_duration");
+  return DEFAULT_ESTIMATED_COST_USD[quality];
+}
 
 type DbClient = SupabaseClient<Database>;
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
@@ -332,7 +337,7 @@ const replicateProvider: VideoProvider = {
       providerJobId: prediction.id ?? null,
       status: (prediction.status ?? "processing") as ProviderStatus,
       resultUrl: typeof output === "string" ? output : null,
-      estimatedCostUsd: DEFAULT_ESTIMATED_COST_USD[input.quality][input.durationSeconds],
+      estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds),
       metadata: { model },
     };
   },
@@ -383,7 +388,7 @@ const falProvider: VideoProvider = {
     const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
-    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: DEFAULT_ESTIMATED_COST_USD[input.quality][input.durationSeconds], metadata: { model, fal_result_shape: Object.keys(result) } };
+    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(_providerJobId, row) {
     return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
@@ -588,7 +593,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           ledger_id: ledgerId,
           status: "processing",
           provider: "router",
-          estimated_cost_usd: DEFAULT_ESTIMATED_COST_USD[data.quality][data.durationSeconds],
+          estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
           metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true },
         })
         .select("*")
@@ -617,7 +622,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           result_url: routed.result.resultUrl,
           status: finalStatus,
           completed_at: finalStatus === "completed" ? new Date().toISOString() : null,
-          estimated_cost_usd: routed.result.estimatedCostUsd ?? DEFAULT_ESTIMATED_COST_USD[data.quality][data.durationSeconds],
+          estimated_cost_usd: routed.result.estimatedCostUsd ?? estimatedVideoCostUsd(data.quality, data.durationSeconds),
           metadata: metadata as Json,
         })
         .eq("id", job.id)
