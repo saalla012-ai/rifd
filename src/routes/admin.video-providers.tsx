@@ -274,6 +274,34 @@ function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
   );
 }
 
+function CostInput({ label, value, disabled, onCommit }: { label: string; value: number; disabled: boolean; onCommit: (value: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => setDraft(String(value)), [value]);
+  const commit = () => {
+    const next = Number(draft);
+    if (Number.isFinite(next) && next >= 0 && next !== value) onCommit(Math.round(next));
+  };
+  return (
+    <label className="block">
+      <span className="text-[10px] font-bold text-muted-foreground">{label}</span>
+      <Input value={draft} type="number" min={0} max={100000} disabled={disabled} onChange={(event) => setDraft(event.target.value)} onBlur={commit} className="mt-1 h-8 text-xs" />
+    </label>
+  );
+}
+
+function ProviderCapabilities({ metadata, provider }: { metadata: AdminVideoProviderConfig["metadata"]; provider: AdminVideoProviderConfig }) {
+  const data = (metadata as { supports_two_images?: boolean; supports_voice?: boolean } | null) ?? {};
+  const caps = [
+    provider.supports_starting_frame ? "صورة مرجعية" : "بدون صور",
+    data.supports_two_images ? "صورتان" : "صورة واحدة",
+    data.supports_voice ? "صوت" : "بدون صوت مؤكد",
+    provider.supports_9_16 ? "9:16" : null,
+    provider.supports_1_1 ? "1:1" : null,
+    provider.supports_16_9 ? "16:9" : null,
+  ].filter(Boolean);
+  return <p className="mt-2">القدرات: {caps.join(" · ")}</p>;
+}
+
 function LastConnectionTest({ metadata }: { metadata: AdminVideoProviderConfig["metadata"] }) {
   const tests = (metadata as { connection_tests?: Array<{ ok?: boolean; message?: string; checkedAt?: string; latencyMs?: number }> } | null)?.connection_tests;
   const last = Array.isArray(tests) ? tests.at(-1) : null;
