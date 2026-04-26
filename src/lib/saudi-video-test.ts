@@ -16,6 +16,8 @@ export const SAUDI_VIDEO_TEST_SCENARIOS: Array<{ id: SaudiVideoScenarioId; label
 ];
 
 export const FAL_VIDEO_TEST_MODELS = [
+  { id: "fal-ai/pixverse/v6/text-to-video", label: "PixVerse v6 T2V", supportsVoice: true, supportsTwoImages: false, estimatedUsd: 0.2 },
+  { id: "fal-ai/pixverse/v6/image-to-video", label: "PixVerse v6 I2V", supportsVoice: true, supportsTwoImages: false, estimatedUsd: 0.25 },
   { id: "fal-ai/veo3/fast", label: "VEO 3 Fast", supportsVoice: true, supportsTwoImages: true, estimatedUsd: 0.5 },
   { id: "fal-ai/veo3", label: "VEO 3", supportsVoice: true, supportsTwoImages: true, estimatedUsd: 3.2 },
   { id: "fal-ai/kling-video/v2.1/standard/image-to-video", label: "Kling Standard I2V", supportsVoice: false, supportsTwoImages: false, estimatedUsd: 0.35 },
@@ -32,6 +34,7 @@ export function buildSaudiFalTestPrompt(input: { personaBrief: string; scenarioI
     "Camera movement: slow cinematic push-in, subtle orbit around the product, natural hand gesture from the presenter, realistic hands, realistic face, premium retail lighting.",
     input.includeVoice ? `Audio: clear Saudi Arabic voiceover in a natural Gulf accent, synchronized with the commercial. Spoken line: ${scenario.voiceLine}` : "No voice requirement unless the model supports audio reliably.",
     "Avoid readable text, Arabic letters inside the generated video, distorted logos, Westernized clothing, unrealistic fingers, face warping, oversexualized styling, or exaggerated claims.",
+    "PixVerse v6 settings: enable generated audio, allow one smooth multi-clip camera change, use thinking/auto reasoning when available, and keep the product reference dominant instead of a plain white-background cutout.",
     "Vertical 9:16, 5 to 8 seconds, high-conversion Saudi ad style.",
   ].join("\n");
 }

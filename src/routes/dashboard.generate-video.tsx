@@ -112,6 +112,8 @@ function GenerateVideoPage() {
   const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedDurationAllowed = effectiveDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
+  const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
+  const productImageRequired = isPaidPlan && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
@@ -149,6 +151,10 @@ function GenerateVideoPage() {
     }
     if (!selectedQualityAllowed || !selectedDurationAllowed) {
       setQuotaDialog({ open: true, reason: !selectedQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
+      return;
+    }
+    if (productImageRequired) {
+      toast.error("صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان");
       return;
     }
     setLoading(true);
@@ -345,8 +351,9 @@ function GenerateVideoPage() {
 
           <div className="grid gap-3 md:grid-cols-2">
             <ImageInputCard label="صورة الشخص المتحدث" value={speakerImageUrl} uploading={uploadingInput === "speaker"} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
-            <ImageInputCard label="صورة المنتج" value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
+            <ImageInputCard label={isPaidPlan ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
           </div>
+          {productImageRequired && <p className="text-xs font-bold text-destructive">ارفع صورة المنتج قبل التوليد؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة.</p>}
 
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -356,7 +363,7 @@ function GenerateVideoPage() {
             <p className="mt-2 text-xs text-muted-foreground">الاستخدام يعتمد على رصيد النقاط فقط، مع حماية تشغيلية للمهام المتزامنة.</p>
           </div>
 
-          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || !selectedQualityAllowed || !selectedDurationAllowed} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || !selectedQualityAllowed || !selectedDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>

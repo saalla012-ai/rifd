@@ -3,10 +3,18 @@ export type PaidPlanId = Exclude<PlanId, "free">;
 
 export const VIDEO_CREDIT_COSTS = {
   video_fast: 150,
-  video_lite: 450,
-  video_lite_8s: 450,
-  video_quality: 1600,
-  video_quality_8s: 1600,
+  video_lite: 500,
+  video_lite_8s: 500,
+  video_quality: 800,
+  video_quality_8s: 800,
+} as const;
+
+export const PLAN_CREDIT_POLICY = {
+  monthlyCycleDays: 30,
+  planCreditsRollover: false,
+  paidPlansRequireProductImageForVideo: true,
+  freePlanWatermark: true,
+  paidPlansWatermark: false,
 } as const;
 
 export type VideoQuality = "fast" | "lite" | "quality";

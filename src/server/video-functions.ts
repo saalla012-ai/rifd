@@ -14,7 +14,7 @@ import {
   type VideoDuration,
   InsufficientCreditsError,
 } from "./credits";
-import { isValidVideoTierSelection } from "@/lib/plan-catalog";
+import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -27,9 +27,9 @@ const REPLICATE_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
 };
 
 const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
-  fast: 0.5,
-  lite: 1.2,
-  quality: 3.2,
+  fast: 0.2,
+  lite: 0.25,
+  quality: 0.45,
 };
 
 function estimatedVideoCostUsd(quality: VideoQuality, durationSeconds: VideoDuration) {
@@ -121,6 +121,12 @@ function assertVideoEntitlement(entitlement: VideoEntitlement, input: z.infer<ty
   if (input.durationSeconds > entitlement.max_video_duration_seconds) throw new Error("video_duration_not_allowed");
 }
 
+function assertProductImagePolicy(plan: string | null | undefined, input: z.infer<typeof videoInputSchema>) {
+  if (PLAN_CREDIT_POLICY.paidPlansRequireProductImageForVideo && plan && plan !== "free" && !input.productImageUrl) {
+    throw new Error("product_image_required_for_paid_video");
+  }
+}
+
 class ProviderCommittedFailure extends Error {
   constructor(message: string) {
     super(message);
@@ -170,6 +176,7 @@ function publicVideoError(e: unknown): Error {
   if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
   if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية متاحة في باقات Pro وBusiness.");
   if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
+  if (/product_image_required_for_paid_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
@@ -360,10 +367,18 @@ const replicateProvider: VideoProvider = {
 };
 
 const FAL_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
-  fast: "fal-ai/veo3/fast",
-  lite: "fal-ai/veo3/fast",
-  quality: "fal-ai/veo3",
+  fast: "fal-ai/pixverse/v6/image-to-video",
+  lite: "fal-ai/pixverse/v6/image-to-video",
+  quality: "fal-ai/pixverse/v6/image-to-video",
 };
+
+const PIXVERSE_RESOLUTION_BY_QUALITY: Record<VideoQuality, string> = {
+  fast: "360p",
+  lite: "540p",
+  quality: "720p",
+};
+
+const PIXVERSE_NEGATIVE_PROMPT = "distorted face, deformed hands, extra fingers, unreadable Arabic text, misspelled text, western clothing, immodest styling, unrealistic product, duplicated product, plain white cutout background, shaky low quality footage, exaggerated claims";
 
 const falProvider: VideoProvider = {
   key: "fal_ai",
@@ -378,9 +393,14 @@ const falProvider: VideoProvider = {
         prompt: buildSaudiVideoPrompt(input),
         aspect_ratio: input.aspectRatio,
         duration: videoDurationPayload(input.durationSeconds),
+        resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
         image_url: primaryReferenceImage(input),
         speaker_image_url: input.speakerImageUrl || undefined,
         product_image_url: input.productImageUrl || undefined,
+        negative_prompt: PIXVERSE_NEGATIVE_PROMPT,
+        generate_audio_switch: true,
+        generate_multi_clip_switch: input.quality !== "fast",
+        thinking_type: input.quality === "fast" ? "auto" : "enabled",
       }),
     });
     if (!response.ok) {
@@ -390,7 +410,7 @@ const falProvider: VideoProvider = {
     const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
-    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, fal_result_shape: Object.keys(result) } };
+    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(_providerJobId, row) {
     return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
@@ -564,7 +584,10 @@ export const generateVideo = createServerFn({ method: "POST" })
     try {
       if (!(await operationalSwitchEnabled(supabase, "video_enabled"))) throw new Error("video_fast_not_allowed");
       if (data.quality === "quality" && !(await operationalSwitchEnabled(supabase, "video_quality_enabled"))) throw new Error("video_quality_not_allowed");
-      assertVideoEntitlement(await getVideoEntitlement(supabase), data);
+      const entitlement = await getVideoEntitlement(supabase);
+      assertVideoEntitlement(entitlement, data);
+      const { data: profile } = await supabase.from("profiles").select("plan").eq("id", userId).maybeSingle();
+      assertProductImagePolicy(profile?.plan, data);
       const processingCount = await countProcessingJobs(userId);
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
@@ -596,7 +619,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, plan_credit_rollover: false, watermark_required: profile?.plan === "free", product_image_required: profile?.plan !== "free" },
         })
         .select("*")
         .single();
