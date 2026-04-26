@@ -187,6 +187,7 @@ function GenerateVideoPage() {
       } else {
         toast.error(msg);
       }
+      track("generation_failed", { kind: "video", quality, aspect_ratio: aspectRatio, template_id: selectedTemplateId, reason: msg.slice(0, 120) });
     } finally {
       setLoading(false);
     }
@@ -339,6 +340,7 @@ function GenerateVideoPage() {
               </select>
               <div className="flex items-center justify-center rounded-md border border-border bg-card px-3 text-xs font-bold text-muted-foreground">مخاطرة: {selectedTemplate.risk}</div>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">القوالب الأخرى محجوبة مؤقتاً حتى تثبت بيانات الاستخدام الفعلية أن نتائج الإطلاق مستقرة وقابلة للنشر.</p>
           </div>
 
           <div>
