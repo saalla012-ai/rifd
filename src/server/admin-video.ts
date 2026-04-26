@@ -866,6 +866,9 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
       const sampleId = `pilot-${String(index + 1).padStart(2, "0")}`;
       const job = jobsBySample.get(sampleId) ?? null;
+      const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
+      const evaluation = (metadata.medium_test_evaluation as { score?: unknown } | null) ?? null;
+      const releaseDecision = metadata.medium_test_release_decision === "publishable" || metadata.medium_test_release_decision === "minor_revision" || metadata.medium_test_release_decision === "reject_or_reprompt" ? metadata.medium_test_release_decision : null;
       const requiredProductImage = quality !== "fast";
       const missingProductImage = Boolean(job && requiredProductImage && !job.product_image_url);
       const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
@@ -881,6 +884,8 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         resultUrl: job?.result_url ?? null,
         creditsCharged: job?.credits_charged ?? null,
         estimatedCostUsd: job?.estimated_cost_usd === null || job?.estimated_cost_usd === undefined ? null : Number(job.estimated_cost_usd),
+        evaluationScore: typeof evaluation?.score === "number" ? evaluation.score : null,
+        releaseDecision,
         createdAt: job?.created_at ?? null,
         issue: !job ? "لم تُولد العينة بعد" : missingProductImage ? "صورة المنتج الإلزامية غير مرفقة" : job.error_message,
       };
@@ -892,7 +897,11 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const missingProductImage = samples.filter((sample) => sample.issue === "صورة المنتج الإلزامية غير مرفقة").length;
     const executionRate = Math.round((generated / Math.max(samples.length, 1)) * 100);
     const completionRate = Math.round((completed / Math.max(samples.length, 1)) * 100);
-    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 2 ? "blocked" : completed === samples.length ? "ready_for_review" : "running";
+    const evaluated = samples.filter((sample) => sample.releaseDecision).length;
+    const publishable = samples.filter((sample) => sample.releaseDecision === "publishable").length;
+    const needsRevision = samples.filter((sample) => sample.releaseDecision === "minor_revision").length;
+    const rejected = samples.filter((sample) => sample.releaseDecision === "reject_or_reprompt").length;
+    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : missingProductImage > 0 || failedOrRefunded > 2 || rejected > 0 ? "blocked" : evaluated === samples.length && publishable >= Math.ceil(samples.length * 0.8) ? "ready_for_expansion" : completed === samples.length ? "ready_for_review" : "running";
     const releaseGateReason = releaseGate === "not_started"
       ? "لم تُسجّل أي مهمة موسومة للاختبار المتوسط بعد؛ لا يوجد دليل عملي يسمح بقرار تجاري."
       : releaseGate === "blocked"
