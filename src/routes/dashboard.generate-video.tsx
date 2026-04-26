@@ -32,6 +32,7 @@ type VideoSearch = {
   source?: "medium-test";
   mediumTestSampleId?: string;
   mediumTestTemplateId?: string;
+  requiresProductImage?: boolean;
 };
 
 const QUALITY = {
@@ -80,6 +81,7 @@ export const Route = createFileRoute("/dashboard/generate-video")({
     source: s.source === "medium-test" ? "medium-test" : undefined,
     mediumTestSampleId: typeof s.mediumTestSampleId === "string" ? s.mediumTestSampleId : undefined,
     mediumTestTemplateId: typeof s.mediumTestTemplateId === "string" ? s.mediumTestTemplateId : undefined,
+    requiresProductImage: s.requiresProductImage === true || s.requiresProductImage === "true" ? true : undefined,
   }),
   component: GenerateVideoPage,
 });
@@ -137,10 +139,11 @@ function GenerateVideoPage() {
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
   const watermarkRequired = credits?.plan === "free";
-  const productImageRequired = isPaidPlan && !productImageUrl.trim();
+  const internalMediumTestMode = search.source === "medium-test";
+  const mediumTestProductImageRequired = internalMediumTestMode && search.requiresProductImage === true;
+  const productImageRequired = (isPaidPlan || mediumTestProductImageRequired) && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
-  const internalMediumTestMode = search.source === "medium-test";
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -193,7 +196,7 @@ function GenerateVideoPage() {
       return;
     }
     if (productImageRequired) {
-      toast.error("صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان");
+      toast.error(mediumTestProductImageRequired ? "صورة المنتج إلزامية لهذه العينة حتى يكون اختبار الالتزام عادلاً" : "صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان");
       return;
     }
     setLoading(true);
@@ -448,9 +451,9 @@ function GenerateVideoPage() {
 
           <div className="grid gap-3 md:grid-cols-2">
             <ImageInputCard label="صورة الشخص المتحدث" value={speakerImageUrl} uploading={uploadingInput === "speaker"} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
-            <ImageInputCard label={isPaidPlan ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
+            <ImageInputCard label={isPaidPlan || mediumTestProductImageRequired ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
           </div>
-          {productImageRequired && <p className="text-xs font-bold text-destructive">ارفع صورة المنتج قبل التوليد؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة.</p>}
+          {productImageRequired && <p className="text-xs font-bold text-destructive">{mediumTestProductImageRequired ? "هذه عينة اختبار متوسط تتطلب صورة منتج؛ تشغيلها بدون صورة سيجعل نتيجة الالتزام غير صالحة." : "ارفع صورة المنتج قبل التوليد؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة."}</p>}
 
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">

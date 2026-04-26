@@ -540,7 +540,7 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
                 <Textarea readOnly dir="rtl" value={sample.finalPrompt} className="mt-2 min-h-40 text-xs leading-6" />
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                    <Link to="/dashboard/generate-video" search={{ prompt: sample.generationPayload.prompt, quality: sample.generationPayload.quality, aspectRatio: sample.generationPayload.aspectRatio, selectedPersonaId: sample.generationPayload.selectedPersonaId, source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">فتح للتوليد</Link>
+                    <Link to="/dashboard/generate-video" search={{ prompt: sample.generationPayload.prompt, quality: sample.generationPayload.quality, aspectRatio: sample.generationPayload.aspectRatio, selectedPersonaId: sample.generationPayload.selectedPersonaId, source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId, requiresProductImage: sample.generationPayload.requiresProductImage || undefined }} target="_blank">فتح للتوليد</Link>
                   </Button>
                   {sample.generationPayload.requiresProductImage && <Badge className="bg-gold/15 text-gold">أضف صورة منتج قبل التشغيل</Badge>}
                 </div>
