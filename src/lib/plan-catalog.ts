@@ -3,7 +3,6 @@ export type PaidPlanId = Exclude<PlanId, "free">;
 
 export const VIDEO_CREDIT_COSTS = {
   video_fast: 150,
-  video_fast_8s: 240,
   video_lite: 450,
   video_lite_8s: 450,
   video_quality: 1600,
@@ -16,7 +15,7 @@ export type VideoDuration = 5 | 8;
 export function videoCreditCost(quality: VideoQuality, duration: VideoDuration = 5) {
   if (quality === "lite") return duration === 8 ? VIDEO_CREDIT_COSTS.video_lite_8s : VIDEO_CREDIT_COSTS.video_lite;
   if (quality === "quality") return duration === 8 ? VIDEO_CREDIT_COSTS.video_quality_8s : VIDEO_CREDIT_COSTS.video_quality;
-  return duration === 8 ? VIDEO_CREDIT_COSTS.video_fast_8s : VIDEO_CREDIT_COSTS.video_fast;
+  return VIDEO_CREDIT_COSTS.video_fast;
 }
 
 export const VIDEO_QUALITY_LABELS: Record<VideoQuality, string> = {
