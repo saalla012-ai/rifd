@@ -369,7 +369,6 @@ function futureApiProvider(key: string, secretName: string): VideoProvider {
 
 const PROVIDERS: Record<string, VideoProvider> = {
   fal_ai: falProvider,
-  replicate: replicateProvider,
   google_flow_bridge: manualBridgeProvider,
   google_veo_api: futureApiProvider("google_veo_api", "GOOGLE_VEO_API_KEY"),
   runway: futureApiProvider("runway", "RUNWAY_API_KEY"),
@@ -626,7 +625,8 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
       return { job: updated };
     }
 
-    const provider = PROVIDERS[row.provider] ?? replicateProvider;
+    const provider = PROVIDERS[row.provider];
+    if (!provider) throw new Error("مزود الفيديو المستخدم في هذه المهمة لم يعد مدعوماً");
     let prediction: ProviderRefreshResult;
     try {
       prediction = await provider.refreshJob(row.provider_job_id, row);
