@@ -4,20 +4,24 @@ export type PaidPlanId = Exclude<PlanId, "free">;
 export const VIDEO_CREDIT_COSTS = {
   video_fast: 150,
   video_fast_8s: 240,
-  video_quality: 450,
-  video_quality_8s: 900,
+  video_lite: 450,
+  video_lite_8s: 450,
+  video_quality: 1600,
+  video_quality_8s: 1600,
 } as const;
 
-export type VideoQuality = "fast" | "quality";
+export type VideoQuality = "fast" | "lite" | "quality";
 export type VideoDuration = 5 | 8;
 
 export function videoCreditCost(quality: VideoQuality, duration: VideoDuration = 5) {
+  if (quality === "lite") return duration === 8 ? VIDEO_CREDIT_COSTS.video_lite_8s : VIDEO_CREDIT_COSTS.video_lite;
   if (quality === "quality") return duration === 8 ? VIDEO_CREDIT_COSTS.video_quality_8s : VIDEO_CREDIT_COSTS.video_quality;
   return duration === 8 ? VIDEO_CREDIT_COSTS.video_fast_8s : VIDEO_CREDIT_COSTS.video_fast;
 }
 
 export const VIDEO_QUALITY_LABELS: Record<VideoQuality, string> = {
   fast: "سريع",
+  lite: "إعلاني",
   quality: "احترافي",
 };
 
@@ -46,12 +50,12 @@ export const PLAN_CATALOG = [
     tier: "free",
     monthlyPriceSar: 0,
     yearlyPriceSar: 0,
-    monthlyCredits: 0,
+    monthlyCredits: 150,
     dailyTextCap: 10,
     dailyImageCap: 2,
     dailyVideoCap: 0,
     imageProAllowed: false,
-    videoFastAllowed: false,
+    videoFastAllowed: true,
     videoQualityAllowed: false,
     maxVideoDurationSeconds: 5,
     tagline: "للتجربة الآمنة وبناء أول ذاكرة متجر",
@@ -62,7 +66,7 @@ export const PLAN_CATALOG = [
     tier: "entry",
     monthlyPriceSar: 149,
     yearlyPriceSar: 1490,
-    monthlyCredits: 1500,
+    monthlyCredits: 2000,
     dailyTextCap: 100,
     dailyImageCap: 20,
     dailyVideoCap: 3,
@@ -78,13 +82,13 @@ export const PLAN_CATALOG = [
     tier: "popular",
     monthlyPriceSar: 249,
     yearlyPriceSar: 2490,
-    monthlyCredits: 5000,
+    monthlyCredits: 6000,
     dailyTextCap: 250,
     dailyImageCap: 50,
     dailyVideoCap: 6,
     imageProAllowed: true,
     videoFastAllowed: true,
-    videoQualityAllowed: true,
+    videoQualityAllowed: false,
     maxVideoDurationSeconds: 8,
     tagline: "الأفضل لمعظم المتاجر النشطة",
     badge: "الأكثر توازناً",
@@ -95,7 +99,7 @@ export const PLAN_CATALOG = [
     tier: "premium",
     monthlyPriceSar: 399,
     yearlyPriceSar: 3990,
-    monthlyCredits: 11000,
+    monthlyCredits: 14000,
     dailyTextCap: 600,
     dailyImageCap: 100,
     dailyVideoCap: 12,
@@ -112,7 +116,7 @@ export const PLAN_CATALOG = [
     tier: "scale",
     monthlyPriceSar: 999,
     yearlyPriceSar: 9990,
-    monthlyCredits: 30000,
+    monthlyCredits: 40000,
     dailyTextCap: 1000,
     dailyImageCap: 150,
     dailyVideoCap: 20,

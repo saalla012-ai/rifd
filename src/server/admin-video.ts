@@ -22,7 +22,7 @@ const TestProviderInput = z.object({
 });
 
 const TestVideoRouterInput = z.object({
-  quality: z.enum(["fast", "quality"]).default("fast"),
+  quality: z.enum(["fast", "lite", "quality"]).default("fast"),
   aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
   durationSeconds: z.union([z.literal(5), z.literal(8)]).default(5),
   hasStartingFrame: z.boolean().default(false),

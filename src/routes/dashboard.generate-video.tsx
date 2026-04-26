@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Clapperboard, Crown, Download, Film, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Clapperboard, Crown, Download, Film, ImageUp, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Upload, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -13,16 +13,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
+import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
+import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
+import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
+import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 
-type VideoQuality = "fast" | "quality";
+type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
 type VideoSearch = { prompt?: string; campaignPackId?: string };
 
 const QUALITY = {
   fast: { label: "سريع", icon: Zap, note: "للتجربة والمحتوى اليومي بتكلفة أقل" },
-  quality: { label: "احترافي", icon: Crown, note: "للقطات النهائية والإعلانات المدفوعة" },
+  lite: { label: "إعلاني", icon: Clapperboard, note: "لقطة بيع قصيرة للسوق السعودي" },
+  quality: { label: "احترافي", icon: Crown, note: "لإعلانات Pro وBusiness عالية التحويل" },
 } satisfies Record<VideoQuality, { label: string; icon: typeof Zap; note: string }>;
+
+const PERSONAS = [
+  { id: "male-young", label: "متحدث سعودي شاب", image: personaMaleYoung },
+  { id: "male-premium", label: "رجل سعودي فاخر", image: personaMalePremium },
+  { id: "female-abaya", label: "متحدثة سعودية", image: personaFemaleAbaya },
+  { id: "retail-seller", label: "بائع داخل متجر", image: personaRetailSeller },
+] as const;
 
 const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
   { value: "9:16", label: "Reels / TikTok", hint: "عمودي" },
@@ -47,6 +59,22 @@ export const Route = createFileRoute("/dashboard/generate-video")({
   component: GenerateVideoPage,
 });
 
+function ImageInputCard({ label, value, uploading, onFile, onUrl }: { label: string; value: string; uploading: boolean; onFile: (file?: File) => void; onUrl: (value: string) => void }) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/20 p-3">
+      <Label>{label}</Label>
+      <div className="mt-2 flex items-center gap-2">
+        <label className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-input px-3 text-xs font-bold hover:bg-accent">
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          <input type="file" accept="image/*" className="sr-only" onChange={(event) => onFile(event.target.files?.[0])} />
+        </label>
+        <input value={value} onChange={(event) => onUrl(event.target.value)} placeholder="أو رابط صورة" className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-xs" />
+      </div>
+      {value && <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><ImageUp className="h-3.5 w-3.5" /> الصورة جاهزة للاستخدام</div>}
+    </div>
+  );
+}
+
 function GenerateVideoPage() {
   const router = useRouter();
   const search = useSearch({ from: "/dashboard/generate-video" });
@@ -59,20 +87,22 @@ function GenerateVideoPage() {
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
   const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [startingFrameUrl, setStartingFrameUrl] = useState("");
+  const [speakerImageUrl, setSpeakerImageUrl] = useState("");
+  const [productImageUrl, setProductImageUrl] = useState("");
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(PERSONAS[0].id);
+  const [uploadingInput, setUploadingInput] = useState<"speaker" | "product" | null>(null);
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<VideoJob[]>([]);
   const [activeJob, setActiveJob] = useState<VideoJob | null>(null);
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
 
   const selectedQuality = QUALITY[quality];
-  const costKey = `${quality === "quality" ? "video_quality" : "video_fast"}${durationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
+  const costKey = `${quality === "quality" ? "video_quality" : quality === "lite" ? "video_lite" : "video_fast"}${durationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
   const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
   const selectedDurationAllowed = durationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
-  const dailyVideoUsed = credits?.dailyVideoUsed ?? 0;
-  const dailyVideoCap = credits?.dailyVideoCap ?? 1;
-  const reachedDailyVideoLimit = credits ? dailyVideoUsed >= dailyVideoCap : false;
+  const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
 
@@ -111,17 +141,13 @@ function GenerateVideoPage() {
       setQuotaDialog({ open: true, reason: !selectedQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
       return;
     }
-    if (reachedDailyVideoLimit) {
-      setQuotaDialog({ open: true, reason: `VIDEO_DAILY_LIMIT: وصلت إلى حد توليد الفيديو اليومي (${dailyVideoUsed}/${dailyVideoCap}).` });
-      return;
-    }
     setLoading(true);
     setQuotaDialog({ open: false });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || selectedPersona.image, productImageUrl, selectedPersonaId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
@@ -157,6 +183,28 @@ function GenerateVideoPage() {
       if (showToast) toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
+    }
+  };
+
+  const uploadInputImage = async (kind: "speaker" | "product", file?: File) => {
+    if (!file) return;
+    setUploadingInput(kind);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("سجّل الدخول أولاً");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `video-inputs/${session.user.id}/${kind}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("generated-images").upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw new Error(error.message);
+      const { data, error: signedError } = await supabase.storage.from("generated-images").createSignedUrl(path, 60 * 60 * 6);
+      if (signedError || !data?.signedUrl) throw new Error(signedError?.message ?? "فشل تجهيز رابط الصورة");
+      if (kind === "speaker") setSpeakerImageUrl(data.signedUrl);
+      else setProductImageUrl(data.signedUrl);
+      toast.success("تم تجهيز الصورة للفيديو");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل رفع الصورة");
+    } finally {
+      setUploadingInput(null);
     }
   };
 
@@ -267,15 +315,32 @@ function GenerateVideoPage() {
             />
           </div>
 
+          <div className="space-y-3">
+            <Label>شخصيات سعودية جاهزة</Label>
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+              {PERSONAS.map((persona) => (
+                <button key={persona.id} type="button" onClick={() => setSelectedPersonaId(persona.id)} className={cn("overflow-hidden rounded-lg border text-right transition-colors", selectedPersonaId === persona.id ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70")}> 
+                  <img src={persona.image} alt={persona.label} width={768} height={768} loading="lazy" className="aspect-square w-full object-cover" />
+                  <span className="block px-2 py-2 text-xs font-bold">{persona.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <ImageInputCard label="صورة الشخص المتحدث" value={speakerImageUrl} uploading={uploadingInput === "speaker"} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
+            <ImageInputCard label="صورة المنتج" value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
+          </div>
+
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-foreground">سيتم خصم {selectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
               <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? "يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم" : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
-            <p className={cn("mt-2 text-xs", reachedDailyVideoLimit ? "font-bold text-destructive" : "text-muted-foreground")}>حد الفيديو اليومي: {dailyVideoUsed.toLocaleString("ar-SA")} / {dailyVideoCap.toLocaleString("ar-SA")}</p>
+            <p className="mt-2 text-xs text-muted-foreground">الاستخدام يعتمد على رصيد النقاط فقط، مع حماية تشغيلية للمهام المتزامنة.</p>
           </div>
 
-          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || reachedDailyVideoLimit || !selectedQualityAllowed || !selectedDurationAllowed} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || !selectedQualityAllowed || !selectedDurationAllowed} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
