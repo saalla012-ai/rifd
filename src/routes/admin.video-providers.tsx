@@ -571,6 +571,10 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <MetricTile label="قيد المعالجة" value={batch.processing} />
         <MetricTile label="فشل/استرداد" value={batch.failedOrRefunded} />
       </div>
+      <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">{batch.releaseGateReason}</p>
+        <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">الخطوة التنفيذية: {batch.nextAction}</p>
+      </div>
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {batch.samples.map((sample) => (
           <div key={sample.sampleId} className="rounded-lg border border-border bg-background/60 p-3 text-xs">
