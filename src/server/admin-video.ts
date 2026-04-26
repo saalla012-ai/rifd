@@ -633,6 +633,44 @@ export const auditSaudiVideoPilotLibrary = createServerFn({ method: "POST" })
     return result;
   });
 
+export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SaudiVideoPilotMatrixResult> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const selectedTemplates = ["perfume-premium-hook", "abaya-elegance", "coffee-hospitality", "electronics-benefit", "beauty-skincare", "gifts-luxury", "home-decor", "limited-offer", "premium-testimonial", "ramadan-offer"];
+    const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
+    const samples = selectedTemplates.map((templateId, index) => {
+      const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
+      const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
+      const quality = index < 3 ? "fast" : index < 8 ? "lite" : "quality";
+      const durationSeconds = quality === "fast" ? 5 : 8;
+      return {
+        sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
+        templateId: template.id,
+        label: template.label,
+        sector: template.sector,
+        personaId: persona.id,
+        personaLabel: persona.label,
+        quality,
+        durationSeconds,
+        requiresProductImage: quality !== "fast",
+        scorecard: ["وضوح المنتج", "طبيعية اللهجة السعودية", "مزامنة الشفاه", "سلامة اليدين والوجه", "قابلية النشر التجاري"],
+      };
+    });
+    const result: SaudiVideoPilotMatrixResult = {
+      checkedAt: new Date().toISOString(),
+      totalSamples: samples.length,
+      estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.quality === "quality" ? 0.45 : sample.quality === "lite" ? 0.25 : 0.2), 0).toFixed(2)),
+      readinessGate: "يبدأ التنفيذ الفعلي عندما تكون fal_ai نشطة، والراوتر يمرر 3/3 مسارات، ومكتبة البرومبتات تحقق 80%+.",
+      samples,
+    };
+
+    await logAdminAudit({ adminId: userId, action: "build_saudi_video_pilot_matrix", targetTable: "video_provider_configs", targetId: "saudi_pilot_matrix", after: result as unknown as Json });
+    return result;
+  });
+
 export const completeManualVideoJob = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => CompleteManualVideoJobInput.parse(input))
   .middleware([requireSupabaseAuth])
