@@ -106,7 +106,8 @@ function GenerateVideoPage() {
   const costKey = `${quality === "quality" ? "video_quality" : quality === "lite" ? "video_lite" : "video_fast"}${durationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
   const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
-  const selectedDurationAllowed = durationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
+  const effectiveDurationSeconds = quality === "lite" || quality === "quality" ? 8 : durationSeconds;
+  const selectedDurationAllowed = effectiveDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -153,7 +154,7 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, campaignPackId: search.campaignPackId },
+        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
