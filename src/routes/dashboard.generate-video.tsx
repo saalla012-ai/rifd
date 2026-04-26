@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { videoTierDuration } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_PERSONAS } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES } from "@/lib/saudi-video-test";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -144,6 +144,7 @@ function GenerateVideoPage() {
   const productImageRequired = (isPaidPlan || mediumTestProductImageRequired) && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
+  const mediumTestTemplate = internalMediumTestMode ? SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === search.mediumTestTemplateId) : null;
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -403,8 +404,10 @@ function GenerateVideoPage() {
               </Button>
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_120px]">
-              <select value={selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} disabled={internalMediumTestMode} className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-60">
-                {SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.map((template) => (
+              <select value={internalMediumTestMode ? search.mediumTestTemplateId ?? "medium-test" : selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} disabled={internalMediumTestMode} className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-60">
+                {internalMediumTestMode ? (
+                  <option value={search.mediumTestTemplateId ?? "medium-test"}>{mediumTestTemplate ? `${mediumTestTemplate.sector} — ${mediumTestTemplate.label}` : "قالب اختبار متوسط مخفي"}</option>
+                ) : SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.map((template) => (
                   <option key={template.id} value={template.id}>{template.sector} — {template.label}</option>
                 ))}
               </select>
