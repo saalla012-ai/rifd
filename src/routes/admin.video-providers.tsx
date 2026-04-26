@@ -249,24 +249,35 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
   );
 }
 
-function RouterResultPanel({ result }: { result: AdminVideoRouterTestResult }) {
+function RouterResultPanel({ results }: { results: Array<AdminVideoRouterTestResult & { scenarioLabel: string }> }) {
+  const allPassed = results.every((result) => result.ok);
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-extrabold">نتيجة اختبار الراوتر</h2>
-          <p className="mt-1 text-xs text-muted-foreground">مسار آمن: سريع/إعلاني/احترافي مع 0–2 صور، دون إنشاء فيديو أو خصم نقاط</p>
+          <p className="mt-1 text-xs text-muted-foreground">مسارات آمنة: سريع/إعلاني/احترافي مع 0–2 صور، دون إنشاء فيديو أو خصم نقاط</p>
         </div>
-        <Badge className={cn(result.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{result.ok ? `المختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل"}</Badge>
+        <Badge className={cn(allPassed ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{allPassed ? "كل المسارات جاهزة" : "يوجد مسار يحتاج ضبط"}</Badge>
       </div>
-      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-        {result.candidates.map((candidate) => (
-          <div key={candidate.providerKey} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-bold">{candidate.displayName}</span>
-              <Badge variant="secondary">#{candidate.effectivePriority === candidate.priority ? candidate.priority : `${candidate.priority}→${candidate.effectivePriority}`}</Badge>
+      <div className="mt-3 space-y-3">
+        {results.map((result) => (
+          <div key={result.scenarioLabel} className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <span className="font-extrabold">{result.scenarioLabel}</span>
+              <Badge className={cn(result.ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive")}>{result.ok ? `المختار: ${result.selectedProvider}` : "لا يوجد مزود مؤهل"}</Badge>
             </div>
-            <p className="mt-1 text-muted-foreground">{candidate.mode} · {candidate.reason}</p>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+              {result.candidates.map((candidate) => (
+                <div key={candidate.providerKey} className="rounded-md border border-border bg-background/60 p-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold">{candidate.displayName}</span>
+                    <Badge variant="secondary">#{candidate.effectivePriority === candidate.priority ? candidate.priority : `${candidate.priority}→${candidate.effectivePriority}`}</Badge>
+                  </div>
+                  <p className="mt-1 text-muted-foreground">{candidate.mode} · {candidate.reason}</p>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
