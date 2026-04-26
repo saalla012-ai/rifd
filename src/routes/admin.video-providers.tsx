@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
+import { auditSaudiVideoPilotLibrary, buildSaudiVideoPilotMatrix, evaluateSaudiVideoPilotSample, listSaudiLaunchTemplatePerformance, listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, runSaudiFalVideoModelTest, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalModelTestResult, type SaudiFalPromptPreview, type SaudiLaunchTemplatePerformance, type SaudiVideoPilotAuditResult, type SaudiVideoPilotEvaluationResult, type SaudiVideoPilotMatrixResult } from "@/server/admin-video";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -74,6 +74,7 @@ function fmtDate(value: string | null) {
 function AdminVideoProvidersPage() {
   const fetchProviders = useServerFn(listVideoProviderConfigs);
   const fetchAttempts = useServerFn(listVideoProviderAttemptSummary);
+  const fetchLaunchTemplatePerformance = useServerFn(listSaudiLaunchTemplatePerformance);
   const updateProvider = useServerFn(updateVideoProviderConfig);
   const testProvider = useServerFn(testVideoProviderConnection);
   const testRouter = useServerFn(testVideoRouterDryRun);
@@ -84,6 +85,7 @@ function AdminVideoProvidersPage() {
   const evaluatePilotSample = useServerFn(evaluateSaudiVideoPilotSample);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
+  const [templatePerformance, setTemplatePerformance] = useState<SaudiLaunchTemplatePerformance[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
   const [pilotAudit, setPilotAudit] = useState<SaudiVideoPilotAuditResult | null>(null);
   const [pilotMatrix, setPilotMatrix] = useState<SaudiVideoPilotMatrixResult | null>(null);
@@ -112,9 +114,10 @@ function AdminVideoProvidersPage() {
     setLoading(true);
     try {
       const headers = await authHeaders();
-      const [providerResult, attemptResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers })]);
+      const [providerResult, attemptResult, templateResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers }), fetchLaunchTemplatePerformance({ headers })]);
       setProviders(providerResult.providers);
       setAttempts(attemptResult.attempts);
+      setTemplatePerformance(templateResult.templates);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تحميل مزودي الفيديو");
     } finally {
