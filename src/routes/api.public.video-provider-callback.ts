@@ -50,7 +50,7 @@ function verifySignature(rawBody: string, signature: string | null, timestamp: s
 
 function isCallbackAllowed(job: { provider: string; metadata: Json | null }) {
   const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
-  return job.provider === "google_flow_bridge" || metadata.provider_mode === "bridge" || metadata.allow_provider_callback === true;
+  return metadata.allow_provider_callback === true;
 }
 
 function appendCallbackAttempt(metadata: Record<string, unknown>, params: { provider: string; ok: boolean; status: string; error?: string }) {
