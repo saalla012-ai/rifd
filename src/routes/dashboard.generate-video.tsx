@@ -71,20 +71,22 @@ function GenerateVideoPage() {
   const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
   const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [startingFrameUrl, setStartingFrameUrl] = useState("");
+  const [speakerImageUrl, setSpeakerImageUrl] = useState("");
+  const [productImageUrl, setProductImageUrl] = useState("");
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(PERSONAS[0].id);
+  const [uploadingInput, setUploadingInput] = useState<"speaker" | "product" | null>(null);
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<VideoJob[]>([]);
   const [activeJob, setActiveJob] = useState<VideoJob | null>(null);
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
 
   const selectedQuality = QUALITY[quality];
-  const costKey = `${quality === "quality" ? "video_quality" : "video_fast"}${durationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
+  const costKey = `${quality === "quality" ? "video_quality" : quality === "lite" ? "video_lite" : "video_fast"}${durationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
   const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
   const selectedDurationAllowed = durationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
-  const dailyVideoUsed = credits?.dailyVideoUsed ?? 0;
-  const dailyVideoCap = credits?.dailyVideoCap ?? 1;
-  const reachedDailyVideoLimit = credits ? dailyVideoUsed >= dailyVideoCap : false;
+  const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const latestResult = activeJob?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   const promptCount = useMemo(() => prompt.trim().length, [prompt]);
 
