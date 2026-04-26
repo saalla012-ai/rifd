@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_PLAN, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -53,6 +53,7 @@ const EvaluatePilotSampleInput = z.object({
   lipSync: z.number().int().min(1).max(5),
   visualIntegrity: z.number().int().min(1).max(5),
   publishReadiness: z.number().int().min(1).max(5),
+  promptAdherence: z.number().int().min(1).max(5).default(4),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
@@ -214,6 +215,7 @@ export type SaudiVideoPilotAuditResult = {
 
 export type SaudiVideoPilotMatrixResult = {
   checkedAt: string;
+  testLevel: "medium" | "full";
   totalSamples: number;
   estimatedCostUsd: number;
   requiredPublishableRate: number;
@@ -233,6 +235,7 @@ export type SaudiVideoPilotMatrixResult = {
     technicalGate: string[];
     mustPass: string[];
     scorecard: string[];
+    promptAdherenceGate: string;
   }>;
 };
 
@@ -244,8 +247,10 @@ export type SaudiVideoPilotEvaluationResult = {
   lipSync: number;
   visualIntegrity: number;
   publishReadiness: number;
+  promptAdherence: number;
   notes?: string;
   score: number;
+  promptAdherenceScore: number;
   decision: "publishable" | "minor_revision" | "reject_or_reprompt";
   evaluatedAt: string;
 };
@@ -736,11 +741,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const selectedTemplates = [
-      "perfume-premium-hook", "perfume-oud-story", "abaya-elegance", "abaya-launch", "coffee-hospitality",
-      "electronics-benefit", "beauty-skincare", "gifts-luxury", "home-decor", "limited-offer",
-      "premium-testimonial", "ramadan-offer", "restaurant-offer", "jewelry", "phone-case",
-    ];
+    const selectedTemplates = [...SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS];
     const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
     const samples = selectedTemplates.map((templateId, index) => {
       const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
@@ -765,15 +766,17 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
         objective: quality === "quality" ? "قياس صلاحية إعلان مدفوع عالي الجودة" : quality === "lite" ? "قياس إعلان يومي قابل للنشر" : "قياس سرعة الفكرة وسلامة الهوية السعودية",
         technicalGate: [`النسبة المطلوبة للإطلاق: ${expectedAspectRatio}`, `المدة المطلوبة: ${durationSeconds} ثوانٍ`, "H.264 MP4 قابل للنشر", "لا اعتماد تجاري لأي عينة تخرج مربعة أو أفقية ضمن مصفوفة الإطلاق"],
         mustPass,
-        scorecard: ["وضوح المنتج", "طبيعية اللهجة السعودية", "مزامنة الشفاه", "سلامة اليدين والوجه", "قابلية النشر التجاري"],
+        scorecard: SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD.map((item) => `${item.label} ${item.weight}%`),
+        promptAdherenceGate: "لا يُقبل القالب إذا تجاهل المنتج أو الصوت أو الحركة الأساسية حتى لو كان الفيديو جميلاً بصرياً.",
       };
     });
     const result: SaudiVideoPilotMatrixResult = {
       checkedAt: new Date().toISOString(),
+      testLevel: "medium",
       totalSamples: samples.length,
       estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.quality === "quality" ? 0.45 : sample.quality === "lite" ? 0.25 : 0.2), 0).toFixed(2)),
       requiredPublishableRate: 80,
-      readinessGate: "يبدأ التنفيذ الفعلي عندما تكون fal_ai نشطة، والراوتر يمرر 3/3 مسارات، ومكتبة البرومبتات تحقق 80%+، ثم لا نعتمد الإطلاق إلا إذا خرجت كل عينات الإطلاق بنسبة 9:16 وكانت 80% منها صالحة للنشر أو تحتاج تعديلاً بسيطاً فقط.",
+      readinessGate: `اختبار متوسط ${SAUDI_VIDEO_MEDIUM_TEST_PLAN.sampleRange} عينة بتكلفة تقريبية ${SAUDI_VIDEO_MEDIUM_TEST_PLAN.estimatedCostUsd}$: لا نفتح القوالب الاحتياطية إلا بعد قياس تنفيذ البرومبت بدقة؛ ${SAUDI_VIDEO_MEDIUM_TEST_PLAN.decisionGate}`,
       samples,
     };
 
@@ -789,8 +792,9 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     await assertAdmin(supabase, userId);
     const total = data.productClarity + data.saudiDialect + data.lipSync + data.visualIntegrity + data.publishReadiness;
     const score = Math.round((total / 25) * 100);
-    const decision = score >= 80 ? "publishable" : score >= 68 ? "minor_revision" : "reject_or_reprompt";
-    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
+    const promptAdherenceScore = Math.round((data.promptAdherence / 5) * 100);
+    const decision = score >= 80 && promptAdherenceScore >= 80 ? "publishable" : score >= 68 && promptAdherenceScore >= 65 ? "minor_revision" : "reject_or_reprompt";
+    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, promptAdherenceScore, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
     await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
     return result;
   });

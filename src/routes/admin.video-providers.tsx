@@ -53,7 +53,7 @@ const HEALTH_TONE: Record<string, string> = {
 };
 
 type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
-type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; saudiDialect: number; lipSync: number; visualIntegrity: number; publishReadiness: number; notes: string };
+type PilotEvaluationDraft = { sampleId: string; resultUrl: string; productClarity: number; saudiDialect: number; lipSync: number; visualIntegrity: number; publishReadiness: number; promptAdherence: number; notes: string };
 
 const PERSONA_IMAGES: Record<string, string> = {
   "male-young": personaMaleYoung,
@@ -193,7 +193,7 @@ function AdminVideoProvidersPage() {
       const headers = await authHeaders();
       const result = await buildPilotMatrix({ headers });
       setPilotMatrix(result);
-      toast.success(`تم تجهيز ${result.totalSamples.toLocaleString("ar-SA")} عينات اختبار تجاري`);
+      toast.success(`تم تجهيز اختبار متوسط: ${result.totalSamples.toLocaleString("ar-SA")} عينة`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تجهيز مصفوفة الاختبار");
     } finally {
@@ -490,8 +490,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-extrabold">مصفوفة الاختبار التجاري السعودي</h2>
-          <p className="mt-1 text-xs text-muted-foreground">عينات ممثلة قبل الإطلاق: قطاعات سعودية، شخصيات، جودات، ومعيار 9:16 إلزامي للإعلانات العمودية دون خصم نقاط.</p>
+          <h2 className="font-extrabold">مصفوفة الاختبار المتوسط للبرومبتات</h2>
+          <p className="mt-1 text-xs text-muted-foreground">عينات داخلية لبقية البرومبتات المحجوبة: نقيس الالتزام الكامل بالمنتج والمشهد والحركة والصوت قبل فتح أي قالب عام.</p>
         </div>
         <Badge className="bg-primary/15 text-primary">{matrix.totalSamples.toLocaleString("ar-SA")} عينات · ${matrix.estimatedCostUsd}</Badge>
       </div>
@@ -513,6 +513,7 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
             <p className="mt-1 text-muted-foreground">بوابة فنية: {sample.technicalGate.join(" · ")}</p>
             <p className="mt-1 text-muted-foreground">شرط النجاح: {sample.mustPass.join(" · ")}</p>
             <p className="mt-2 text-muted-foreground">التقييم: {sample.scorecard.join(" · ")}</p>
+            <p className="mt-1 font-semibold text-foreground">{sample.promptAdherenceGate}</p>
           </div>
         ))}
       </div>
@@ -521,8 +522,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
 }
 
 function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
-  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, saudiDialect: 4, lipSync: 4, visualIntegrity: 4, publishReadiness: 4, notes: "" });
-  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "saudiDialect" | "lipSync" | "visualIntegrity" | "publishReadiness">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
+  const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, saudiDialect: 4, lipSync: 4, visualIntegrity: 4, publishReadiness: 4, promptAdherence: 4, notes: "" });
+  const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "saudiDialect" | "lipSync" | "visualIntegrity" | "publishReadiness" | "promptAdherence">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -530,18 +531,19 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
           <h2 className="font-extrabold">تقييم نتيجة عينة فعلية</h2>
           <p className="mt-1 text-xs text-muted-foreground">حوّل مشاهدة الفيديو إلى قرار إطلاق واضح: صالح للنشر، يحتاج تعديل بسيط، أو يعاد توليده.</p>
         </div>
-        {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> {result.score.toLocaleString("ar-SA")}%</Badge>}
+        {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> نشر {result.score.toLocaleString("ar-SA")}% · التزام {result.promptAdherenceScore.toLocaleString("ar-SA")}%</Badge>}
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[140px_minmax(0,1fr)]">
         <Input value={draft.sampleId} onChange={(event) => setDraft({ ...draft, sampleId: event.target.value })} className="h-9 text-xs" />
         <Input dir="ltr" value={draft.resultUrl} onChange={(event) => setDraft({ ...draft, resultUrl: event.target.value })} placeholder="https:// video result" className="h-9 text-left text-xs" />
       </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-5">
+      <div className="mt-3 grid gap-2 sm:grid-cols-6">
         <ScoreInput label="المنتج" value={draft.productClarity} onChange={(value) => setScore("productClarity", value)} />
         <ScoreInput label="اللهجة" value={draft.saudiDialect} onChange={(value) => setScore("saudiDialect", value)} />
         <ScoreInput label="الشفاه" value={draft.lipSync} onChange={(value) => setScore("lipSync", value)} />
         <ScoreInput label="السلامة" value={draft.visualIntegrity} onChange={(value) => setScore("visualIntegrity", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
+        <ScoreInput label="تنفيذ البرومبت" value={draft.promptAdherence} onChange={(value) => setScore("promptAdherence", value)} />
       </div>
       <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
       <Button type="button" size="sm" onClick={() => onSubmit(draft)} disabled={saving} className="mt-3 gap-1">

@@ -15,7 +15,7 @@ import {
   InsufficientCreditsError,
 } from "./credits";
 import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -209,12 +209,13 @@ function buildSaudiVideoPrompt(input: VideoInput) {
     input.speakerImageUrl ? "استخدم صورة الشخص كمرجع للشخصية المتحدثة." : persona,
     input.productImageUrl ? "اجعل صورة المنتج مرجعاً واضحاً للمنتج داخل الإعلان." : "",
   ].filter(Boolean).join(" ");
-  return [
+  const prompt = [
     "إعلان فيديو سعودي قصير عالي التحويل للسوق السعودي. صوت عربي سعودي واضح وطبيعي إذا كان الصوت مدعوماً. بنية الإعلان: خطاف قوي، فائدة ملموسة، لقطة منتج جذابة، دعوة إجراء مباشرة. حافظ على مظهر محتشم وواقعي وابتعد عن المبالغة غير الموثوقة.",
     imageBrief,
     input.prompt,
     input.watermarkRequired ? "أضف علامة مائية صغيرة ونظيفة بحروف لاتينية فقط: RIFD في الزاوية السفلية، بدون أي نص عربي داخل الفيديو." : "",
   ].filter(Boolean).join("\n\n");
+  return withSaudiPromptAdherence(prompt);
 }
 
 function primaryReferenceImage(input: VideoInput) {
@@ -319,11 +320,12 @@ const falProvider: VideoProvider = {
     const token = process.env.FAL_API_KEY;
     if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
     const model = FAL_MODEL_BY_QUALITY[input.quality];
-    const response = await fetch(`https://fal.run/${model}`, {
+      const finalProviderPrompt = buildSaudiVideoPrompt(input);
+      const response = await fetch(`https://fal.run/${model}`, {
       method: "POST",
       headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        prompt: buildSaudiVideoPrompt(input),
+          prompt: finalProviderPrompt,
         aspect_ratio: input.aspectRatio,
         duration: videoDurationPayload(input.durationSeconds),
         resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
@@ -341,7 +343,7 @@ const falProvider: VideoProvider = {
     const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
-    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, fal_result_shape: Object.keys(result) } };
+    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(_providerJobId, row) {
     return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
@@ -533,7 +535,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free" },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: profile?.plan !== "free", prompt_adherence_required: true, prompt_adherence_gate: "80%+" },
         })
         .select("*")
         .single();
