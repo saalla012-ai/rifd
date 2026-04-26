@@ -205,6 +205,20 @@ export type SaudiVideoPilotMatrixResult = {
   }>;
 };
 
+export type SaudiVideoPilotEvaluationResult = {
+  sampleId: string;
+  resultUrl?: string;
+  productClarity: number;
+  saudiDialect: number;
+  lipSync: number;
+  visualIntegrity: number;
+  publishReadiness: number;
+  notes?: string;
+  score: number;
+  decision: "publishable" | "minor_revision" | "reject_or_reprompt";
+  evaluatedAt: string;
+};
+
 function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; store_name: string | null } | null): AdminVideoJob {
   return {
     ...row,
@@ -675,13 +689,13 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
 export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => EvaluatePilotSampleInput.parse(input))
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<SaudiVideoPilotEvaluationResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
     const total = data.productClarity + data.saudiDialect + data.lipSync + data.visualIntegrity + data.publishReadiness;
     const score = Math.round((total / 25) * 100);
     const decision = score >= 80 ? "publishable" : score >= 68 ? "minor_revision" : "reject_or_reprompt";
-    const result = { ...data, score, decision, evaluatedAt: new Date().toISOString() };
+    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, evaluatedAt: new Date().toISOString() } as SaudiVideoPilotEvaluationResult;
     await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_provider_configs", targetId: data.sampleId, after: result as unknown as Json });
     return result;
   });
