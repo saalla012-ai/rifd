@@ -14,6 +14,7 @@ import {
   type VideoDuration,
   InsufficientCreditsError,
 } from "./credits";
+import { isValidVideoTierSelection } from "@/lib/plan-catalog";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -109,6 +110,7 @@ async function getVideoEntitlement(db: DbClient): Promise<VideoEntitlement> {
 }
 
 function assertVideoEntitlement(entitlement: VideoEntitlement, input: z.infer<typeof videoInputSchema>) {
+  if (!isValidVideoTierSelection(input.quality, input.durationSeconds)) throw new Error("invalid_video_tier_duration");
   if (!entitlement.video_fast_allowed) throw new Error("video_fast_not_allowed");
   if (input.quality === "quality" && !entitlement.video_quality_allowed) throw new Error("video_quality_not_allowed");
   if (input.durationSeconds > entitlement.max_video_duration_seconds) throw new Error("video_duration_not_allowed");
@@ -163,6 +165,7 @@ function publicVideoError(e: unknown): Error {
   if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
   if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية متاحة في باقات Pro وBusiness.");
   if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
+  if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
   if (/no_video_provider_available|إعداد مزوّد الفيديو غير مكتمل/i.test(msg)) return new Error("خدمة الفيديو غير جاهزة حالياً. جرّب لاحقاً أو تواصل مع الدعم.");

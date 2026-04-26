@@ -12,7 +12,16 @@ export const VIDEO_CREDIT_COSTS = {
 export type VideoQuality = "fast" | "lite" | "quality";
 export type VideoDuration = 5 | 8;
 
+export function videoTierDuration(quality: VideoQuality): VideoDuration {
+  return quality === "fast" ? 5 : 8;
+}
+
+export function isValidVideoTierSelection(quality: VideoQuality, duration: VideoDuration) {
+  return videoTierDuration(quality) === duration;
+}
+
 export function videoCreditCost(quality: VideoQuality, duration: VideoDuration = 5) {
+  if (!isValidVideoTierSelection(quality, duration)) throw new Error("invalid_video_tier_duration");
   if (quality === "lite") return duration === 8 ? VIDEO_CREDIT_COSTS.video_lite_8s : VIDEO_CREDIT_COSTS.video_lite;
   if (quality === "quality") return duration === 8 ? VIDEO_CREDIT_COSTS.video_quality_8s : VIDEO_CREDIT_COSTS.video_quality;
   return VIDEO_CREDIT_COSTS.video_fast;

@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
+import { videoTierDuration } from "@/lib/plan-catalog";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -90,7 +91,6 @@ function GenerateVideoPage() {
   const { data: credits, loading: creditsLoading, refresh: refreshCredits } = useCreditsSummary();
   const [quality, setQuality] = useState<VideoQuality>("fast");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
-  const [durationSeconds, setDurationSeconds] = useState<5 | 8>(5);
   const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [startingFrameUrl, setStartingFrameUrl] = useState("");
   const [speakerImageUrl, setSpeakerImageUrl] = useState("");
@@ -104,7 +104,7 @@ function GenerateVideoPage() {
 
   const selectedQuality = QUALITY[quality];
   const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
-  const effectiveDurationSeconds = quality === "fast" ? 5 : 8;
+  const effectiveDurationSeconds = videoTierDuration(quality);
   const costKey = (quality === "quality" ? "video_quality_8s" : quality === "lite" ? "video_lite_8s" : "video_fast") as keyof NonNullable<typeof credits>["costs"];
   const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedDurationAllowed = effectiveDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
@@ -284,12 +284,12 @@ function GenerateVideoPage() {
               <Label>المدة</Label>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[5, 8].map((duration) => {
-                  const lockedByTier = (quality === "fast" && duration !== 5) || (quality !== "fast" && duration !== 8);
+                  const lockedByTier = effectiveDurationSeconds !== duration;
                   return (
                   <button
                     key={duration}
                     type="button"
-                    onClick={() => !lockedByTier && setDurationSeconds(duration as 5 | 8)}
+                    onClick={() => undefined}
                     disabled={lockedByTier}
                     className={cn(
                       "rounded-lg border px-3 py-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
