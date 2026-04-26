@@ -14,7 +14,7 @@ import {
   type VideoDuration,
   InsufficientCreditsError,
 } from "./credits";
-import { isValidVideoTierSelection } from "@/lib/plan-catalog";
+import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -27,9 +27,9 @@ const REPLICATE_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
 };
 
 const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
-  fast: 0.5,
-  lite: 1.2,
-  quality: 3.2,
+  fast: 0.2,
+  lite: 0.25,
+  quality: 0.45,
 };
 
 function estimatedVideoCostUsd(quality: VideoQuality, durationSeconds: VideoDuration) {
@@ -121,6 +121,12 @@ function assertVideoEntitlement(entitlement: VideoEntitlement, input: z.infer<ty
   if (input.durationSeconds > entitlement.max_video_duration_seconds) throw new Error("video_duration_not_allowed");
 }
 
+function assertProductImagePolicy(plan: string | null | undefined, input: z.infer<typeof videoInputSchema>) {
+  if (PLAN_CREDIT_POLICY.paidPlansRequireProductImageForVideo && plan && plan !== "free" && !input.productImageUrl) {
+    throw new Error("product_image_required_for_paid_video");
+  }
+}
+
 class ProviderCommittedFailure extends Error {
   constructor(message: string) {
     super(message);
@@ -170,6 +176,7 @@ function publicVideoError(e: unknown): Error {
   if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
   if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية متاحة في باقات Pro وBusiness.");
   if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
+  if (/product_image_required_for_paid_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
