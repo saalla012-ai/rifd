@@ -390,6 +390,7 @@ function PilotAuditPanel({ audit }: { audit: SaudiVideoPilotAuditResult }) {
 }
 
 function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
+  const qualityMix = matrix.samples.reduce<Record<string, number>>((acc, sample) => ({ ...acc, [sample.quality]: (acc[sample.quality] ?? 0) + 1 }), {});
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -398,6 +399,11 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
           <p className="mt-1 text-xs text-muted-foreground">عينات ممثلة قبل الإطلاق: قطاعات سعودية، شخصيات، جودات، ومعايير تقييم واضحة دون خصم نقاط.</p>
         </div>
         <Badge className="bg-primary/15 text-primary">{matrix.totalSamples.toLocaleString("ar-SA")} عينات · ${matrix.estimatedCostUsd}</Badge>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{matrix.requiredPublishableRate.toLocaleString("ar-SA")}%+</strong><p className="mt-1 text-muted-foreground">حد صلاحية النشر المطلوب</p></div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{Object.entries(qualityMix).map(([quality, count]) => `${VIDEO_QUALITY_LABELS[quality as keyof typeof VIDEO_QUALITY_LABELS] ?? quality}: ${count}`).join(" · ")}</strong><p className="mt-1 text-muted-foreground">توزيع الجودات</p></div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{matrix.samples.filter((sample) => sample.requiresProductImage).length.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">عينات بصورة منتج إلزامية</p></div>
       </div>
       <p className="mt-3 rounded-lg border border-border bg-secondary/30 p-3 text-xs text-muted-foreground">{matrix.readinessGate}</p>
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
@@ -408,6 +414,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
               <Badge variant="secondary">{sample.quality} · {sample.durationSeconds}ث</Badge>
             </div>
             <p className="mt-1 text-muted-foreground">{sample.sector} · {sample.personaLabel} · {sample.requiresProductImage ? "صورة منتج إلزامية" : "عينة سريعة"}</p>
+            <p className="mt-2 font-semibold text-foreground">{sample.objective}</p>
+            <p className="mt-1 text-muted-foreground">شرط النجاح: {sample.mustPass.join(" · ")}</p>
             <p className="mt-2 text-muted-foreground">التقييم: {sample.scorecard.join(" · ")}</p>
           </div>
         ))}
