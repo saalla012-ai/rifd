@@ -584,7 +584,10 @@ export const generateVideo = createServerFn({ method: "POST" })
     try {
       if (!(await operationalSwitchEnabled(supabase, "video_enabled"))) throw new Error("video_fast_not_allowed");
       if (data.quality === "quality" && !(await operationalSwitchEnabled(supabase, "video_quality_enabled"))) throw new Error("video_quality_not_allowed");
-      assertVideoEntitlement(await getVideoEntitlement(supabase), data);
+      const entitlement = await getVideoEntitlement(supabase);
+      assertVideoEntitlement(entitlement, data);
+      const { data: profile } = await supabase.from("profiles").select("plan").eq("id", userId).maybeSingle();
+      assertProductImagePolicy(profile?.plan, data);
       const processingCount = await countProcessingJobs(userId);
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
@@ -616,7 +619,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true },
+          metadata: { ...baseMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, plan_credit_rollover: false, watermark_required: profile?.plan === "free", product_image_required: profile?.plan !== "free" },
         })
         .select("*")
         .single();
