@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -22,6 +23,14 @@ const ProviderUpdateInput = z.object({
 
 const TestProviderInput = z.object({
   providerKey: z.string().min(2).max(80),
+});
+
+const SaudiFalPromptPreviewInput = z.object({
+  modelId: z.string().min(3).max(180).default("fal-ai/veo3/fast"),
+  personaId: z.enum(["male-young", "male-premium", "female-abaya", "retail-seller"]).default("male-young"),
+  scenarioId: z.enum(["perfume", "abaya", "arabic-coffee", "electronics"]).default("perfume"),
+  includeProductImage: z.boolean().default(true),
+  includeVoice: z.boolean().default(true),
 });
 
 const TestVideoRouterInput = z.object({
@@ -132,6 +141,14 @@ export type AdminVideoProviderTestResult = {
   latencyMs: number;
   message: string;
   checkedAt: string;
+};
+
+export type SaudiFalPromptPreview = {
+  prompt: string;
+  model: typeof FAL_VIDEO_TEST_MODELS[number];
+  persona: typeof SAUDI_VIDEO_PERSONAS[number];
+  scenario: typeof SAUDI_VIDEO_TEST_SCENARIOS[number];
+  imageEvaluation: { score: number; recommendation: string };
 };
 
 export type AdminVideoRouterTestResult = {
@@ -431,6 +448,22 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
 
     await logAdminAudit({ adminId: userId, action: "test_video_provider_connection", targetTable: "video_provider_configs", targetId: provider.provider_key, after: result as unknown as Json });
     return { provider: updated as AdminVideoProviderConfig, result };
+  });
+
+export const previewSaudiFalVideoTestPrompt = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => SaudiFalPromptPreviewInput.parse(input ?? {}))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }): Promise<SaudiFalPromptPreview> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
+
+    const model = FAL_VIDEO_TEST_MODELS.find((item) => item.id === data.modelId) ?? FAL_VIDEO_TEST_MODELS[0];
+    const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === data.personaId) ?? SAUDI_VIDEO_PERSONAS[0];
+    const scenario = SAUDI_VIDEO_TEST_SCENARIOS.find((item) => item.id === data.scenarioId) ?? SAUDI_VIDEO_TEST_SCENARIOS[0];
+    const prompt = buildSaudiFalTestPrompt({ personaBrief: persona.brief, scenarioId: scenario.id, includeProductImage: data.includeProductImage, includeVoice: data.includeVoice && model.supportsVoice });
+    const imageEvaluation = evaluateSaudiVideoImage({ hasProductImage: data.includeProductImage, personaLabel: persona.label });
+
+    return { prompt, model, persona, scenario, imageEvaluation };
   });
 
 export const testVideoRouterDryRun = createServerFn({ method: "POST" })

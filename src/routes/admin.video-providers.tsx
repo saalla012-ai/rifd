@@ -9,10 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalPromptPreview } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -40,6 +42,8 @@ const HEALTH_TONE: Record<string, string> = {
   unhealthy: "bg-destructive/15 text-destructive",
 };
 
+type SaudiFalDraft = { modelId: string; personaId: string; scenarioId: string; includeProductImage: boolean; includeVoice: boolean };
+
 function fmtDate(value: string | null) {
   return value ? new Date(value).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" }) : "—";
 }
@@ -50,13 +54,17 @@ function AdminVideoProvidersPage() {
   const updateProvider = useServerFn(updateVideoProviderConfig);
   const testProvider = useServerFn(testVideoProviderConnection);
   const testRouter = useServerFn(testVideoRouterDryRun);
+  const previewSaudiFalPrompt = useServerFn(previewSaudiFalVideoTestPrompt);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
+  const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
+  const [falDraft, setFalDraft] = useState<SaudiFalDraft>({ modelId: FAL_VIDEO_TEST_MODELS[0].id, personaId: SAUDI_VIDEO_PERSONAS[0].id, scenarioId: SAUDI_VIDEO_TEST_SCENARIOS[0].id, includeProductImage: true, includeVoice: true });
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testingRouter, setTestingRouter] = useState(false);
+  const [loadingFalPreview, setLoadingFalPreview] = useState(false);
 
   async function authHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -126,6 +134,20 @@ function AdminVideoProvidersPage() {
     }
   }
 
+  async function buildFalPromptPreview() {
+    setLoadingFalPreview(true);
+    try {
+      const headers = await authHeaders();
+      const result = await previewSaudiFalPrompt({ data: falDraft, headers });
+      setFalPreview(result);
+      toast.success("تم تجهيز برومبت الاختبار السعودي");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "فشل تجهيز برومبت الاختبار");
+    } finally {
+      setLoadingFalPreview(false);
+    }
+  }
+
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,6 +179,7 @@ function AdminVideoProvidersPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          <SaudiFalTestPanel draft={falDraft} preview={falPreview} loading={loadingFalPreview} onDraft={setFalDraft} onPreview={() => void buildFalPromptPreview()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             {attempts.slice(0, 3).map((attempt) => <AttemptCard key={attempt.provider} attempt={attempt} />)}
@@ -246,6 +269,56 @@ function AttemptCard({ attempt }: { attempt: AdminVideoProviderAttemptSummary })
       <p className="mt-1 truncate text-xs text-muted-foreground">آخر حالة: {attempt.lastStatus ?? "—"} · {fmtDate(attempt.lastAt)}</p>
       {attempt.topError && <p className="mt-1 line-clamp-1 text-xs text-destructive">أكثر خطأ: {attempt.topError}</p>}
     </div>
+  );
+}
+
+function SaudiFalTestPanel({ draft, preview, loading, onDraft, onPreview }: { draft: SaudiFalDraft; preview: SaudiFalPromptPreview | null; loading: boolean; onDraft: (next: SaudiFalDraft) => void; onPreview: () => void }) {
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">اختبار fal.ai بالصور الحالية</h2>
+          <p className="mt-1 text-xs text-muted-foreground">يستخدم شخصيات قسم الفيديو نفسها مع برومبت سعودي واضح للحركة والصوت قبل أي اعتماد إنتاجي.</p>
+        </div>
+        <Button type="button" size="sm" onClick={onPreview} disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clapperboard className="h-4 w-4" />} تجهيز البرومبت
+        </Button>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <SelectBox label="النموذج" value={draft.modelId} onChange={(modelId) => onDraft({ ...draft, modelId })} options={FAL_VIDEO_TEST_MODELS.map((model) => ({ value: model.id, label: model.label }))} />
+        <SelectBox label="صورة الشخصية" value={draft.personaId} onChange={(personaId) => onDraft({ ...draft, personaId })} options={SAUDI_VIDEO_PERSONAS.map((persona) => ({ value: persona.id, label: persona.label }))} />
+        <SelectBox label="السيناريو السعودي" value={draft.scenarioId} onChange={(scenarioId) => onDraft({ ...draft, scenarioId })} options={SAUDI_VIDEO_TEST_SCENARIOS.map((scenario) => ({ value: scenario.id, label: scenario.label }))} />
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <ControlRow label="إضافة صورة منتج" hint="لقياس التزام النموذج بالمنتج داخل الإعلان">
+          <Switch checked={draft.includeProductImage} onCheckedChange={(includeProductImage) => onDraft({ ...draft, includeProductImage })} />
+        </ControlRow>
+        <ControlRow label="طلب صوت سعودي" hint="يطبّق فقط على النماذج التي تدعم الصوت">
+          <Switch checked={draft.includeVoice} onCheckedChange={(includeVoice) => onDraft({ ...draft, includeVoice })} />
+        </ControlRow>
+      </div>
+      {preview && (
+        <div className="mt-4 grid gap-3 lg:grid-cols-[220px_1fr]">
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs leading-6">
+            <p className="font-bold">التقييم: {preview.imageEvaluation.score.toLocaleString("ar-SA")}/100</p>
+            <p className="mt-1 text-muted-foreground">{preview.imageEvaluation.recommendation}</p>
+            <p className="mt-2 text-muted-foreground">{preview.model.label} · {preview.persona.label} · {preview.scenario.label}</p>
+          </div>
+          <Textarea readOnly value={preview.prompt} className="min-h-56 text-left text-xs leading-6" dir="ltr" />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SelectBox({ label, value, options, onChange }: { label: string; value: string; options: Array<{ value: string; label: string }>; onChange: (value: string) => void }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold text-muted-foreground">{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-xs">
+        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label>
   );
 }
 
