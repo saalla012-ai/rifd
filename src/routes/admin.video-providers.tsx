@@ -9,10 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_TEST_SCENARIOS } from "@/lib/saudi-video-test";
 import { cn } from "@/lib/utils";
-import { listVideoProviderAttemptSummary, listVideoProviderConfigs, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult } from "@/server/admin-video";
+import { listVideoProviderAttemptSummary, listVideoProviderConfigs, previewSaudiFalVideoTestPrompt, testVideoProviderConnection, testVideoRouterDryRun, updateVideoProviderConfig, type AdminVideoProviderAttemptSummary, type AdminVideoProviderConfig, type AdminVideoRouterTestResult, type SaudiFalPromptPreview } from "@/server/admin-video";
 
 export const Route = createFileRoute("/admin/video-providers")({
   beforeLoad: adminBeforeLoad,
@@ -50,13 +52,17 @@ function AdminVideoProvidersPage() {
   const updateProvider = useServerFn(updateVideoProviderConfig);
   const testProvider = useServerFn(testVideoProviderConnection);
   const testRouter = useServerFn(testVideoRouterDryRun);
+  const previewSaudiFalPrompt = useServerFn(previewSaudiFalVideoTestPrompt);
   const [providers, setProviders] = useState<AdminVideoProviderConfig[]>([]);
   const [attempts, setAttempts] = useState<AdminVideoProviderAttemptSummary[]>([]);
   const [routerResults, setRouterResults] = useState<Array<AdminVideoRouterTestResult & { scenarioLabel: string }>>([]);
+  const [falPreview, setFalPreview] = useState<SaudiFalPromptPreview | null>(null);
+  const [falDraft, setFalDraft] = useState({ modelId: FAL_VIDEO_TEST_MODELS[0].id, personaId: SAUDI_VIDEO_PERSONAS[0].id, scenarioId: SAUDI_VIDEO_TEST_SCENARIOS[0].id, includeProductImage: true, includeVoice: true });
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testingRouter, setTestingRouter] = useState(false);
+  const [loadingFalPreview, setLoadingFalPreview] = useState(false);
 
   async function authHeaders() {
     const { data: { session } } = await supabase.auth.getSession();
