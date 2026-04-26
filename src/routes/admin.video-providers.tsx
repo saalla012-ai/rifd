@@ -552,6 +552,46 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
   );
 }
 
+function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
+  const gateLabel = batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
+  const gateTone = batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="font-extrabold">تدقيق تنفيذ دفعة الاختبار المتوسط</h2>
+          <p className="mt-1 text-xs text-muted-foreground">مطابقة فعلية بين عينات الخطة ومهام الفيديو الموسومة داخلياً قبل أي قرار فتح تجاري للقوالب الاحتياطية.</p>
+        </div>
+        <Badge className={cn(gateTone)}>{gateLabel} · {batch.executionRate.toLocaleString("ar-SA")}% تنفيذ</Badge>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <MetricTile label="المخطط" value={batch.totalPlanned} />
+        <MetricTile label="المولد" value={batch.generated} />
+        <MetricTile label="المكتمل" value={batch.completed} />
+        <MetricTile label="قيد المعالجة" value={batch.processing} />
+        <MetricTile label="فشل/استرداد" value={batch.failedOrRefunded} />
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {batch.samples.map((sample) => (
+          <div key={sample.sampleId} className="rounded-lg border border-border bg-background/60 p-3 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong>{sample.sampleId} — {sample.label}</strong>
+              <Badge className={cn(sample.status === "completed" ? "bg-success/15 text-success" : sample.status === "not_generated" ? "bg-muted text-muted-foreground" : sample.status === "failed" || sample.status === "refunded" || sample.status === "cancelled" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold")}>{sample.status}</Badge>
+            </div>
+            <p className="mt-1 text-muted-foreground">{sample.sector} · {sample.requiredProductImage ? "صورة منتج إلزامية" : "عينة سريعة"} · {sample.creditsCharged ?? "—"} نقطة</p>
+            {sample.resultUrl && <a href={sample.resultUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex font-bold text-primary hover:underline">فتح النتيجة</a>}
+            {sample.issue && <p className="mt-2 text-muted-foreground">{sample.issue}</p>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MetricTile({ label, value }: { label: string; value: number }) {
+  return <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{value.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">{label}</p></div>;
+}
+
 function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
   const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "sceneAdherence" | "motionAdherence" | "saudiDialect" | "negativeSafety" | "publishReadiness">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
