@@ -553,7 +553,7 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
 }
 
 function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
-  const gateLabel = batch.releaseGate === "ready_for_expansion" ? "جاهزة للتوسيع" : batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
+  const gateLabel = batch.releaseGate === "ready_for_expansion" ? "جاهزة للتوسيع" : batch.releaseGate === "needs_iteration" ? "تحتاج تحسين" : batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
   const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
@@ -574,6 +574,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <MetricTile label="مرفوض" value={batch.rejected} />
         <MetricTile label="قيد المعالجة" value={batch.processing} />
       </div>
+      {batch.evaluated > 0 && <p className="mt-3 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">نسبة الصلاحية التجارية: {Math.round((batch.publishable / Math.max(batch.totalPlanned, 1)) * 100).toLocaleString("ar-SA")}% — بوابة الاعتماد تتطلب 80%+ دون عينات مرفوضة.</p>}
       <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">{batch.releaseGateReason}</p>
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">الخطوة التنفيذية: {batch.nextAction}</p>
