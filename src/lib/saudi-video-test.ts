@@ -23,7 +23,33 @@ export const FAL_VIDEO_TEST_MODELS = [
   { id: "fal-ai/minimax/video-01/image-to-video", label: "MiniMax I2V — احتياطي", supportsVoice: false, supportsProductImage: true, supportsTwoImages: false, estimatedUsd: 0.3 },
 ] as const;
 
-const saudiPrompt = (sector: string, hook: string, action: string, voice: string) => `${hook}\nالمشهد: إعلان سعودي واقعي داخل بيئة ${sector}، المنتج ظاهر بوضوح وغير معزول على خلفية بيضاء.\nالحركة: ${action}\nالكاميرا: عمودي 9:16، دفع سينمائي بطيء، إضاءة متجر سعودية راقية، انتقال واحد ناعم إذا احتاج المشهد.\nالصوت: رجل/امرأة بلهجة سعودية طبيعية يقول/تقول: "${voice}"\nتجنب: النصوص العربية المرئية، الوجوه المشوهة، الأصابع الزائدة، المبالغة غير الموثوقة، تغيير شكل المنتج.`;
+export const SAUDI_VIDEO_PROMPT_ADHERENCE_RULES = [
+  "نفّذ كل عناصر البرومبت بالترتيب ولا تختصره إلى مشهد عام.",
+  "المنتج يجب أن يبقى واضحاً ومركزياً طوال الفيديو، ولا يجوز استبداله أو تغيير شكله.",
+  "البيئة يجب أن تطابق القطاع والمشهد السعودي المطلوبين.",
+  "حركة الكاميرا وحركة المنتج/اليد يجب أن تظهر كما وردت قدر الإمكان.",
+  "الصوت العربي السعودي يجب أن يحافظ على معنى الجملة المطلوبة دون تغيير جوهري.",
+  "ممنوع النص العربي المرئي أو الشعارات المشوهة أو الوجوه/الأصابع غير الطبيعية أو الادعاءات المبالغ فيها.",
+] as const;
+
+export const SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD = [
+  { key: "product", label: "ظهور المنتج بدقة", weight: 25 },
+  { key: "scene", label: "الالتزام بالمشهد", weight: 20 },
+  { key: "motion", label: "الالتزام بالحركة", weight: 15 },
+  { key: "voice", label: "الالتزام بالصوت", weight: 15 },
+  { key: "negative", label: "تجنب الممنوعات", weight: 15 },
+  { key: "publish", label: "قابلية النشر", weight: 10 },
+] as const;
+
+export function withSaudiPromptAdherence(prompt: string) {
+  return [
+    prompt,
+    "المطلوب تنفيذه بدقة:",
+    ...SAUDI_VIDEO_PROMPT_ADHERENCE_RULES.map((rule, index) => `${index + 1}. ${rule}`),
+  ].join("\n");
+}
+
+const saudiPrompt = (sector: string, hook: string, action: string, voice: string) => withSaudiPromptAdherence(`${hook}\nالمشهد: إعلان سعودي واقعي داخل بيئة ${sector}، المنتج ظاهر بوضوح وغير معزول على خلفية بيضاء.\nالحركة: ${action}\nالكاميرا: عمودي 9:16، دفع سينمائي بطيء، إضاءة متجر سعودية راقية، انتقال واحد ناعم إذا احتاج المشهد.\nالصوت: رجل/امرأة بلهجة سعودية طبيعية يقول/تقول: "${voice}"\nتجنب: النصوص العربية المرئية، الوجوه المشوهة، الأصابع الزائدة، المبالغة غير الموثوقة، تغيير شكل المنتج.`);
 
 export const SAUDI_VIDEO_PROMPT_TEMPLATES: SaudiVideoPromptTemplate[] = [
   { id: "perfume-premium-hook", label: "عطر فاخر — هوك سريع", sector: "العطور", risk: "منخفض", prompt: saudiPrompt("بوتيك عطور فاخر", "ابدأ بلقطة قريبة للزجاجة مع انعكاس ذهبي فاخر.", "المتحدث يرفع العطر بهدوء ثم يقرّبه من الكاميرا مع ابتسامة واثقة.", "هذا العطر يعطيك حضور من أول لحظة… اطلبه اليوم وخلك مميز.") },
