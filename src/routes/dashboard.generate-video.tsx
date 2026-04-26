@@ -104,8 +104,8 @@ function GenerateVideoPage() {
 
   const selectedQuality = QUALITY[quality];
   const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
-  const effectiveDurationSeconds = quality === "lite" || quality === "quality" ? 8 : durationSeconds;
-  const costKey = `${quality === "quality" ? "video_quality" : quality === "lite" ? "video_lite" : "video_fast"}${effectiveDurationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
+  const effectiveDurationSeconds = quality === "fast" ? 5 : 8;
+  const costKey = (quality === "quality" ? "video_quality_8s" : quality === "lite" ? "video_lite_8s" : "video_fast") as keyof NonNullable<typeof credits>["costs"];
   const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedDurationAllowed = effectiveDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
@@ -284,7 +284,7 @@ function GenerateVideoPage() {
               <Label>المدة</Label>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[5, 8].map((duration) => {
-                  const lockedByTier = duration === 5 && quality !== "fast";
+                  const lockedByTier = (quality === "fast" && duration !== 5) || (quality !== "fast" && duration !== 8);
                   return (
                   <button
                     key={duration}
@@ -348,7 +348,7 @@ function GenerateVideoPage() {
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-foreground">سيتم خصم {selectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
-              <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? "يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم" : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
+              <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? `المدة المعتمدة: ${effectiveDurationSeconds}ث · يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم` : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">الاستخدام يعتمد على رصيد النقاط فقط، مع حماية تشغيلية للمهام المتزامنة.</p>
           </div>
