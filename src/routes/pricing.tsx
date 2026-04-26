@@ -42,7 +42,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "twitter:description",
         content:
-          `اختر باقتك حسب عدد فيديوهاتك الشهرية: ${VIDEO_QUALITY_LABELS.fast} من ${videoCreditCost("fast", 5)} نقطة و${VIDEO_QUALITY_LABELS.quality} من ${videoCreditCost("quality", 5)} نقطة.`,
+          `اختر باقتك حسب رصيدك: ${VIDEO_QUALITY_LABELS.fast} ${videoCreditCost("fast", 5)} نقطة، ${VIDEO_QUALITY_LABELS.lite} ${videoCreditCost("lite", 8)} نقطة، و${VIDEO_QUALITY_LABELS.quality} ${videoCreditCost("quality", 8)} نقطة.`,
       },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/pricing" }],
@@ -69,7 +69,7 @@ function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
 const FAQS = [
   {
     q: "هل الفيديوهات غير محدودة؟",
-    a: `لا. الفيديوهات تعمل بنقاط فيديو واضحة حتى يبقى السعر عادلاً والنتيجة قابلة للتنبؤ. تكلفة 5ث: ${VIDEO_QUALITY_LABELS.fast} ${videoCreditCost("fast", 5)} نقطة و${VIDEO_QUALITY_LABELS.quality} ${videoCreditCost("quality", 5)} نقطة، ومدة 8ث لها تكلفة أعلى.`,
+    a: `لا. الفيديوهات تعمل بنقاط فيديو واضحة حتى يبقى السعر عادلاً والنتيجة قابلة للتنبؤ: ${VIDEO_QUALITY_LABELS.fast} 5ث بـ${videoCreditCost("fast", 5)} نقطة، ${VIDEO_QUALITY_LABELS.lite} 8ث بـ${videoCreditCost("lite", 8)} نقطة، و${VIDEO_QUALITY_LABELS.quality} 8ث بـ${videoCreditCost("quality", 8)} نقطة.`,
   },
   {
     q: "هل النصوص والصور تخصم من نقاط الفيديو؟",
@@ -118,7 +118,7 @@ function PricingPage() {
             نصوص وصور يومية، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
           </h1>
           <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
-            اختر باقتك حسب عدد فيديوهاتك الشهرية. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)} نقطة واحترافي بـ{videoCreditCost("quality", 5)} نقطة.
+            اختر باقتك حسب رصيد نقاط الفيديو. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة.
           </p>
 
           <div className="mx-auto mt-5 flex min-h-[3.75rem] max-w-md items-center justify-center">
@@ -215,7 +215,7 @@ function PricingPage() {
                     </div>
                     <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                       <p>{plan.videoFastAllowed ? `سريع: ${videoCreditCost("fast", 5).toLocaleString("ar-SA")} نقطة` : "الفيديو غير متاح"}</p>
-                      <p>{plan.videoQualityAllowed ? `احترافي: ${videoCreditCost("quality", 5).toLocaleString("ar-SA")} نقطة` : `إعلاني: ${videoCreditCost("lite", 5).toLocaleString("ar-SA")} نقطة`}</p>
+                      <p>{plan.videoQualityAllowed ? `احترافي: ${videoCreditCost("quality", 8).toLocaleString("ar-SA")} نقطة` : `إعلاني: ${videoCreditCost("lite", 8).toLocaleString("ar-SA")} نقطة`}</p>
                     </div>
                   </div>
 

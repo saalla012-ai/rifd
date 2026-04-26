@@ -236,7 +236,7 @@ function BillingPage() {
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Film className="h-3.5 w-3.5" /> {VIDEO_QUALITY_LABELS.fast} {videoCreditCost("fast", 5)} نقطة · {VIDEO_QUALITY_LABELS.quality} {videoCreditCost("quality", 5)} نقطة
+            <Film className="h-3.5 w-3.5" /> {VIDEO_QUALITY_LABELS.fast} {videoCreditCost("fast", 5)} · {VIDEO_QUALITY_LABELS.lite} {videoCreditCost("lite", 8)} · {VIDEO_QUALITY_LABELS.quality} {videoCreditCost("quality", 8)} نقطة
           </div>
         </div>
       </div>

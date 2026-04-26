@@ -153,8 +153,7 @@ export function CreditsBar() {
           <div className="flex items-start gap-1.5 rounded-md bg-muted/40 p-2 text-[10px] text-muted-foreground">
             <Info className="mt-0.5 h-3 w-3 shrink-0" />
             <span>
-              فيديو {VIDEO_QUALITY_LABELS.fast}: {data.costs.video_fast} نقطة · فيديو {VIDEO_QUALITY_LABELS.quality}:{" "}
-              {data.costs.video_quality} نقطة · النصوص والصور لا تخصم نقاط فيديو
+              فيديو {VIDEO_QUALITY_LABELS.fast}: {data.costs.video_fast} نقطة · {VIDEO_QUALITY_LABELS.lite}: {data.costs.video_lite_8s} نقطة · {VIDEO_QUALITY_LABELS.quality}: {data.costs.video_quality_8s} نقطة
             </span>
           </div>
 

@@ -28,6 +28,7 @@ const TestVideoRouterInput = z.object({
   aspectRatio: z.enum(["9:16", "1:1", "16:9"]).default("9:16"),
   durationSeconds: z.union([z.literal(5), z.literal(8)]).default(5),
   hasStartingFrame: z.boolean().default(false),
+  imageCount: z.union([z.literal(0), z.literal(1), z.literal(2)]).default(0),
 });
 
 const CompleteManualVideoJobInput = z.object({
@@ -178,6 +179,8 @@ function providerEligibleForInput(provider: AdminVideoProviderConfig, input: z.i
   if (input.aspectRatio === "1:1" && !provider.supports_1_1) return { eligible: false, reason: "مقاس 1:1 غير مدعوم" };
   if (input.aspectRatio === "16:9" && !provider.supports_16_9) return { eligible: false, reason: "مقاس 16:9 غير مدعوم" };
   if (input.hasStartingFrame && !provider.supports_starting_frame) return { eligible: false, reason: "صورة البداية غير مدعومة" };
+  if (input.imageCount > 0 && !provider.supports_starting_frame) return { eligible: false, reason: "مراجع الصور غير مدعومة" };
+  if (input.imageCount > 1 && (provider.metadata as { supports_two_images?: boolean } | null)?.supports_two_images !== true) return { eligible: false, reason: "صورتان غير مدعومتين" };
   const cost = input.durationSeconds === 8 ? provider.cost_8s : provider.cost_5s;
   if (cost <= 0) return { eligible: false, reason: "تكلفة المدة غير مضبوطة" };
   return { eligible: true, reason: provider.health_status === "unhealthy" ? "مؤهل لكن مؤخر بسبب حالة غير صحية" : "جاهز للراوتر" };

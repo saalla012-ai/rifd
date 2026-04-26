@@ -107,7 +107,7 @@ function AbuseMonitorPage() {
           </div>
           <h1 className="flex items-center gap-2 text-2xl font-extrabold"><AlertTriangle className="h-6 w-6 text-warning" /> مراقبة إساءة الاستخدام</h1>
           <p className="mt-1 max-w-3xl text-sm leading-7 text-muted-foreground">
-            لوحة تشغيلية تكشف الاستهلاك غير الطبيعي للنقاط، الفيديو، الحصص اليومية، وكثافة الحملات قبل أن تتحول إلى تكلفة أو مخاطرة دعم.
+            لوحة تشغيلية تكشف الاستهلاك غير الطبيعي للنقاط والفيديو وحصص النصوص والصور وكثافة الحملات قبل أن تتحول إلى تكلفة أو مخاطرة دعم.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading} className="w-fit gap-1">

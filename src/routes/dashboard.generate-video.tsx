@@ -103,10 +103,10 @@ function GenerateVideoPage() {
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
 
   const selectedQuality = QUALITY[quality];
-  const costKey = `${quality === "quality" ? "video_quality" : quality === "lite" ? "video_lite" : "video_fast"}${durationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
-  const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
   const effectiveDurationSeconds = quality === "lite" || quality === "quality" ? 8 : durationSeconds;
+  const costKey = `${quality === "quality" ? "video_quality" : quality === "lite" ? "video_lite" : "video_fast"}${effectiveDurationSeconds === 8 ? "_8s" : ""}` as keyof NonNullable<typeof credits>["costs"];
+  const selectedCost = credits?.costs[costKey] ?? 0;
   const selectedDurationAllowed = effectiveDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
