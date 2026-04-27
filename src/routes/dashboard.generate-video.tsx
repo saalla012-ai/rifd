@@ -160,10 +160,18 @@ function GenerateVideoPage() {
   const canonicalQualityAllowed = canonicalGenerationQuality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
   const canonicalDurationAllowed = canonicalGenerationDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const canonicalHasEnoughCredits = credits ? credits.totalCredits >= canonicalSelectedCost : true;
+  const visibleJobs = useMemo(() => {
+    if (!internalMediumTestMode) return jobs;
+    if (!mediumTestCanonicalSample) return [];
+    return jobs.filter((job) => {
+      const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
+      return metadata.medium_test === true && metadata.medium_test_sample_id === mediumTestCanonicalSample.sampleId && metadata.medium_test_template_id === mediumTestCanonicalSample.templateId;
+    });
+  }, [jobs, internalMediumTestMode, mediumTestCanonicalSample]);
   const latestResult = useMemo(() => {
-    const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
-    return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
-  }, [activeJob, jobs]);
+    const syncedActiveJob = activeJob ? visibleJobs.find((job) => job.id === activeJob.id) : null;
+    return syncedActiveJob?.result_url ?? visibleJobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? visibleJobs.find((job) => job.result_url)?.result_url ?? null;
+  }, [activeJob, visibleJobs]);
   const promptCount = useMemo(() => canonicalGenerationPrompt.trim().length, [canonicalGenerationPrompt]);
 
   const applyTemplate = () => {
@@ -176,9 +184,15 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       const out = await listVideoJobsFn({ headers: { Authorization: `Bearer ${session.access_token}` } });
-      setJobs(out.jobs);
-      const syncedActiveJob = activeJob ? out.jobs.find((job) => job.id === activeJob.id) : null;
-      setActiveJob(syncedActiveJob ?? out.jobs.find((job) => job.status === "completed" && job.result_url) ?? out.jobs[0] ?? null);
+      const scopedJobs = internalMediumTestMode && mediumTestCanonicalSample
+        ? out.jobs.filter((job) => {
+            const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
+            return metadata.medium_test === true && metadata.medium_test_sample_id === mediumTestCanonicalSample.sampleId && metadata.medium_test_template_id === mediumTestCanonicalSample.templateId;
+          })
+        : internalMediumTestMode ? [] : out.jobs;
+      setJobs(scopedJobs);
+      const syncedActiveJob = activeJob ? scopedJobs.find((job) => job.id === activeJob.id) : null;
+      setActiveJob(syncedActiveJob ?? scopedJobs.find((job) => job.status === "completed" && job.result_url) ?? scopedJobs[0] ?? null);
     } catch {
       // لا نزعج المستخدم عند فشل تحميل السجل المصغر
     }
