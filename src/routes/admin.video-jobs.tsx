@@ -228,7 +228,7 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
             <span className="text-xs font-bold text-muted-foreground">Soft Launch · أول 10 عمليات</span>
           </div>
           <h2 className="mt-2 text-lg font-extrabold">مراقبة الإطلاق المحدود</h2>
-          <p className="mt-1 text-sm text-muted-foreground">تراقب أول 10 عمليات بعد تفعيل الأرشفة الداخلية حتى لا تختلط نتائج Beta بروابط Legacy القديمة.</p>
+          <p className="mt-1 text-sm text-muted-foreground">تراقب أول 10 عمليات بعد إثبات إصلاح CDN وأرشفة النتائج داخلياً حتى لا تختلط عينة Beta بعمليات Legacy القديمة.</p>
         </div>
         <div className="space-y-1 text-xs text-muted-foreground">
           <div>آخر فحص: {fmtDate(stats.checkedAt)}</div>
@@ -278,7 +278,7 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
         <p className="mt-2 text-xs text-muted-foreground">توجد نتائج قديمة قبل قرار التخزين الداخلي وتُعرض كرابط مزود fallback؛ لا تُعد عائقاً إذا لم تتكرر في النتائج الجديدة.</p>
       )}
       {!stats.rolloutStartedAt && (
-        <p className="mt-2 text-xs text-muted-foreground">لم تبدأ عينة Soft Launch المعتمدة بعد؛ ستبدأ تلقائياً عند أول فيديو مؤرشف داخلياً.</p>
+        <p className="mt-2 text-xs text-muted-foreground">لم تبدأ عينة Soft Launch المعتمدة بعد؛ ستبدأ بعد إثبات مسار CDN والأرشفة الداخلية.</p>
       )}
     </section>
   );
