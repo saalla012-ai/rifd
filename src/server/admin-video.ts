@@ -676,12 +676,13 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
       const secretName = providerSecretName(provider.provider_key)!;
       const tokenReady = Boolean(process.env[secretName]);
       const implemented = provider.provider_key === "fal_ai";
+      const liveProbe = tokenReady && implemented ? await probeFalToken(process.env[secretName]!) : null;
       result = {
         providerKey: provider.provider_key,
-        ok: tokenReady && implemented,
-        status: tokenReady && implemented ? "active" : "unhealthy",
+        ok: Boolean(tokenReady && implemented && liveProbe?.ok),
+        status: tokenReady && implemented && liveProbe?.ok ? "active" : "unhealthy",
         latencyMs: Date.now() - startedAt,
-        message: !tokenReady ? `مفتاح ${secretName} غير متوفر` : implemented ? "مفتاح المزود موجود والراوتر قادر على استخدامه" : "المفتاح موجود لكن موصل التنفيذ لم يُفعّل بعد",
+        message: !tokenReady ? `مفتاح ${secretName} غير متوفر` : implemented ? liveProbe?.message ?? "تعذر فحص مفتاح المزود" : "المفتاح موجود لكن موصل التنفيذ لم يُفعّل بعد",
         checkedAt,
       };
     } else {
