@@ -11,6 +11,8 @@ const ListAdminVideoJobsInput = z.object({
   limit: z.number().int().min(1).max(300).default(100),
 });
 
+const VIDEO_CDN_FIX_VERIFIED_AT = "2026-04-27T12:50:00.000Z";
+
 const ProviderUpdateInput = z.object({
   providerKey: z.string().min(2).max(80),
   enabled: z.boolean().optional(),
@@ -545,21 +547,13 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     );
 
     const { count: totalCount } = await admin.from("video_jobs").select("id", { count: "exact", head: true });
-    const { data: archiveRolloutRows, error: archiveRolloutError } = await admin
-      .from("video_jobs")
-      .select("created_at")
-      .not("storage_path", "is", null)
-      .order("created_at", { ascending: true })
-      .limit(1);
-    if (archiveRolloutError) throw new Error(`فشل تحديد بداية الأرشفة الداخلية: ${archiveRolloutError.message}`);
-
-    const archiveRolloutStartedAt = archiveRolloutRows?.[0]?.created_at ?? null;
+    const archiveRolloutStartedAt = VIDEO_CDN_FIX_VERIFIED_AT;
     let softLaunchQuery = admin
       .from("video_jobs")
       .select("id, status, storage_path, result_url, ledger_id, refund_ledger_id, metadata, created_at")
       .order("created_at", { ascending: false })
       .limit(10);
-    if (archiveRolloutStartedAt) softLaunchQuery = softLaunchQuery.gte("created_at", archiveRolloutStartedAt);
+    softLaunchQuery = softLaunchQuery.gte("created_at", archiveRolloutStartedAt);
 
     const { data: softLaunchRows, error: softLaunchError } = await softLaunchQuery;
     if (softLaunchError) throw new Error(`فشل جلب عينة Soft Launch: ${softLaunchError.message}`);
