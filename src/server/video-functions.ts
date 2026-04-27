@@ -266,6 +266,10 @@ function primaryReferenceImage(input: VideoInput) {
   return input.providerImageUrl || input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
 }
 
+function sourceReferenceImage(input: VideoInput) {
+  return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
+}
+
 async function providerReachableImageUrl(url?: string) {
   if (!url) return undefined;
   const token = process.env.FAL_API_KEY;
@@ -695,7 +699,8 @@ export const generateVideo = createServerFn({ method: "POST" })
       await assertMediumTestSequenceReady(userId, data);
       const providerConfigs = await loadProviderConfigs(data);
       if (providerConfigs.length === 0) throw new Error("no_video_provider_available");
-      const providerImageUrl = await providerReachableImageUrl(primaryReferenceImage(data));
+      const sourceImageUrl = sourceReferenceImage(data);
+      const providerImageUrl = await providerReachableImageUrl(sourceImageUrl);
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
@@ -736,7 +741,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: productImageRequired, prompt_adherence_required: true, prompt_adherence_gate: "80%+" },
+          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: productImageRequired, prompt_adherence_required: true, prompt_adherence_gate: "80%+", provider_image_url: providerImageUrl ?? null, provider_image_source: sourceImageUrl ? "reference_image" : "none" },
         })
         .select("*")
         .single();
