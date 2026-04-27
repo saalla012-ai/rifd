@@ -743,7 +743,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: productImageRequired, prompt_adherence_required: true, prompt_adherence_gate: "80%+", provider_image_url: providerImageUrl ?? null, provider_image_source: sourceImageUrl ? "reference_image" : "none" },
+          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: productImageRequired, prompt_adherence_required: true, prompt_adherence_gate: "80%+", provider_image_url: providerImageUrl ?? null, provider_image_source: sourceImageUrl ? "provider_preflight" : "none", provider_audio_requested: false, audio_policy: "provider_audio_disabled_until_saudi_voice_pipeline" },
         })
         .select("*")
         .single();
