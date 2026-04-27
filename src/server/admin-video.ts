@@ -752,7 +752,7 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
         body: JSON.stringify({
           prompt,
           aspect_ratio: "9:16",
-          duration: "5s",
+          duration: 5,
           resolution: "540p",
           image_url: includeProductImage ? data.productImageUrl : data.personaImageUrl,
           negative_prompt: "distorted face, deformed hands, unreadable Arabic text, white cutout background, unrealistic product",
