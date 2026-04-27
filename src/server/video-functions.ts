@@ -461,8 +461,8 @@ const PROVIDERS: Record<string, VideoProvider> = {
   kling: futureApiProvider("kling", "KLING_API_KEY"),
 };
 
-async function createProviderJob(input: VideoInput, jobId: string) {
-  const configs = await loadProviderConfigs(input);
+async function createProviderJob(input: VideoInput, jobId: string, preflightConfigs?: VideoProviderConfig[]) {
+  const configs = preflightConfigs ?? await loadProviderConfigs(input);
   const attempts: ProviderAttempt[] = [];
 
   for (const config of configs) {
@@ -598,6 +598,8 @@ export const generateVideo = createServerFn({ method: "POST" })
       const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId, data.quality, data.durationSeconds, data.aspectRatio, data.selectedPersonaId, data.prompt, data.startingFrameUrl);
       await assertNoActiveMediumTestSampleJob(userId, data);
       await assertMediumTestSequenceReady(userId, data);
+      const providerConfigs = await loadProviderConfigs(data);
+      if (providerConfigs.length === 0) throw new Error("no_video_provider_available");
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
@@ -647,7 +649,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       const job = inserted as VideoJobRow;
       jobId = job.id;
 
-      const routed = await createProviderJob(providerInput, job.id);
+      const routed = await createProviderJob(providerInput, job.id, providerConfigs);
       const finalStatus = routed.result.resultUrl ? "completed" : "processing";
       const metadata = {
         ...(job.metadata as Record<string, unknown> | null),
