@@ -136,7 +136,7 @@ function assertProductImagePolicy(plan: string | null | undefined, input: z.infe
   }
 }
 
-function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string, quality?: VideoQuality, durationSeconds?: VideoDuration, aspectRatio?: string, selectedPersonaId?: string, prompt?: string) {
+function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string, quality?: VideoQuality, durationSeconds?: VideoDuration, aspectRatio?: string, selectedPersonaId?: string, prompt?: string, startingFrameUrl?: string) {
   if (source === "medium-test") {
     if (templateId !== "custom") throw new Error("invalid_medium_test_template");
     if (!mediumTestTemplateId || !mediumTestSampleId) throw new Error("invalid_medium_test_template");
@@ -149,6 +149,9 @@ function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test",
     }
     if (prompt?.trim() !== expectedSample.finalPrompt.trim()) {
       throw new Error("invalid_medium_test_prompt");
+    }
+    if (startingFrameUrl) {
+      throw new Error("invalid_medium_test_reference_image");
     }
     return "custom";
   }
@@ -214,6 +217,7 @@ function publicVideoError(e: unknown): Error {
   if (/product_image_required_for_paid_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان.");
   if (/video_template_not_publicly_approved/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: هذا القالب ما زال احتياطياً ولن يُفتح قبل اكتمال بيانات الاستخدام الفعلية.");
   if (/invalid_medium_test_prompt/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: برومبت الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
+  if (/invalid_medium_test_reference_image/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: صورة البداية غير مسموحة في الاختبار الداخلي حتى لا تغيّر العينة المعتمدة.");
   if (/invalid_medium_test_template/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: معرف قالب الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
