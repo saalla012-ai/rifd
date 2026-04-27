@@ -213,6 +213,7 @@ function AdminVideoJobsPage() {
 
 function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) {
   const progress = `${fmt(stats.sampleSize)}/${fmt(stats.targetSize)}`;
+  const progressPercent = Math.max(0, Math.min(100, stats.progressPercent));
   const statusLabel = stats.readyForBeta ? "جاهز لقرار Beta" : stats.sampleSize < stats.targetSize ? "يجمع عينة" : "يحتاج مراجعة";
 
   return (
@@ -229,6 +230,15 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
         <div className="space-y-1 text-xs text-muted-foreground">
           <div>آخر فحص: {fmtDate(stats.checkedAt)}</div>
           {stats.rolloutStartedAt && <div>بداية العينة: {fmtDate(stats.rolloutStartedAt)}</div>}
+        </div>
+      </div>
+      <div className="mt-4" aria-label={`نسبة تقدم Soft Launch ${progressPercent}%`}>
+        <div className="mb-1 flex items-center justify-between gap-2 text-xs font-bold text-muted-foreground">
+          <span>نسبة التقدم</span>
+          <span className="tabular-nums text-foreground">{fmt(progressPercent)}%</span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${progressPercent}%` }} />
         </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">

@@ -108,6 +108,7 @@ export type AdminVideoStats = {
   softLaunch: {
     targetSize: number;
     sampleSize: number;
+    progressPercent: number;
     rolloutStartedAt: string | null;
     completed: number;
     refunded: number;
@@ -555,6 +556,8 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     if (softLaunchError) throw new Error(`فشل جلب عينة Soft Launch: ${softLaunchError.message}`);
 
     const softRows = ((softLaunchRows ?? []) as VideoJobRow[]);
+    const softTargetSize = 10;
+    const softProgressPercent = Math.min(100, Math.round((softRows.length / softTargetSize) * 100));
     const softCompleted = softRows.filter((r) => r.status === "completed").length;
     const softRefunded = softRows.filter((r) => r.status === "refunded").length;
     const softActive = softRows.filter((r) => r.status === "pending" || r.status === "processing").length;
@@ -578,8 +581,9 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
       creditsCharged: statsRows.reduce((sum, r) => sum + (r.credits_charged ?? 0), 0),
       estimatedCostUsd: statsRows.reduce((sum, r) => sum + Number(r.estimated_cost_usd ?? 0), 0),
       softLaunch: {
-        targetSize: 10,
+        targetSize: softTargetSize,
         sampleSize: softRows.length,
+        progressPercent: softProgressPercent,
         rolloutStartedAt: archiveRolloutStartedAt,
         completed: softCompleted,
         refunded: softRefunded,
