@@ -224,6 +224,8 @@ function AdminVideoProvidersPage() {
       const headers = await authHeaders();
       const result = await evaluatePilotSample({ data: draft, headers });
       setPilotEvaluation(result);
+      const refreshedBatch = await auditMediumBatch({ headers });
+      setMediumBatch(refreshedBatch);
       toast[result.decision === "publishable" ? "success" : "warning"](`تقييم العينة: ${result.score.toLocaleString("ar-SA")}%`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل حفظ تقييم العينة");
@@ -555,7 +557,7 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
 function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const gateLabel = batch.releaseGate === "ready_for_expansion" ? "جاهزة للتوسيع" : batch.releaseGate === "needs_iteration" ? "تحتاج تحسين" : batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
   const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
-  const evaluableCount = batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue).length;
+  const evaluableCount = batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision).length;
   const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
   const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue));
   return (
