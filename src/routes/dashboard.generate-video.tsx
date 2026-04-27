@@ -73,6 +73,7 @@ function absoluteAssetUrl(value: string) {
 
 const MEDIUM_TEST_PRODUCT_IMAGES: Partial<Record<string, string>> = {
   "pilot-05": "/medium-test-pilot-05-restaurant-v2.jpg",
+  "pilot-06": "/medium-test-pilot-06-home-decor.jpg",
 };
 
 async function imageUrlToDataUrl(value: string) {
