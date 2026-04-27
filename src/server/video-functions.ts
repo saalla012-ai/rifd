@@ -556,6 +556,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
       const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId, data.quality, data.durationSeconds, data.aspectRatio, data.selectedPersonaId, data.prompt, data.startingFrameUrl);
+      await assertNoActiveMediumTestSampleJob(userId, data);
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
