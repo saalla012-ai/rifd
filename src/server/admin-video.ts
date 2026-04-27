@@ -793,8 +793,9 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
       let result: { request_id?: string; response_url?: string; status_url?: string; video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
       try { result = text ? JSON.parse(text) as typeof result : {}; } catch { result = { error: text.slice(0, 500) }; }
       if (!response.ok || result.error) throw new Error(result.error || `fal.ai ${response.status}: ${text.slice(0, 500)}`);
-      const resultUrl = extractFalVideoUrl(result);
-      const out = { ok: true, status: resultUrl ? "completed" : "submitted", requestId: result.request_id ?? null, resultUrl, latencyMs: Date.now() - startedAt, estimatedCostUsd: model.estimatedUsd, error: null, checkedAt, prompt, model, persona, scenario, imageEvaluation } satisfies SaudiFalModelTestResult;
+      const immediateUrl = extractFalVideoUrl(result);
+      const polled = immediateUrl ? { status: "completed" as const, resultUrl: immediateUrl, error: null } : await pollFalQueueResult(token, result.status_url, result.response_url);
+      const out = { ok: polled.status !== "failed", status: polled.status, requestId: result.request_id ?? null, resultUrl: polled.resultUrl, latencyMs: Date.now() - startedAt, estimatedCostUsd: model.estimatedUsd, error: polled.error, checkedAt, prompt, model, persona, scenario, imageEvaluation } satisfies SaudiFalModelTestResult;
       await logAdminAudit({ adminId: userId, action: "run_saudi_fal_video_model_test", targetTable: "video_provider_configs", targetId: model.id, after: out as unknown as Json });
       return out;
     } catch (error) {
