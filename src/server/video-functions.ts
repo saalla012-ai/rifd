@@ -15,7 +15,7 @@ import {
   InsufficientCreditsError,
 } from "./credits";
 import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -127,7 +127,20 @@ function assertProductImagePolicy(plan: string | null | undefined, input: z.infe
   }
 }
 
-function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string, quality?: VideoQuality, durationSeconds?: VideoDuration, aspectRatio?: string, selectedPersonaId?: string) {
+const MEDIUM_TEST_PERSONA_ORDER = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
+
+function expectedMediumTestPrompt(templateId: string, sampleIndex: number, quality: VideoQuality) {
+  const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[sampleIndex];
+  const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === MEDIUM_TEST_PERSONA_ORDER[sampleIndex % MEDIUM_TEST_PERSONA_ORDER.length]) ?? SAUDI_VIDEO_PERSONAS[0];
+  return withSaudiPromptAdherence([
+    template.prompt,
+    `هدف العينة ${sampleIndex + 1}: ${quality === "quality" ? "اختبار إعلان مدفوع عالي الجودة" : quality === "lite" ? "اختبار إعلان يومي قابل للنشر" : "اختبار سريع لسلامة الفكرة"}.`,
+    `الشخصية المرجعية: ${persona.brief}`,
+    "يجب تسجيل النتيجة في مصفوفة الاختبار المتوسط قبل فتح القالب للعامة.",
+  ].join("\n\n"));
+}
+
+function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string, quality?: VideoQuality, durationSeconds?: VideoDuration, aspectRatio?: string, selectedPersonaId?: string, prompt?: string) {
   if (source === "medium-test") {
     if (templateId !== "custom") throw new Error("invalid_medium_test_template");
     if (!mediumTestTemplateId || !mediumTestSampleId) throw new Error("invalid_medium_test_template");
@@ -136,9 +149,12 @@ function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test",
     if (!expectedSampleId || mediumTestSampleId !== expectedSampleId) throw new Error("invalid_medium_test_template");
     const expectedQuality: VideoQuality = sampleIndex < 4 ? "fast" : sampleIndex < 11 ? "lite" : "quality";
     const expectedDuration: VideoDuration = expectedQuality === "fast" ? 5 : 8;
-    const expectedPersonaId = ["male-premium", "female-abaya", "retail-seller", "male-young"][sampleIndex % 4];
+    const expectedPersonaId = MEDIUM_TEST_PERSONA_ORDER[sampleIndex % MEDIUM_TEST_PERSONA_ORDER.length];
     if (quality !== expectedQuality || durationSeconds !== expectedDuration || aspectRatio !== "9:16" || selectedPersonaId !== expectedPersonaId) {
       throw new Error("invalid_medium_test_template");
+    }
+    if (prompt?.trim() !== expectedMediumTestPrompt(mediumTestTemplateId, sampleIndex, expectedQuality).trim()) {
+      throw new Error("invalid_medium_test_prompt");
     }
     return "custom";
   }
@@ -203,6 +219,7 @@ function publicVideoError(e: unknown): Error {
   if (/product_image_required_for_medium_test_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج إلزامية لهذه العينة الداخلية حتى يكون اختبار الالتزام عادلاً وقابلاً للاعتماد.");
   if (/product_image_required_for_paid_video/i.test(msg)) return new Error("PRODUCT_IMAGE_REQUIRED: صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان.");
   if (/video_template_not_publicly_approved/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: هذا القالب ما زال احتياطياً ولن يُفتح قبل اكتمال بيانات الاستخدام الفعلية.");
+  if (/invalid_medium_test_prompt/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: برومبت الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
   if (/invalid_medium_test_template/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: معرف قالب الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
@@ -527,7 +544,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
-      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId, data.quality, data.durationSeconds, data.aspectRatio, data.selectedPersonaId);
+      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId, data.quality, data.durationSeconds, data.aspectRatio, data.selectedPersonaId, data.prompt);
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
