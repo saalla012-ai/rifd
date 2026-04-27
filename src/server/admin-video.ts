@@ -110,6 +110,8 @@ export type AdminVideoStats = {
     sampleSize: number;
     progressPercent: number;
     planCompletionPercent: number;
+    remainingToBeta: number;
+    planPercentPerOperation: number;
     rolloutStartedAt: string | null;
     completed: number;
     refunded: number;
@@ -562,6 +564,8 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const softTargetSize = 10;
     const softProgressPercent = Math.min(100, Math.round((softRows.length / softTargetSize) * 100));
     const softPlanCompletionPercent = Math.min(100, 90 + Math.round(softProgressPercent / 10));
+    const softRemainingToBeta = Math.max(0, softTargetSize - softRows.length);
+    const softPlanPercentPerOperation = Math.max(1, Math.round((100 - 90) / softTargetSize));
     const softCompleted = softRows.filter((r) => r.status === "completed").length;
     const softRefunded = softRows.filter((r) => r.status === "refunded").length;
     const softFailedUnrefunded = softRows.filter((r) => r.status === "failed" && Boolean(r.ledger_id) && !r.refund_ledger_id).length;
@@ -591,6 +595,8 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
         sampleSize: softRows.length,
         progressPercent: softProgressPercent,
         planCompletionPercent: softPlanCompletionPercent,
+        remainingToBeta: softRemainingToBeta,
+        planPercentPerOperation: softPlanPercentPerOperation,
         rolloutStartedAt: archiveRolloutStartedAt,
         completed: softCompleted,
         refunded: softRefunded,
