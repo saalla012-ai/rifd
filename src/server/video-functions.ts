@@ -212,6 +212,9 @@ function videoCreditError(e: unknown): Error {
 
 function publicVideoError(e: unknown): Error {
   const msg = e instanceof Error ? e.message : String(e);
+  if (/file_download_error|Failed to download the file|image_url|provider_image_unreachable|provider_image_preflight|provider_image_invalid_type|provider_image_too_large/i.test(msg)) {
+    return new Error("تعذر تجهيز صورة المنتج للفيديو. ارفع الصورة من جديد أو استخدم رابط صورة مباشر بصيغة JPEG/PNG/WebP ثم أعد المحاولة.");
+  }
   if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
   if (/video_quality_not_allowed/i.test(msg)) return new Error("VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية متاحة في باقات Pro وBusiness.");
   if (/video_duration_not_allowed/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: مدة 8 ثوانٍ غير متاحة في باقتك الحالية.");
@@ -223,7 +226,6 @@ function publicVideoError(e: unknown): Error {
   if (/invalid_medium_test_template/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: معرف قالب الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
   if (/medium_test_sample_already_processing/i.test(msg)) return new Error("هذه العينة قيد المعالجة بالفعل. انتظر اكتمالها أو حدّث الحالة قبل إعادة التشغيل.");
   if (/medium_test_sequence_violation/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: لا يمكن تشغيل هذه العينة قبل إنشاء العينات السابقة من الرابط الرسمي وبلا عائق تشغيلي؛ التقييم التجاري يأتي بعد اكتمال الدفعة.");
-  if (/provider_image_unreachable|provider_image_preflight|provider_image_invalid_type|provider_image_too_large/i.test(msg)) return new Error("تعذر تجهيز صورة المنتج للفيديو. ارفع الصورة من جديد أو استخدم رابط صورة مباشر بصيغة JPEG/PNG/WebP ثم أعد المحاولة.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
@@ -269,7 +271,7 @@ async function providerReachableImageUrl(url?: string) {
   const token = process.env.FAL_API_KEY;
   if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
   try {
-    if (/^https:\/\/v\d+\.fal\.media\//i.test(url)) return url;
+    if (/^https:\/\/(?:v\d+\.)?fal\.media\//i.test(url)) return url;
     const response = url.startsWith("data:") ? await fetch(url) : await fetch(url, { headers: { "User-Agent": "Rifd-Video-Preflight/1.0" } });
     if (!response.ok) throw new Error(`provider_image_preflight_${response.status}`);
     const contentType = response.headers.get("content-type") ?? "image/jpeg";
@@ -502,7 +504,7 @@ const falProvider: VideoProvider = {
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = extractFalVideoUrl(result);
     const status = resultUrl ? "succeeded" : normalizeFalStatus(result.status);
-    return { providerJobId: result.request_id ?? null, status, resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, fal_status_url: result.status_url ?? null, fal_response_url: result.response_url ?? null, fal_result_shape: Object.keys(result) } };
+    return { providerJobId: result.request_id ?? null, status, resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, provider_image_url: providerImageUrl ?? null, provider_image_source: primaryReferenceImage(input) ? "reference_image" : "none", fal_status_url: result.status_url ?? null, fal_response_url: result.response_url ?? null, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(providerJobId, row) {
     if (row.result_url) return { status: "succeeded", resultUrl: row.result_url };
