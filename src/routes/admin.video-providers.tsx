@@ -195,8 +195,10 @@ function AdminVideoProvidersPage() {
     try {
       const headers = await authHeaders();
       const result = await buildPilotMatrix({ headers });
+      const refreshedBatch = await auditMediumBatch({ headers });
       setPilotMatrix(result);
-      toast.success(`تم تجهيز اختبار متوسط: ${result.totalSamples.toLocaleString("ar-SA")} عينة`);
+      setMediumBatch(refreshedBatch);
+      toast.success(`تم تجهيز اختبار متوسط: ${result.totalSamples.toLocaleString("ar-SA")} عينة — العينة التالية أصبحت ظاهرة للتشغيل`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تجهيز مصفوفة الاختبار");
     } finally {
