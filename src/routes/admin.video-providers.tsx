@@ -710,8 +710,8 @@ function MetricTile({ label, value }: { label: string; value: number }) {
 
 function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: SaudiVideoMediumBatchResult | null; result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
-  const nextEvaluationIndex = (batch?.samples ?? []).findIndex((sample, index, samples) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision && samples.slice(0, index).every((previous) => previous.releaseDecision === "publishable"));
-  const evaluableSamples = nextEvaluationIndex >= 0 && batch ? [batch.samples[nextEvaluationIndex]] : [];
+  const batchReadyForEvaluation = batch?.releaseGate === "ready_for_review" || batch?.releaseGate === "needs_iteration" || batch?.releaseGate === "ready_for_expansion";
+  const evaluableSamples = batchReadyForEvaluation && batch ? batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) : [];
   const selectedSample = evaluableSamples.find((sample) => sample.sampleId === draft.sampleId) ?? null;
   useEffect(() => {
     if (!selectedSample && evaluableSamples[0]) setDraft((current) => ({ ...current, sampleId: evaluableSamples[0].sampleId, resultUrl: evaluableSamples[0].resultUrl ?? "" }));
