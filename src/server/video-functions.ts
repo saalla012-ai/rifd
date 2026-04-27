@@ -220,7 +220,7 @@ function publicVideoError(e: unknown): Error {
   if (/invalid_medium_test_reference_image/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: صورة البداية غير مسموحة في الاختبار الداخلي حتى لا تغيّر العينة المعتمدة.");
   if (/invalid_medium_test_template/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: معرف قالب الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
   if (/medium_test_sample_already_processing/i.test(msg)) return new Error("هذه العينة قيد المعالجة بالفعل. انتظر اكتمالها أو حدّث الحالة قبل إعادة التشغيل.");
-  if (/medium_test_sequence_violation/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: لا يمكن تشغيل هذه العينة قبل اكتمال العينات السابقة بالترتيب الرسمي وإعادة التدقيق.");
+  if (/medium_test_sequence_violation/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: لا يمكن تشغيل هذه العينة قبل إنشاء العينات السابقة من الرابط الرسمي وبلا عائق تشغيلي؛ التقييم التجاري يأتي بعد اكتمال الدفعة.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
@@ -318,11 +318,9 @@ async function assertMediumTestSequenceReady(userId: string, input: z.infer<type
     const mismatch = latestMismatch.get(sample.sampleId) ?? null;
     if (!job || (mismatch && new Date(mismatch.created_at).getTime() > new Date(job.created_at).getTime())) throw new Error("medium_test_sequence_violation");
     const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
-    const decision = metadata.medium_test_release_decision;
-    const approvedDecision = decision === "publishable";
     const configurationMismatch = job.quality !== sample.quality || job.duration_seconds !== sample.durationSeconds || job.aspect_ratio !== sample.expectedAspectRatio || job.selected_persona_id !== sample.personaId;
     const missingRequiredProduct = sample.requiresProductImage && !job.product_image_url;
-    if (job.status !== "completed" || !job.result_url || !approvedDecision || configurationMismatch || missingRequiredProduct) throw new Error("medium_test_sequence_violation");
+    if (["failed", "refunded", "cancelled"].includes(job.status) || configurationMismatch || missingRequiredProduct) throw new Error("medium_test_sequence_violation");
   }
 }
 
