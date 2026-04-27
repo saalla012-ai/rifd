@@ -115,6 +115,47 @@ export const SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS = [
   "supplements",
 ] as const;
 
+export const SAUDI_VIDEO_MEDIUM_TEST_PERSONA_ORDER = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
+
+export function buildSaudiVideoMediumTestSample(index: number) {
+  const templateId = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[index];
+  const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
+  const personaId = SAUDI_VIDEO_MEDIUM_TEST_PERSONA_ORDER[index % SAUDI_VIDEO_MEDIUM_TEST_PERSONA_ORDER.length];
+  const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personaId) ?? SAUDI_VIDEO_PERSONAS[0];
+  const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
+  const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
+  const expectedAspectRatio: "9:16" = "9:16";
+  const finalPrompt = withSaudiPromptAdherence([
+    template.prompt,
+    `هدف العينة ${index + 1}: ${quality === "quality" ? "اختبار إعلان مدفوع عالي الجودة" : quality === "lite" ? "اختبار إعلان يومي قابل للنشر" : "اختبار سريع لسلامة الفكرة"}.`,
+    `الشخصية المرجعية: ${persona.brief}`,
+    "يجب تسجيل النتيجة في مصفوفة الاختبار المتوسط قبل فتح القالب للعامة.",
+  ].join("\n\n"));
+
+  return {
+    sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
+    templateId: template.id,
+    label: template.label,
+    sector: template.sector,
+    risk: template.risk,
+    personaId: persona.id,
+    personaLabel: persona.label,
+    quality,
+    durationSeconds,
+    expectedAspectRatio,
+    requiresProductImage: quality !== "fast",
+    objective: quality === "quality" ? "قياس صلاحية إعلان مدفوع عالي الجودة" : quality === "lite" ? "قياس إعلان يومي قابل للنشر" : "قياس سرعة الفكرة وسلامة الهوية السعودية",
+    technicalGate: [`النسبة المطلوبة للإطلاق: ${expectedAspectRatio}`, `المدة المطلوبة: ${durationSeconds} ثوانٍ`, "H.264 MP4 قابل للنشر", "لا اعتماد تجاري لأي عينة تخرج مربعة أو أفقية ضمن مصفوفة الإطلاق"],
+    mustPass: template.risk === "عالٍ"
+      ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
+      : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"],
+    scorecard: SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD.map((item) => `${item.label} ${item.weight}%`),
+    promptAdherenceGate: "لا يُقبل القالب إذا تجاهل المنتج أو الصوت أو الحركة الأساسية حتى لو كان الفيديو جميلاً بصرياً.",
+    finalPrompt,
+    generationPayload: { prompt: finalPrompt, quality, aspectRatio: expectedAspectRatio, durationSeconds, selectedPersonaId: persona.id, selectedTemplateId: "custom" as const, requiresProductImage: quality !== "fast" },
+  };
+}
+
 export const SAUDI_VIDEO_MEDIUM_TEST_PLAN = {
   sampleRange: "12–16",
   estimatedCostUsd: "2.10–2.80",
