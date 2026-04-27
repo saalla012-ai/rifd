@@ -20,6 +20,7 @@ import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
 const TERMINAL_PROVIDER_STATUSES = new Set(["succeeded", "failed", "canceled"]);
+const INTERNAL_VIDEO_BUCKET = "generated-videos";
 
 const DEFAULT_ESTIMATED_COST_USD: Record<VideoQuality, number> = {
   fast: 0.2,
@@ -263,6 +264,36 @@ function primaryReferenceImage(input: VideoInput) {
 
 function mergeMetadata(current: Json | null | undefined, patch?: Record<string, unknown>) {
   return { ...((current as Record<string, unknown> | null) ?? {}), ...(patch ?? {}) } as Json;
+}
+
+function archivedVideoPath(userId: string, jobId: string) {
+  return `${userId}/videos/${jobId}.mp4`;
+}
+
+async function archiveProviderVideo(params: { userId: string; jobId: string; resultUrl: string }) {
+  if (!/^https?:\/\//i.test(params.resultUrl)) return { resultUrl: params.resultUrl, storagePath: null as string | null, archived: false, error: "invalid_provider_url" };
+  try {
+    const response = await fetch(params.resultUrl);
+    if (!response.ok) throw new Error(`provider_download_${response.status}`);
+    const contentType = response.headers.get("content-type") || "video/mp4";
+    if (!contentType.startsWith("video/")) throw new Error(`invalid_content_type:${contentType}`);
+    const arrayBuffer = await response.arrayBuffer();
+    const path = archivedVideoPath(params.userId, params.jobId);
+    const { error: uploadError } = await supabaseAdmin.storage.from(INTERNAL_VIDEO_BUCKET).upload(path, arrayBuffer, { contentType, upsert: true });
+    if (uploadError) throw new Error(uploadError.message);
+    const { data, error: signedError } = await supabaseAdmin.storage.from(INTERNAL_VIDEO_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 7);
+    if (signedError || !data?.signedUrl) throw new Error(signedError?.message ?? "signed_url_failed");
+    return { resultUrl: data.signedUrl, storagePath: path, archived: true, error: null as string | null };
+  } catch (error) {
+    return { resultUrl: params.resultUrl, storagePath: null as string | null, archived: false, error: errorMessage(error) };
+  }
+}
+
+async function signedVideoUrlFromPath(path: string | null) {
+  if (!path) return null;
+  const { data, error } = await supabaseAdmin.storage.from(INTERNAL_VIDEO_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 7);
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
 }
 
 async function countProcessingJobs(userId: string) {
@@ -596,11 +627,12 @@ async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId
   return current as VideoJobRow;
 }
 
-async function markProcessingJobCompleted(params: { jobId: string; resultUrl: string; metadata?: Record<string, unknown> }) {
+async function markProcessingJobCompleted(params: { jobId: string; userId: string; resultUrl: string; metadata?: Record<string, unknown> }) {
   const { data: currentMetadataRow } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
+  const archive = await archiveProviderVideo({ userId: params.userId, jobId: params.jobId, resultUrl: params.resultUrl });
   const { data, error } = await supabaseAdmin
     .from("video_jobs")
-    .update({ status: "completed", result_url: params.resultUrl, completed_at: new Date().toISOString(), metadata: mergeMetadata(currentMetadataRow?.metadata, params.metadata) })
+    .update({ status: "completed", result_url: archive.resultUrl, storage_path: archive.storagePath, completed_at: new Date().toISOString(), metadata: mergeMetadata(currentMetadataRow?.metadata, { ...params.metadata, provider_result_url: params.resultUrl, internal_video_archived: archive.archived, internal_video_archive_error: archive.error }) })
     .eq("id", params.jobId)
     .eq("status", "processing")
     .select("*")
@@ -699,16 +731,18 @@ export const generateVideo = createServerFn({ method: "POST" })
         manual_required: routed.result.manualRequired === true,
       };
 
+      const archive = routed.result.resultUrl ? await archiveProviderVideo({ userId, jobId: job.id, resultUrl: routed.result.resultUrl }) : { resultUrl: routed.result.resultUrl, storagePath: null, archived: false, error: null };
       const { data: updated, error: updateError } = await supabaseAdmin
         .from("video_jobs")
         .update({
           provider: routed.config.provider_key,
           provider_job_id: routed.result.providerJobId,
-          result_url: routed.result.resultUrl,
+          result_url: archive.resultUrl,
+          storage_path: archive.storagePath,
           status: finalStatus,
           completed_at: finalStatus === "completed" ? new Date().toISOString() : null,
           estimated_cost_usd: routed.result.estimatedCostUsd ?? estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: metadata as Json,
+          metadata: { ...metadata, provider_result_url: routed.result.resultUrl, internal_video_archived: archive.archived, internal_video_archive_error: archive.error } as Json,
         })
         .eq("id", job.id)
         .select("*")
@@ -742,9 +776,10 @@ export const listVideoJobs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
-    const { data, error } = await supabase.from("video_jobs").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("video_jobs").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(20);
     if (error) throw new Error(`فشل جلب الفيديوهات: ${error.message}`);
-    return { jobs: (data as VideoJobRow[] | null) ?? [] };
+      const jobs = await Promise.all(((data as VideoJobRow[] | null) ?? []).map(async (job) => ({ ...job, result_url: (await signedVideoUrlFromPath(job.storage_path)) ?? job.result_url })));
+    return { jobs };
   });
 
 export const refreshVideoJob = createServerFn({ method: "POST" })
@@ -798,7 +833,7 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     }
 
     if (prediction.status === "succeeded" && prediction.resultUrl) {
-      const updated = await markProcessingJobCompleted({ jobId: row.id, resultUrl: prediction.resultUrl, metadata: { ...(row.metadata as Record<string, unknown> | null), ...(prediction.metadata ?? {}), provider_status: prediction.status } });
+      const updated = await markProcessingJobCompleted({ jobId: row.id, userId, resultUrl: prediction.resultUrl, metadata: { ...(row.metadata as Record<string, unknown> | null), ...(prediction.metadata ?? {}), provider_status: prediction.status } });
       return { job: updated };
     }
 

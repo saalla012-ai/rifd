@@ -180,6 +180,7 @@ function AdminVideoJobsPage() {
                     {jobMeta(job.metadata).provider_status && <Badge variant="secondary">حالة المزود: {jobMeta(job.metadata).provider_status}</Badge>}
                     {jobMeta(job.metadata).failover_halted && <Badge className="bg-warning/20 text-warning-foreground">تم إيقاف البدائل بعد إنشاء مهمة خارجية</Badge>}
                     {job.result_url && <Badge className="bg-success/15 text-success">رابط النتيجة محفوظ</Badge>}
+                    {job.storage_path && <Badge className="bg-primary/10 text-primary">مؤرشف داخلياً</Badge>}
                   </div>
                   <ProviderAttemptsPanel attempts={providerAttempts(job.metadata)} />
                   {job.result_url && (

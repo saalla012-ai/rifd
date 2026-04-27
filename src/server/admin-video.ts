@@ -85,6 +85,7 @@ export type AdminVideoJob = {
   provider: string;
   provider_job_id: string | null;
   result_url: string | null;
+  storage_path: string | null;
   error_message: string | null;
   credits_charged: number;
   estimated_cost_usd: number | null;
@@ -331,6 +332,12 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
   };
 }
 
+async function signInternalVideoUrl(path: string | null, fallback: string | null) {
+  if (!path) return fallback;
+  const { data, error } = await (await getSupabaseAdmin()).storage.from("generated-videos").createSignedUrl(path, 60 * 60 * 24 * 7);
+  return error || !data?.signedUrl ? fallback : data.signedUrl;
+}
+
 async function assertPilotBatchReadyForEvaluation(admin: Awaited<ReturnType<typeof getSupabaseAdmin>>) {
   const { data, error } = await admin
     .from("video_jobs")
@@ -478,7 +485,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
 
     let q = admin
       .from("video_jobs")
-      .select("id, user_id, prompt, quality, aspect_ratio, duration_seconds, status, provider, provider_job_id, result_url, error_message, credits_charged, estimated_cost_usd, ledger_id, refund_ledger_id, metadata, created_at, completed_at")
+      .select("id, user_id, prompt, quality, aspect_ratio, duration_seconds, status, provider, provider_job_id, result_url, storage_path, error_message, credits_charged, estimated_cost_usd, ledger_id, refund_ledger_id, metadata, created_at, completed_at")
       .order("created_at", { ascending: false })
       .limit(data.limit);
 
@@ -514,9 +521,11 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
       estimatedCostUsd: statsRows.reduce((sum, r) => sum + Number(r.estimated_cost_usd ?? 0), 0),
     };
 
+    const mappedRows = await Promise.all(statsRows.map(async (r) => toAdminVideoJob({ ...r, result_url: await signInternalVideoUrl(r.storage_path, r.result_url) }, profMap.get(r.user_id))));
+
     return {
       stats,
-      rows: statsRows.map((r) => toAdminVideoJob(r, profMap.get(r.user_id))),
+      rows: mappedRows,
     };
   });
 
