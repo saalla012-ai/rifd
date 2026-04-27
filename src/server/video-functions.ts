@@ -262,12 +262,13 @@ function buildSaudiVideoPrompt(input: VideoInput) {
   return limitFalPrompt(withSaudiPromptAdherence(prompt));
 }
 
-function primaryReferenceImage(input: VideoInput) {
-  return input.providerImageUrl || input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
-}
-
 function sourceReferenceImage(input: VideoInput) {
   return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
+}
+
+function assertProviderImageCdn(url?: string) {
+  if (!url) return;
+  if (!/^https:\/\/(?:v\d+\.)?fal\.media\//i.test(url)) throw new Error("provider_image_not_cdn");
 }
 
 async function providerReachableImageUrl(url?: string) {
@@ -485,6 +486,7 @@ const falProvider: VideoProvider = {
     const model = FAL_MODEL_BY_QUALITY[input.quality];
       const finalProviderPrompt = buildSaudiVideoPrompt(input);
       const providerImageUrl = input.providerImageUrl;
+      assertProviderImageCdn(providerImageUrl);
       const response = await fetch(`https://queue.fal.run/${model}`, {
       method: "POST",
       headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
@@ -495,7 +497,7 @@ const falProvider: VideoProvider = {
         resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
         image_url: providerImageUrl,
         negative_prompt: PIXVERSE_NEGATIVE_PROMPT,
-        generate_audio_switch: true,
+        generate_audio_switch: false,
         generate_multi_clip_switch: input.quality !== "fast",
         thinking_type: input.quality === "fast" ? "auto" : "enabled",
       }),
@@ -508,7 +510,7 @@ const falProvider: VideoProvider = {
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
     const resultUrl = extractFalVideoUrl(result);
     const status = resultUrl ? "succeeded" : normalizeFalStatus(result.status);
-      return { providerJobId: result.request_id ?? null, status, resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, provider_image_url: providerImageUrl ?? null, provider_image_source: providerImageUrl ? "provider_preflight" : "none", fal_status_url: result.status_url ?? null, fal_response_url: result.response_url ?? null, fal_result_shape: Object.keys(result) } };
+      return { providerJobId: result.request_id ?? null, status, resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: false, audio_policy: "provider_audio_disabled_until_saudi_voice_pipeline", final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, provider_image_url: providerImageUrl ?? null, provider_image_source: providerImageUrl ? "provider_preflight" : "none", fal_status_url: result.status_url ?? null, fal_response_url: result.response_url ?? null, fal_result_shape: Object.keys(result) } };
   },
   async refreshJob(providerJobId, row) {
     if (row.result_url) return { status: "succeeded", resultUrl: row.result_url };
@@ -741,7 +743,7 @@ export const generateVideo = createServerFn({ method: "POST" })
           status: "processing",
           provider: "router",
           estimated_cost_usd: estimatedVideoCostUsd(data.quality, data.durationSeconds),
-          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: productImageRequired, prompt_adherence_required: true, prompt_adherence_gate: "80%+", provider_image_url: providerImageUrl ?? null, provider_image_source: sourceImageUrl ? "reference_image" : "none" },
+          metadata: { ...baseMetadata, ...mediumTestMetadata, router_version: 2, duration_aware_pricing: true, saudi_prompt_layer: true, selected_template_id: selectedTemplateId, launch_template: selectedTemplateId !== "custom", plan_credit_rollover: false, watermark_required: watermarkRequired, watermark_strategy: watermarkRequired ? "provider_prompt_overlay" : "none", product_image_required: productImageRequired, prompt_adherence_required: true, prompt_adherence_gate: "80%+", provider_image_url: providerImageUrl ?? null, provider_image_source: sourceImageUrl ? "provider_preflight" : "none", provider_audio_requested: false, audio_policy: "provider_audio_disabled_until_saudi_voice_pipeline" },
         })
         .select("*")
         .single();
