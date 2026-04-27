@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState, type ReactNode } from "react";
-import { redirect, useNavigate, type ParsedLocation } from "@tanstack/react-router";
+import { redirect, useLocation, useNavigate, type ParsedLocation } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { ShieldAlert, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +65,7 @@ interface AdminGuardProps {
 export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [guardTimedOut, setGuardTimedOut] = useState(false);
 
   useEffect(() => {
@@ -79,14 +80,16 @@ export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
   useEffect(() => {
     if (!guardTimedOut && (loading || isAdmin === null)) return;
     if (!user) {
-      const redirectPath = window.location.pathname + window.location.search + window.location.hash;
+      if (location.pathname === "/auth") return;
+      const redirectPath = `${location.pathname}${location.searchStr}${location.hash}`;
       void navigate({ to: "/auth", search: { redirect: redirectPath } as never });
       return;
     }
     if (isAdmin !== true) {
+      if (location.pathname === "/dashboard") return;
       void navigate({ to: "/dashboard" });
     }
-  }, [user, isAdmin, loading, guardTimedOut, navigate]);
+  }, [user, isAdmin, loading, guardTimedOut, navigate, location.pathname, location.searchStr, location.hash]);
 
   // ---- حالة التحميل/عدم الحسم ----
   if (loading || isAdmin === null) {
