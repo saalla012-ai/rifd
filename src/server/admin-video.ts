@@ -105,6 +105,21 @@ export type AdminVideoStats = {
   failed: number;
   creditsCharged: number;
   estimatedCostUsd: number;
+  softLaunch: {
+    targetSize: number;
+    sampleSize: number;
+    completed: number;
+    refunded: number;
+    active: number;
+    archived: number;
+    missingArchive: number;
+    ledgerMatched: number;
+    ledgerMismatched: number;
+    campaignLinked: number;
+    readyForBeta: boolean;
+    blockers: string[];
+    checkedAt: string;
+  };
 };
 
 type ProviderAttempt = {
