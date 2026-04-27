@@ -425,6 +425,30 @@ function extractFalVideoUrl(result: { video?: { url?: string }; video_url?: stri
   return result.video?.url ?? result.video_url ?? result.url ?? null;
 }
 
+async function pollFalQueueResult(token: string, statusUrl?: string, responseUrl?: string) {
+  if (!statusUrl || !responseUrl) return { status: "submitted" as const, resultUrl: null as string | null, error: null as string | null };
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 8_000));
+    const statusResponse = await fetch(statusUrl, { headers: { Authorization: `Key ${token}` } });
+    const statusText = await statusResponse.text();
+    let statusPayload: { status?: string; error?: string } = {};
+    try { statusPayload = statusText ? JSON.parse(statusText) as typeof statusPayload : {}; } catch { statusPayload = { error: statusText.slice(0, 500) }; }
+    if (!statusResponse.ok || statusPayload.error) return { status: "failed" as const, resultUrl: null, error: statusPayload.error ?? `fal.ai status ${statusResponse.status}` };
+    const status = (statusPayload.status ?? "").toUpperCase();
+    if (["FAILED", "ERROR", "CANCELED", "CANCELLED"].includes(status)) return { status: "failed" as const, resultUrl: null, error: statusPayload.error ?? status };
+    if (!["COMPLETED", "SUCCEEDED", "SUCCESS"].includes(status)) continue;
+
+    const resultResponse = await fetch(responseUrl, { headers: { Authorization: `Key ${token}` } });
+    const resultText = await resultResponse.text();
+    let resultPayload: { video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
+    try { resultPayload = resultText ? JSON.parse(resultText) as typeof resultPayload : {}; } catch { resultPayload = { error: resultText.slice(0, 500) }; }
+    if (!resultResponse.ok || resultPayload.error) return { status: "failed" as const, resultUrl: null, error: resultPayload.error ?? `fal.ai result ${resultResponse.status}: ${resultText.slice(0, 300)}` };
+    const resultUrl = extractFalVideoUrl(resultPayload);
+    return resultUrl ? { status: "completed" as const, resultUrl, error: null } : { status: "failed" as const, resultUrl: null, error: "اكتمل الطلب دون رابط فيديو" };
+  }
+  return { status: "submitted" as const, resultUrl: null, error: null };
+}
+
 async function probeFalToken(token: string) {
   const response = await fetch("https://queue.fal.run/fal-ai/pixverse/v6/text-to-video/requests/__rifd_healthcheck__/status", {
     headers: { Authorization: `Key ${token}` },
@@ -769,8 +793,9 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
       let result: { request_id?: string; response_url?: string; status_url?: string; video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
       try { result = text ? JSON.parse(text) as typeof result : {}; } catch { result = { error: text.slice(0, 500) }; }
       if (!response.ok || result.error) throw new Error(result.error || `fal.ai ${response.status}: ${text.slice(0, 500)}`);
-      const resultUrl = extractFalVideoUrl(result);
-      const out = { ok: true, status: resultUrl ? "completed" : "submitted", requestId: result.request_id ?? null, resultUrl, latencyMs: Date.now() - startedAt, estimatedCostUsd: model.estimatedUsd, error: null, checkedAt, prompt, model, persona, scenario, imageEvaluation } satisfies SaudiFalModelTestResult;
+      const immediateUrl = extractFalVideoUrl(result);
+      const polled = immediateUrl ? { status: "completed" as const, resultUrl: immediateUrl, error: null } : await pollFalQueueResult(token, result.status_url, result.response_url);
+      const out = { ok: polled.status !== "failed", status: polled.status, requestId: result.request_id ?? null, resultUrl: polled.resultUrl, latencyMs: Date.now() - startedAt, estimatedCostUsd: model.estimatedUsd, error: polled.error, checkedAt, prompt, model, persona, scenario, imageEvaluation } satisfies SaudiFalModelTestResult;
       await logAdminAudit({ adminId: userId, action: "run_saudi_fal_video_model_test", targetTable: "video_provider_configs", targetId: model.id, after: out as unknown as Json });
       return out;
     } catch (error) {
