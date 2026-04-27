@@ -979,6 +979,7 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     if (expectedSample.requiresProductImage && !job.product_image_url) throw new Error("لا يمكن تقييم عينة إعلانية/احترافية دون صورة منتج فعلية.");
     if (data.resultUrl && data.resultUrl !== job.result_url) throw new Error("رابط النتيجة لا يطابق آخر فيديو رسمي لهذه العينة.");
     const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
+    if (metadata.medium_test_release_decision || metadata.medium_test_evaluation) throw new Error("هذه العينة تم تقييمها بالفعل؛ أعد توليدها كمهمة جديدة إذا أردت قراراً تجارياً مختلفاً.");
     const canonicalResult = { ...result, resultUrl: job.result_url } satisfies SaudiVideoPilotEvaluationResult;
     const { error: updateError } = await admin
       .from("video_jobs")
