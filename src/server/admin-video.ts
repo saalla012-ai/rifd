@@ -985,16 +985,19 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const sampleNumber = Number(data.sampleId.replace("pilot-", ""));
     const expectedTemplateId = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[sampleNumber - 1];
     const expectedQuality = sampleNumber <= 4 ? "fast" : sampleNumber <= 11 ? "lite" : "quality";
+    const expectedDurationSeconds = expectedQuality === "fast" ? 5 : 8;
+    const expectedPersonaId = (["male-premium", "female-abaya", "retail-seller", "male-young"] as const)[(sampleNumber - 1) % 4];
     const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, gateReason, evaluatedAt: new Date().toISOString() } satisfies SaudiVideoPilotEvaluationResult;
     const { data: jobs } = await admin
       .from("video_jobs")
-      .select("id, status, result_url, product_image_url, metadata, created_at")
+      .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
       .contains("metadata", { medium_test: true, medium_test_sample_id: data.sampleId, medium_test_template_id: expectedTemplateId })
       .order("created_at", { ascending: false })
       .limit(1);
-    const job = jobs?.[0] as Pick<VideoJobRow, "id" | "status" | "result_url" | "product_image_url" | "metadata" | "created_at"> | undefined;
+    const job = jobs?.[0] as Pick<VideoJobRow, "id" | "status" | "result_url" | "product_image_url" | "metadata" | "created_at" | "quality" | "duration_seconds" | "aspect_ratio" | "selected_persona_id"> | undefined;
     if (!job) throw new Error("لا يمكن تقييم عينة لم تُولد بعد ضمن مصفوفة الاختبار المتوسط الرسمية.");
     if (job.status !== "completed" || !job.result_url) throw new Error("لا يمكن تقييم العينة قبل اكتمال الفيديو ووجود رابط نتيجة صالح.");
+    if (job.quality !== expectedQuality || job.duration_seconds !== expectedDurationSeconds || job.aspect_ratio !== "9:16" || job.selected_persona_id !== expectedPersonaId) throw new Error("لا يمكن تقييم عينة لا تطابق جودة/مدة/مقاس/شخصية مصفوفة الاختبار الرسمية.");
     if (expectedQuality !== "fast" && !job.product_image_url) throw new Error("لا يمكن تقييم عينة إعلانية/احترافية دون صورة منتج فعلية.");
     if (data.resultUrl && data.resultUrl !== job.result_url) throw new Error("رابط النتيجة لا يطابق آخر فيديو رسمي لهذه العينة.");
     const metadata = (job.metadata as Record<string, unknown> | null) ?? {};

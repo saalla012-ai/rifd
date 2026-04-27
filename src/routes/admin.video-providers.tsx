@@ -617,6 +617,9 @@ function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: Saud
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
   const evaluableSamples = (batch?.samples ?? []).filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue);
   const selectedSample = evaluableSamples.find((sample) => sample.sampleId === draft.sampleId) ?? null;
+  useEffect(() => {
+    if (!selectedSample && evaluableSamples[0]) setDraft((current) => ({ ...current, sampleId: evaluableSamples[0].sampleId, resultUrl: evaluableSamples[0].resultUrl ?? "" }));
+  }, [evaluableSamples, selectedSample]);
   const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "sceneAdherence" | "motionAdherence" | "saudiDialect" | "negativeSafety" | "publishReadiness">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
   const chooseSample = (sampleId: string) => {
     const sample = evaluableSamples.find((item) => item.sampleId === sampleId);
