@@ -219,6 +219,7 @@ function publicVideoError(e: unknown): Error {
   if (/invalid_medium_test_prompt/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: برومبت الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
   if (/invalid_medium_test_reference_image/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: صورة البداية غير مسموحة في الاختبار الداخلي حتى لا تغيّر العينة المعتمدة.");
   if (/invalid_medium_test_template/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: معرف قالب الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
+  if (/medium_test_sample_already_processing/i.test(msg)) return new Error("هذه العينة قيد المعالجة بالفعل. انتظر اكتمالها أو حدّث الحالة قبل إعادة التشغيل.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
@@ -271,6 +272,18 @@ async function countProcessingJobs(userId: string) {
     .eq("status", "processing");
   if (error) throw new Error(`فشل التحقق من المهام النشطة: ${error.message}`);
   return count ?? 0;
+}
+
+async function assertNoActiveMediumTestSampleJob(userId: string, input: z.infer<typeof videoInputSchema>) {
+  if (input.source !== "medium-test" || !input.mediumTestSampleId || !input.mediumTestTemplateId) return;
+  const { count, error } = await supabaseAdmin
+    .from("video_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .in("status", ["pending", "processing"])
+    .contains("metadata", { medium_test: true, medium_test_sample_id: input.mediumTestSampleId, medium_test_template_id: input.mediumTestTemplateId });
+  if (error) throw new Error(`فشل التحقق من حالة عينة الاختبار: ${error.message}`);
+  if ((count ?? 0) > 0) throw new Error("medium_test_sample_already_processing");
 }
 
 function providerSupports(config: VideoProviderConfig, input: z.infer<typeof videoInputSchema>) {
@@ -543,6 +556,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
       const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId, data.quality, data.durationSeconds, data.aspectRatio, data.selectedPersonaId, data.prompt, data.startingFrameUrl);
+      await assertNoActiveMediumTestSampleJob(userId, data);
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
