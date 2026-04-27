@@ -963,22 +963,28 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const hardFail = data.productClarity <= 2 || data.saudiDialect <= 2 || data.negativeSafety <= 2;
     const decision = hardFail ? "reject_or_reprompt" : score >= 80 ? "publishable" : score >= 65 ? "minor_revision" : "reject_or_reprompt";
     const gateReason = hardFail ? "رفض مؤقت: تجاهل المنتج أو الصوت أو ظهرت مخالفة/تشوه قوي." : score >= 80 ? "جاهز لتكرار أوسع ضمن بوابة 80%+." : score >= 65 ? "يحتاج ضبط برومبت قبل أي فتح عام." : "يبقى مخفياً ويعاد توليده بعد إعادة صياغة كبيرة.";
+    const sampleNumber = Number(data.sampleId.replace("pilot-", ""));
+    const expectedTemplateId = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[sampleNumber - 1];
+    const expectedQuality = sampleNumber <= 4 ? "fast" : sampleNumber <= 11 ? "lite" : "quality";
     const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, gateReason, evaluatedAt: new Date().toISOString() } satisfies SaudiVideoPilotEvaluationResult;
     const { data: jobs } = await admin
       .from("video_jobs")
-      .select("id, metadata, created_at")
-      .contains("metadata", { medium_test: true, medium_test_sample_id: data.sampleId })
+      .select("id, status, result_url, product_image_url, metadata, created_at")
+      .contains("metadata", { medium_test: true, medium_test_sample_id: data.sampleId, medium_test_template_id: expectedTemplateId })
       .order("created_at", { ascending: false })
       .limit(1);
-    const job = jobs?.[0] as Pick<VideoJobRow, "id" | "metadata" | "created_at"> | undefined;
-    if (job) {
-      const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
-      const { error: updateError } = await admin
-        .from("video_jobs")
-        .update({ metadata: { ...metadata, medium_test_evaluation: result, medium_test_release_decision: decision, medium_test_evaluated_at: result.evaluatedAt } as Json })
-        .eq("id", job.id);
-      if (updateError) throw new Error(`فشل حفظ تقييم العينة داخل مهمة الفيديو: ${updateError.message}`);
-    }
-    await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: job ? "video_jobs" : "video_provider_configs", targetId: job?.id ?? data.sampleId, after: result as unknown as Json });
-    return result;
+    const job = jobs?.[0] as Pick<VideoJobRow, "id" | "status" | "result_url" | "product_image_url" | "metadata" | "created_at"> | undefined;
+    if (!job) throw new Error("لا يمكن تقييم عينة لم تُولد بعد ضمن مصفوفة الاختبار المتوسط الرسمية.");
+    if (job.status !== "completed" || !job.result_url) throw new Error("لا يمكن تقييم العينة قبل اكتمال الفيديو ووجود رابط نتيجة صالح.");
+    if (expectedQuality !== "fast" && !job.product_image_url) throw new Error("لا يمكن تقييم عينة إعلانية/احترافية دون صورة منتج فعلية.");
+    if (data.resultUrl && data.resultUrl !== job.result_url) throw new Error("رابط النتيجة لا يطابق آخر فيديو رسمي لهذه العينة.");
+    const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
+    const canonicalResult = { ...result, resultUrl: job.result_url } satisfies SaudiVideoPilotEvaluationResult;
+    const { error: updateError } = await admin
+      .from("video_jobs")
+      .update({ metadata: { ...metadata, medium_test_evaluation: canonicalResult, medium_test_release_decision: decision, medium_test_evaluated_at: canonicalResult.evaluatedAt } as Json })
+      .eq("id", job.id);
+    if (updateError) throw new Error(`فشل حفظ تقييم العينة داخل مهمة الفيديو: ${updateError.message}`);
+    await logAdminAudit({ adminId: userId, action: "evaluate_saudi_video_pilot_sample", targetTable: "video_jobs", targetId: job.id, after: canonicalResult as unknown as Json });
+    return canonicalResult;
   });
