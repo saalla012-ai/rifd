@@ -46,7 +46,7 @@ const TestVideoRouterInput = z.object({
 });
 
 const EvaluatePilotSampleInput = z.object({
-  sampleId: z.string().trim().min(3).max(40),
+  sampleId: z.enum(SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.map((_, index) => `pilot-${String(index + 1).padStart(2, "0")}`) as [string, ...string[]]),
   resultUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
   productClarity: z.number().int().min(1).max(5),
   sceneAdherence: z.number().int().min(1).max(5),
