@@ -928,11 +928,11 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const blockingIssues = operationalBlockingIssues + commercialRejectedIssues;
     const minimumPublishable = Math.ceil(samples.length * 0.8);
     const commercialValidityRate = Math.round((publishable / Math.max(samples.length, 1)) * 100);
-    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = generated === 0 ? "not_started" : blockingIssues > 0 ? "blocked" : evaluated === samples.length && publishable >= minimumPublishable ? "ready_for_expansion" : evaluated === samples.length ? "needs_iteration" : completed === samples.length ? "ready_for_review" : "running";
+    const releaseGate: SaudiVideoMediumBatchResult["releaseGate"] = blockingIssues > 0 ? "blocked" : generated === 0 ? "not_started" : evaluated === samples.length && publishable >= minimumPublishable ? "ready_for_expansion" : evaluated === samples.length ? "needs_iteration" : completed === samples.length ? "ready_for_review" : "running";
     const releaseGateReason = releaseGate === "not_started"
       ? "لم تُسجّل أي مهمة موسومة للاختبار المتوسط بعد؛ لا يوجد دليل عملي يسمح بقرار تجاري."
       : releaseGate === "blocked"
-        ? operationalBlockingIssues > 0 ? "الدفعة متوقفة تشغيلياً بسبب فشل/استرداد أو نقص صورة منتج؛ أصلح العينة قبل احتساب القرار التجاري." : "الدفعة متوقفة تجارياً بسبب عينة مرفوضة؛ لا توسع قبل إعادة صياغة البرومبت وإعادة توليد العينة."
+        ? operationalBlockingIssues > 0 ? "الدفعة متوقفة تشغيلياً بسبب فشل/استرداد أو نقص صورة منتج أو عدم تطابق وسم العينة مع قالب المصفوفة؛ أصلح العينة قبل احتساب القرار التجاري." : "الدفعة متوقفة تجارياً بسبب عينة مرفوضة؛ لا توسع قبل إعادة صياغة البرومبت وإعادة توليد العينة."
         : releaseGate === "ready_for_expansion"
           ? "اكتمل تقييم الدفعة وحققت بوابة 80%+؛ القوالب الصالحة جاهزة لاختبار تكرار أوسع قبل الفتح العام."
         : releaseGate === "needs_iteration"
@@ -943,7 +943,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const nextAction = releaseGate === "not_started"
       ? "افتح مصفوفة الاختبار، ولّد العينات بالترتيب من pilot-01 إلى pilot-12، وارفع صورة منتج لكل عينة موسومة كإلزامية."
       : releaseGate === "blocked"
-        ? "أصلح العينات المتوقفة أولاً: أعد توليد ما فشل، وأرفق صورة منتج واضحة للعينات الإعلانية/الاحترافية قبل التقييم."
+        ? "أصلح العينات المتوقفة أولاً: أعد توليد ما فشل، وأرفق صورة منتج واضحة، وأعد توليد أي عينة تحمل وسماً لا يطابق قالبها الرسمي قبل التقييم."
         : releaseGate === "ready_for_expansion"
           ? "انقل العينات القابلة للنشر فقط إلى اختبار 5 عينات إضافية لكل قالب، واترك القوالب ذات التعديل أو الرفض مخفية."
         : releaseGate === "needs_iteration"
