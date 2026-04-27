@@ -688,6 +688,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       await assertMediumTestSequenceReady(userId, data);
       const providerConfigs = await loadProviderConfigs(data);
       if (providerConfigs.length === 0) throw new Error("no_video_provider_available");
+      const providerImageUrl = await providerReachableImageUrl(primaryReferenceImage(data));
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
@@ -699,7 +700,7 @@ export const generateVideo = createServerFn({ method: "POST" })
         : {};
       const watermarkRequired = profile?.plan === "free";
       const productImageRequired = data.source === "medium-test" ? (mediumTestSampleFromInput(data)?.requiresProductImage ?? false) : profile?.plan !== "free";
-      const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
+      const providerInput = { ...data, watermarkRequired, providerImageUrl } satisfies VideoInput;
 
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
