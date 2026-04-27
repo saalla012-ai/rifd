@@ -953,22 +953,9 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
     const admin = await getSupabaseAdmin();
-    const weights = { productClarity: 25, sceneAdherence: 20, motionAdherence: 15, saudiDialect: 15, negativeSafety: 15, publishReadiness: 10 } as const;
-    const weightedScore =
-      data.productClarity * weights.productClarity +
-      data.sceneAdherence * weights.sceneAdherence +
-      data.motionAdherence * weights.motionAdherence +
-      data.saudiDialect * weights.saudiDialect +
-      data.negativeSafety * weights.negativeSafety +
-      data.publishReadiness * weights.publishReadiness;
-    const score = Math.round(weightedScore / 5);
-    const hardFail = data.productClarity <= 2 || data.saudiDialect <= 2 || data.negativeSafety <= 2;
-    const decision = hardFail ? "reject_or_reprompt" : score >= 80 ? "publishable" : score >= 65 ? "minor_revision" : "reject_or_reprompt";
-    const gateReason = hardFail ? "رفض مؤقت: تجاهل المنتج أو الصوت أو ظهرت مخالفة/تشوه قوي." : score >= 80 ? "جاهز لتكرار أوسع ضمن بوابة 80%+." : score >= 65 ? "يحتاج ضبط برومبت قبل أي فتح عام." : "يبقى مخفياً ويعاد توليده بعد إعادة صياغة كبيرة.";
     const sampleNumber = Number(data.sampleId.replace("pilot-", ""));
     const expectedSample = buildSaudiVideoMediumTestSample(sampleNumber - 1);
     const expectedTemplateId = expectedSample.templateId;
-    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, gateReason, evaluatedAt: new Date().toISOString() } satisfies SaudiVideoPilotEvaluationResult;
     const { data: latestSampleJobs, error: latestSampleError } = await admin
       .from("video_jobs")
       .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
@@ -996,6 +983,19 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     if (data.resultUrl && data.resultUrl !== job.result_url) throw new Error("رابط النتيجة لا يطابق آخر فيديو رسمي لهذه العينة.");
     const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
     if (metadata.medium_test_release_decision || metadata.medium_test_evaluation) throw new Error("هذه العينة تم تقييمها بالفعل؛ أعد توليدها كمهمة جديدة إذا أردت قراراً تجارياً مختلفاً.");
+    const weights = { productClarity: 25, sceneAdherence: 20, motionAdherence: 15, saudiDialect: 15, negativeSafety: 15, publishReadiness: 10 } as const;
+    const weightedScore =
+      data.productClarity * weights.productClarity +
+      data.sceneAdherence * weights.sceneAdherence +
+      data.motionAdherence * weights.motionAdherence +
+      data.saudiDialect * weights.saudiDialect +
+      data.negativeSafety * weights.negativeSafety +
+      data.publishReadiness * weights.publishReadiness;
+    const score = Math.round(weightedScore / 5);
+    const hardFail = data.productClarity <= 2 || data.saudiDialect <= 2 || data.negativeSafety <= 2;
+    const decision = hardFail ? "reject_or_reprompt" : score >= 80 ? "publishable" : score >= 65 ? "minor_revision" : "reject_or_reprompt";
+    const gateReason = hardFail ? "رفض مؤقت: تجاهل المنتج أو الصوت أو ظهرت مخالفة/تشوه قوي." : score >= 80 ? "جاهز لتكرار أوسع ضمن بوابة 80%+." : score >= 65 ? "يحتاج ضبط برومبت قبل أي فتح عام." : "يبقى مخفياً ويعاد توليده بعد إعادة صياغة كبيرة.";
+    const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, gateReason, evaluatedAt: new Date().toISOString() } satisfies SaudiVideoPilotEvaluationResult;
     const canonicalResult = { ...result, resultUrl: job.result_url } satisfies SaudiVideoPilotEvaluationResult;
     const { error: updateError } = await admin
       .from("video_jobs")
