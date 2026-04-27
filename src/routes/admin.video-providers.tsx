@@ -574,6 +574,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
     : nextEvaluableSample
       ? "بعد التقييم: اضغط تدقيق الدفعة لتحديث البوابة فوراً."
       : "بعدها: لا توجد عينة تشغيل تالية قبل تحديث التدقيق.";
+  const canOpenNextSample = Boolean(nextRunnableHref && batch.readinessWarnings.length === 0 && batch.processing < 2);
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -626,11 +627,12 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
       </div>
       <div className="mt-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs font-extrabold text-primary">
         أمر التشغيل الحالي: {activeInstruction}
-        {nextRunnableHref && (
+        {nextRunnableHref && canOpenNextSample && (
           <Button asChild size="sm" className="mt-3 h-8 w-full text-xs sm:w-auto">
             <Link to="/dashboard/generate-video" search={nextRunnableHref} target="_blank">فتح العينة المسموحة الآن</Link>
           </Button>
         )}
+        {nextRunnableHref && !canOpenNextSample && <p className="mt-2 text-xs text-muted-foreground">زر التشغيل مقفل حتى تصبح جاهزية المزود سليمة ولا توجد مهام معالجة ممتلئة.</p>}
       </div>
       <div className="mt-3 grid gap-2 md:grid-cols-3">
         <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs">
@@ -657,18 +659,18 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
               <div key={`run-${sample.sampleId}`} className={cn("rounded-md border border-border bg-background/70 p-2 text-xs", index === 0 && "border-primary/40 bg-primary/10") }>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{(index + 1).toLocaleString("ar-SA")} · {sample.sampleId}</span>
-                  {index === 0 ? <Badge className="bg-primary/15 text-primary">مسموحة الآن</Badge> : <Badge variant="secondary">انتظر الدور</Badge>}
+                  {index === 0 && canOpenNextSample ? <Badge className="bg-primary/15 text-primary">مسموحة الآن</Badge> : index === 0 ? <Badge className="bg-destructive/15 text-destructive">فحص الجاهزية أولاً</Badge> : <Badge variant="secondary">انتظر الدور</Badge>}
                 </div>
                 <p className="mt-1 truncate text-muted-foreground">{sample.label}</p>
                 <p className="mt-1 line-clamp-2 text-muted-foreground">سبب الإعادة: {rerunReason(sample)}</p>
-                {index === 0 ? (
+                {index === 0 && canOpenNextSample ? (
                   <Button asChild size="sm" variant="outline" className="mt-2 h-8 w-full text-xs">
                     <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">
                       فتح العينة
                     </Link>
                   </Button>
                 ) : (
-                  <Button size="sm" variant="outline" className="mt-2 h-8 w-full text-xs" disabled>مقفلة حتى اكتمال السابقة</Button>
+                  <Button size="sm" variant="outline" className="mt-2 h-8 w-full text-xs" disabled>{index === 0 ? "مقفلة حتى اجتياز الجاهزية" : "مقفلة حتى اكتمال السابقة"}</Button>
                 )}
               </div>
             ))}
