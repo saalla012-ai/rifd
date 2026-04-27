@@ -291,6 +291,9 @@ export type SaudiVideoMediumBatchResult = {
   commercialRejectedIssues: number;
   blockingIssues: number;
   estimatedCostUsd: number;
+  activeProviderLabel: string | null;
+  activeProviderHealthy: boolean;
+  readinessWarnings: string[];
   executionRate: number;
   completionRate: number;
   releaseGate: "not_started" | "running" | "ready_for_review" | "needs_iteration" | "ready_for_expansion" | "blocked";
