@@ -566,12 +566,12 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const gateLabel = batch.releaseGate === "ready_for_expansion" ? "جاهزة للتوسيع" : batch.releaseGate === "needs_iteration" ? "تحتاج تحسين" : batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
   const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
   const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
-  const firstPendingEvaluationIndex = batch.samples.findIndex((sample, index) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision && batch.samples.slice(0, index).every((previous) => previous.releaseDecision === "publishable"));
-  const evaluableCount = firstPendingEvaluationIndex >= 0 ? 1 : 0;
-  const nextRunnableSamples = batch.samples.filter((sample, index) => (sample.status === "not_generated" || Boolean(sample.issue) || sample.releaseDecision === "reject_or_reprompt" || sample.releaseDecision === "minor_revision") && (firstPendingEvaluationIndex === -1 || index <= firstPendingEvaluationIndex));
-  const nextRunnableSample = firstPendingEvaluationIndex === -1 ? nextRunnableSamples[0] ?? null : null;
+  const batchReadyForEvaluation = batch.releaseGate === "ready_for_review" || batch.releaseGate === "needs_iteration" || batch.releaseGate === "ready_for_expansion";
+  const evaluableCount = batchReadyForEvaluation ? batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision).length : 0;
+  const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue) || sample.releaseDecision === "reject_or_reprompt" || sample.releaseDecision === "minor_revision");
+  const nextRunnableSample = nextRunnableSamples[0] ?? null;
   const nextRunnableHref = nextRunnableSample ? { source: "medium-test" as const, mediumTestSampleId: nextRunnableSample.sampleId, mediumTestTemplateId: nextRunnableSample.templateId } : null;
-  const nextEvaluableSample = firstPendingEvaluationIndex >= 0 ? batch.samples[firstPendingEvaluationIndex] : null;
+  const nextEvaluableSample = batchReadyForEvaluation ? batch.samples.find((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) ?? null : null;
   const rerunReason = (sample: SaudiVideoMediumBatchResult["samples"][number]) => sample.issue ?? (sample.releaseDecision === "reject_or_reprompt" ? "قرار التقييم رفض العينة؛ أعد صياغة البرومبت أو بدّل المرجع ثم أعد التوليد." : sample.releaseDecision === "minor_revision" ? "العينة تحتاج تحسيناً قبل التوسيع؛ أعد توليد نسخة محسّنة ثم قيّمها من جديد." : "لم تُولد العينة بعد");
   const activeInstruction = nextEvaluableSample
     ? `قيّم الآن ${nextEvaluableSample.sampleId} — ${nextEvaluableSample.label} قبل فتح أي عينة لاحقة.`
@@ -581,7 +581,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const secondInstruction = nextRunnableSamples[1]
     ? `بعدها: ${nextRunnableSamples[1].sampleId} — ${nextRunnableSamples[1].label}`
     : nextEvaluableSample
-      ? "بعد التقييم: اضغط تدقيق الدفعة لتحديث البوابة فوراً."
+      ? "بعد التقييم: أكمل تقييم بقية العينات، ثم اضغط تدقيق الدفعة."
       : "بعدها: لا توجد عينة تشغيل تالية قبل تحديث التدقيق.";
   const canOpenNextSample = Boolean(nextRunnableHref && batch.readinessWarnings.length === 0 && batch.processing < 2);
   return (
@@ -710,8 +710,8 @@ function MetricTile({ label, value }: { label: string; value: number }) {
 
 function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: SaudiVideoMediumBatchResult | null; result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
-  const nextEvaluationIndex = (batch?.samples ?? []).findIndex((sample, index, samples) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision && samples.slice(0, index).every((previous) => previous.releaseDecision === "publishable"));
-  const evaluableSamples = nextEvaluationIndex >= 0 && batch ? [batch.samples[nextEvaluationIndex]] : [];
+  const batchReadyForEvaluation = batch?.releaseGate === "ready_for_review" || batch?.releaseGate === "needs_iteration" || batch?.releaseGate === "ready_for_expansion";
+  const evaluableSamples = batchReadyForEvaluation && batch ? batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) : [];
   const selectedSample = evaluableSamples.find((sample) => sample.sampleId === draft.sampleId) ?? null;
   useEffect(() => {
     if (!selectedSample && evaluableSamples[0]) setDraft((current) => ({ ...current, sampleId: evaluableSamples[0].sampleId, resultUrl: evaluableSamples[0].resultUrl ?? "" }));
@@ -744,7 +744,7 @@ function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: Saud
         <ScoreInput label="الممنوعات" value={draft.negativeSafety} onChange={(value) => setScore("negativeSafety", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
       </div>
-      {evaluableSamples.length === 0 && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">ابدأ بزر تدقيق الدفعة بعد اكتمال التوليد؛ سيظهر هنا فقط أول فيديو قابل للتقييم حسب التسلسل، ولا تُفتح العينة التالية إلا بعد اعتماد السابقة.</p>}
+      {evaluableSamples.length === 0 && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">ابدأ بزر تدقيق الدفعة بعد اكتمال توليد كل العينات؛ عند جاهزية الدفعة ستظهر هنا العينات المكتملة غير المقيّمة.</p>}
       {result && <p className="mt-2 text-xs font-semibold text-muted-foreground">{result.gateReason}</p>}
       <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
       <Button type="button" size="sm" onClick={() => onSubmit({ ...draft, resultUrl: selectedSample?.resultUrl ?? draft.resultUrl })} disabled={saving || (Boolean(batch) && !selectedSample)} className="mt-3 gap-1">

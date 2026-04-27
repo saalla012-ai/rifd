@@ -331,13 +331,12 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
   };
 }
 
-async function assertPilotEvaluationSequenceReady(admin: Awaited<ReturnType<typeof getSupabaseAdmin>>, sampleNumber: number) {
-  if (sampleNumber <= 1) return;
+async function assertPilotBatchReadyForEvaluation(admin: Awaited<ReturnType<typeof getSupabaseAdmin>>) {
   const { data, error } = await admin
     .from("video_jobs")
     .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
     .contains("metadata", { medium_test: true });
-  if (error) throw new Error(`فشل التحقق من تسلسل تقييم الاختبار المتوسط: ${error.message}`);
+  if (error) throw new Error(`فشل التحقق من جاهزية دفعة الاختبار المتوسط للتقييم: ${error.message}`);
 
   const latestOfficial = new Map<string, MediumAuditJob>();
   const latestMismatch = new Map<string, Pick<VideoJobRow, "created_at">>();
@@ -347,21 +346,20 @@ async function assertPilotEvaluationSequenceReady(admin: Awaited<ReturnType<type
     const templateId = typeof metadata.medium_test_template_id === "string" ? metadata.medium_test_template_id : "";
     const currentNumber = Number(sampleId.replace("pilot-", ""));
     const expectedTemplateId = Number.isInteger(currentNumber) ? SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[currentNumber - 1] : undefined;
-    if (!sampleId || !expectedTemplateId || currentNumber >= sampleNumber) continue;
+    if (!sampleId || !expectedTemplateId) continue;
     const targetMap = templateId === expectedTemplateId ? latestOfficial : latestMismatch;
     const current = targetMap.get(sampleId);
     if (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime()) targetMap.set(sampleId, row);
   }
 
-  for (let index = 0; index < sampleNumber - 1; index += 1) {
+  for (let index = 0; index < SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.length; index += 1) {
     const sample = buildSaudiVideoMediumTestSample(index);
     const job = latestOfficial.get(sample.sampleId) ?? null;
     const mismatch = latestMismatch.get(sample.sampleId) ?? null;
-    const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
     const configurationMismatch = Boolean(job && (job.quality !== sample.quality || job.duration_seconds !== sample.durationSeconds || job.aspect_ratio !== sample.expectedAspectRatio || job.selected_persona_id !== sample.personaId));
     const newerMismatch = Boolean(mismatch && (!job || new Date(mismatch.created_at).getTime() > new Date(job.created_at).getTime()));
-    if (!job || newerMismatch || job.status !== "completed" || !job.result_url || metadata.medium_test_release_decision !== "publishable" || configurationMismatch || (sample.requiresProductImage && !job.product_image_url)) {
-      throw new Error("لا يمكن تقييم هذه العينة قبل اعتماد كل العينات السابقة كصالحة للنشر وفق التسلسل الرسمي.");
+    if (!job || newerMismatch || job.status !== "completed" || !job.result_url || configurationMismatch || (sample.requiresProductImage && !job.product_image_url)) {
+      throw new Error("لا يبدأ التقييم التجاري قبل اكتمال كل عينات الاختبار المتوسط من الرابط الرسمي وبلا عوائق تشغيلية.");
     }
   }
 }
@@ -1015,7 +1013,7 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const sampleNumber = Number(data.sampleId.replace("pilot-", ""));
     const expectedSample = buildSaudiVideoMediumTestSample(sampleNumber - 1);
     const expectedTemplateId = expectedSample.templateId;
-    await assertPilotEvaluationSequenceReady(admin, sampleNumber);
+    await assertPilotBatchReadyForEvaluation(admin);
     const { data: latestSampleJobs, error: latestSampleError } = await admin
       .from("video_jobs")
       .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
