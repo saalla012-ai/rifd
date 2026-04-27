@@ -5,6 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdmin } from "@/server/admin-auth";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -37,7 +38,8 @@ export const reconcileUsageLogs = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input ?? {}))
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<ReconcileResult> => {
-    const { supabase } = context as { supabase: DbClient };
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    await assertAdmin(supabase, userId);
 
     // RPC غير معرّف في types المُولّدة بعد، لذا نستخدم cast آمن
     const { data: rows, error } = await (supabase.rpc as unknown as (
