@@ -538,8 +538,8 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
             <p className="mt-2 text-muted-foreground">التقييم: {sample.scorecard.join(" · ")}</p>
             <p className="mt-1 font-semibold text-foreground">{sample.promptAdherenceGate}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">فتح للتوليد</Link>
+              <Button size="sm" variant="outline" className="h-8 text-xs" disabled>
+                التشغيل من لوحة الدفعة فقط
               </Button>
               {sample.generationPayload.requiresProductImage && <Badge className="bg-gold/15 text-gold">أضف صورة منتج قبل التشغيل</Badge>}
             </div>
@@ -563,7 +563,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const nextRunnableSamples = batch.samples.filter((sample, index) => (sample.status === "not_generated" || Boolean(sample.issue) || sample.releaseDecision === "reject_or_reprompt" || sample.releaseDecision === "minor_revision") && (firstPendingEvaluationIndex === -1 || index <= firstPendingEvaluationIndex));
   const nextRunnableSample = firstPendingEvaluationIndex === -1 ? nextRunnableSamples[0] ?? null : null;
   const nextRunnableHref = nextRunnableSample ? { source: "medium-test" as const, mediumTestSampleId: nextRunnableSample.sampleId, mediumTestTemplateId: nextRunnableSample.templateId } : null;
-  const nextEvaluableSample = batch.samples.find((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) ?? null;
+  const nextEvaluableSample = firstPendingEvaluationIndex >= 0 ? batch.samples[firstPendingEvaluationIndex] : null;
   const rerunReason = (sample: SaudiVideoMediumBatchResult["samples"][number]) => sample.issue ?? (sample.releaseDecision === "reject_or_reprompt" ? "قرار التقييم رفض العينة؛ أعد صياغة البرومبت أو بدّل المرجع ثم أعد التوليد." : sample.releaseDecision === "minor_revision" ? "العينة تحتاج تحسيناً قبل التوسيع؛ أعد توليد نسخة محسّنة ثم قيّمها من جديد." : "لم تُولد العينة بعد");
   const activeInstruction = nextEvaluableSample
     ? `قيّم الآن ${nextEvaluableSample.sampleId} — ${nextEvaluableSample.label} قبل فتح أي عينة لاحقة.`
