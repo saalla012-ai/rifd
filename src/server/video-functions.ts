@@ -248,6 +248,15 @@ function personaPrompt(personaId?: string) {
 }
 
 function buildSaudiVideoPrompt(input: VideoInput) {
+  if (input.source === "medium-test" && input.mediumTestTemplateId === "bags") {
+    return limitFalPrompt([
+      "Vertical 9:16 Saudi ecommerce product video for a modest accessories boutique.",
+      "Use the supplied handbag product image as the exact product reference. Keep the handbag clear, realistic, central, and visible from the first two seconds.",
+      "Scene: premium boutique table with warm retail lighting. A modest Saudi/Gulf presenter shows the handbag briefly, then places it neatly on the table.",
+      "Motion: slow cinematic push-in and subtle product orbit, natural hands, realistic fabric/leather texture, clean commercial style.",
+      "No readable text, no logos, no exaggerated claims, no distorted faces or hands. Audio is not required.",
+    ].join("\n"));
+  }
   const persona = personaPrompt(input.selectedPersonaId);
   const imageBrief = [
     input.speakerImageUrl ? "استخدم صورة الشخص كمرجع للشخصية المتحدثة." : persona,
