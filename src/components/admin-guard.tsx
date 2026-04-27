@@ -83,7 +83,7 @@ export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
       void navigate({ to: "/auth", search: { redirect: redirectPath } as never });
       return;
     }
-    if (isAdmin === false) {
+    if (isAdmin !== true) {
       void navigate({ to: "/dashboard" });
     }
   }, [user, isAdmin, loading, guardTimedOut, navigate]);
@@ -95,7 +95,7 @@ export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
         <div className="flex flex-col items-center gap-3 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">
-            {guardTimedOut ? "لم يُحسم التحقق بعد؛ تتم إعادة التوجيه الآمن…" : loadingLabel ?? "جاري التحقق من الصلاحيات…"}
+            {guardTimedOut ? "لم يُحسم التحقق بعد؛ ستتم إعادتك لمسار آمن…" : loadingLabel ?? "جاري التحقق من الصلاحيات…"}
           </p>
         </div>
       </div>
