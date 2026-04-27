@@ -528,7 +528,7 @@ function GenerateVideoPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
               <div className="flex flex-wrap items-center gap-2">
-                {activeJob?.status === "processing" && (
+                {(activeJob?.status === "processing" || activeJob?.status === "pending") && (
                   <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
                     <RefreshCw className="h-3 w-3" /> تحديث
                   </button>
@@ -555,7 +555,7 @@ function GenerateVideoPage() {
                     </div>
                   )}
                 </div>
-              ) : loading ? (
+              ) : loading || activeJob?.status === "pending" || activeJob?.status === "processing" ? (
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               ) : (
                 <div className="px-8">
