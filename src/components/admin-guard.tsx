@@ -9,7 +9,7 @@
  * مستخدم نظيفة + إعادة توجيه فورية للمستخدمين غير المخوّلين.
  */
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { redirect, useNavigate, type ParsedLocation } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { ShieldAlert, Loader2 } from "lucide-react";
@@ -65,9 +65,19 @@ interface AdminGuardProps {
 export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const [guardTimedOut, setGuardTimedOut] = useState(false);
 
   useEffect(() => {
-    if (loading || isAdmin === null) return;
+    if (!loading && isAdmin !== null) {
+      setGuardTimedOut(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setGuardTimedOut(true), ADMIN_AUTH_TIMEOUT_MS + 1_000);
+    return () => window.clearTimeout(timer);
+  }, [loading, isAdmin]);
+
+  useEffect(() => {
+    if (!guardTimedOut && (loading || isAdmin === null)) return;
     if (!user) {
       const redirectPath = window.location.pathname + window.location.search + window.location.hash;
       void navigate({ to: "/auth", search: { redirect: redirectPath } as never });
@@ -76,10 +86,10 @@ export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
     if (isAdmin === false) {
       void navigate({ to: "/dashboard" });
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, isAdmin, loading, guardTimedOut, navigate]);
 
   // ---- حالة التحميل ----
-  if (!user && (loading || isAdmin === null)) {
+  if (!guardTimedOut && !user && (loading || isAdmin === null)) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3 text-center">
