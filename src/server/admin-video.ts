@@ -533,6 +533,26 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     );
 
     const { count: totalCount } = await admin.from("video_jobs").select("id", { count: "exact", head: true });
+    const { data: softLaunchRows, error: softLaunchError } = await admin
+      .from("video_jobs")
+      .select("id, status, storage_path, result_url, ledger_id, refund_ledger_id, metadata, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (softLaunchError) throw new Error(`فشل جلب عينة Soft Launch: ${softLaunchError.message}`);
+
+    const softRows = ((softLaunchRows ?? []) as VideoJobRow[]);
+    const softCompleted = softRows.filter((r) => r.status === "completed").length;
+    const softRefunded = softRows.filter((r) => r.status === "refunded").length;
+    const softActive = softRows.filter((r) => r.status === "pending" || r.status === "processing").length;
+    const softArchived = softRows.filter((r) => r.status === "completed" && Boolean(r.storage_path)).length;
+    const softMissingArchive = softRows.filter((r) => r.status === "completed" && !r.storage_path).length;
+    const softLedgerMatched = softRows.filter(videoLedgerMatches).length;
+    const softCampaignLinked = softRows.filter((r) => Boolean((r.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id)).length;
+    const softBlockers = [
+      softActive > 0 ? "توجد مهام فيديو نشطة ضمن آخر 10 عمليات" : null,
+      softMissingArchive > 0 ? "توجد فيديوهات مكتملة ضمن العينة بلا storage_path داخلي" : null,
+      softLedgerMatched !== softRows.length ? "توجد عمليات ضمن العينة لا تطابق قاعدة ledger/refund" : null,
+    ].filter(Boolean) as string[];
     const stats: AdminVideoStats = {
       total: totalCount ?? statsRows.length,
       pending: counts.pending,
@@ -542,6 +562,21 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
       failed: counts.failed,
       creditsCharged: statsRows.reduce((sum, r) => sum + (r.credits_charged ?? 0), 0),
       estimatedCostUsd: statsRows.reduce((sum, r) => sum + Number(r.estimated_cost_usd ?? 0), 0),
+      softLaunch: {
+        targetSize: 10,
+        sampleSize: softRows.length,
+        completed: softCompleted,
+        refunded: softRefunded,
+        active: softActive,
+        archived: softArchived,
+        missingArchive: softMissingArchive,
+        ledgerMatched: softLedgerMatched,
+        ledgerMismatched: softRows.length - softLedgerMatched,
+        campaignLinked: softCampaignLinked,
+        readyForBeta: softRows.length >= 10 && softBlockers.length === 0,
+        blockers: softBlockers,
+        checkedAt: new Date().toISOString(),
+      },
     };
 
     const mappedRows = await Promise.all(statsRows.map(async (r) => toAdminVideoJob({ ...r, result_url: await signInternalVideoUrl(r.storage_path, r.result_url) }, profMap.get(r.user_id))));
