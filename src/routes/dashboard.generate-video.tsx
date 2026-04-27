@@ -205,8 +205,9 @@ function GenerateVideoPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
+      const effectiveMediumTestTemplate = internalMediumTestMode ? mediumTestTemplate : null;
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: search.mediumTestSampleId, mediumTestTemplateId: search.mediumTestTemplateId },
+        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: search.mediumTestSampleId, mediumTestTemplateId: effectiveMediumTestTemplate?.id },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);

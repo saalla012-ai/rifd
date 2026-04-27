@@ -127,13 +127,19 @@ function assertProductImagePolicy(plan: string | null | undefined, input: z.infe
   }
 }
 
-function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string) {
+function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string, quality?: VideoQuality, durationSeconds?: VideoDuration, aspectRatio?: string, selectedPersonaId?: string) {
   if (source === "medium-test") {
     if (templateId !== "custom") throw new Error("invalid_medium_test_template");
     if (!mediumTestTemplateId || !mediumTestSampleId) throw new Error("invalid_medium_test_template");
     const sampleIndex = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.findIndex((id) => id === mediumTestTemplateId);
     const expectedSampleId = sampleIndex >= 0 ? `pilot-${String(sampleIndex + 1).padStart(2, "0")}` : null;
     if (!expectedSampleId || mediumTestSampleId !== expectedSampleId) throw new Error("invalid_medium_test_template");
+    const expectedQuality: VideoQuality = sampleIndex < 4 ? "fast" : sampleIndex < 11 ? "lite" : "quality";
+    const expectedDuration: VideoDuration = expectedQuality === "fast" ? 5 : 8;
+    const expectedPersonaId = ["male-premium", "female-abaya", "retail-seller", "male-young"][sampleIndex % 4];
+    if (quality !== expectedQuality || durationSeconds !== expectedDuration || aspectRatio !== "9:16" || selectedPersonaId !== expectedPersonaId) {
+      throw new Error("invalid_medium_test_template");
+    }
     return "custom";
   }
   if (!templateId) return "custom";
@@ -521,7 +527,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
-      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId);
+      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId, data.quality, data.durationSeconds, data.aspectRatio, data.selectedPersonaId);
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
