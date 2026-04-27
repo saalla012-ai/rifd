@@ -22,7 +22,7 @@ const input = {
 };
 
 const payload = toJSON({ data: input, context: {} });
-const url = 'https://id-preview--694f48b8-26d0-46e8-9443-b81b61c8f1f6.lovable.app/_serverFn/babe4ae428acaa1b70330fe5acf6dcfed121ad43cc9e540e9ddf22649d017784';
+const url = 'https://rifd.lovable.app/_serverFn/babe4ae428acaa1b70330fe5acf6dcfed121ad43cc9e540e9ddf22649d017784';
 const res = await fetch(url, {
   method: 'POST',
   headers: {
