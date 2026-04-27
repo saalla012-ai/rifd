@@ -215,6 +215,7 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
   const progress = `${fmt(stats.sampleSize)}/${fmt(stats.targetSize)}`;
   const progressPercent = Math.max(0, Math.min(100, stats.progressPercent));
   const planCompletionPercent = Math.max(0, Math.min(100, stats.planCompletionPercent));
+  const nextBatchProgressPercent = Math.max(0, Math.min(100, stats.nextBatchProgressPercent));
   const statusLabel = stats.readyForBeta ? "جاهز لقرار Beta" : stats.sampleSize < stats.targetSize ? "يجمع عينة" : "يحتاج مراجعة";
 
   return (
@@ -254,6 +255,9 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
       <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-7">
         <MiniMetric label="العينة" value={progress} />
         <MiniMetric label="المتبقي للـBeta" value={fmt(stats.remainingToBeta)} />
+        <MiniMetric label="هدف الدفعة" value={fmt(stats.nextBatchTarget)} />
+        <MiniMetric label="تقدم الدفعة" value={`${fmt(nextBatchProgressPercent)}%`} />
+        <MiniMetric label="بعد الدفعة" value={`${fmt(stats.nextBatchExpectedPlanPercent)}%`} />
         <MiniMetric label="زيادة كل عملية" value={`+${fmt(stats.planPercentPerOperation)}%`} />
         <MiniMetric label="مكتملة" value={fmt(stats.completed)} />
         <MiniMetric label="مسترجعة" value={fmt(stats.refunded)} />
