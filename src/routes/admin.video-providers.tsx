@@ -568,6 +568,11 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
     : nextEvaluableSample
       ? `قيّم الآن ${nextEvaluableSample.sampleId} — ${nextEvaluableSample.label} قبل الانتقال للعينة التالية.`
       : batch.nextAction;
+  const secondInstruction = nextRunnableSamples[1]
+    ? `بعدها: ${nextRunnableSamples[1].sampleId} — ${nextRunnableSamples[1].label}`
+    : nextEvaluableSample
+      ? "بعد التقييم: اضغط تدقيق الدفعة لتحديث البوابة فوراً."
+      : "بعدها: لا توجد عينة تشغيل تالية قبل تحديث التدقيق.";
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -611,6 +616,20 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
       <div className="mt-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs font-extrabold text-primary">
         أمر التشغيل الحالي: {activeInstruction}
       </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-3">
+        <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs">
+          <p className="font-extrabold text-primary">١ · الآن</p>
+          <p className="mt-1 text-foreground">{activeInstruction}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+          <p className="font-extrabold text-foreground">٢ · التالي</p>
+          <p className="mt-1 text-muted-foreground">{secondInstruction}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+          <p className="font-extrabold text-foreground">٣ · البوابة</p>
+          <p className="mt-1 text-muted-foreground">نفّذ القائمة بالترتيب، ثم قيّم العينات النظيفة فقط، ثم أعد التدقيق قبل أي فتح تجاري.</p>
+        </div>
+      </div>
       {nextRunnableSamples.length > 0 && (
         <div className="mt-3 rounded-lg border border-border bg-secondary/30 p-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -619,10 +638,10 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
           </div>
           <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
             {nextRunnableSamples.map((sample, index) => (
-              <div key={`run-${sample.sampleId}`} className="rounded-md border border-border bg-background/70 p-2 text-xs">
+              <div key={`run-${sample.sampleId}`} className={cn("rounded-md border border-border bg-background/70 p-2 text-xs", index === 0 && "border-primary/40 bg-primary/10") }>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{(index + 1).toLocaleString("ar-SA")} · {sample.sampleId}</span>
-                  {sample.releaseDecision === "reject_or_reprompt" ? <Badge className="bg-destructive/15 text-destructive">إعادة برومبت</Badge> : sample.releaseDecision === "minor_revision" ? <Badge className="bg-gold/15 text-gold">تحسين</Badge> : sample.issue?.includes("45 دقيقة") ? <Badge className="bg-destructive/15 text-destructive">عالقة</Badge> : sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
+                  {index === 0 ? <Badge className="bg-primary/15 text-primary">ابدأ هنا</Badge> : sample.releaseDecision === "reject_or_reprompt" ? <Badge className="bg-destructive/15 text-destructive">إعادة برومبت</Badge> : sample.releaseDecision === "minor_revision" ? <Badge className="bg-gold/15 text-gold">تحسين</Badge> : sample.issue?.includes("45 دقيقة") ? <Badge className="bg-destructive/15 text-destructive">عالقة</Badge> : sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
                 </div>
                 <p className="mt-1 truncate text-muted-foreground">{sample.label}</p>
                 <p className="mt-1 line-clamp-2 text-muted-foreground">سبب الإعادة: {rerunReason(sample)}</p>
