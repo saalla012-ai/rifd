@@ -164,7 +164,7 @@ function GenerateVideoPage() {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
   }, [activeJob, jobs]);
-  const promptCount = useMemo(() => prompt.trim().length, [prompt]);
+  const promptCount = useMemo(() => canonicalGenerationPrompt.trim().length, [canonicalGenerationPrompt]);
 
   const applyTemplate = () => {
     setPrompt(selectedTemplate.prompt);
@@ -403,7 +403,7 @@ function GenerateVideoPage() {
               <Label>المدة</Label>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[5, 8].map((duration) => {
-                  const lockedByTier = effectiveDurationSeconds !== duration;
+                  const lockedByTier = canonicalGenerationDurationSeconds !== duration;
                   return (
                   <button
                     key={duration}
@@ -412,7 +412,7 @@ function GenerateVideoPage() {
                     disabled={lockedByTier}
                     className={cn(
                       "rounded-lg border px-3 py-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
-                      effectiveDurationSeconds === duration ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-secondary/70"
+                      canonicalGenerationDurationSeconds === duration ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-secondary/70"
                     )}
                   >
                     {duration} ث
