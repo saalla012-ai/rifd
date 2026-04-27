@@ -33,7 +33,7 @@ const res = await fetch(url, {
   body: JSON.stringify(payload)
 });
 const text = await res.text();
-console.log(JSON.stringify({ status: res.status, contentType: res.headers.get('content-type'), serialized: res.headers.get('x-tss-serialized'), bodyPreview: text.slice(0, 1000) }, null, 2));
+console.log(JSON.stringify({ status: res.status, contentType: res.headers.get('content-type'), serialized: res.headers.get('x-tss-serialized'), finalUrl: res.url, redirected: res.redirected, bodyPreview: text.slice(0, 1000) }, null, 2));
 if (!res.ok) process.exit(2);
 try {
   const decoded = fromJSON(JSON.parse(text));
