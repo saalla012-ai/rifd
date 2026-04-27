@@ -41,7 +41,7 @@ export const SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD = [
   { key: "publish", label: "قابلية النشر", weight: 10 },
 ] as const;
 
-export const FAL_PROMPT_MAX_CHARS = 900;
+export const FAL_PROMPT_MAX_CHARS = 650;
 
 export function limitFalPrompt(prompt: string, maxLength = FAL_PROMPT_MAX_CHARS) {
   const clean = prompt.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();

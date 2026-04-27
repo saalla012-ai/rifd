@@ -414,6 +414,11 @@ function normalizeFalStatus(status?: string): ProviderStatus {
   return "processing";
 }
 
+function falQueueRequestUrl(model: string, providerJobId: string, endpoint?: "status") {
+  const baseModel = model.startsWith("fal-ai/pixverse/") ? "fal-ai/pixverse" : model;
+  return `https://queue.fal.run/${baseModel}/requests/${providerJobId}${endpoint ? `/${endpoint}` : ""}`;
+}
+
 const falProvider: VideoProvider = {
   key: "fal_ai",
   async createJob(input) {
@@ -452,8 +457,8 @@ const falProvider: VideoProvider = {
     if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
     const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
     const model = typeof metadata.model === "string" ? metadata.model : FAL_MODEL_BY_QUALITY[row.quality as VideoQuality];
-    const statusUrl = typeof metadata.fal_status_url === "string" ? metadata.fal_status_url : `https://queue.fal.run/${model}/requests/${providerJobId}/status`;
-    const responseUrl = typeof metadata.fal_response_url === "string" ? metadata.fal_response_url : `https://queue.fal.run/${model}/requests/${providerJobId}`;
+    const statusUrl = typeof metadata.fal_status_url === "string" ? metadata.fal_status_url : falQueueRequestUrl(model, providerJobId, "status");
+    const responseUrl = typeof metadata.fal_response_url === "string" ? metadata.fal_response_url : falQueueRequestUrl(model, providerJobId);
     const statusResponse = await fetch(statusUrl, { headers: { Authorization: `Key ${token}` } });
     const statusText = await statusResponse.text();
     let statusPayload: { status?: string; error?: string; logs?: unknown } = {};
