@@ -306,7 +306,7 @@ function AdminVideoProvidersPage() {
           {pilotAudit && <PilotAuditPanel audit={pilotAudit} />}
           {pilotMatrix && <PilotMatrixPanel matrix={pilotMatrix} />}
           {mediumBatch && <MediumBatchPanel batch={mediumBatch} />}
-          <PilotEvaluationPanel result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
+          <PilotEvaluationPanel batch={mediumBatch} result={pilotEvaluation} saving={evaluatingPilot} onSubmit={(draft: PilotEvaluationDraft) => void submitPilotEvaluation(draft)} />
           <SaudiFalTestPanel draft={falDraft} productImageUrl={productImageUrl} preview={falPreview} testResult={falTestResult} loading={loadingFalPreview} running={runningFalTest} onDraft={setFalDraft} onProductImageUrl={setProductImageUrl} onPreview={() => void buildFalPromptPreview()} onRun={() => void runFalModelTest()} />
           {routerResults.length > 0 && <RouterResultPanel results={routerResults} />}
           <div className="mb-4 grid gap-3 md:grid-cols-3">
@@ -613,9 +613,15 @@ function MetricTile({ label, value }: { label: string; value: number }) {
   return <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs"><strong>{value.toLocaleString("ar-SA")}</strong><p className="mt-1 text-muted-foreground">{label}</p></div>;
 }
 
-function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
+function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: SaudiVideoMediumBatchResult | null; result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
+  const evaluableSamples = (batch?.samples ?? []).filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue);
+  const selectedSample = evaluableSamples.find((sample) => sample.sampleId === draft.sampleId) ?? null;
   const setScore = (key: keyof Pick<PilotEvaluationDraft, "productClarity" | "sceneAdherence" | "motionAdherence" | "saudiDialect" | "negativeSafety" | "publishReadiness">, value: string) => setDraft((current) => ({ ...current, [key]: Number(value) }));
+  const chooseSample = (sampleId: string) => {
+    const sample = evaluableSamples.find((item) => item.sampleId === sampleId);
+    setDraft((current) => ({ ...current, sampleId, resultUrl: sample?.resultUrl ?? "" }));
+  };
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -626,8 +632,10 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
         {result && <Badge className={cn(result.decision === "publishable" ? "bg-success/15 text-success" : result.decision === "minor_revision" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive")}><Gauge className="h-3.5 w-3.5" /> درجة تنفيذ البرومبت {result.score.toLocaleString("ar-SA")}%</Badge>}
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[140px_minmax(0,1fr)]">
-        <Input value={draft.sampleId} onChange={(event) => setDraft({ ...draft, sampleId: event.target.value })} className="h-9 text-xs" />
-        <Input dir="ltr" value={draft.resultUrl} onChange={(event) => setDraft({ ...draft, resultUrl: event.target.value })} placeholder="https:// video result" className="h-9 text-left text-xs" />
+        <select value={draft.sampleId} onChange={(event) => chooseSample(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-xs font-bold text-foreground">
+          {evaluableSamples.length === 0 ? <option value={draft.sampleId}>{draft.sampleId}</option> : evaluableSamples.map((sample) => <option key={sample.sampleId} value={sample.sampleId}>{sample.sampleId} — {sample.label}</option>)}
+        </select>
+        <Input dir="ltr" readOnly value={selectedSample?.resultUrl ?? draft.resultUrl} onChange={(event) => setDraft({ ...draft, resultUrl: event.target.value })} placeholder="يُملأ تلقائياً بعد تدقيق دفعة مكتملة" className="h-9 text-left text-xs" />
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <ScoreInput label="المنتج" value={draft.productClarity} onChange={(value) => setScore("productClarity", value)} />
@@ -637,9 +645,10 @@ function PilotEvaluationPanel({ result, saving, onSubmit }: { result: SaudiVideo
         <ScoreInput label="الممنوعات" value={draft.negativeSafety} onChange={(value) => setScore("negativeSafety", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
       </div>
+      {evaluableSamples.length === 0 && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">ابدأ بزر تدقيق الدفعة بعد اكتمال التوليد؛ سيظهر هنا فقط ما يمكن تقييمه تجارياً دون عوائق تشغيلية.</p>}
       {result && <p className="mt-2 text-xs font-semibold text-muted-foreground">{result.gateReason}</p>}
       <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
-      <Button type="button" size="sm" onClick={() => onSubmit(draft)} disabled={saving} className="mt-3 gap-1">
+      <Button type="button" size="sm" onClick={() => onSubmit({ ...draft, resultUrl: selectedSample?.resultUrl ?? draft.resultUrl })} disabled={saving || (Boolean(batch) && !selectedSample)} className="mt-3 gap-1">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />} حفظ تقييم العينة
       </Button>
     </section>
