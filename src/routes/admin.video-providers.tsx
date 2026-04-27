@@ -62,9 +62,11 @@ const PERSONA_IMAGES: Record<string, string> = {
   "retail-seller": personaRetailSeller,
 };
 
+const PUBLIC_ASSET_ORIGIN = "https://rifd.site";
+
 function absoluteAssetUrl(value: string) {
   if (/^https?:\/\//i.test(value)) return value;
-  return typeof window === "undefined" ? value : new URL(value, window.location.origin).toString();
+  return new URL(value, PUBLIC_ASSET_ORIGIN).toString();
 }
 
 function fmtDate(value: string | null) {
