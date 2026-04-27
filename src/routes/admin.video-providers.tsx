@@ -646,7 +646,7 @@ function MetricTile({ label, value }: { label: string; value: number }) {
 
 function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: SaudiVideoMediumBatchResult | null; result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
-  const evaluableSamples = (batch?.samples ?? []).filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue);
+  const evaluableSamples = (batch?.samples ?? []).filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision);
   const selectedSample = evaluableSamples.find((sample) => sample.sampleId === draft.sampleId) ?? null;
   useEffect(() => {
     if (!selectedSample && evaluableSamples[0]) setDraft((current) => ({ ...current, sampleId: evaluableSamples[0].sampleId, resultUrl: evaluableSamples[0].resultUrl ?? "" }));
