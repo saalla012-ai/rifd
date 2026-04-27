@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { Sparkles, Mail, Lock, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
@@ -36,6 +36,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const search = useSearch({ from: "/auth" });
   const redirectPath = search.redirect ?? "/dashboard";
   const { user, profile, loading: authLoading } = useAuth();
@@ -65,11 +66,11 @@ function AuthPage() {
       }
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
-      } else {
+      } else if (`${location.pathname}${location.searchStr}${location.hash}` !== redirectPath) {
         void navigate({ to: redirectPath as never });
       }
     }
-  }, [authLoading, user, profile, navigate, redirectPath]);
+  }, [authLoading, user, profile, navigate, redirectPath, location.pathname, location.searchStr, location.hash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
