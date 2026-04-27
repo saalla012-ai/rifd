@@ -119,8 +119,9 @@ function assertVideoEntitlement(entitlement: VideoEntitlement, input: z.infer<ty
 }
 
 function assertProductImagePolicy(plan: string | null | undefined, input: z.infer<typeof videoInputSchema>) {
-  if (input.source === "medium-test" && input.quality !== "fast" && !input.productImageUrl) {
-    throw new Error("product_image_required_for_medium_test_video");
+  if (input.source === "medium-test") {
+    if (input.quality !== "fast" && !input.productImageUrl) throw new Error("product_image_required_for_medium_test_video");
+    return;
   }
   if (PLAN_CREDIT_POLICY.paidPlansRequireProductImageForVideo && plan && plan !== "free" && !input.productImageUrl) {
     throw new Error("product_image_required_for_paid_video");
