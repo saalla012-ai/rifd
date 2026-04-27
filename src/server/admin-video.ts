@@ -279,6 +279,7 @@ export type SaudiVideoMediumBatchResult = {
   processing: number;
   failedOrRefunded: number;
   missingProductImage: number;
+  metadataMismatch: number;
   remainingToGenerate: number;
   remainingToEvaluate: number;
   operationalBlockingIssues: number;
@@ -860,11 +861,21 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     if (error) throw new Error(`فشل تدقيق دفعة الاختبار المتوسط: ${error.message}`);
 
     const jobsBySample = new Map<string, Pick<VideoJobRow, "id" | "status" | "result_url" | "credits_charged" | "estimated_cost_usd" | "product_image_url" | "error_message" | "metadata" | "created_at">>();
+    const mismatchedJobsBySample = new Map<string, Pick<VideoJobRow, "id" | "created_at">>();
     for (const row of (rows as Array<Pick<VideoJobRow, "id" | "status" | "result_url" | "credits_charged" | "estimated_cost_usd" | "product_image_url" | "error_message" | "metadata" | "created_at">> | null) ?? []) {
       const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
       const sampleId = typeof metadata.medium_test_sample_id === "string" ? metadata.medium_test_sample_id : "";
-      const current = sampleId ? jobsBySample.get(sampleId) : null;
-      if (sampleId && (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime())) jobsBySample.set(sampleId, row);
+      const templateId = typeof metadata.medium_test_template_id === "string" ? metadata.medium_test_template_id : "";
+      const sampleNumber = Number(sampleId.replace("pilot-", ""));
+      const expectedTemplateId = Number.isInteger(sampleNumber) ? SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[sampleNumber - 1] : undefined;
+      if (!sampleId || !expectedTemplateId) continue;
+      if (templateId !== expectedTemplateId) {
+        const currentMismatch = mismatchedJobsBySample.get(sampleId);
+        if (!currentMismatch || new Date(row.created_at).getTime() > new Date(currentMismatch.created_at).getTime()) mismatchedJobsBySample.set(sampleId, row);
+        continue;
+      }
+      const current = jobsBySample.get(sampleId);
+      if (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime()) jobsBySample.set(sampleId, row);
     }
 
     const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
@@ -873,6 +884,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
       const sampleId = `pilot-${String(index + 1).padStart(2, "0")}`;
       const job = jobsBySample.get(sampleId) ?? null;
+      const mismatchedJob = mismatchedJobsBySample.get(sampleId) ?? null;
       const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
       const evaluation = (metadata.medium_test_evaluation as { score?: unknown } | null) ?? null;
       const releaseDecision: "publishable" | "minor_revision" | "reject_or_reprompt" | null = metadata.medium_test_release_decision === "publishable" || metadata.medium_test_release_decision === "minor_revision" || metadata.medium_test_release_decision === "reject_or_reprompt" ? metadata.medium_test_release_decision : null;
@@ -894,7 +906,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         evaluationScore: typeof evaluation?.score === "number" ? evaluation.score : null,
         releaseDecision,
         createdAt: job?.created_at ?? null,
-        issue: !job ? "لم تُولد العينة بعد" : missingProductImage ? "صورة المنتج الإلزامية غير مرفقة" : job.error_message,
+        issue: !job ? mismatchedJob ? "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي" : "لم تُولد العينة بعد" : missingProductImage ? "صورة المنتج الإلزامية غير مرفقة" : job.error_message,
       };
     });
     const generated = samples.filter((sample) => sample.jobId).length;
@@ -902,6 +914,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const processing = samples.filter((sample) => sample.status === "processing" || sample.status === "pending").length;
     const failedOrRefunded = samples.filter((sample) => sample.status === "failed" || sample.status === "refunded" || sample.status === "cancelled").length;
     const missingProductImage = samples.filter((sample) => sample.issue === "صورة المنتج الإلزامية غير مرفقة").length;
+    const metadataMismatch = samples.filter((sample) => sample.issue === "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي").length;
     const remainingToGenerate = samples.length - generated;
     const executionRate = Math.round((generated / Math.max(samples.length, 1)) * 100);
     const completionRate = Math.round((completed / Math.max(samples.length, 1)) * 100);
@@ -910,7 +923,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const needsRevision = samples.filter((sample) => sample.releaseDecision === "minor_revision").length;
     const rejected = samples.filter((sample) => sample.releaseDecision === "reject_or_reprompt").length;
     const remainingToEvaluate = samples.length - evaluated;
-    const operationalBlockingIssues = missingProductImage + failedOrRefunded;
+    const operationalBlockingIssues = missingProductImage + failedOrRefunded + metadataMismatch;
     const commercialRejectedIssues = rejected;
     const blockingIssues = operationalBlockingIssues + commercialRejectedIssues;
     const minimumPublishable = Math.ceil(samples.length * 0.8);
@@ -938,7 +951,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         : releaseGate === "ready_for_review"
           ? "قيّم كل عينة عبر نموذج التقييم: المنتج، المشهد، الحركة، اللهجة، الممنوعات، وقابلية النشر؛ لا تعتمد إلا 80%+."
           : "تابع توليد العينات غير المكتملة ثم اضغط تدقيق الدفعة حتى تتحول الحالة إلى جاهزة للتقييم.";
-    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, missingProductImage, remainingToGenerate, remainingToEvaluate, operationalBlockingIssues, commercialRejectedIssues, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
+    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, missingProductImage, metadataMismatch, remainingToGenerate, remainingToEvaluate, operationalBlockingIssues, commercialRejectedIssues, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
 
     await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
