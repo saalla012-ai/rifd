@@ -583,8 +583,9 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <MetricTile label="عوائق تشغيلية" value={batch.operationalBlockingIssues} />
         <MetricTile label="رفض تجاري" value={batch.commercialRejectedIssues} />
       </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile label="فشل/استرداد" value={batch.failedOrRefunded} />
+        <MetricTile label="مكتمل بلا رابط" value={batch.completedWithoutResult} />
         <MetricTile label="نقص صورة منتج" value={batch.missingProductImage} />
         <MetricTile label="عدم تطابق الوسم" value={batch.metadataMismatch} />
         <MetricTile label="عدم تطابق الإعدادات" value={batch.configurationMismatch} />
