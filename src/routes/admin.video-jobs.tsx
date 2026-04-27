@@ -253,6 +253,8 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-7">
         <MiniMetric label="العينة" value={progress} />
+        <MiniMetric label="المتبقي للـBeta" value={fmt(stats.remainingToBeta)} />
+        <MiniMetric label="زيادة كل عملية" value={`+${fmt(stats.planPercentPerOperation)}%`} />
         <MiniMetric label="مكتملة" value={fmt(stats.completed)} />
         <MiniMetric label="مسترجعة" value={fmt(stats.refunded)} />
         <MiniMetric label="فشل بلا رد" value={fmt(stats.failedUnrefunded)} />
