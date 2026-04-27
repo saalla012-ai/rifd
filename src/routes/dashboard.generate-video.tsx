@@ -130,13 +130,7 @@ function GenerateVideoPage() {
   const [downloadingVideo, setDownloadingVideo] = useState(false);
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
 
-  const selectedQuality = QUALITY[quality];
-  const selectedQualityAllowed = quality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
   const effectiveDurationSeconds = videoTierDuration(quality);
-  const costKey = (quality === "quality" ? "video_quality_8s" : quality === "lite" ? "video_lite_8s" : "video_fast") as keyof NonNullable<typeof credits>["costs"];
-  const selectedCost = credits?.costs[costKey] ?? 0;
-  const selectedDurationAllowed = effectiveDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
-  const hasEnoughCredits = credits ? credits.totalCredits >= selectedCost : true;
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
   const watermarkRequired = credits?.plan === "free";
   const internalMediumTestMode = search.source === "medium-test";
@@ -161,6 +155,11 @@ function GenerateVideoPage() {
   const canonicalGenerationDurationSeconds = mediumTestCanonicalSample?.durationSeconds ?? effectiveDurationSeconds;
   const canonicalGenerationPersonaId = mediumTestCanonicalSample?.personaId ?? selectedPersonaId;
   const canonicalGenerationPersona = PERSONAS.find((persona) => persona.id === canonicalGenerationPersonaId) ?? selectedPersona;
+  const canonicalCostKey = (canonicalGenerationQuality === "quality" ? "video_quality_8s" : canonicalGenerationQuality === "lite" ? "video_lite_8s" : "video_fast") as keyof NonNullable<typeof credits>["costs"];
+  const canonicalSelectedCost = credits?.costs[canonicalCostKey] ?? 0;
+  const canonicalQualityAllowed = canonicalGenerationQuality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
+  const canonicalDurationAllowed = canonicalGenerationDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
+  const canonicalHasEnoughCredits = credits ? credits.totalCredits >= canonicalSelectedCost : true;
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -213,12 +212,12 @@ function GenerateVideoPage() {
       toast.error("اكتب وصف فيديو أوضح");
       return;
     }
-    if (!hasEnoughCredits) {
-      setQuotaDialog({ open: true, reason: `INSUFFICIENT_CREDITS: رصيد نقاط الفيديو لا يكفي (تحتاج ${selectedCost} نقطة فيديو).` });
+    if (!canonicalHasEnoughCredits) {
+      setQuotaDialog({ open: true, reason: `INSUFFICIENT_CREDITS: رصيد نقاط الفيديو لا يكفي (تحتاج ${canonicalSelectedCost} نقطة فيديو).` });
       return;
     }
-    if (!selectedQualityAllowed || !selectedDurationAllowed) {
-      setQuotaDialog({ open: true, reason: !selectedQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
+    if (!canonicalQualityAllowed || !canonicalDurationAllowed) {
+      setQuotaDialog({ open: true, reason: !canonicalQualityAllowed ? "VIDEO_QUALITY_NOT_ALLOWED: الجودة الاحترافية غير متاحة في باقتك الحالية." : "VIDEO_DURATION_NOT_ALLOWED: مدة الفيديو غير متاحة في باقتك الحالية." });
       return;
     }
     if (productImageRequired) {
