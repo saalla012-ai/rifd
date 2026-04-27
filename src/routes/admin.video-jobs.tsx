@@ -224,9 +224,12 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
             <span className="text-xs font-bold text-muted-foreground">Soft Launch · أول 10 عمليات</span>
           </div>
           <h2 className="mt-2 text-lg font-extrabold">مراقبة الإطلاق المحدود</h2>
-          <p className="mt-1 text-sm text-muted-foreground">تتحقق من اكتمال الفيديو، الأرشفة الداخلية، مطابقة دفتر النقاط، وربط الحملات قبل قرار Beta.</p>
+          <p className="mt-1 text-sm text-muted-foreground">تراقب أول 10 عمليات بعد تفعيل الأرشفة الداخلية حتى لا تختلط نتائج Beta بروابط Legacy القديمة.</p>
         </div>
-        <div className="text-xs text-muted-foreground">آخر فحص: {fmtDate(stats.checkedAt)}</div>
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <div>آخر فحص: {fmtDate(stats.checkedAt)}</div>
+          {stats.rolloutStartedAt && <div>بداية العينة: {fmtDate(stats.rolloutStartedAt)}</div>}
+        </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
         <MiniMetric label="العينة" value={progress} />
@@ -245,6 +248,9 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
       )}
       {stats.legacyFallback > 0 && (
         <p className="mt-2 text-xs text-muted-foreground">توجد نتائج قديمة قبل قرار التخزين الداخلي وتُعرض كرابط مزود fallback؛ لا تُعد عائقاً إذا لم تتكرر في النتائج الجديدة.</p>
+      )}
+      {!stats.rolloutStartedAt && (
+        <p className="mt-2 text-xs text-muted-foreground">لم تبدأ عينة Soft Launch المعتمدة بعد؛ ستبدأ تلقائياً عند أول فيديو مؤرشف داخلياً.</p>
       )}
     </section>
   );

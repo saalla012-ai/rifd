@@ -108,6 +108,7 @@ export type AdminVideoStats = {
   softLaunch: {
     targetSize: number;
     sampleSize: number;
+    rolloutStartedAt: string | null;
     completed: number;
     refunded: number;
     active: number;
@@ -534,11 +535,23 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     );
 
     const { count: totalCount } = await admin.from("video_jobs").select("id", { count: "exact", head: true });
-    const { data: softLaunchRows, error: softLaunchError } = await admin
+    const { data: archiveRolloutRows, error: archiveRolloutError } = await admin
+      .from("video_jobs")
+      .select("created_at")
+      .not("storage_path", "is", null)
+      .order("created_at", { ascending: true })
+      .limit(1);
+    if (archiveRolloutError) throw new Error(`فشل تحديد بداية الأرشفة الداخلية: ${archiveRolloutError.message}`);
+
+    const archiveRolloutStartedAt = archiveRolloutRows?.[0]?.created_at ?? null;
+    let softLaunchQuery = admin
       .from("video_jobs")
       .select("id, status, storage_path, result_url, ledger_id, refund_ledger_id, metadata, created_at")
       .order("created_at", { ascending: false })
       .limit(10);
+    if (archiveRolloutStartedAt) softLaunchQuery = softLaunchQuery.gte("created_at", archiveRolloutStartedAt);
+
+    const { data: softLaunchRows, error: softLaunchError } = await softLaunchQuery;
     if (softLaunchError) throw new Error(`فشل جلب عينة Soft Launch: ${softLaunchError.message}`);
 
     const softRows = ((softLaunchRows ?? []) as VideoJobRow[]);
@@ -567,6 +580,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
       softLaunch: {
         targetSize: 10,
         sampleSize: softRows.length,
+        rolloutStartedAt: archiveRolloutStartedAt,
         completed: softCompleted,
         refunded: softRefunded,
         active: softActive,
