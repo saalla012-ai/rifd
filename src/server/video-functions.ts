@@ -286,6 +286,45 @@ async function assertNoActiveMediumTestSampleJob(userId: string, input: z.infer<
   if ((count ?? 0) > 0) throw new Error("medium_test_sample_already_processing");
 }
 
+async function assertMediumTestSequenceReady(userId: string, input: z.infer<typeof videoInputSchema>) {
+  if (input.source !== "medium-test" || !input.mediumTestSampleId) return;
+  const currentNumber = Number(input.mediumTestSampleId.replace("pilot-", ""));
+  if (!Number.isInteger(currentNumber) || currentNumber <= 1) return;
+  const { data, error } = await supabaseAdmin
+    .from("video_jobs")
+    .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
+    .eq("user_id", userId)
+    .contains("metadata", { medium_test: true });
+  if (error) throw new Error(`فشل التحقق من تسلسل الاختبار المتوسط: ${error.message}`);
+
+  const latestOfficial = new Map<string, Pick<VideoJobRow, "status" | "result_url" | "product_image_url" | "metadata" | "created_at" | "quality" | "duration_seconds" | "aspect_ratio" | "selected_persona_id">>();
+  const latestMismatch = new Map<string, Pick<VideoJobRow, "created_at">>();
+  for (const row of (data as VideoJobRow[] | null) ?? []) {
+    const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+    const sampleId = typeof metadata.medium_test_sample_id === "string" ? metadata.medium_test_sample_id : "";
+    const templateId = typeof metadata.medium_test_template_id === "string" ? metadata.medium_test_template_id : "";
+    const sampleNumber = Number(sampleId.replace("pilot-", ""));
+    const expectedTemplateId = Number.isInteger(sampleNumber) ? SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[sampleNumber - 1] : undefined;
+    if (!sampleId || !expectedTemplateId || sampleNumber >= currentNumber) continue;
+    const currentMap = templateId === expectedTemplateId ? latestOfficial : latestMismatch;
+    const current = currentMap.get(sampleId);
+    if (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime()) currentMap.set(sampleId, row);
+  }
+
+  for (let index = 0; index < currentNumber - 1; index += 1) {
+    const sample = buildSaudiVideoMediumTestSample(index);
+    const job = latestOfficial.get(sample.sampleId) ?? null;
+    const mismatch = latestMismatch.get(sample.sampleId) ?? null;
+    if (!job || (mismatch && new Date(mismatch.created_at).getTime() > new Date(job.created_at).getTime())) throw new Error("medium_test_sequence_violation");
+    const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
+    const decision = metadata.medium_test_release_decision;
+    const blockedDecision = decision === "minor_revision" || decision === "reject_or_reprompt";
+    const configurationMismatch = job.quality !== sample.quality || job.duration_seconds !== sample.durationSeconds || job.aspect_ratio !== sample.expectedAspectRatio || job.selected_persona_id !== sample.personaId;
+    const missingRequiredProduct = sample.requiresProductImage && !job.product_image_url;
+    if (job.status !== "completed" || !job.result_url || blockedDecision || configurationMismatch || missingRequiredProduct) throw new Error("medium_test_sequence_violation");
+  }
+}
+
 function providerSupports(config: VideoProviderConfig, input: z.infer<typeof videoInputSchema>) {
   const supportsQuality = config.supported_qualities.includes(input.quality);
   const supportsAspect =
