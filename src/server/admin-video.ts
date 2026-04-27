@@ -913,7 +913,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const cleanCompletedSamples = samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue);
     const remainingToEvaluate = cleanCompletedSamples.filter((sample) => !sample.releaseDecision).length;
     const operationalBlockingIssues = missingProductImage + failedOrRefunded + completedWithoutResult + staleInProgress + metadataMismatch + configurationMismatch;
-    const commercialRejectedIssues = rejected;
+    const commercialRejectedIssues = rejected + needsRevision;
     const blockingIssues = operationalBlockingIssues + commercialRejectedIssues;
     const minimumPublishable = Math.ceil(samples.length * 0.8);
     const commercialValidityRate = Math.round((publishable / Math.max(samples.length, 1)) * 100);
@@ -921,7 +921,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const releaseGateReason = releaseGate === "not_started"
       ? "لم تُسجّل أي مهمة موسومة للاختبار المتوسط بعد؛ لا يوجد دليل عملي يسمح بقرار تجاري."
       : releaseGate === "blocked"
-        ? operationalBlockingIssues > 0 ? "الدفعة متوقفة تشغيلياً بسبب فشل/استرداد أو اكتمال بلا رابط أو مهمة عالقة أو نقص صورة منتج أو عدم تطابق الوسم/الإعدادات مع المصفوفة؛ أصلح العينة قبل احتساب القرار التجاري." : "الدفعة متوقفة تجارياً بسبب عينة مرفوضة؛ لا توسع قبل إعادة صياغة البرومبت وإعادة توليد العينة."
+        ? operationalBlockingIssues > 0 ? "الدفعة متوقفة تشغيلياً بسبب فشل/استرداد أو اكتمال بلا رابط أو مهمة عالقة أو نقص صورة منتج أو عدم تطابق الوسم/الإعدادات مع المصفوفة؛ أصلح العينة قبل احتساب القرار التجاري." : "الدفعة متوقفة تجارياً بسبب عينة مرفوضة أو تحتاج تحسيناً؛ لا توسع قبل إعادة صياغة البرومبت وإعادة توليد العينة."
         : releaseGate === "ready_for_expansion"
           ? "اكتمل تقييم الدفعة وحققت بوابة 80%+؛ القوالب الصالحة جاهزة لاختبار تكرار أوسع قبل الفتح العام."
         : releaseGate === "needs_iteration"
@@ -932,7 +932,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const nextAction = releaseGate === "not_started"
       ? "افتح مصفوفة الاختبار، ولّد العينات بالترتيب من pilot-01 إلى pilot-12، وارفع صورة منتج لكل عينة موسومة كإلزامية."
       : releaseGate === "blocked"
-        ? "أصلح العينات المتوقفة أولاً: أعد توليد ما فشل أو علق أكثر من 45 دقيقة، وأصلح النتائج المكتملة بلا رابط، وأرفق صورة منتج واضحة، وأعد توليد أي عينة لا تطابق مصفوفتها الرسمية قبل التقييم."
+        ? operationalBlockingIssues > 0 ? "أصلح العينات المتوقفة أولاً: أعد توليد ما فشل أو علق أكثر من 45 دقيقة، وأصلح النتائج المكتملة بلا رابط، وأرفق صورة منتج واضحة، وأعد توليد أي عينة لا تطابق مصفوفتها الرسمية قبل التقييم." : "أعد توليد العينات المرفوضة أو التي تحتاج تحسيناً، ثم قيّم النسخة الجديدة قبل أي توسع."
         : releaseGate === "ready_for_expansion"
           ? "انقل العينات القابلة للنشر فقط إلى اختبار 5 عينات إضافية لكل قالب، واترك القوالب ذات التعديل أو الرفض مخفية."
         : releaseGate === "needs_iteration"
