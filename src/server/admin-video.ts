@@ -66,6 +66,7 @@ async function getSupabaseAdmin() {
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
 type MediumAuditJob = Pick<VideoJobRow, "id" | "status" | "result_url" | "credits_charged" | "estimated_cost_usd" | "product_image_url" | "error_message" | "metadata" | "created_at" | "quality" | "duration_seconds" | "aspect_ratio" | "selected_persona_id">;
+type MediumAuditProvider = Pick<Database["public"]["Tables"]["video_provider_configs"]["Row"], "provider_key" | "display_name_admin" | "enabled" | "public_enabled" | "health_status" | "priority">;
 
 export type AdminVideoJob = {
   id: string;
@@ -290,6 +291,9 @@ export type SaudiVideoMediumBatchResult = {
   commercialRejectedIssues: number;
   blockingIssues: number;
   estimatedCostUsd: number;
+  activeProviderLabel: string | null;
+  activeProviderHealthy: boolean;
+  readinessWarnings: string[];
   executionRate: number;
   completionRate: number;
   releaseGate: "not_started" | "running" | "ready_for_review" | "needs_iteration" | "ready_for_expansion" | "blocked";
@@ -829,6 +833,16 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       .contains("metadata", { medium_test: true });
     if (error) throw new Error(`فشل تدقيق دفعة الاختبار المتوسط: ${error.message}`);
 
+    const { data: providerRows, error: providerError } = await (await getSupabaseAdmin() as unknown as {
+      from: (table: string) => { select: (columns: string) => { order: (column: string, options?: { ascending?: boolean }) => Promise<{ data: unknown; error: { message: string } | null }> } };
+    })
+      .from("video_provider_configs")
+      .select("provider_key, display_name_admin, enabled, public_enabled, health_status, priority")
+      .order("priority", { ascending: true });
+    if (providerError) throw new Error(`فشل تدقيق جاهزية مزود الفيديو: ${providerError.message}`);
+    const activeProvider = ((providerRows as MediumAuditProvider[] | null) ?? []).find((provider) => provider.enabled && provider.public_enabled) ?? null;
+    const activeProviderHealthy = Boolean(activeProvider && activeProvider.health_status === "active");
+
     const jobsBySample = new Map<string, MediumAuditJob>();
     const mismatchedJobsBySample = new Map<string, Pick<VideoJobRow, "id" | "created_at">>();
     for (const row of (rows as MediumAuditJob[] | null) ?? []) {
@@ -940,7 +954,12 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         : releaseGate === "ready_for_review"
           ? "قيّم كل عينة عبر نموذج التقييم: المنتج، المشهد، الحركة، اللهجة، الممنوعات، وقابلية النشر؛ لا تعتمد إلا 80%+."
           : "تابع توليد العينات غير المكتملة ثم اضغط تدقيق الدفعة حتى تتحول الحالة إلى جاهزة للتقييم.";
-    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, completedWithoutResult, staleInProgress, missingProductImage, metadataMismatch, configurationMismatch, remainingToGenerate, remainingToEvaluate, operationalBlockingIssues, commercialRejectedIssues, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
+    const readinessWarnings = [
+      !activeProvider ? "لا يوجد مزود فيديو مفعّل ومتاح للعامة قبل تشغيل الدفعة." : null,
+      activeProvider && !activeProviderHealthy ? `المزود النشط (${activeProvider.display_name_admin}) حالته ${activeProvider.health_status} وليست active.` : null,
+      processing >= 2 ? "يوجد حد معالجة ممتلئ تقريباً؛ لا تبدأ عينات جديدة قبل اكتمال مهمة جارية." : null,
+    ].filter(Boolean) as string[];
+    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, completedWithoutResult, staleInProgress, missingProductImage, metadataMismatch, configurationMismatch, remainingToGenerate, remainingToEvaluate, operationalBlockingIssues, commercialRejectedIssues, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), activeProviderLabel: activeProvider?.display_name_admin ?? null, activeProviderHealthy, readinessWarnings, executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
 
     await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
