@@ -220,11 +220,11 @@ function StatCard({ label, value, tone, icon }: { label: string; value: string; 
   );
 }
 
-function MiniMetric({ label, value }: { label: string; value: string }) {
+function MiniMetric({ label, value, title }: { label: string; value: string; title?: string }) {
   return (
     <div className="rounded-lg border border-border bg-secondary/30 p-2">
       <p className="text-[10px] text-muted-foreground">{label}</p>
-      <p className="mt-0.5 truncate font-bold tabular-nums">{value}</p>
+      <p className="mt-0.5 truncate font-bold tabular-nums" title={title}>{value}</p>
     </div>
   );
 }
