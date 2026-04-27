@@ -131,7 +131,7 @@ function AdminVideoJobsPage() {
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="إجمالي المهام" value={fmt(stats?.total ?? 0)} />
-        <StatCard label="نشطة الآن" value={fmt((stats?.processing ?? 0) + rows.filter((row) => row.status === "pending").length)} tone="warning" />
+        <StatCard label="نشطة الآن" value={fmt((stats?.processing ?? 0) + (stats?.pending ?? 0))} tone="warning" />
         <StatCard label="مكتملة" value={fmt(stats?.completed ?? 0)} tone="success" />
         <StatCard label="مسترجعة" value={fmt(stats?.refunded ?? 0)} tone="gold" />
         <StatCard label="تكلفة العينة" value={`$${(stats?.estimatedCostUsd ?? 0).toFixed(2)}`} icon="cost" />
