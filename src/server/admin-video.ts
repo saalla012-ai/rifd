@@ -113,6 +113,7 @@ export type AdminVideoStats = {
     active: number;
     archived: number;
     missingArchive: number;
+    legacyFallback: number;
     ledgerMatched: number;
     ledgerMismatched: number;
     campaignLinked: number;
@@ -545,7 +546,8 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const softRefunded = softRows.filter((r) => r.status === "refunded").length;
     const softActive = softRows.filter((r) => r.status === "pending" || r.status === "processing").length;
     const softArchived = softRows.filter((r) => r.status === "completed" && Boolean(r.storage_path)).length;
-    const softMissingArchive = softRows.filter((r) => r.status === "completed" && !r.storage_path).length;
+    const softMissingArchive = softRows.filter((r) => r.status === "completed" && !r.storage_path && Object.prototype.hasOwnProperty.call((r.metadata as Record<string, unknown> | null) ?? {}, "internal_video_archived")).length;
+    const softLegacyFallback = softRows.filter((r) => r.status === "completed" && !r.storage_path && !Object.prototype.hasOwnProperty.call((r.metadata as Record<string, unknown> | null) ?? {}, "internal_video_archived")).length;
     const softLedgerMatched = softRows.filter(videoLedgerMatches).length;
     const softCampaignLinked = softRows.filter((r) => Boolean((r.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id)).length;
     const softBlockers = [
@@ -570,6 +572,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
         active: softActive,
         archived: softArchived,
         missingArchive: softMissingArchive,
+        legacyFallback: softLegacyFallback,
         ledgerMatched: softLedgerMatched,
         ledgerMismatched: softRows.length - softLedgerMatched,
         campaignLinked: softCampaignLinked,
