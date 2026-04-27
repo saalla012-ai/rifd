@@ -128,14 +128,15 @@ function assertProductImagePolicy(plan: string | null | undefined, input: z.infe
 }
 
 function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string) {
-  if (!templateId) return "custom";
-  if (templateId === "custom" && source === "medium-test") {
+  if (source === "medium-test") {
+    if (templateId !== "custom") throw new Error("invalid_medium_test_template");
     if (!mediumTestTemplateId || !mediumTestSampleId) throw new Error("invalid_medium_test_template");
     const sampleIndex = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.findIndex((id) => id === mediumTestTemplateId);
     const expectedSampleId = sampleIndex >= 0 ? `pilot-${String(sampleIndex + 1).padStart(2, "0")}` : null;
     if (!expectedSampleId || mediumTestSampleId !== expectedSampleId) throw new Error("invalid_medium_test_template");
     return "custom";
   }
+  if (!templateId) return "custom";
   if ((SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]).includes(templateId)) return templateId;
   throw new Error("video_template_not_publicly_approved");
 }
