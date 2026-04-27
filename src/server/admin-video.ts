@@ -112,6 +112,7 @@ export type AdminVideoStats = {
     rolloutStartedAt: string | null;
     completed: number;
     refunded: number;
+    failedUnrefunded: number;
     active: number;
     archived: number;
     missingArchive: number;
@@ -446,6 +447,7 @@ function providerSecretName(providerKey: string) {
 function videoLedgerMatches(row: VideoJobRow): boolean {
   if (row.status === "completed") return Boolean(row.ledger_id) && !row.refund_ledger_id;
   if (row.status === "refunded") return Boolean(row.ledger_id && row.refund_ledger_id);
+  if (row.status === "failed") return !row.ledger_id || Boolean(row.refund_ledger_id);
   return true;
 }
 
@@ -560,6 +562,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const softProgressPercent = Math.min(100, Math.round((softRows.length / softTargetSize) * 100));
     const softCompleted = softRows.filter((r) => r.status === "completed").length;
     const softRefunded = softRows.filter((r) => r.status === "refunded").length;
+    const softFailedUnrefunded = softRows.filter((r) => r.status === "failed" && Boolean(r.ledger_id) && !r.refund_ledger_id).length;
     const softActive = softRows.filter((r) => r.status === "pending" || r.status === "processing").length;
     const softArchived = softRows.filter((r) => r.status === "completed" && Boolean(r.storage_path)).length;
     const softMissingArchive = softRows.filter((r) => r.status === "completed" && !r.storage_path && Object.prototype.hasOwnProperty.call((r.metadata as Record<string, unknown> | null) ?? {}, "internal_video_archived")).length;
@@ -569,6 +572,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const softBlockers = [
       softActive > 0 ? "توجد مهام فيديو نشطة ضمن آخر 10 عمليات" : null,
       softMissingArchive > 0 ? "توجد فيديوهات مكتملة ضمن العينة بلا storage_path داخلي" : null,
+      softFailedUnrefunded > 0 ? "توجد مهام فاشلة ضمن العينة لديها خصم بلا استرداد" : null,
       softLedgerMatched !== softRows.length ? "توجد عمليات ضمن العينة لا تطابق قاعدة ledger/refund" : null,
     ].filter(Boolean) as string[];
     const stats: AdminVideoStats = {
@@ -587,6 +591,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
         rolloutStartedAt: archiveRolloutStartedAt,
         completed: softCompleted,
         refunded: softRefunded,
+        failedUnrefunded: softFailedUnrefunded,
         active: softActive,
         archived: softArchived,
         missingArchive: softMissingArchive,
