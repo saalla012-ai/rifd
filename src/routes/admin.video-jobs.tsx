@@ -137,6 +137,8 @@ function AdminVideoJobsPage() {
         <StatCard label="تكلفة العينة" value={`$${(stats?.estimatedCostUsd ?? 0).toFixed(2)}`} icon="cost" />
       </div>
 
+      {stats?.softLaunch && <SoftLaunchMonitor stats={stats.softLaunch} />}
+
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
           <SelectTrigger className="w-full sm:w-52"><SelectValue /></SelectTrigger>
@@ -206,6 +208,45 @@ function AdminVideoJobsPage() {
         </div>
       )}
     </DashboardShell>
+  );
+}
+
+function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) {
+  const progress = `${fmt(stats.sampleSize)}/${fmt(stats.targetSize)}`;
+  const statusLabel = stats.readyForBeta ? "جاهز لقرار Beta" : stats.sampleSize < stats.targetSize ? "يجمع عينة" : "يحتاج مراجعة";
+
+  return (
+    <section className="mb-6 rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className={stats.readyForBeta ? "bg-success/15 text-success" : "bg-warning/20 text-warning-foreground"}>{statusLabel}</Badge>
+            <span className="text-xs font-bold text-muted-foreground">Soft Launch · أول 10 عمليات</span>
+          </div>
+          <h2 className="mt-2 text-lg font-extrabold">مراقبة الإطلاق المحدود</h2>
+          <p className="mt-1 text-sm text-muted-foreground">تتحقق من اكتمال الفيديو، الأرشفة الداخلية، مطابقة دفتر النقاط، وربط الحملات قبل قرار Beta.</p>
+        </div>
+        <div className="text-xs text-muted-foreground">آخر فحص: {fmtDate(stats.checkedAt)}</div>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
+        <MiniMetric label="العينة" value={progress} />
+        <MiniMetric label="مكتملة" value={fmt(stats.completed)} />
+        <MiniMetric label="مسترجعة" value={fmt(stats.refunded)} />
+        <MiniMetric label="نشطة" value={fmt(stats.active)} />
+        <MiniMetric label="مؤرشفة" value={fmt(stats.archived)} />
+        <MiniMetric label="Legacy fallback" value={fmt(stats.legacyFallback)} />
+      </div>
+      {stats.blockers.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs leading-6 text-warning-foreground">
+          {stats.blockers.map((blocker) => <div key={blocker}>• {blocker}</div>)}
+        </div>
+      ) : (
+        <div className="mt-3 rounded-lg border border-success/30 bg-success/10 p-3 text-xs font-medium text-success">لا توجد عوائق في عينة Soft Launch الحالية.</div>
+      )}
+      {stats.legacyFallback > 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">توجد نتائج قديمة قبل قرار التخزين الداخلي وتُعرض كرابط مزود fallback؛ لا تُعد عائقاً إذا لم تتكرر في النتائج الجديدة.</p>
+      )}
+    </section>
   );
 }
 
