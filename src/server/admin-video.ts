@@ -853,7 +853,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
       const evaluation = (metadata.medium_test_evaluation as { score?: unknown } | null) ?? null;
       const releaseDecision: "publishable" | "minor_revision" | "reject_or_reprompt" | null = metadata.medium_test_release_decision === "publishable" || metadata.medium_test_release_decision === "minor_revision" || metadata.medium_test_release_decision === "reject_or_reprompt" ? metadata.medium_test_release_decision : null;
-      const requiredProductImage = quality !== "fast";
+      const requiredProductImage = plannedSample.requiresProductImage;
       const missingProductImage = Boolean(job && requiredProductImage && !job.product_image_url);
       const configurationMismatch = Boolean(job && (job.quality !== quality || job.duration_seconds !== durationSeconds || job.aspect_ratio !== expectedAspectRatio || job.selected_persona_id !== expectedPersonaId));
       const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
@@ -958,7 +958,7 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     if (!job) throw new Error("لا يمكن تقييم عينة لم تُولد بعد ضمن مصفوفة الاختبار المتوسط الرسمية.");
     if (job.status !== "completed" || !job.result_url) throw new Error("لا يمكن تقييم العينة قبل اكتمال الفيديو ووجود رابط نتيجة صالح.");
     if (job.quality !== expectedSample.quality || job.duration_seconds !== expectedSample.durationSeconds || job.aspect_ratio !== expectedSample.expectedAspectRatio || job.selected_persona_id !== expectedSample.personaId) throw new Error("لا يمكن تقييم عينة لا تطابق جودة/مدة/مقاس/شخصية مصفوفة الاختبار الرسمية.");
-    if (expectedSample.quality !== "fast" && !job.product_image_url) throw new Error("لا يمكن تقييم عينة إعلانية/احترافية دون صورة منتج فعلية.");
+    if (expectedSample.requiresProductImage && !job.product_image_url) throw new Error("لا يمكن تقييم عينة إعلانية/احترافية دون صورة منتج فعلية.");
     if (data.resultUrl && data.resultUrl !== job.result_url) throw new Error("رابط النتيجة لا يطابق آخر فيديو رسمي لهذه العينة.");
     const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
     const canonicalResult = { ...result, resultUrl: job.result_url } satisfies SaudiVideoPilotEvaluationResult;

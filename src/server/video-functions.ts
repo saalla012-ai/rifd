@@ -118,9 +118,17 @@ function assertVideoEntitlement(entitlement: VideoEntitlement, input: z.infer<ty
   if (input.durationSeconds > entitlement.max_video_duration_seconds) throw new Error("video_duration_not_allowed");
 }
 
+function mediumTestSampleFromInput(input: Pick<z.infer<typeof videoInputSchema>, "source" | "mediumTestSampleId">) {
+  if (input.source !== "medium-test" || !input.mediumTestSampleId) return null;
+  const sampleNumber = Number(input.mediumTestSampleId.replace("pilot-", ""));
+  if (!Number.isInteger(sampleNumber) || sampleNumber < 1 || sampleNumber > SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.length) return null;
+  return buildSaudiVideoMediumTestSample(sampleNumber - 1);
+}
+
 function assertProductImagePolicy(plan: string | null | undefined, input: z.infer<typeof videoInputSchema>) {
   if (input.source === "medium-test") {
-    if (input.quality !== "fast" && !input.productImageUrl) throw new Error("product_image_required_for_medium_test_video");
+    const sample = mediumTestSampleFromInput(input);
+    if (sample?.requiresProductImage && !input.productImageUrl) throw new Error("product_image_required_for_medium_test_video");
     return;
   }
   if (PLAN_CREDIT_POLICY.paidPlansRequireProductImageForVideo && plan && plan !== "free" && !input.productImageUrl) {
@@ -537,11 +545,11 @@ export const generateVideo = createServerFn({ method: "POST" })
             medium_test: true,
             medium_test_sample_id: data.mediumTestSampleId || null,
             medium_test_template_id: data.mediumTestTemplateId || null,
-            medium_test_product_image_required: data.quality !== "fast",
+            medium_test_product_image_required: mediumTestSampleFromInput(data)?.requiresProductImage ?? false,
           }
         : {};
       const watermarkRequired = profile?.plan === "free";
-      const productImageRequired = (profile?.plan !== "free") || (data.source === "medium-test" && data.quality !== "fast");
+      const productImageRequired = data.source === "medium-test" ? (mediumTestSampleFromInput(data)?.requiresProductImage ?? false) : profile?.plan !== "free";
       const providerInput = { ...data, watermarkRequired } satisfies VideoInput;
 
       const charge = await consume(supabase, cost, "consume_video", {
