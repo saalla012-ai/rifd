@@ -79,6 +79,7 @@ const MEDIUM_TEST_PRODUCT_IMAGES: Partial<Record<string, string>> = {
   "pilot-09": "/medium-test-pilot-09-ramadan-offer.jpg",
   "pilot-10": "/medium-test-pilot-10-eid-gift.jpg",
   "pilot-11": "/medium-test-pilot-11-kids-product.jpg",
+  "pilot-12": "/medium-test-pilot-12-supplements.jpg",
 };
 
 async function imageUrlToDataUrl(value: string) {
