@@ -69,7 +69,7 @@ function DashboardLayout() {
     }
     if (!profile) return;
     const needsOnboarding = !profile.onboarded || !profile.whatsapp;
-    if (needsOnboarding) {
+    if (needsOnboarding && window.location.pathname !== "/onboarding") {
       void navigate({ to: "/onboarding" });
     }
   }, [loading, user, profile, navigate]);
