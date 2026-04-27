@@ -15,7 +15,7 @@ import {
   InsufficientCreditsError,
 } from "./credits";
 import { PLAN_CREDIT_POLICY, isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_PROMPT_TEMPLATES, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
 
 const MAX_PROCESSING_MINUTES = 20;
 const PROCESSING_LIMIT_PER_USER = 2;
@@ -127,10 +127,13 @@ function assertProductImagePolicy(plan: string | null | undefined, input: z.infe
   }
 }
 
-function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string) {
+function assertLaunchTemplatePolicy(templateId?: string, source?: "medium-test", mediumTestTemplateId?: string, mediumTestSampleId?: string) {
   if (!templateId) return "custom";
   if (templateId === "custom" && source === "medium-test") {
-    if (mediumTestTemplateId && !(SAUDI_VIDEO_PROMPT_TEMPLATES.some((template) => template.id === mediumTestTemplateId))) throw new Error("invalid_medium_test_template");
+    if (!mediumTestTemplateId || !mediumTestSampleId) throw new Error("invalid_medium_test_template");
+    const sampleIndex = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.findIndex((id) => id === mediumTestTemplateId);
+    const expectedSampleId = sampleIndex >= 0 ? `pilot-${String(sampleIndex + 1).padStart(2, "0")}` : null;
+    if (!expectedSampleId || mediumTestSampleId !== expectedSampleId) throw new Error("invalid_medium_test_template");
     return "custom";
   }
   if ((SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS as readonly string[]).includes(templateId)) return templateId;
