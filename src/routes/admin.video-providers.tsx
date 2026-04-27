@@ -645,9 +645,10 @@ function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: Saud
         <ScoreInput label="الممنوعات" value={draft.negativeSafety} onChange={(value) => setScore("negativeSafety", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
       </div>
+      {evaluableSamples.length === 0 && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">ابدأ بزر تدقيق الدفعة بعد اكتمال التوليد؛ سيظهر هنا فقط ما يمكن تقييمه تجارياً دون عوائق تشغيلية.</p>}
       {result && <p className="mt-2 text-xs font-semibold text-muted-foreground">{result.gateReason}</p>}
       <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
-      <Button type="button" size="sm" onClick={() => onSubmit(draft)} disabled={saving} className="mt-3 gap-1">
+      <Button type="button" size="sm" onClick={() => onSubmit({ ...draft, resultUrl: selectedSample?.resultUrl ?? draft.resultUrl })} disabled={saving || (Boolean(batch) && !selectedSample)} className="mt-3 gap-1">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />} حفظ تقييم العينة
       </Button>
     </section>
