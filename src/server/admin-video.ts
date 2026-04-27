@@ -65,6 +65,7 @@ async function getSupabaseAdmin() {
 
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
+type MediumAuditJob = Pick<VideoJobRow, "id" | "status" | "result_url" | "credits_charged" | "estimated_cost_usd" | "product_image_url" | "error_message" | "metadata" | "created_at" | "quality" | "duration_seconds" | "aspect_ratio" | "selected_persona_id">;
 
 export type AdminVideoJob = {
   id: string;
@@ -280,6 +281,7 @@ export type SaudiVideoMediumBatchResult = {
   failedOrRefunded: number;
   missingProductImage: number;
   metadataMismatch: number;
+  configurationMismatch: number;
   remainingToGenerate: number;
   remainingToEvaluate: number;
   operationalBlockingIssues: number;
