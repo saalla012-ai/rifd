@@ -421,6 +421,10 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
 }
 
+function extractFalVideoUrl(result: { video?: { url?: string }; video_url?: string; url?: string }) {
+  return result.video?.url ?? result.video_url ?? result.url ?? null;
+}
+
 async function probeFalToken(token: string) {
   const response = await fetch("https://queue.fal.run/fal-ai/pixverse/v6/text-to-video/requests/__rifd_healthcheck__/status", {
     headers: { Authorization: `Key ${token}` },
@@ -746,7 +750,7 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
     const checkedAt = new Date().toISOString();
 
     try {
-      const response = await fetch(`https://fal.run/${model.id}`, {
+      const response = await fetch(`https://queue.fal.run/${model.id}`, {
         method: "POST",
         headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -762,10 +766,10 @@ export const runSaudiFalVideoModelTest = createServerFn({ method: "POST" })
         }),
       });
       const text = await response.text();
-      let result: { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
+      let result: { request_id?: string; response_url?: string; status_url?: string; video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
       try { result = text ? JSON.parse(text) as typeof result : {}; } catch { result = { error: text.slice(0, 500) }; }
       if (!response.ok || result.error) throw new Error(result.error || `fal.ai ${response.status}: ${text.slice(0, 500)}`);
-      const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
+      const resultUrl = extractFalVideoUrl(result);
       const out = { ok: true, status: resultUrl ? "completed" : "submitted", requestId: result.request_id ?? null, resultUrl, latencyMs: Date.now() - startedAt, estimatedCostUsd: model.estimatedUsd, error: null, checkedAt, prompt, model, persona, scenario, imageEvaluation } satisfies SaudiFalModelTestResult;
       await logAdminAudit({ adminId: userId, action: "run_saudi_fal_video_model_test", targetTable: "video_provider_configs", targetId: model.id, after: out as unknown as Json });
       return out;
