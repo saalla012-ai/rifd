@@ -607,7 +607,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
               <div key={`run-${sample.sampleId}`} className="rounded-md border border-border bg-background/70 p-2 text-xs">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{sample.sampleId}</span>
-                  {sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
+                  {sample.issue?.includes("45 دقيقة") ? <Badge className="bg-destructive/15 text-destructive">عالقة</Badge> : sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
                 </div>
                 <p className="mt-1 truncate text-muted-foreground">{sample.label}</p>
                 <Button asChild size="sm" variant="outline" className="mt-2 h-8 w-full text-xs">
