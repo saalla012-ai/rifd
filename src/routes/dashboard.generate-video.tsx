@@ -493,8 +493,8 @@ function GenerateVideoPage() {
 
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-bold text-foreground">سيتم خصم {selectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
-              <span className={cn("text-xs", hasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{hasEnoughCredits ? `المدة المعتمدة: ${effectiveDurationSeconds}ث · يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم` : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
+              <span className="font-bold text-foreground">سيتم خصم {canonicalSelectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
+              <span className={cn("text-xs", canonicalHasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{canonicalHasEnoughCredits ? `المدة المعتمدة: ${canonicalGenerationDurationSeconds}ث · يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم` : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">الاستخدام يعتمد على رصيد النقاط فقط، مع حماية تشغيلية للمهام المتزامنة.</p>
             <p className="mt-1 text-xs font-bold text-muted-foreground">
@@ -502,7 +502,7 @@ function GenerateVideoPage() {
             </p>
           </div>
 
-          <Button onClick={generate} disabled={loading || creditsLoading || !hasEnoughCredits || !selectedQualityAllowed || !selectedDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button onClick={generate} disabled={loading || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
