@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdmin, logAdminAudit, type DbClient } from "@/server/admin-auth";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { isValidVideoTierSelection } from "@/lib/plan-catalog";
-import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_PLAN, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, evaluateSaudiVideoImage, withSaudiPromptAdherence } from "@/lib/saudi-video-test";
+import { FAL_VIDEO_TEST_MODELS, SAUDI_VIDEO_LAUNCH_DECISION, SAUDI_VIDEO_LAUNCH_TEMPLATE_IDS, SAUDI_VIDEO_MEDIUM_TEST_PLAN, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, SAUDI_VIDEO_TEST_SCENARIOS, buildSaudiFalTestPrompt, buildSaudiVideoMediumTestSample, evaluateSaudiVideoImage } from "@/lib/saudi-video-test";
 
 const ListAdminVideoJobsInput = z.object({
   status: z.enum(["all", "pending", "processing", "completed", "failed", "refunded"]).default("all"),
@@ -797,43 +797,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const selectedTemplates = [...SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS];
-    const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
-    const samples = selectedTemplates.map((templateId, index) => {
-      const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
-      const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
-      const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
-      const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
-      const expectedAspectRatio: "9:16" | "1:1" | "16:9" = "9:16";
-      const mustPass = template.risk === "عالٍ"
-        ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
-        : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"];
-      const finalPrompt = withSaudiPromptAdherence([
-        template.prompt,
-        `هدف العينة ${index + 1}: ${quality === "quality" ? "اختبار إعلان مدفوع عالي الجودة" : quality === "lite" ? "اختبار إعلان يومي قابل للنشر" : "اختبار سريع لسلامة الفكرة"}.`,
-        `الشخصية المرجعية: ${persona.brief}`,
-        "يجب تسجيل النتيجة في مصفوفة الاختبار المتوسط قبل فتح القالب للعامة.",
-      ].join("\n\n"));
-      return {
-        sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
-        templateId: template.id,
-        label: template.label,
-        sector: template.sector,
-        personaId: persona.id,
-        personaLabel: persona.label,
-        quality,
-        durationSeconds,
-        expectedAspectRatio,
-        requiresProductImage: quality !== "fast",
-        objective: quality === "quality" ? "قياس صلاحية إعلان مدفوع عالي الجودة" : quality === "lite" ? "قياس إعلان يومي قابل للنشر" : "قياس سرعة الفكرة وسلامة الهوية السعودية",
-        technicalGate: [`النسبة المطلوبة للإطلاق: ${expectedAspectRatio}`, `المدة المطلوبة: ${durationSeconds} ثوانٍ`, "H.264 MP4 قابل للنشر", "لا اعتماد تجاري لأي عينة تخرج مربعة أو أفقية ضمن مصفوفة الإطلاق"],
-        mustPass,
-        scorecard: SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD.map((item) => `${item.label} ${item.weight}%`),
-        promptAdherenceGate: "لا يُقبل القالب إذا تجاهل المنتج أو الصوت أو الحركة الأساسية حتى لو كان الفيديو جميلاً بصرياً.",
-        finalPrompt,
-        generationPayload: { prompt: finalPrompt, quality, aspectRatio: expectedAspectRatio, durationSeconds, selectedPersonaId: persona.id, selectedTemplateId: "custom" as const, requiresProductImage: quality !== "fast" },
-      };
-    });
+    const samples = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.map((_, index) => buildSaudiVideoMediumTestSample(index));
     const result: SaudiVideoPilotMatrixResult = {
       checkedAt: new Date().toISOString(),
       testLevel: "medium",
@@ -880,13 +844,10 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       if (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime()) jobsBySample.set(sampleId, row);
     }
 
-    const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
     const samples = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.map((templateId, index) => {
-      const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
-      const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
-      const durationSeconds = quality === "fast" ? 5 : 8;
-      const sampleId = `pilot-${String(index + 1).padStart(2, "0")}`;
-      const expectedPersonaId = personas[index % personas.length];
+      const plannedSample = buildSaudiVideoMediumTestSample(index);
+      const { quality, durationSeconds, sampleId } = plannedSample;
+      const expectedPersonaId = plannedSample.personaId;
       const job = jobsBySample.get(sampleId) ?? null;
       const mismatchedJob = mismatchedJobsBySample.get(sampleId) ?? null;
       const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
@@ -898,10 +859,10 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
       return {
         sampleId,
-        templateId: template.id,
-        label: template.label,
-        sector: template.sector,
-        personaId: personas[index % personas.length],
+        templateId: plannedSample.templateId,
+        label: plannedSample.label,
+        sector: plannedSample.sector,
+        personaId: plannedSample.personaId,
         requiredProductImage,
         jobId: job?.id ?? null,
         status,
@@ -983,10 +944,8 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const decision = hardFail ? "reject_or_reprompt" : score >= 80 ? "publishable" : score >= 65 ? "minor_revision" : "reject_or_reprompt";
     const gateReason = hardFail ? "رفض مؤقت: تجاهل المنتج أو الصوت أو ظهرت مخالفة/تشوه قوي." : score >= 80 ? "جاهز لتكرار أوسع ضمن بوابة 80%+." : score >= 65 ? "يحتاج ضبط برومبت قبل أي فتح عام." : "يبقى مخفياً ويعاد توليده بعد إعادة صياغة كبيرة.";
     const sampleNumber = Number(data.sampleId.replace("pilot-", ""));
-    const expectedTemplateId = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[sampleNumber - 1];
-    const expectedQuality = sampleNumber <= 4 ? "fast" : sampleNumber <= 11 ? "lite" : "quality";
-    const expectedDurationSeconds = expectedQuality === "fast" ? 5 : 8;
-    const expectedPersonaId = (["male-premium", "female-abaya", "retail-seller", "male-young"] as const)[(sampleNumber - 1) % 4];
+    const expectedSample = buildSaudiVideoMediumTestSample(sampleNumber - 1);
+    const expectedTemplateId = expectedSample.templateId;
     const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, gateReason, evaluatedAt: new Date().toISOString() } satisfies SaudiVideoPilotEvaluationResult;
     const { data: jobs } = await admin
       .from("video_jobs")
@@ -997,8 +956,8 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const job = jobs?.[0] as Pick<VideoJobRow, "id" | "status" | "result_url" | "product_image_url" | "metadata" | "created_at" | "quality" | "duration_seconds" | "aspect_ratio" | "selected_persona_id"> | undefined;
     if (!job) throw new Error("لا يمكن تقييم عينة لم تُولد بعد ضمن مصفوفة الاختبار المتوسط الرسمية.");
     if (job.status !== "completed" || !job.result_url) throw new Error("لا يمكن تقييم العينة قبل اكتمال الفيديو ووجود رابط نتيجة صالح.");
-    if (job.quality !== expectedQuality || job.duration_seconds !== expectedDurationSeconds || job.aspect_ratio !== "9:16" || job.selected_persona_id !== expectedPersonaId) throw new Error("لا يمكن تقييم عينة لا تطابق جودة/مدة/مقاس/شخصية مصفوفة الاختبار الرسمية.");
-    if (expectedQuality !== "fast" && !job.product_image_url) throw new Error("لا يمكن تقييم عينة إعلانية/احترافية دون صورة منتج فعلية.");
+    if (job.quality !== expectedSample.quality || job.duration_seconds !== expectedSample.durationSeconds || job.aspect_ratio !== expectedSample.expectedAspectRatio || job.selected_persona_id !== expectedSample.personaId) throw new Error("لا يمكن تقييم عينة لا تطابق جودة/مدة/مقاس/شخصية مصفوفة الاختبار الرسمية.");
+    if (expectedSample.quality !== "fast" && !job.product_image_url) throw new Error("لا يمكن تقييم عينة إعلانية/احترافية دون صورة منتج فعلية.");
     if (data.resultUrl && data.resultUrl !== job.result_url) throw new Error("رابط النتيجة لا يطابق آخر فيديو رسمي لهذه العينة.");
     const metadata = (job.metadata as Record<string, unknown> | null) ?? {};
     const canonicalResult = { ...result, resultUrl: job.result_url } satisfies SaudiVideoPilotEvaluationResult;
