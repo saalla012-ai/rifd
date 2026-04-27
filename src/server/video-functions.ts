@@ -262,12 +262,13 @@ function buildSaudiVideoPrompt(input: VideoInput) {
   return limitFalPrompt(withSaudiPromptAdherence(prompt));
 }
 
-function primaryReferenceImage(input: VideoInput) {
-  return input.providerImageUrl || input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
-}
-
 function sourceReferenceImage(input: VideoInput) {
   return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
+}
+
+function assertProviderImageCdn(url?: string) {
+  if (!url) return;
+  if (!/^https:\/\/(?:v\d+\.)?fal\.media\//i.test(url)) throw new Error("provider_image_not_cdn");
 }
 
 async function providerReachableImageUrl(url?: string) {
