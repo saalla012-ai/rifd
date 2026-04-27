@@ -219,14 +219,17 @@ function GenerateVideoPage() {
       toast.error(mediumTestProductImageRequired ? "صورة المنتج إلزامية لهذه العينة حتى يكون اختبار الالتزام عادلاً" : "صورة المنتج مطلوبة في الباقات المدفوعة حتى يظهر المنتج بوضوح داخل الإعلان");
       return;
     }
+    if (internalMediumTestMode && !mediumTestCanonicalSample) {
+      toast.error("رابط عينة الاختبار الداخلي غير مطابق للمصفوفة الرسمية");
+      return;
+    }
     setLoading(true);
     setQuotaDialog({ open: false });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
-      const effectiveMediumTestTemplate = internalMediumTestMode ? mediumTestTemplate : null;
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: search.mediumTestSampleId, mediumTestTemplateId: effectiveMediumTestTemplate?.id },
+        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
