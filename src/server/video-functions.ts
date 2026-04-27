@@ -453,6 +453,8 @@ const FAL_MODEL_BY_QUALITY: Record<VideoQuality, string> = {
   quality: "fal-ai/pixverse/v6/image-to-video",
 };
 
+const FAL_TEXT_TO_VIDEO_MODEL = "fal-ai/pixverse/v6/text-to-video";
+
 const PIXVERSE_RESOLUTION_BY_QUALITY: Record<VideoQuality, string> = {
   fast: "360p",
   lite: "540p",
@@ -483,9 +485,9 @@ const falProvider: VideoProvider = {
   async createJob(input) {
     const token = process.env.FAL_API_KEY;
     if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
-    const model = FAL_MODEL_BY_QUALITY[input.quality];
       const finalProviderPrompt = buildSaudiVideoPrompt(input);
       const providerImageUrl = input.providerImageUrl;
+      const model = providerImageUrl ? FAL_MODEL_BY_QUALITY[input.quality] : FAL_TEXT_TO_VIDEO_MODEL;
       assertProviderImageCdn(providerImageUrl);
       const response = await fetch(`https://queue.fal.run/${model}`, {
       method: "POST",
