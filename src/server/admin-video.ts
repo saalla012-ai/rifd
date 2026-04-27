@@ -853,6 +853,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const expectedPersonaId = plannedSample.personaId;
       const job = jobsBySample.get(sampleId) ?? null;
       const mismatchedJob = mismatchedJobsBySample.get(sampleId) ?? null;
+      const newerMetadataMismatch = Boolean(mismatchedJob && (!job || new Date(mismatchedJob.created_at).getTime() > new Date(job.created_at).getTime()));
       const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
       const evaluation = (metadata.medium_test_evaluation as { score?: unknown } | null) ?? null;
       const releaseDecision: "publishable" | "minor_revision" | "reject_or_reprompt" | null = metadata.medium_test_release_decision === "publishable" || metadata.medium_test_release_decision === "minor_revision" || metadata.medium_test_release_decision === "reject_or_reprompt" ? metadata.medium_test_release_decision : null;
@@ -876,8 +877,10 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         evaluationScore: typeof evaluation?.score === "number" ? evaluation.score : null,
         releaseDecision,
         createdAt: job?.created_at ?? null,
-        issue: !job
-          ? mismatchedJob ? "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي" : "لم تُولد العينة بعد"
+        issue: newerMetadataMismatch
+          ? "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي"
+          : !job
+          ? "لم تُولد العينة بعد"
           : configurationMismatch
             ? "إعدادات التوليد لا تطابق مصفوفة الاختبار الرسمية"
             : job.status === "completed" && !job.result_url
