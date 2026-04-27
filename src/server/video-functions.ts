@@ -756,7 +756,6 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (error || !job) throw new Error(`فشل جلب مهمة الفيديو: ${error?.message ?? "غير موجودة"}`);
     const row = job as VideoJobRow;
     if (row.status !== "processing") return { job: row };
-    if (!row.provider_job_id) return { job: row };
 
     const createdAt = new Date(row.created_at).getTime();
     const isStale = Number.isFinite(createdAt) && Date.now() - createdAt > MAX_PROCESSING_MINUTES * 60_000;
@@ -766,6 +765,8 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
       const updated = await markProcessingJobRefunded({ jobId: row.id, refundLedgerId: effectiveRefundLedgerId, errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً." });
       return { job: updated };
     }
+
+    if (!row.provider_job_id) return { job: row };
 
     const provider = PROVIDERS[row.provider];
     if (!provider) throw new Error("مزود الفيديو المستخدم في هذه المهمة لم يعد مدعوماً");
