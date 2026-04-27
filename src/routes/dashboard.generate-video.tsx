@@ -160,6 +160,7 @@ function GenerateVideoPage() {
   const canonicalQualityAllowed = canonicalGenerationQuality === "quality" ? (credits?.videoQualityAllowed ?? true) : (credits?.videoFastAllowed ?? true);
   const canonicalDurationAllowed = canonicalGenerationDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const canonicalHasEnoughCredits = credits ? credits.totalCredits >= canonicalSelectedCost : true;
+  const activeJobInProgress = activeJob?.status === "pending" || activeJob?.status === "processing";
   const visibleJobs = useMemo(() => {
     if (!internalMediumTestMode) return jobs;
     if (!mediumTestCanonicalSample) return [];
@@ -203,10 +204,10 @@ function GenerateVideoPage() {
   }, []);
 
   useEffect(() => {
-    if (activeJob?.status !== "processing" && activeJob?.status !== "pending") return;
+    if (!activeJobInProgress) return;
     const id = window.setInterval(() => void refreshActiveJob(false), 8_000);
     return () => window.clearInterval(id);
-  }, [activeJob?.id, activeJob?.status]);
+  }, [activeJob?.id, activeJobInProgress]);
 
   useEffect(() => {
     setPreviewError(false);
@@ -282,7 +283,7 @@ function GenerateVideoPage() {
       });
       setActiveJob(out.job);
       setJobs((current) => current.map((job) => job.id === out.job.id ? out.job : job));
-      if (out.job.status !== "processing") void refreshCredits();
+      if (out.job.status !== "processing" && out.job.status !== "pending") void refreshCredits();
       if (out.job.status === "completed" && out.job.result_url && previousStatus !== "completed") toast.success("الفيديو جاهز للمعاينة والتحميل");
       else if (showToast) toast.success(out.job.status === "processing" || out.job.status === "pending" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
     } catch (e) {
@@ -528,7 +529,7 @@ function GenerateVideoPage() {
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-extrabold">المعاينة</h2>
               <div className="flex flex-wrap items-center gap-2">
-                {(activeJob?.status === "processing" || activeJob?.status === "pending") && (
+                {activeJobInProgress && (
                   <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
                     <RefreshCw className="h-3 w-3" /> تحديث
                   </button>
@@ -555,7 +556,7 @@ function GenerateVideoPage() {
                     </div>
                   )}
                 </div>
-              ) : loading || activeJob?.status === "pending" || activeJob?.status === "processing" ? (
+              ) : loading || activeJobInProgress ? (
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               ) : (
                 <div className="px-8">
