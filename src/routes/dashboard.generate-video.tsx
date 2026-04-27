@@ -163,6 +163,8 @@ function GenerateVideoPage() {
   const canonicalDurationAllowed = canonicalGenerationDurationSeconds <= (credits?.maxVideoDurationSeconds ?? 8);
   const canonicalHasEnoughCredits = credits ? credits.totalCredits >= canonicalSelectedCost : true;
   const activeJobInProgress = activeJob?.status === "pending" || activeJob?.status === "processing";
+  const activeJobsCount = jobs.filter((job) => job.status === "pending" || job.status === "processing").length;
+  const reachedConcurrentLimit = activeJobsCount >= 2;
   const visibleJobs = useMemo(() => {
     if (!internalMediumTestMode) return jobs;
     if (!mediumTestCanonicalSample) return [];
@@ -520,10 +522,15 @@ function GenerateVideoPage() {
             <p className="mt-1 text-xs font-bold text-muted-foreground">
               {watermarkRequired ? "الباقة المجانية تضيف علامة Rifd المائية تلقائياً؛ الباقات المدفوعة بدون علامة مائية." : "باقتك الحالية تولّد فيديوهات بدون علامة مائية من Rifd."}
             </p>
+            {reachedConcurrentLimit && (
+              <p className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs font-bold text-warning-foreground">
+                لديك مهمتا فيديو قيد المعالجة الآن؛ يمكنك توليد فيديو جديد بعد اكتمال أو استرداد إحداهما.
+              </p>
+            )}
           </div>
 
-          <Button onClick={generate} disabled={loading || activeJobInProgress || visibleJobInProgress || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
-            {loading || activeJobInProgress || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري معالجة الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
+          <Button onClick={generate} disabled={loading || reachedConcurrentLimit || visibleJobInProgress || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال المهمة...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
 

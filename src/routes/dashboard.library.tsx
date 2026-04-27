@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 
+const ACTIVE_VIDEO_STATUSES = new Set(["pending", "processing"]);
+
 export const Route = createFileRoute("/dashboard/library")({
   head: () => ({ meta: [{ title: "مكتبتي — رِفد" }] }),
   component: LibraryPage,
@@ -125,12 +127,12 @@ function LibraryPage() {
   };
 
   useEffect(() => {
-    if (authLoading || !user || !videoJobs.some((job) => job.status === "processing")) return;
+    if (authLoading || !user || !videoJobs.some((job) => ACTIVE_VIDEO_STATUSES.has(job.status))) return;
     const id = window.setInterval(async () => {
       if (document.visibilityState !== "visible") return;
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const processingJobs = videoJobs.filter((job) => job.status === "processing").slice(0, 2);
+      const processingJobs = videoJobs.filter((job) => ACTIVE_VIDEO_STATUSES.has(job.status)).slice(0, 2);
       await Promise.allSettled(processingJobs.map(async (job) => {
         const out = await refreshVideoJobFn({ data: { jobId: job.id }, headers: { Authorization: `Bearer ${session.access_token}` } });
         setVideoJobs((jobs) => jobs.map((current) => (current.id === out.job.id ? out.job : current)));
@@ -293,11 +295,12 @@ function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob
                   <span>{new Date(job.created_at).toLocaleDateString("ar-SA")}</span>
                   <span>{job.credits_charged.toLocaleString("ar-SA")} نقطة</span>
                 </div>
-                {job.status === "processing" && (
+                <div className="flex gap-2">
+                {ACTIVE_VIDEO_STATUSES.has(job.status) && (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 w-full gap-2 text-xs"
+                    className="h-8 flex-1 gap-2 text-xs"
                     disabled={refreshingJobId === job.id}
                     onClick={() => onRefresh(job.id)}
                   >
@@ -305,6 +308,12 @@ function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob
                     تحديث الحالة
                   </Button>
                 )}
+                {job.result_url && (
+                  <Button asChild size="sm" variant="outline" className="h-8 flex-1 text-xs">
+                    <a href={job.result_url} target="_blank" rel="noreferrer">فتح الفيديو</a>
+                  </Button>
+                )}
+                </div>
               </div>
             </article>
           ))}

@@ -131,7 +131,7 @@ function AdminVideoJobsPage() {
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="إجمالي المهام" value={fmt(stats?.total ?? 0)} />
-        <StatCard label="قيد المعالجة" value={fmt(stats?.processing ?? 0)} tone="warning" />
+        <StatCard label="نشطة الآن" value={fmt((stats?.processing ?? 0) + rows.filter((row) => row.status === "pending").length)} tone="warning" />
         <StatCard label="مكتملة" value={fmt(stats?.completed ?? 0)} tone="success" />
         <StatCard label="مسترجعة" value={fmt(stats?.refunded ?? 0)} tone="gold" />
         <StatCard label="تكلفة العينة" value={`$${(stats?.estimatedCostUsd ?? 0).toFixed(2)}`} icon="cost" />
@@ -172,6 +172,8 @@ function AdminVideoJobsPage() {
                     <span className="mx-1">·</span>
                     <span>{fmtDate(job.created_at)}</span>
                     {job.provider && <span className="mx-1">· {job.provider}</span>}
+                    {job.provider_job_id && <span className="mx-1">· Provider ID: {job.provider_job_id.slice(0, 12)}</span>}
+                    {job.completed_at && <span className="mx-1">· اكتمل: {fmtDate(job.completed_at)}</span>}
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <Badge variant="secondary">{providerModeLabel(jobMeta(job.metadata).provider_mode, jobMeta(job.metadata).manual_required)}</Badge>
@@ -194,8 +196,8 @@ function AdminVideoJobsPage() {
                 <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 lg:grid-cols-2">
                   <MiniMetric label="نقاط" value={fmt(job.credits_charged)} />
                   <MiniMetric label="تكلفة" value={`$${Number(job.estimated_cost_usd ?? 0).toFixed(2)}`} />
-                  <MiniMetric label="Ledger" value={job.ledger_id ? job.ledger_id.slice(0, 8) : "—"} />
-                  <MiniMetric label="Refund" value={job.refund_ledger_id ? job.refund_ledger_id.slice(0, 8) : "—"} />
+                  <MiniMetric label="Ledger" value={job.ledger_id ? job.ledger_id.slice(0, 8) : "—"} title={job.ledger_id ?? undefined} />
+                  <MiniMetric label="Refund" value={job.refund_ledger_id ? job.refund_ledger_id.slice(0, 8) : "—"} title={job.refund_ledger_id ?? undefined} />
                 </div>
               </article>
             ))}
@@ -218,11 +220,11 @@ function StatCard({ label, value, tone, icon }: { label: string; value: string; 
   );
 }
 
-function MiniMetric({ label, value }: { label: string; value: string }) {
+function MiniMetric({ label, value, title }: { label: string; value: string; title?: string }) {
   return (
     <div className="rounded-lg border border-border bg-secondary/30 p-2">
       <p className="text-[10px] text-muted-foreground">{label}</p>
-      <p className="mt-0.5 truncate font-bold tabular-nums">{value}</p>
+      <p className="mt-0.5 truncate font-bold tabular-nums" title={title}>{value}</p>
     </div>
   );
 }
