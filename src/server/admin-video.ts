@@ -969,6 +969,17 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const expectedSample = buildSaudiVideoMediumTestSample(sampleNumber - 1);
     const expectedTemplateId = expectedSample.templateId;
     const result = { ...data, resultUrl: data.resultUrl || undefined, notes: data.notes || undefined, score, decision, gateReason, evaluatedAt: new Date().toISOString() } satisfies SaudiVideoPilotEvaluationResult;
+    const { data: latestSampleJobs } = await admin
+      .from("video_jobs")
+      .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
+      .contains("metadata", { medium_test: true, medium_test_sample_id: data.sampleId })
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const latestSampleJob = latestSampleJobs?.[0] as Pick<VideoJobRow, "id" | "status" | "result_url" | "product_image_url" | "metadata" | "created_at" | "quality" | "duration_seconds" | "aspect_ratio" | "selected_persona_id"> | undefined;
+    const latestSampleMetadata = (latestSampleJob?.metadata as Record<string, unknown> | null) ?? {};
+    if (latestSampleJob && latestSampleMetadata.medium_test_template_id !== expectedTemplateId) {
+      throw new Error("لا يمكن تقييم العينة لأن آخر مهمة موسومة لها لا تطابق قالب المصفوفة الرسمي؛ أعد فتح العينة من لوحة الإدارة وشغّلها من الرابط الرسمي.");
+    }
     const { data: jobs } = await admin
       .from("video_jobs")
       .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
