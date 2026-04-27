@@ -421,6 +421,15 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
 }
 
+async function probeFalToken(token: string) {
+  const response = await fetch("https://queue.fal.run/fal-ai/pixverse/v6/text-to-video/requests/__rifd_healthcheck__/status", {
+    headers: { Authorization: `Key ${token}` },
+  });
+  if (response.status === 404) return { ok: true, message: "مفتاح fal.ai صالح؛ فحص الطلب الوهمي عاد 404 كما هو متوقع." };
+  if (response.status === 401 || response.status === 403) return { ok: false, message: "مفتاح fal.ai مرفوض من المزود." };
+  return { ok: response.ok, message: response.ok ? "مفتاح fal.ai صالح." : `تعذر تأكيد مفتاح fal.ai: ${response.status}` };
+}
+
 async function refundVideoCreditsOnce(ledgerId: string | null) {
   if (!ledgerId) return { refundId: null as string | null, newlyRefunded: false };
   const { data: refundId, error } = await (await getSupabaseAdmin()).rpc("refund_credits", { _ledger_id: ledgerId, _reason: "manual_video_refund" });
@@ -667,12 +676,13 @@ export const testVideoProviderConnection = createServerFn({ method: "POST" })
       const secretName = providerSecretName(provider.provider_key)!;
       const tokenReady = Boolean(process.env[secretName]);
       const implemented = provider.provider_key === "fal_ai";
+      const liveProbe = tokenReady && implemented ? await probeFalToken(process.env[secretName]!) : null;
       result = {
         providerKey: provider.provider_key,
-        ok: tokenReady && implemented,
-        status: tokenReady && implemented ? "active" : "unhealthy",
+        ok: Boolean(tokenReady && implemented && liveProbe?.ok),
+        status: tokenReady && implemented && liveProbe?.ok ? "active" : "unhealthy",
         latencyMs: Date.now() - startedAt,
-        message: !tokenReady ? `مفتاح ${secretName} غير متوفر` : implemented ? "مفتاح المزود موجود والراوتر قادر على استخدامه" : "المفتاح موجود لكن موصل التنفيذ لم يُفعّل بعد",
+        message: !tokenReady ? `مفتاح ${secretName} غير متوفر` : implemented ? liveProbe?.message ?? "تعذر فحص مفتاح المزود" : "المفتاح موجود لكن موصل التنفيذ لم يُفعّل بعد",
         checkedAt,
       };
     } else {

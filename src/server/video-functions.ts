@@ -402,6 +402,18 @@ const PIXVERSE_RESOLUTION_BY_QUALITY: Record<VideoQuality, string> = {
 
 const PIXVERSE_NEGATIVE_PROMPT = "distorted face, deformed hands, extra fingers, unreadable Arabic text, misspelled text, western clothing, immodest styling, unrealistic product, duplicated product, plain white cutout background, shaky low quality footage, exaggerated claims";
 
+function extractFalVideoUrl(result: { video?: { url?: string }; video_url?: string; url?: string }) {
+  return result.video?.url ?? result.video_url ?? result.url ?? null;
+}
+
+function normalizeFalStatus(status?: string): ProviderStatus {
+  const value = (status ?? "").toUpperCase();
+  if (value === "COMPLETED" || value === "SUCCEEDED" || value === "SUCCESS") return "succeeded";
+  if (value === "FAILED" || value === "ERROR") return "failed";
+  if (value === "CANCELED" || value === "CANCELLED") return "canceled";
+  return "processing";
+}
+
 const falProvider: VideoProvider = {
   key: "fal_ai",
   async createJob(input) {
@@ -409,7 +421,7 @@ const falProvider: VideoProvider = {
     if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
     const model = FAL_MODEL_BY_QUALITY[input.quality];
       const finalProviderPrompt = buildSaudiVideoPrompt(input);
-      const response = await fetch(`https://fal.run/${model}`, {
+      const response = await fetch(`https://queue.fal.run/${model}`, {
       method: "POST",
       headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -430,11 +442,31 @@ const falProvider: VideoProvider = {
     }
     const result = await response.json() as { request_id?: string; video?: { url?: string }; video_url?: string; url?: string; status?: string; error?: string };
     if (result.error) throw new Error(`فشل مزوّد الفيديو: ${result.error}`);
-    const resultUrl = result.video?.url ?? result.video_url ?? result.url ?? null;
-    return { providerJobId: result.request_id ?? null, status: resultUrl ? "succeeded" : "processing", resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, fal_result_shape: Object.keys(result) } };
+    const resultUrl = extractFalVideoUrl(result);
+    const status = resultUrl ? "succeeded" : normalizeFalStatus(result.status);
+    return { providerJobId: result.request_id ?? null, status, resultUrl, estimatedCostUsd: estimatedVideoCostUsd(input.quality, input.durationSeconds), metadata: { model, resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality], audio_requested: true, final_provider_prompt: finalProviderPrompt, prompt_adherence_required: true, fal_result_shape: Object.keys(result) } };
   },
-  async refreshJob(_providerJobId, row) {
-    return { status: row.result_url ? "succeeded" : "processing", resultUrl: row.result_url };
+  async refreshJob(providerJobId, row) {
+    if (row.result_url) return { status: "succeeded", resultUrl: row.result_url };
+    const token = process.env.FAL_API_KEY;
+    if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
+    const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+    const model = typeof metadata.model === "string" ? metadata.model : FAL_MODEL_BY_QUALITY[row.quality as VideoQuality];
+    const statusResponse = await fetch(`https://queue.fal.run/${model}/requests/${providerJobId}/status`, { headers: { Authorization: `Key ${token}` } });
+    const statusText = await statusResponse.text();
+    let statusPayload: { status?: string; error?: string; logs?: unknown } = {};
+    try { statusPayload = statusText ? JSON.parse(statusText) as typeof statusPayload : {}; } catch { statusPayload = { error: statusText.slice(0, 300) }; }
+    if (!statusResponse.ok || statusPayload.error) throw new Error(`فشل تحديث مزوّد الفيديو (${statusResponse.status}): ${statusPayload.error ?? statusText.slice(0, 300)}`);
+    const providerStatus = normalizeFalStatus(statusPayload.status);
+    if (providerStatus !== "succeeded") return { status: providerStatus, resultUrl: null, error: statusPayload.error ?? null, metadata: { fal_queue_status: statusPayload.status ?? "unknown" } };
+
+    const resultResponse = await fetch(`https://queue.fal.run/${model}/requests/${providerJobId}`, { headers: { Authorization: `Key ${token}` } });
+    const resultText = await resultResponse.text();
+    let resultPayload: { video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
+    try { resultPayload = resultText ? JSON.parse(resultText) as typeof resultPayload : {}; } catch { resultPayload = { error: resultText.slice(0, 300) }; }
+    if (!resultResponse.ok || resultPayload.error) throw new Error(`فشل جلب نتيجة مزوّد الفيديو (${resultResponse.status}): ${resultPayload.error ?? resultText.slice(0, 300)}`);
+    const resultUrl = extractFalVideoUrl(resultPayload);
+    return { status: resultUrl ? "succeeded" : "failed", resultUrl, error: resultUrl ? null : "اكتمل طلب المزود دون رابط فيديو", metadata: { fal_queue_status: statusPayload.status ?? "COMPLETED" } };
   },
 };
 
