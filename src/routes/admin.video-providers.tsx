@@ -535,15 +535,15 @@ function PilotMatrixPanel({ matrix }: { matrix: SaudiVideoPilotMatrixResult }) {
             <p className="mt-1 text-muted-foreground">شرط النجاح: {sample.mustPass.join(" · ")}</p>
             <p className="mt-2 text-muted-foreground">التقييم: {sample.scorecard.join(" · ")}</p>
             <p className="mt-1 font-semibold text-foreground">{sample.promptAdherenceGate}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">فتح للتوليد</Link>
+              </Button>
+              {sample.generationPayload.requiresProductImage && <Badge className="bg-gold/15 text-gold">أضف صورة منتج قبل التشغيل</Badge>}
+            </div>
               <details className="mt-2 rounded-md border border-border bg-secondary/30 p-2">
                 <summary className="cursor-pointer font-bold text-foreground">برومبت التنفيذ النهائي</summary>
                 <Textarea readOnly dir="rtl" value={sample.finalPrompt} className="mt-2 min-h-40 text-xs leading-6" />
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                    <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">فتح للتوليد</Link>
-                  </Button>
-                  {sample.generationPayload.requiresProductImage && <Badge className="bg-gold/15 text-gold">أضف صورة منتج قبل التشغيل</Badge>}
-                </div>
               </details>
           </div>
         ))}
