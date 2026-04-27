@@ -607,13 +607,14 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
             <span className="text-xs text-muted-foreground">{nextRunnableSamples.length.toLocaleString("ar-SA")} عينة تحتاج توليداً أو إصلاحاً؛ افتحها بالترتيب، ثم عد لتدقيق الدفعة.</span>
           </div>
           <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-            {nextRunnableSamples.map((sample) => (
+            {nextRunnableSamples.map((sample, index) => (
               <div key={`run-${sample.sampleId}`} className="rounded-md border border-border bg-background/70 p-2 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold">{sample.sampleId}</span>
+                  <span className="font-bold">{(index + 1).toLocaleString("ar-SA")} · {sample.sampleId}</span>
                   {sample.issue?.includes("45 دقيقة") ? <Badge className="bg-destructive/15 text-destructive">عالقة</Badge> : sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
                 </div>
                 <p className="mt-1 truncate text-muted-foreground">{sample.label}</p>
+                {sample.issue && <p className="mt-1 line-clamp-2 text-muted-foreground">سبب الإعادة: {sample.issue}</p>}
                 <Button asChild size="sm" variant="outline" className="mt-2 h-8 w-full text-xs">
                   <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">
                     فتح العينة
