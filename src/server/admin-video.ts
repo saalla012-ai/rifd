@@ -872,7 +872,15 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         evaluationScore: typeof evaluation?.score === "number" ? evaluation.score : null,
         releaseDecision,
         createdAt: job?.created_at ?? null,
-        issue: !job ? mismatchedJob ? "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي" : "لم تُولد العينة بعد" : configurationMismatch ? "إعدادات التوليد لا تطابق مصفوفة الاختبار الرسمية" : missingProductImage ? "صورة المنتج الإلزامية غير مرفقة" : job.error_message,
+        issue: !job
+          ? mismatchedJob ? "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي" : "لم تُولد العينة بعد"
+          : configurationMismatch
+            ? "إعدادات التوليد لا تطابق مصفوفة الاختبار الرسمية"
+            : missingProductImage
+              ? "صورة المنتج الإلزامية غير مرفقة"
+              : job.status === "failed" || job.status === "refunded" || job.status === "cancelled"
+                ? job.error_message ?? "العينة فشلت أو أُلغيت/استُردت وتحتاج إعادة توليد"
+                : job.error_message,
       };
     });
     const generated = samples.filter((sample) => sample.jobId).length;
