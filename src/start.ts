@@ -39,7 +39,13 @@ const CSP = [
   "upgrade-insecure-requests",
 ].join("; ");
 
-const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => {
+const securityHeadersMiddleware = createMiddleware().server(async ({ next, request }) => {
+  const url = new URL(request.url);
+
+  if (url.pathname.startsWith("/lovable/")) {
+    return next();
+  }
+
   const result = await next();
 
   setResponseHeaders({
