@@ -88,14 +88,14 @@ export function AdminGuard({ children, loadingLabel }: AdminGuardProps) {
     }
   }, [user, isAdmin, loading, guardTimedOut, navigate]);
 
-  // ---- حالة التحميل ----
-  if (!guardTimedOut && !user && (loading || isAdmin === null)) {
+  // ---- حالة التحميل/عدم الحسم ----
+  if (loading || isAdmin === null) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">
-            {loadingLabel ?? "جاري التحقق من الصلاحيات…"}
+            {guardTimedOut ? "لم يُحسم التحقق بعد؛ تتم إعادة التوجيه الآمن…" : loadingLabel ?? "جاري التحقق من الصلاحيات…"}
           </p>
         </div>
       </div>
