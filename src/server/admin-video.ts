@@ -279,6 +279,7 @@ export type SaudiVideoMediumBatchResult = {
   commercialValidityRate: number;
   processing: number;
   failedOrRefunded: number;
+  completedWithoutResult: number;
   missingProductImage: number;
   metadataMismatch: number;
   configurationMismatch: number;
@@ -876,6 +877,8 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
           ? mismatchedJob ? "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي" : "لم تُولد العينة بعد"
           : configurationMismatch
             ? "إعدادات التوليد لا تطابق مصفوفة الاختبار الرسمية"
+            : job.status === "completed" && !job.result_url
+              ? "العينة مكتملة بلا رابط نتيجة وتحتاج إعادة توليد أو إصلاح الربط"
             : missingProductImage
               ? "صورة المنتج الإلزامية غير مرفقة"
               : job.status === "failed" || job.status === "refunded" || job.status === "cancelled"
@@ -887,6 +890,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const completed = samples.filter((sample) => sample.status === "completed" && sample.resultUrl).length;
     const processing = samples.filter((sample) => sample.status === "processing" || sample.status === "pending").length;
     const failedOrRefunded = samples.filter((sample) => sample.status === "failed" || sample.status === "refunded" || sample.status === "cancelled").length;
+    const completedWithoutResult = samples.filter((sample) => sample.issue === "العينة مكتملة بلا رابط نتيجة وتحتاج إعادة توليد أو إصلاح الربط").length;
     const missingProductImage = samples.filter((sample) => sample.issue === "صورة المنتج الإلزامية غير مرفقة").length;
     const metadataMismatch = samples.filter((sample) => sample.issue === "آخر مهمة موسومة لهذه العينة لا تطابق قالب المصفوفة الرسمي").length;
     const configurationMismatch = samples.filter((sample) => sample.issue === "إعدادات التوليد لا تطابق مصفوفة الاختبار الرسمية").length;
@@ -899,7 +903,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const rejected = samples.filter((sample) => sample.releaseDecision === "reject_or_reprompt").length;
     const cleanCompletedSamples = samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue);
     const remainingToEvaluate = cleanCompletedSamples.filter((sample) => !sample.releaseDecision).length;
-    const operationalBlockingIssues = missingProductImage + failedOrRefunded + metadataMismatch + configurationMismatch;
+    const operationalBlockingIssues = missingProductImage + failedOrRefunded + completedWithoutResult + metadataMismatch + configurationMismatch;
     const commercialRejectedIssues = rejected;
     const blockingIssues = operationalBlockingIssues + commercialRejectedIssues;
     const minimumPublishable = Math.ceil(samples.length * 0.8);
@@ -927,7 +931,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
         : releaseGate === "ready_for_review"
           ? "قيّم كل عينة عبر نموذج التقييم: المنتج، المشهد، الحركة، اللهجة، الممنوعات، وقابلية النشر؛ لا تعتمد إلا 80%+."
           : "تابع توليد العينات غير المكتملة ثم اضغط تدقيق الدفعة حتى تتحول الحالة إلى جاهزة للتقييم.";
-    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, missingProductImage, metadataMismatch, configurationMismatch, remainingToGenerate, remainingToEvaluate, operationalBlockingIssues, commercialRejectedIssues, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
+    const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, completedWithoutResult, missingProductImage, metadataMismatch, configurationMismatch, remainingToGenerate, remainingToEvaluate, operationalBlockingIssues, commercialRejectedIssues, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
 
     await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
