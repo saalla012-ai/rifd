@@ -18,7 +18,7 @@ const input = {
   durationSeconds: 5,
   productImageUrl: 'https://v3b.fal.media/files/b/0a97f05a/9mPQVxVvM8ZIr4lhQBbdW_1777296260823.jpeg',
   selectedPersonaId: 'male-premium',
-  selectedTemplateId: 'perfume-premium-hook'
+  selectedTemplateId: 'custom'
 };
 
 const payload = toJSON({ data: input, context: {} });
