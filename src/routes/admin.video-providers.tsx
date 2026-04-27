@@ -559,9 +559,10 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
   const evaluableCount = batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision).length;
   const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
-  const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue));
+  const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue) || sample.releaseDecision === "reject_or_reprompt" || sample.releaseDecision === "minor_revision");
   const nextRunnableSample = nextRunnableSamples[0] ?? null;
   const nextEvaluableSample = batch.samples.find((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) ?? null;
+  const rerunReason = (sample: SaudiVideoMediumBatchResult["samples"][number]) => sample.issue ?? (sample.releaseDecision === "reject_or_reprompt" ? "قرار التقييم رفض العينة؛ أعد صياغة البرومبت أو بدّل المرجع ثم أعد التوليد." : sample.releaseDecision === "minor_revision" ? "العينة تحتاج تحسيناً قبل التوسيع؛ أعد توليد نسخة محسّنة ثم قيّمها من جديد." : "لم تُولد العينة بعد");
   const activeInstruction = nextRunnableSample
     ? `شغّل الآن ${nextRunnableSample.sampleId} — ${nextRunnableSample.label}${nextRunnableSample.requiredProductImage ? " مع صورة منتج واضحة" : ""}.`
     : nextEvaluableSample
@@ -614,17 +615,17 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <div className="mt-3 rounded-lg border border-border bg-secondary/30 p-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <strong className="text-xs text-foreground">قائمة التشغيل التالية</strong>
-            <span className="text-xs text-muted-foreground">{nextRunnableSamples.length.toLocaleString("ar-SA")} عينة تحتاج توليداً أو إصلاحاً؛ افتحها بالترتيب، ثم عد لتدقيق الدفعة.</span>
+            <span className="text-xs text-muted-foreground">{nextRunnableSamples.length.toLocaleString("ar-SA")} عينة تحتاج توليداً أو إصلاحاً أو إعادة تحسين؛ افتحها بالترتيب، ثم عد لتدقيق الدفعة.</span>
           </div>
           <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
             {nextRunnableSamples.map((sample, index) => (
               <div key={`run-${sample.sampleId}`} className="rounded-md border border-border bg-background/70 p-2 text-xs">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{(index + 1).toLocaleString("ar-SA")} · {sample.sampleId}</span>
-                  {sample.issue?.includes("45 دقيقة") ? <Badge className="bg-destructive/15 text-destructive">عالقة</Badge> : sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
+                  {sample.releaseDecision === "reject_or_reprompt" ? <Badge className="bg-destructive/15 text-destructive">إعادة برومبت</Badge> : sample.releaseDecision === "minor_revision" ? <Badge className="bg-gold/15 text-gold">تحسين</Badge> : sample.issue?.includes("45 دقيقة") ? <Badge className="bg-destructive/15 text-destructive">عالقة</Badge> : sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
                 </div>
                 <p className="mt-1 truncate text-muted-foreground">{sample.label}</p>
-                {sample.issue && <p className="mt-1 line-clamp-2 text-muted-foreground">سبب الإعادة: {sample.issue}</p>}
+                <p className="mt-1 line-clamp-2 text-muted-foreground">سبب الإعادة: {rerunReason(sample)}</p>
                 <Button asChild size="sm" variant="outline" className="mt-2 h-8 w-full text-xs">
                   <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">
                     فتح العينة
