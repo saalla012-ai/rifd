@@ -580,10 +580,11 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <MetricTile label="عوائق تشغيلية" value={batch.operationalBlockingIssues} />
         <MetricTile label="رفض تجاري" value={batch.commercialRejectedIssues} />
       </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-3">
+      <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile label="فشل/استرداد" value={batch.failedOrRefunded} />
         <MetricTile label="نقص صورة منتج" value={batch.missingProductImage} />
         <MetricTile label="عدم تطابق الوسم" value={batch.metadataMismatch} />
+        <MetricTile label="عدم تطابق الإعدادات" value={batch.configurationMismatch} />
       </div>
       {batch.evaluated > 0 && <p className="mt-3 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">نسبة الصلاحية التجارية: {batch.commercialValidityRate.toLocaleString("ar-SA")}% — المطلوب {batch.minimumPublishable.toLocaleString("ar-SA")} عينات صالحة على الأقل من أصل {batch.totalPlanned.toLocaleString("ar-SA")} دون فشل أو رفض.</p>}
       <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
