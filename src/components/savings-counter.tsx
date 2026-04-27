@@ -49,7 +49,7 @@ export function SavingsCounter() {
     return () => {
       cancelled = true;
     };
-  }, [fetchSavingsStats]);
+  }, []);
 
   // قبل التحميل: skeleton خفيف
   if (!loaded) {
