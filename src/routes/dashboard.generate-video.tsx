@@ -86,16 +86,16 @@ export const Route = createFileRoute("/dashboard/generate-video")({
   component: GenerateVideoPage,
 });
 
-function ImageInputCard({ label, value, uploading, onFile, onUrl }: { label: string; value: string; uploading: boolean; onFile: (file?: File) => void; onUrl: (value: string) => void }) {
+function ImageInputCard({ label, value, uploading, disabled = false, onFile, onUrl }: { label: string; value: string; uploading: boolean; disabled?: boolean; onFile: (file?: File) => void; onUrl: (value: string) => void }) {
   return (
     <div className="rounded-lg border border-border bg-secondary/20 p-3">
       <Label>{label}</Label>
       <div className="mt-2 flex items-center gap-2">
-        <label className={cn("inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-input px-3 text-xs font-bold hover:bg-accent", uploading && "pointer-events-none opacity-70")}>
+        <label className={cn("inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-input px-3 text-xs font-bold hover:bg-accent", (uploading || disabled) && "pointer-events-none opacity-70")}>
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={uploading} onChange={(event) => { onFile(event.target.files?.[0]); event.currentTarget.value = ""; }} />
+          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={uploading || disabled} onChange={(event) => { onFile(event.target.files?.[0]); event.currentTarget.value = ""; }} />
         </label>
-        <input value={value} onChange={(event) => onUrl(event.target.value)} placeholder="أو رابط صورة" className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-xs" />
+        <input value={value} onChange={(event) => onUrl(event.target.value)} disabled={disabled} placeholder="أو رابط صورة" className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-xs disabled:opacity-60" />
       </div>
       {value && (
         <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
