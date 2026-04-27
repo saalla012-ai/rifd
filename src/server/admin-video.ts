@@ -584,6 +584,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const softCampaignLinked = softRows.filter((r) => Boolean((r.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id)).length;
     const softBlockers = [
       softActive > 0 ? "توجد مهام فيديو نشطة ضمن آخر 10 عمليات" : null,
+      softRefunded > 0 ? "توجد عمليات فيديو مسترجعة ضمن عينة Soft Launch" : null,
       softMissingArchive > 0 ? "توجد فيديوهات مكتملة ضمن العينة بلا storage_path داخلي" : null,
       softFailedUnrefunded > 0 ? "توجد مهام فاشلة ضمن العينة لديها خصم بلا استرداد" : null,
       softLedgerMatched !== softRows.length ? "توجد عمليات ضمن العينة لا تطابق قاعدة ledger/refund" : null,
