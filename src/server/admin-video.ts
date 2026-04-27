@@ -427,7 +427,7 @@ function extractFalVideoUrl(result: { video?: { url?: string }; video_url?: stri
 
 async function pollFalQueueResult(token: string, statusUrl?: string, responseUrl?: string) {
   if (!statusUrl || !responseUrl) return { status: "submitted" as const, resultUrl: null as string | null, error: null as string | null };
-  for (let attempt = 0; attempt < 7; attempt += 1) {
+  for (let attempt = 0; attempt < 18; attempt += 1) {
     if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 8_000));
     const statusResponse = await fetch(statusUrl, { headers: { Authorization: `Key ${token}` } });
     const statusText = await statusResponse.text();
