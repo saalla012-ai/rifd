@@ -556,6 +556,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const gateLabel = batch.releaseGate === "ready_for_expansion" ? "جاهزة للتوسيع" : batch.releaseGate === "needs_iteration" ? "تحتاج تحسين" : batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
   const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
   const evaluableCount = batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue).length;
+  const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue)).slice(0, 4);
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -593,6 +594,30 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">{batch.releaseGateReason}</p>
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">الخطوة التنفيذية: {batch.nextAction}</p>
       </div>
+      {nextRunnableSamples.length > 0 && (
+        <div className="mt-3 rounded-lg border border-border bg-secondary/30 p-3">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <strong className="text-xs text-foreground">قائمة التشغيل التالية</strong>
+            <span className="text-xs text-muted-foreground">افتح كل عينة من هنا بالترتيب، ثم عد لتدقيق الدفعة.</span>
+          </div>
+          <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {nextRunnableSamples.map((sample) => (
+              <div key={`run-${sample.sampleId}`} className="rounded-md border border-border bg-background/70 p-2 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold">{sample.sampleId}</span>
+                  {sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
+                </div>
+                <p className="mt-1 truncate text-muted-foreground">{sample.label}</p>
+                <Button asChild size="sm" variant="outline" className="mt-2 h-8 w-full text-xs">
+                  <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">
+                    فتح العينة
+                  </Link>
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {batch.samples.map((sample) => (
           <div key={sample.sampleId} className="rounded-lg border border-border bg-background/60 p-3 text-xs">
