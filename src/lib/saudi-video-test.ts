@@ -45,9 +45,22 @@ export const FAL_PROMPT_MAX_CHARS = 650;
 
 export function limitFalPrompt(prompt: string, maxLength = FAL_PROMPT_MAX_CHARS) {
   const clean = prompt.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
-  if (Array.from(clean).length <= maxLength) return clean;
+  const encoder = new TextEncoder();
+  if (Array.from(clean).length <= maxLength && encoder.encode(clean).length <= maxLength * 2) return clean;
   const suffix = "\nKeep product visible, Saudi modest style, no readable text, no distorted hands/faces.";
-  return `${Array.from(clean).slice(0, maxLength - Array.from(suffix).length).join("").trimEnd()}${suffix}`;
+  const suffixLength = Array.from(suffix).length;
+  const suffixBytes = encoder.encode(suffix).length;
+  const charBudget = Math.max(120, maxLength - suffixLength);
+  const byteBudget = Math.max(240, maxLength * 2 - suffixBytes);
+  const out: string[] = [];
+  let bytes = 0;
+  for (const char of Array.from(clean)) {
+    const charBytes = encoder.encode(char).length;
+    if (out.length >= charBudget || bytes + charBytes > byteBudget) break;
+    out.push(char);
+    bytes += charBytes;
+  }
+  return `${out.join("").trimEnd()}${suffix}`;
 }
 
 export function withSaudiPromptAdherence(prompt: string) {
@@ -134,12 +147,11 @@ export function buildSaudiVideoMediumTestSample(index: number) {
   const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
   const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
   const expectedAspectRatio: "9:16" = "9:16";
-  const finalPrompt = withSaudiPromptAdherence([
+  const finalPrompt = limitFalPrompt(withSaudiPromptAdherence([
     template.prompt,
-    `هدف العينة ${index + 1}: ${quality === "quality" ? "اختبار إعلان مدفوع عالي الجودة" : quality === "lite" ? "اختبار إعلان يومي قابل للنشر" : "اختبار سريع لسلامة الفكرة"}.`,
-    `الشخصية المرجعية: ${persona.brief}`,
-    "يجب تسجيل النتيجة في مصفوفة الاختبار المتوسط قبل فتح القالب للعامة.",
-  ].join("\n\n"));
+    `Test ${index + 1}: ${quality} Saudi ecommerce ad.`,
+    `Presenter: ${persona.brief}`,
+  ].join("\n\n")), 560);
 
   return {
     sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
