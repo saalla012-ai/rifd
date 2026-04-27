@@ -561,7 +561,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
   const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue) || sample.releaseDecision === "reject_or_reprompt" || sample.releaseDecision === "minor_revision");
   const nextRunnableSample = nextRunnableSamples[0] ?? null;
-  const nextRunnableHref = nextRunnableSample ? { source: "medium-test", mediumTestSampleId: nextRunnableSample.sampleId, mediumTestTemplateId: nextRunnableSample.templateId } : null;
+  const nextRunnableHref = nextRunnableSample ? { source: "medium-test" as const, mediumTestSampleId: nextRunnableSample.sampleId, mediumTestTemplateId: nextRunnableSample.templateId } : null;
   const nextEvaluableSample = batch.samples.find((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) ?? null;
   const rerunReason = (sample: SaudiVideoMediumBatchResult["samples"][number]) => sample.issue ?? (sample.releaseDecision === "reject_or_reprompt" ? "قرار التقييم رفض العينة؛ أعد صياغة البرومبت أو بدّل المرجع ثم أعد التوليد." : sample.releaseDecision === "minor_revision" ? "العينة تحتاج تحسيناً قبل التوسيع؛ أعد توليد نسخة محسّنة ثم قيّمها من جديد." : "لم تُولد العينة بعد");
   const activeInstruction = nextRunnableSample
