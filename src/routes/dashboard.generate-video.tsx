@@ -203,7 +203,7 @@ function GenerateVideoPage() {
   }, []);
 
   useEffect(() => {
-    if (activeJob?.status !== "processing") return;
+    if (activeJob?.status !== "processing" && activeJob?.status !== "pending") return;
     const id = window.setInterval(() => void refreshActiveJob(false), 8_000);
     return () => window.clearInterval(id);
   }, [activeJob?.id, activeJob?.status]);
@@ -284,7 +284,7 @@ function GenerateVideoPage() {
       setJobs((current) => current.map((job) => job.id === out.job.id ? out.job : job));
       if (out.job.status !== "processing") void refreshCredits();
       if (out.job.status === "completed" && out.job.result_url && previousStatus !== "completed") toast.success("الفيديو جاهز للمعاينة والتحميل");
-      else if (showToast) toast.success(out.job.status === "processing" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
+      else if (showToast) toast.success(out.job.status === "processing" || out.job.status === "pending" ? "الفيديو ما زال قيد المعالجة" : "تم تحديث حالة الفيديو");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
     }
