@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { sendWelcomeEmail } from "@/server/send-welcome";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
@@ -51,19 +50,6 @@ function AuthPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user) {
-      // أرسل welcome مرة واحدة لكل user (idempotent عبر message_id في الخادم)
-      // يغطي Google OAuth + email/password + أي تدفق مستقبلي
-      if (user.email) {
-        // الخادم يشتقّ userId+email من JWT الموثوق — نمرّر فقط fullName.
-        void sendWelcomeEmail({
-          data: {
-            fullName:
-              (user.user_metadata?.full_name as string | undefined) ||
-              (user.user_metadata?.name as string | undefined) ||
-              undefined,
-          },
-        }).catch((e) => console.error("welcome trigger failed", e));
-      }
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else if (`${location.pathname}${location.searchStr}${location.hash}` !== redirectPath) {
@@ -89,7 +75,6 @@ function AuthPage() {
         if (error) throw error;
         track("signup_completed", { method: "email" });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
-        // welcome سيُرسل تلقائياً من useEffect عند تحديث user
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
