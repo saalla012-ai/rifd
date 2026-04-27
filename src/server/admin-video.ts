@@ -889,7 +889,8 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     const publishable = samples.filter((sample) => sample.releaseDecision === "publishable").length;
     const needsRevision = samples.filter((sample) => sample.releaseDecision === "minor_revision").length;
     const rejected = samples.filter((sample) => sample.releaseDecision === "reject_or_reprompt").length;
-    const remainingToEvaluate = samples.length - evaluated;
+    const cleanCompletedSamples = samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue);
+    const remainingToEvaluate = cleanCompletedSamples.filter((sample) => !sample.releaseDecision).length;
     const operationalBlockingIssues = missingProductImage + failedOrRefunded + metadataMismatch + configurationMismatch;
     const commercialRejectedIssues = rejected;
     const blockingIssues = operationalBlockingIssues + commercialRejectedIssues;
