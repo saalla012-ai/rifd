@@ -140,6 +140,7 @@ function GenerateVideoPage() {
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
   const watermarkRequired = credits?.plan === "free";
   const internalMediumTestMode = search.source === "medium-test";
+  const mediumTestControlsLocked = internalMediumTestMode && Boolean(search.quality && search.aspectRatio && search.selectedPersonaId);
   const mediumTestProductImageRequired = internalMediumTestMode && search.requiresProductImage === true;
   const productImageRequired = (isPaidPlan || mediumTestProductImageRequired) && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
@@ -182,6 +183,13 @@ function GenerateVideoPage() {
   useEffect(() => {
     setPreviewError(false);
   }, [latestResult]);
+
+  useEffect(() => {
+    if (!internalMediumTestMode) return;
+    if (search.quality) setQuality(search.quality);
+    if (search.aspectRatio) setAspectRatio(search.aspectRatio);
+    if (search.selectedPersonaId && PERSONAS.some((persona) => persona.id === search.selectedPersonaId)) setSelectedPersonaId(search.selectedPersonaId);
+  }, [internalMediumTestMode, search.quality, search.aspectRatio, search.selectedPersonaId]);
 
   const generate = async () => {
     if (prompt.trim().length < 10) {
