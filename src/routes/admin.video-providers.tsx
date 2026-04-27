@@ -556,6 +556,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const gateLabel = batch.releaseGate === "ready_for_expansion" ? "جاهزة للتوسيع" : batch.releaseGate === "needs_iteration" ? "تحتاج تحسين" : batch.releaseGate === "ready_for_review" ? "جاهزة للتقييم" : batch.releaseGate === "blocked" ? "متوقفة للمراجعة" : batch.releaseGate === "running" ? "قيد التنفيذ" : "لم تبدأ";
   const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
   const evaluableCount = batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue).length;
+  const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
   const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue));
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
@@ -580,6 +581,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <MetricTile label="متبقي للتوليد" value={batch.remainingToGenerate} />
         <MetricTile label="متبقي للتقييم" value={batch.remainingToEvaluate} />
         <MetricTile label="قابل للتقييم الآن" value={evaluableCount} />
+        <MetricTile label="مقفلة بتقييم" value={alreadyEvaluatedCount} />
         <MetricTile label="عوائق تشغيلية" value={batch.operationalBlockingIssues} />
         <MetricTile label="رفض تجاري" value={batch.commercialRejectedIssues} />
       </div>
@@ -644,7 +646,7 @@ function MetricTile({ label, value }: { label: string; value: number }) {
 
 function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: SaudiVideoMediumBatchResult | null; result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
-  const evaluableSamples = (batch?.samples ?? []).filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue);
+  const evaluableSamples = (batch?.samples ?? []).filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision);
   const selectedSample = evaluableSamples.find((sample) => sample.sampleId === draft.sampleId) ?? null;
   useEffect(() => {
     if (!selectedSample && evaluableSamples[0]) setDraft((current) => ({ ...current, sampleId: evaluableSamples[0].sampleId, resultUrl: evaluableSamples[0].resultUrl ?? "" }));
