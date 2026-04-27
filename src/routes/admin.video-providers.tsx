@@ -117,10 +117,11 @@ function AdminVideoProvidersPage() {
     setLoading(true);
     try {
       const headers = await authHeaders();
-      const [providerResult, attemptResult, templateResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers }), fetchLaunchTemplatePerformance({ headers })]);
+      const [providerResult, attemptResult, templateResult, mediumBatchResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers }), fetchLaunchTemplatePerformance({ headers }), auditMediumBatch({ headers })]);
       setProviders(providerResult.providers);
       setAttempts(attemptResult.attempts);
       setTemplatePerformance(templateResult.templates);
+      setMediumBatch(mediumBatchResult);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "فشل تحميل مزودي الفيديو");
     } finally {
