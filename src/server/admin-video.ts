@@ -98,6 +98,7 @@ export type AdminVideoJob = {
 
 export type AdminVideoStats = {
   total: number;
+  pending: number;
   processing: number;
   completed: number;
   refunded: number;
@@ -501,8 +502,8 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
       : { data: [] as { id: string; email: string | null; store_name: string | null }[] };
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
 
-    const statusList = ["processing", "completed", "refunded", "failed"] as const;
-    const counts: Record<string, number> = { processing: 0, completed: 0, refunded: 0, failed: 0 };
+    const statusList = ["pending", "processing", "completed", "refunded", "failed"] as const;
+    const counts: Record<string, number> = { pending: 0, processing: 0, completed: 0, refunded: 0, failed: 0 };
     await Promise.all(
       statusList.map(async (status) => {
         const { count } = await admin.from("video_jobs").select("id", { count: "exact", head: true }).eq("status", status);
@@ -513,6 +514,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
     const { count: totalCount } = await admin.from("video_jobs").select("id", { count: "exact", head: true });
     const stats: AdminVideoStats = {
       total: totalCount ?? statsRows.length,
+      pending: counts.pending,
       processing: counts.processing,
       completed: counts.completed,
       refunded: counts.refunded,
