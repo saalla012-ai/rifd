@@ -440,6 +440,12 @@ function providerSecretName(providerKey: string) {
   } as Record<string, string | undefined>)[providerKey];
 }
 
+function videoLedgerMatches(row: VideoJobRow): boolean {
+  if (row.status === "completed") return Boolean(row.ledger_id) && !row.refund_ledger_id;
+  if (row.status === "refunded") return Boolean(row.ledger_id && row.refund_ledger_id);
+  return true;
+}
+
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
 }
