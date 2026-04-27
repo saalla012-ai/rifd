@@ -2323,3 +2323,24 @@
 **نسبة إنهاء الخطة الحالية:** ترتفع إلى `99.78%` بعد اكتمال `pilot-07` وأرشفته بدون refund وبدون مهام عالقة.
 
 **الخطة التالية الدقيقة:** تشغيل `pilot-08` فقط ضمن جودة `lite` من الرابط الرسمي (`phone-case`) مع تجهيز صورة منتج كفر جوال واضحة أولاً. معيار النجاح: `completed` + `storage_path` + `provider_audio_requested=false` + `medium_test_product_image_required=true` + لا refund.
+
+## جلسة 46 — نجاح `pilot-08` كفر جوال — 27 أبريل 2026
+
+| المحور | النتيجة | القرار |
+|---|---|---|
+| مراجعة جلسة 45 | ✅ صحيحة | `pilot-07` مكتملة ومؤرشفة، لذلك تشغيل `pilot-08` مطابق للتسلسل الرسمي |
+| صورة المنتج | ✅ جُهزت | تم إنشاء `public/medium-test-pilot-08-phone-case.jpg` لصورة كفر جوال واضحة ومناسبة لاختبار المنتج |
+| ربط الواجهة | ✅ جُهز | أضيفت صورة `pilot-08` إلى خريطة صور الاختبار الداخلي، وتُرسل كـ data URL ثم تُرفع للمزوّد عبر preflight |
+| التشغيل من الواجهة | ✅ نجح | تم تشغيل `pilot-08` من الرابط الرسمي `/dashboard/generate-video` |
+| صف المهمة | ✅ تم إنشاؤه واكتمل | المهمة `b1f2b10d-f0d0-40f5-b0d9-bf60fde19cdc` بدأت `processing` ثم وصلت إلى `completed` |
+| المزوّد والموديل | ✅ صحيح | استخدم `fal-ai/pixverse/v6/image-to-video` مع صورة المنتج المرجعية |
+| الأرشفة | ✅ مكتملة | يوجد `storage_path` و`result_url`، و`internal_video_archived=true`، و`provider_status=succeeded` |
+| سياسة الصوت والمنتج | ✅ مطابقة | `provider_audio_requested=false` و`medium_test_product_image_required=true` و`product_image_url` موجود |
+| السلامة المالية | ✅ سليمة | خُصمت `500` نقطة للمهمة الناجحة بدون `refund_ledger_id`، ولا توجد مهام Medium Test عالقة |
+| جودة البناء | ✅ ناجح | `bunx tsc --noEmit` و`bun run build` نجحا بعد إضافة صورة العينة |
+
+**الحكم النقدي:** تم اعتماد `pilot-08` تشغيلياً دون الحاجة لتخفيف خاص للبرومبت، وهذا يؤكد استقرار مسار `lite` مع صورة منتج لعينة الإكسسوارات التقنية. تقييم جودة الفيديو بصرياً يبقى ضمن scorecard اللاحق، لكن بوابة التنفيذ الفنية مكتملة.
+
+**نسبة إنهاء الخطة الحالية:** ترتفع إلى `99.86%` بعد اكتمال `pilot-08` وأرشفته بدون refund وبدون مهام عالقة.
+
+**الخطة التالية الدقيقة:** تشغيل `pilot-09` فقط ضمن جودة `lite` من الرابط الرسمي (`ramadan-offer`) مع تجهيز صورة منتج/سفرة رمضانية مناسبة أولاً. معيار النجاح: `completed` + `storage_path` + `provider_audio_requested=false` + `medium_test_product_image_required=true` + لا refund.
