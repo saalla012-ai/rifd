@@ -27,6 +27,8 @@ import {
   SlidersHorizontal,
   FolderKanban,
   ShieldAlert,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -34,6 +36,7 @@ import { getNewContactCount } from "@/server/admin-contact-submissions";
 import { CreditsBar } from "@/components/credits-bar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "@/hooks/use-theme";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -69,6 +72,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, loading, isAdmin, signOut } = useAuth();
+  const { theme, toggle } = useTheme();
   const fetchNewContacts = useServerFn(getNewContactCount);
   const [newContactCount, setNewContactCount] = useState(0);
 
@@ -204,6 +208,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="border-t border-sidebar-border p-3">
           <button
+            onClick={toggle}
+            className="mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-sidebar-accent"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}
+          </button>
+          <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-sidebar-accent"
           >
@@ -230,6 +241,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-2">
               <CreditsBar />
               <button
+                onClick={toggle}
+                aria-label={theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
+                className="rounded-md p-2 text-muted-foreground hover:bg-secondary"
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+              <button
                 onClick={handleLogout}
                 aria-label="تسجيل الخروج"
                 className="rounded-md p-2 text-muted-foreground hover:bg-secondary"
@@ -246,6 +264,16 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                 className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary"
                 activeProps={{ className: "bg-secondary text-foreground" }}
                 activeOptions={{ exact: item.to === "/dashboard" }}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {isAdmin && ADMIN_NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="shrink-0 rounded-md px-3 py-1.5 text-xs font-bold text-gold hover:bg-gold/10"
+                activeProps={{ className: "bg-gold/15 text-gold" }}
               >
                 {item.label}
               </Link>
