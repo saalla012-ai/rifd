@@ -425,6 +425,30 @@ function extractFalVideoUrl(result: { video?: { url?: string }; video_url?: stri
   return result.video?.url ?? result.video_url ?? result.url ?? null;
 }
 
+async function pollFalQueueResult(token: string, statusUrl?: string, responseUrl?: string) {
+  if (!statusUrl || !responseUrl) return { status: "submitted" as const, resultUrl: null as string | null, error: null as string | null };
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 8_000));
+    const statusResponse = await fetch(statusUrl, { headers: { Authorization: `Key ${token}` } });
+    const statusText = await statusResponse.text();
+    let statusPayload: { status?: string; error?: string } = {};
+    try { statusPayload = statusText ? JSON.parse(statusText) as typeof statusPayload : {}; } catch { statusPayload = { error: statusText.slice(0, 500) }; }
+    if (!statusResponse.ok || statusPayload.error) return { status: "failed" as const, resultUrl: null, error: statusPayload.error ?? `fal.ai status ${statusResponse.status}` };
+    const status = (statusPayload.status ?? "").toUpperCase();
+    if (["FAILED", "ERROR", "CANCELED", "CANCELLED"].includes(status)) return { status: "failed" as const, resultUrl: null, error: statusPayload.error ?? status };
+    if (!["COMPLETED", "SUCCEEDED", "SUCCESS"].includes(status)) continue;
+
+    const resultResponse = await fetch(responseUrl, { headers: { Authorization: `Key ${token}` } });
+    const resultText = await resultResponse.text();
+    let resultPayload: { video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
+    try { resultPayload = resultText ? JSON.parse(resultText) as typeof resultPayload : {}; } catch { resultPayload = { error: resultText.slice(0, 500) }; }
+    if (!resultResponse.ok || resultPayload.error) return { status: "failed" as const, resultUrl: null, error: resultPayload.error ?? `fal.ai result ${resultResponse.status}: ${resultText.slice(0, 300)}` };
+    const resultUrl = extractFalVideoUrl(resultPayload);
+    return resultUrl ? { status: "completed" as const, resultUrl, error: null } : { status: "failed" as const, resultUrl: null, error: "اكتمل الطلب دون رابط فيديو" };
+  }
+  return { status: "submitted" as const, resultUrl: null, error: null };
+}
+
 async function probeFalToken(token: string) {
   const response = await fetch("https://queue.fal.run/fal-ai/pixverse/v6/text-to-video/requests/__rifd_healthcheck__/status", {
     headers: { Authorization: `Key ${token}` },
