@@ -32,6 +32,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getNewContactCount } from "@/server/admin-contact-submissions";
 import { CreditsBar } from "@/components/credits-bar";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
