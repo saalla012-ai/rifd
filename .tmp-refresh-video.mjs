@@ -1,0 +1,15 @@
+import { createClient } from '@supabase/supabase-js';
+import { toJSON } from 'seroval';
+const email = 'saalla012@gmail.com';
+const password = 'aA0176513601&';
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const jobId = process.argv[2];
+const client = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+const { data, error } = await client.auth.signInWithPassword({ email, password });
+if (error) throw error;
+const payload = toJSON({ data: { jobId }, context: {} });
+const url = 'https://rifd.site/_serverFn/a4534edcfc9fb5343fe40d1f05c4383df52382b3f120697428da2508b6952ada';
+const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-tsr-serverFn': 'true', Authorization: `Bearer ${data.session.access_token}` }, body: JSON.stringify(payload) });
+const text = await res.text();
+console.log(JSON.stringify({ status: res.status, preview: text.slice(0, 600) }, null, 2));
