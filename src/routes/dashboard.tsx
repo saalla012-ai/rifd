@@ -5,45 +5,13 @@ import {
   Link,
   useRouter,
   useNavigate,
-  redirect,
 } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
-
-const DASHBOARD_AUTH_TIMEOUT_MS = 3_500;
-
-function authTimeout() {
-  return new Promise<null>((resolve) => {
-    window.setTimeout(() => resolve(null), DASHBOARD_AUTH_TIMEOUT_MS);
-  });
-}
-
 export const Route = createFileRoute("/dashboard")({
-  /**
-   * Auth guard مُحسَّن — يعمل قبل أي render.
-   * يمنع flash of protected content للزوّار غير المسجّلين.
-   *
-   * - يعمل في المتصفح (TanStack يستدعي beforeLoad على الـ client أيضاً)
-   * - SSR-safe: لا يفحص الجلسة على السيرفر (Supabase session في localStorage)
-   * - لا يفحص onboarding هنا — يبقى client-side لأنه يعتمد على بيانات profile
-   */
-  beforeLoad: async ({ location }) => {
-    if (typeof window === "undefined") return;
-    const session = await Promise.race([
-      supabase.auth.getSession().then(({ data }) => data.session).catch(() => null),
-      authTimeout(),
-    ]);
-    if (!session) {
-      throw redirect({
-        to: "/auth",
-        search: { redirect: location.href },
-      });
-    }
-  },
   component: DashboardLayout,
   errorComponent: DashboardError,
   notFoundComponent: DashboardNotFound,
@@ -73,6 +41,22 @@ function DashboardLayout() {
       void navigate({ to: "/onboarding" });
     }
   }, [loading, user, profile, navigate]);
+
+  if (loading) return <DashboardPending />;
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="max-w-sm rounded-xl border border-border bg-card p-6 text-center shadow-soft">
+          <h1 className="text-lg font-extrabold text-foreground">يلزم تسجيل الدخول</h1>
+          <p className="mt-2 text-sm text-muted-foreground">سيتم تحويلك لصفحة الدخول، ويمكنك المتابعة يدوياً إذا تأخر التحويل.</p>
+          <Button asChild className="mt-4 w-full">
+            <Link to="/auth" search={{ redirect: typeof window === "undefined" ? "/dashboard" : `${window.location.pathname}${window.location.search}${window.location.hash}` } as never}>تسجيل الدخول</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return <Outlet />;
 }
