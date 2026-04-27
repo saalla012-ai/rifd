@@ -455,12 +455,13 @@ function GenerateVideoPage() {
             <Label>شخصيات سعودية جاهزة</Label>
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
               {PERSONAS.map((persona) => (
-                <button key={persona.id} type="button" onClick={() => setSelectedPersonaId(persona.id)} className={cn("overflow-hidden rounded-lg border text-right transition-colors", selectedPersonaId === persona.id ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70")}> 
+                <button key={persona.id} type="button" onClick={() => { if (!mediumTestControlsLocked) setSelectedPersonaId(persona.id); }} disabled={mediumTestControlsLocked} className={cn("overflow-hidden rounded-lg border text-right transition-colors disabled:cursor-not-allowed disabled:opacity-60", selectedPersonaId === persona.id ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70")}> 
                   <img src={persona.image} alt={persona.label} width={768} height={768} loading="lazy" className="aspect-square w-full object-cover" />
                   <span className="block px-2 py-2 text-xs font-bold">{persona.label}</span>
                 </button>
               ))}
             </div>
+            {mediumTestControlsLocked && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">إعدادات الاختبار المتوسط مقفلة من لوحة الإدارة: الجودة، المقاس، والشخصية لا تُعدّل يدوياً حتى تبقى العينة مطابقة للمصفوفة.</p>}
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
