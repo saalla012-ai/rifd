@@ -220,6 +220,7 @@ function publicVideoError(e: unknown): Error {
   if (/invalid_medium_test_reference_image/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: صورة البداية غير مسموحة في الاختبار الداخلي حتى لا تغيّر العينة المعتمدة.");
   if (/invalid_medium_test_template/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: معرف قالب الاختبار الداخلي غير مطابق للمصفوفة المعتمدة.");
   if (/medium_test_sample_already_processing/i.test(msg)) return new Error("هذه العينة قيد المعالجة بالفعل. انتظر اكتمالها أو حدّث الحالة قبل إعادة التشغيل.");
+  if (/medium_test_sequence_violation/i.test(msg)) return new Error("VIDEO_TEMPLATE_LOCKED: لا يمكن تشغيل هذه العينة قبل اكتمال العينات السابقة بالترتيب الرسمي وإعادة التدقيق.");
   if (/invalid_video_tier_duration/i.test(msg)) return new Error("VIDEO_DURATION_NOT_ALLOWED: اختر سريع 5 ثوانٍ أو إعلاني/احترافي 8 ثوانٍ فقط.");
   if (/INSUFFICIENT_CREDITS|insufficient_credits/i.test(msg)) return videoCreditError(e);
   if (/too_many_processing_video_jobs/i.test(msg)) return new Error("لديك مهمتا فيديو قيد المعالجة حالياً. انتظر اكتمال إحداهما قبل إنشاء فيديو جديد.");
