@@ -234,7 +234,7 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
+        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: internalMediumTestMode ? "" : startingFrameUrl.trim(), speakerImageUrl: internalMediumTestMode ? absoluteAssetUrl(canonicalGenerationPersona.image) : speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
@@ -466,10 +466,12 @@ function GenerateVideoPage() {
             <Label>رابط صورة بداية اختياري</Label>
             <input
               value={startingFrameUrl}
-              onChange={(e) => setStartingFrameUrl(e.target.value)}
+              onChange={(e) => { if (!internalMediumTestMode) setStartingFrameUrl(e.target.value); }}
+              disabled={internalMediumTestMode}
               placeholder="https://..."
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-60"
             />
+            {internalMediumTestMode && <p className="mt-2 text-xs font-semibold text-muted-foreground">صورة البداية مقفلة في الاختبار المتوسط؛ مرجع الشخصية والمنتج فقط يحافظان على قابلية المقارنة.</p>}
           </div>
 
           <div className="space-y-3">
@@ -486,7 +488,7 @@ function GenerateVideoPage() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            <ImageInputCard label="صورة الشخص المتحدث" value={speakerImageUrl} uploading={uploadingInput === "speaker"} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
+            <ImageInputCard label="صورة الشخص المتحدث" value={internalMediumTestMode ? absoluteAssetUrl(canonicalGenerationPersona.image) : speakerImageUrl} uploading={uploadingInput === "speaker"} disabled={internalMediumTestMode} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
             <ImageInputCard label={isPaidPlan || mediumTestProductImageRequired ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
           </div>
           {productImageRequired && <p className="text-xs font-bold text-destructive">{mediumTestProductImageRequired ? "هذه عينة اختبار متوسط تتطلب صورة منتج؛ تشغيلها بدون صورة سيجعل نتيجة الالتزام غير صالحة." : "ارفع صورة المنتج قبل التوليد؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة."}</p>}
