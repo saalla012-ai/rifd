@@ -559,7 +559,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const gateTone = batch.releaseGate === "ready_for_expansion" || batch.releaseGate === "ready_for_review" ? "bg-success/15 text-success" : batch.releaseGate === "blocked" ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold";
   const evaluableCount = batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision).length;
   const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
-  const firstPendingEvaluationIndex = batch.samples.findIndex((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision);
+  const firstPendingEvaluationIndex = batch.samples.findIndex((sample, index) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision && batch.samples.slice(0, index).every((previous) => previous.releaseDecision === "publishable"));
   const nextRunnableSamples = batch.samples.filter((sample, index) => (sample.status === "not_generated" || Boolean(sample.issue) || sample.releaseDecision === "reject_or_reprompt" || sample.releaseDecision === "minor_revision") && (firstPendingEvaluationIndex === -1 || index <= firstPendingEvaluationIndex));
   const nextRunnableSample = firstPendingEvaluationIndex === -1 ? nextRunnableSamples[0] ?? null : null;
   const nextRunnableHref = nextRunnableSample ? { source: "medium-test" as const, mediumTestSampleId: nextRunnableSample.sampleId, mediumTestTemplateId: nextRunnableSample.templateId } : null;
