@@ -337,9 +337,10 @@ function GenerateVideoPage() {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => setQuality(key)}
+                    onClick={() => { if (!mediumTestControlsLocked) setQuality(key); }}
+                    disabled={mediumTestControlsLocked}
                     className={cn(
-                      "rounded-lg border p-4 text-right transition-colors",
+                      "rounded-lg border p-4 text-right transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                       quality === key ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70"
                     )}
                   >
@@ -365,9 +366,10 @@ function GenerateVideoPage() {
                   <button
                     key={item.value}
                     type="button"
-                    onClick={() => setAspectRatio(item.value)}
+                    onClick={() => { if (!mediumTestControlsLocked) setAspectRatio(item.value); }}
+                    disabled={mediumTestControlsLocked}
                     className={cn(
-                      "min-h-20 rounded-lg border px-2 py-3 text-center text-xs transition-colors",
+                      "min-h-20 rounded-lg border px-2 py-3 text-center text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                       aspectRatio === item.value ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-secondary/70"
                     )}
                   >
