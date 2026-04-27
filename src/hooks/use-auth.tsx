@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       Promise.allSettled([loadProfile(userId), loadIsAdmin(userId)]),
       wait(AUTH_TIMEOUT_MS),
     ]);
+    setIsAdmin((current) => current ?? false);
   };
 
   useEffect(() => {
