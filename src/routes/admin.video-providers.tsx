@@ -600,6 +600,16 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
         <MetricTile label="عوائق تشغيلية" value={batch.operationalBlockingIssues} />
         <MetricTile label="رفض تجاري" value={batch.commercialRejectedIssues} />
       </div>
+      <div className="mt-3 grid gap-2 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <div className={cn("rounded-lg border p-3 text-xs", batch.activeProviderHealthy ? "border-success/30 bg-success/10" : "border-destructive/30 bg-destructive/10")}>
+          <p className="font-extrabold text-foreground">جاهزية المزود</p>
+          <p className="mt-1 text-muted-foreground">{batch.activeProviderLabel ?? "لا يوجد مزود نشط"}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+          <p className="font-extrabold text-foreground">فحص ما قبل التشغيل</p>
+          <p className="mt-1 text-muted-foreground">{batch.readinessWarnings.length === 0 ? "جاهز لتشغيل العينة التالية بشرط الالتزام بالترتيب وصورة المنتج عند إلزامها." : batch.readinessWarnings.join(" · ")}</p>
+        </div>
+      </div>
       <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <MetricTile label="فشل/استرداد" value={batch.failedOrRefunded} />
         <MetricTile label="مكتمل بلا رابط" value={batch.completedWithoutResult} />
