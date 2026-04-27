@@ -234,7 +234,7 @@ function GenerateVideoPage() {
       });
       setActiveJob(out.job);
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
-      track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? search.mediumTestTemplateId ?? "medium-test" : selectedTemplateId, source: search.source });
+      track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "medium-test" : selectedTemplateId, source: search.source });
       toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
       void refreshCredits();
       router.invalidate();
@@ -429,9 +429,9 @@ function GenerateVideoPage() {
               </Button>
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_120px]">
-              <select value={internalMediumTestMode ? search.mediumTestTemplateId ?? "medium-test" : selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} disabled={internalMediumTestMode} className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-60">
+              <select value={internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "invalid-medium-test" : selectedTemplateId} onChange={(event) => setSelectedTemplateId(event.target.value)} disabled={internalMediumTestMode} className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-60">
                 {internalMediumTestMode ? (
-                  <option value={search.mediumTestTemplateId ?? "medium-test"}>{mediumTestTemplate ? `${mediumTestTemplate.sector} — ${mediumTestTemplate.label}` : "قالب اختبار متوسط مخفي"}</option>
+                  <option value={mediumTestCanonicalSample?.templateId ?? "invalid-medium-test"}>{mediumTestTemplate ? `${mediumTestTemplate.sector} — ${mediumTestTemplate.label}` : "رابط عينة غير مطابق للمصفوفة"}</option>
                 ) : SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.map((template) => (
                   <option key={template.id} value={template.id}>{template.sector} — {template.label}</option>
                 ))}
