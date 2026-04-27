@@ -189,7 +189,8 @@ function GenerateVideoPage() {
     if (search.quality) setQuality(search.quality);
     if (search.aspectRatio) setAspectRatio(search.aspectRatio);
     if (search.selectedPersonaId && PERSONAS.some((persona) => persona.id === search.selectedPersonaId)) setSelectedPersonaId(search.selectedPersonaId);
-  }, [internalMediumTestMode, search.quality, search.aspectRatio, search.selectedPersonaId]);
+    if (search.prompt) setPrompt(search.prompt);
+  }, [internalMediumTestMode, search.quality, search.aspectRatio, search.selectedPersonaId, search.prompt]);
 
   const generate = async () => {
     if (prompt.trim().length < 10) {
@@ -434,11 +435,13 @@ function GenerateVideoPage() {
             </div>
             <Textarea
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={(e) => { if (!internalMediumTestMode) setPrompt(e.target.value); }}
+              readOnly={internalMediumTestMode}
               maxLength={1800}
-              className="mt-2 min-h-36"
+              className="mt-2 min-h-36 read-only:bg-secondary/30"
               placeholder="مثلاً: لقطة عمودية لمنتج عطر فاخر على خلفية خضراء وذهبية، حركة كاميرا بطيئة، المنتج واضح طوال المشهد، دعوة مباشرة للطلب عبر واتساب"
             />
+            {internalMediumTestMode && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">برومبت الاختبار المتوسط مقفل من لوحة الإدارة وخادم التوليد يرفض أي تعديل عليه حتى تبقى النتيجة قابلة للمقارنة.</p>}
           </div>
 
           <div>
