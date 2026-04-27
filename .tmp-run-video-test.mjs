@@ -17,8 +17,7 @@ const input = {
   aspectRatio: '9:16',
   durationSeconds: 5,
   productImageUrl: 'https://v3b.fal.media/files/b/0a97f05a/9mPQVxVvM8ZIr4lhQBbdW_1777296260823.jpeg',
-  selectedPersonaId: 'male-premium',
-  selectedTemplateId: 'custom'
+  selectedPersonaId: 'male-premium'
 };
 
 const payload = toJSON({ data: input, context: {} });
