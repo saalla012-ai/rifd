@@ -145,7 +145,7 @@ function GenerateVideoPage() {
   }, [internalMediumTestMode, search.mediumTestSampleId, search.mediumTestTemplateId]);
   const mediumTestControlsLocked = internalMediumTestMode;
   const mediumTestProductImageRequired = Boolean(mediumTestCanonicalSample?.requiresProductImage);
-  const productImageRequired = (isPaidPlan || mediumTestProductImageRequired) && !productImageUrl.trim();
+  const productImageRequired = (internalMediumTestMode ? mediumTestProductImageRequired : isPaidPlan) && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
   const mediumTestTemplate = internalMediumTestMode ? SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === mediumTestCanonicalSample?.templateId) : null;
