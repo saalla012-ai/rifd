@@ -858,7 +858,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       from: (table: string) => { select: (columns: string) => { contains: (column: string, value: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> } };
     })
       .from("video_jobs")
-      .select("id, status, result_url, credits_charged, estimated_cost_usd, product_image_url, error_message, metadata, created_at")
+      .select("id, status, result_url, credits_charged, estimated_cost_usd, product_image_url, error_message, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
       .contains("metadata", { medium_test: true });
     if (error) throw new Error(`فشل تدقيق دفعة الاختبار المتوسط: ${error.message}`);
 
