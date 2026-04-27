@@ -234,7 +234,7 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
         <MiniMetric label="مسترجعة" value={fmt(stats.refunded)} />
         <MiniMetric label="نشطة" value={fmt(stats.active)} />
         <MiniMetric label="مؤرشفة" value={fmt(stats.archived)} />
-        <MiniMetric label="Ledger مطابق" value={fmt(stats.ledgerMatched)} />
+        <MiniMetric label="Legacy fallback" value={fmt(stats.legacyFallback)} />
       </div>
       {stats.blockers.length > 0 ? (
         <div className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs leading-6 text-warning-foreground">
@@ -242,6 +242,9 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
         </div>
       ) : (
         <div className="mt-3 rounded-lg border border-success/30 bg-success/10 p-3 text-xs font-medium text-success">لا توجد عوائق في عينة Soft Launch الحالية.</div>
+      )}
+      {stats.legacyFallback > 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">توجد نتائج قديمة قبل قرار التخزين الداخلي وتُعرض كرابط مزود fallback؛ لا تُعد عائقاً إذا لم تتكرر في النتائج الجديدة.</p>
       )}
     </section>
   );
