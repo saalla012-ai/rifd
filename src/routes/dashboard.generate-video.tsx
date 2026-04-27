@@ -50,6 +50,8 @@ const PERSONA_IMAGES = {
 
 const PERSONAS = SAUDI_VIDEO_PERSONAS.map((persona) => ({ ...persona, image: PERSONA_IMAGES[persona.id] }));
 
+const PUBLIC_ASSET_ORIGIN = "https://rifd.site";
+
 const ASPECTS: Array<{ value: AspectRatio; label: string; hint: string }> = [
   { value: "9:16", label: "Reels / TikTok", hint: "عمودي" },
   { value: "1:1", label: "Feed", hint: "مربع" },
@@ -67,7 +69,7 @@ const STATUS_LABEL: Record<string, string> = {
 function absoluteAssetUrl(value: string) {
   if (!value) return "";
   if (/^https?:\/\//i.test(value)) return value;
-  return typeof window === "undefined" ? value : new URL(value, window.location.origin).toString();
+  return new URL(value, PUBLIC_ASSET_ORIGIN).toString();
 }
 
 export const Route = createFileRoute("/dashboard/generate-video")({
