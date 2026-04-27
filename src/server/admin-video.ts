@@ -57,6 +57,10 @@ const EvaluatePilotSampleInput = z.object({
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
+const AuditMediumBatchInput = z.object({
+  auditLog: z.boolean().default(true),
+});
+
 
 async function getSupabaseAdmin() {
   const mod = await import("@/integrations/supabase/client.server");
@@ -854,8 +858,9 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
   });
 
 export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => AuditMediumBatchInput.parse(input ?? {}))
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<SaudiVideoMediumBatchResult> => {
+  .handler(async ({ data, context }): Promise<SaudiVideoMediumBatchResult> => {
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
     const staleInProgressCutoffMs = Date.now() - 45 * 60 * 1000;
@@ -996,7 +1001,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
     ].filter(Boolean) as string[];
     const result: SaudiVideoMediumBatchResult = { checkedAt: new Date().toISOString(), totalPlanned: samples.length, generated, completed, evaluated, publishable, needsRevision, rejected, minimumPublishable, commercialValidityRate, processing, failedOrRefunded, completedWithoutResult, staleInProgress, missingProductImage, metadataMismatch, configurationMismatch, remainingToGenerate, remainingToEvaluate, operationalBlockingIssues, commercialRejectedIssues, blockingIssues, estimatedCostUsd: Number(samples.reduce((sum, sample) => sum + (sample.estimatedCostUsd ?? 0), 0).toFixed(2)), activeProviderLabel: activeProvider?.display_name_admin ?? null, activeProviderHealthy, readinessWarnings, executionRate, completionRate, releaseGate, releaseGateReason, nextAction, samples };
 
-    await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
+    if (data.auditLog) await logAdminAudit({ adminId: userId, action: "audit_saudi_video_medium_batch", targetTable: "video_jobs", targetId: "saudi_medium_batch", after: result as unknown as Json });
     return result;
   });
 

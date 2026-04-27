@@ -117,7 +117,7 @@ function AdminVideoProvidersPage() {
     setLoading(true);
     try {
       const headers = await authHeaders();
-      const [providerResult, attemptResult, templateResult, mediumBatchResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers }), fetchLaunchTemplatePerformance({ headers }), auditMediumBatch({ headers })]);
+      const [providerResult, attemptResult, templateResult, mediumBatchResult] = await Promise.all([fetchProviders({ headers }), fetchAttempts({ headers }), fetchLaunchTemplatePerformance({ headers }), auditMediumBatch({ data: { auditLog: false }, headers })]);
       setProviders(providerResult.providers);
       setAttempts(attemptResult.attempts);
       setTemplatePerformance(templateResult.templates);
@@ -196,7 +196,7 @@ function AdminVideoProvidersPage() {
     try {
       const headers = await authHeaders();
       const result = await buildPilotMatrix({ headers });
-      const refreshedBatch = await auditMediumBatch({ headers });
+      const refreshedBatch = await auditMediumBatch({ data: { auditLog: false }, headers });
       setPilotMatrix(result);
       setMediumBatch(refreshedBatch);
       toast.success(`تم تجهيز اختبار متوسط: ${result.totalSamples.toLocaleString("ar-SA")} عينة — العينة التالية أصبحت ظاهرة للتشغيل`);
@@ -211,7 +211,7 @@ function AdminVideoProvidersPage() {
     setAuditingMediumBatch(true);
     try {
       const headers = await authHeaders();
-      const result = await auditMediumBatch({ headers });
+      const result = await auditMediumBatch({ data: { auditLog: true }, headers });
       setMediumBatch(result);
       toast[result.releaseGate === "ready_for_review" || result.releaseGate === "ready_for_expansion" ? "success" : result.releaseGate === "blocked" || result.releaseGate === "needs_iteration" ? "error" : "message"](`تنفيذ الاختبار المتوسط: ${result.executionRate.toLocaleString("ar-SA")}%`);
     } catch (error) {
@@ -227,7 +227,7 @@ function AdminVideoProvidersPage() {
       const headers = await authHeaders();
       const result = await evaluatePilotSample({ data: draft, headers });
       setPilotEvaluation(result);
-      const refreshedBatch = await auditMediumBatch({ headers });
+      const refreshedBatch = await auditMediumBatch({ data: { auditLog: false }, headers });
       setMediumBatch(refreshedBatch);
       toast[result.decision === "publishable" ? "success" : "warning"](`تقييم العينة: ${result.score.toLocaleString("ar-SA")}%`);
     } catch (error) {
