@@ -87,7 +87,7 @@ type ProviderAttempt = {
   reason?: string;
 };
 
-type VideoInput = z.infer<typeof videoInputSchema> & { watermarkRequired?: boolean };
+type VideoInput = z.infer<typeof videoInputSchema> & { watermarkRequired?: boolean; providerImageUrl?: string };
 
 type VideoEntitlement = {
   video_fast_allowed: boolean;
@@ -259,7 +259,7 @@ function buildSaudiVideoPrompt(input: VideoInput) {
 }
 
 function primaryReferenceImage(input: VideoInput) {
-  return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
+  return input.providerImageUrl || input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
 }
 
 async function providerReachableImageUrl(url?: string) {
@@ -267,14 +267,14 @@ async function providerReachableImageUrl(url?: string) {
   if (url.startsWith("data:")) return url;
   try {
     const response = await fetch(url, { headers: { "User-Agent": "Rifd-Video-Preflight/1.0" } });
-    if (!response.ok) return url;
+    if (!response.ok) throw new Error(`provider_image_preflight_${response.status}`);
     const contentType = response.headers.get("content-type") ?? "image/jpeg";
-    if (!contentType.startsWith("image/")) return url;
+    if (!contentType.startsWith("image/")) throw new Error(`provider_image_invalid_type:${contentType}`);
     const buffer = Buffer.from(await response.arrayBuffer());
-    if (buffer.byteLength > 8 * 1024 * 1024) return url;
+    if (buffer.byteLength > 8 * 1024 * 1024) throw new Error("provider_image_too_large");
     return `data:${contentType};base64,${buffer.toString("base64")}`;
-  } catch {
-    return url;
+  } catch (error) {
+    throw new Error(`provider_image_unreachable:${errorMessage(error)}`);
   }
 }
 
