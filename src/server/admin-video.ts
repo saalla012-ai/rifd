@@ -846,7 +846,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
 
     const samples = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.map((templateId, index) => {
       const plannedSample = buildSaudiVideoMediumTestSample(index);
-      const { quality, durationSeconds, sampleId } = plannedSample;
+      const { quality, durationSeconds, sampleId, expectedAspectRatio } = plannedSample;
       const expectedPersonaId = plannedSample.personaId;
       const job = jobsBySample.get(sampleId) ?? null;
       const mismatchedJob = mismatchedJobsBySample.get(sampleId) ?? null;
@@ -855,7 +855,7 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const releaseDecision: "publishable" | "minor_revision" | "reject_or_reprompt" | null = metadata.medium_test_release_decision === "publishable" || metadata.medium_test_release_decision === "minor_revision" || metadata.medium_test_release_decision === "reject_or_reprompt" ? metadata.medium_test_release_decision : null;
       const requiredProductImage = quality !== "fast";
       const missingProductImage = Boolean(job && requiredProductImage && !job.product_image_url);
-      const configurationMismatch = Boolean(job && (job.quality !== quality || job.duration_seconds !== durationSeconds || job.aspect_ratio !== "9:16" || job.selected_persona_id !== expectedPersonaId));
+      const configurationMismatch = Boolean(job && (job.quality !== quality || job.duration_seconds !== durationSeconds || job.aspect_ratio !== expectedAspectRatio || job.selected_persona_id !== expectedPersonaId));
       const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
       return {
         sampleId,
