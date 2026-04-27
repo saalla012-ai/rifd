@@ -1010,6 +1010,7 @@ export const evaluateSaudiVideoPilotSample = createServerFn({ method: "POST" })
     const sampleNumber = Number(data.sampleId.replace("pilot-", ""));
     const expectedSample = buildSaudiVideoMediumTestSample(sampleNumber - 1);
     const expectedTemplateId = expectedSample.templateId;
+    await assertPilotEvaluationSequenceReady(admin, sampleNumber);
     const { data: latestSampleJobs, error: latestSampleError } = await admin
       .from("video_jobs")
       .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
