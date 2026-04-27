@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   LayoutDashboard,
@@ -32,6 +32,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getNewContactCount } from "@/server/admin-contact-submissions";
 import { CreditsBar } from "@/components/credits-bar";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -65,6 +67,7 @@ const ADMIN_NAV = [
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, profile, loading, isAdmin, signOut } = useAuth();
   const fetchNewContacts = useServerFn(getNewContactCount);
   const [newContactCount, setNewContactCount] = useState(0);
@@ -72,9 +75,10 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   // حماية: غير المسجلين يُحوَّلون إلى /auth
   useEffect(() => {
     if (!loading && !user) {
-      void navigate({ to: "/auth" });
+      const redirect = `${location.pathname}${location.searchStr}${location.hash}`;
+      void navigate({ to: "/auth", search: { redirect } as never, replace: true });
     }
-  }, [loading, user, navigate]);
+  }, [loading, user, navigate, location.pathname, location.searchStr, location.hash]);
 
   // عدّاد رسائل التواصل الجديدة (للأدمن فقط)
   useEffect(() => {
@@ -82,7 +86,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     let alive = true;
     const tick = async () => {
       try {
-        const r = await fetchNewContacts({});
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const r = await fetchNewContacts({ headers: { Authorization: `Bearer ${session.access_token}` } });
         if (alive) setNewContactCount(r.count);
       } catch {
         // silent
@@ -106,10 +112,26 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     }
   };
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    const redirect = `${location.pathname}${location.searchStr}${location.hash}`;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="max-w-sm rounded-xl border border-border bg-card p-6 text-center shadow-soft">
+          <Loader2 className="mx-auto mb-3 h-6 w-6 animate-spin text-primary" />
+          <h1 className="text-lg font-extrabold text-foreground">يلزم تسجيل الدخول</h1>
+          <p className="mt-2 text-sm text-muted-foreground">سيتم تحويلك لصفحة الدخول، ويمكنك المتابعة يدوياً إذا تأخر التحويل.</p>
+          <Button asChild className="mt-4 w-full">
+            <Link to="/auth" search={{ redirect } as never}>تسجيل الدخول</Link>
+          </Button>
+        </div>
       </div>
     );
   }
