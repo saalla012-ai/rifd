@@ -702,7 +702,8 @@ function MetricTile({ label, value }: { label: string; value: number }) {
 
 function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: SaudiVideoMediumBatchResult | null; result: SaudiVideoPilotEvaluationResult | null; saving: boolean; onSubmit: (draft: PilotEvaluationDraft) => void }) {
   const [draft, setDraft] = useState<PilotEvaluationDraft>({ sampleId: "pilot-01", resultUrl: "", productClarity: 4, sceneAdherence: 4, motionAdherence: 4, saudiDialect: 4, negativeSafety: 4, publishReadiness: 4, notes: "" });
-  const evaluableSamples = (batch?.samples ?? []).filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision);
+  const nextEvaluationIndex = (batch?.samples ?? []).findIndex((sample, index, samples) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision && samples.slice(0, index).every((previous) => previous.releaseDecision === "publishable"));
+  const evaluableSamples = nextEvaluationIndex >= 0 && batch ? [batch.samples[nextEvaluationIndex]] : [];
   const selectedSample = evaluableSamples.find((sample) => sample.sampleId === draft.sampleId) ?? null;
   useEffect(() => {
     if (!selectedSample && evaluableSamples[0]) setDraft((current) => ({ ...current, sampleId: evaluableSamples[0].sampleId, resultUrl: evaluableSamples[0].resultUrl ?? "" }));
@@ -735,7 +736,7 @@ function PilotEvaluationPanel({ batch, result, saving, onSubmit }: { batch: Saud
         <ScoreInput label="الممنوعات" value={draft.negativeSafety} onChange={(value) => setScore("negativeSafety", value)} />
         <ScoreInput label="النشر" value={draft.publishReadiness} onChange={(value) => setScore("publishReadiness", value)} />
       </div>
-      {evaluableSamples.length === 0 && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">ابدأ بزر تدقيق الدفعة بعد اكتمال التوليد؛ سيظهر هنا فقط ما يمكن تقييمه تجارياً دون عوائق تشغيلية.</p>}
+      {evaluableSamples.length === 0 && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">ابدأ بزر تدقيق الدفعة بعد اكتمال التوليد؛ سيظهر هنا فقط أول فيديو قابل للتقييم حسب التسلسل، ولا تُفتح العينة التالية إلا بعد اعتماد السابقة.</p>}
       {result && <p className="mt-2 text-xs font-semibold text-muted-foreground">{result.gateReason}</p>}
       <Textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} placeholder="ملاحظات مختصرة بعد مشاهدة العينة…" className="mt-3 min-h-20 text-xs" />
       <Button type="button" size="sm" onClick={() => onSubmit({ ...draft, resultUrl: selectedSample?.resultUrl ?? draft.resultUrl })} disabled={saving || (Boolean(batch) && !selectedSample)} className="mt-3 gap-1">
