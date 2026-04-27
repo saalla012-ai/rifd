@@ -529,7 +529,7 @@ function GenerateVideoPage() {
             )}
           </div>
 
-          <Button onClick={generate} disabled={loading || reachedConcurrentLimit || visibleJobInProgress || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+          <Button type="button" onClick={() => void generate()} disabled={loading || reachedConcurrentLimit || visibleJobInProgress || creditsLoading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
             {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال المهمة...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
