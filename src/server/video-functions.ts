@@ -471,7 +471,9 @@ const falProvider: VideoProvider = {
     const resultText = await resultResponse.text();
     let resultPayload: { video?: { url?: string }; video_url?: string; url?: string; error?: string } = {};
     try { resultPayload = resultText ? JSON.parse(resultText) as typeof resultPayload : {}; } catch { resultPayload = { error: resultText.slice(0, 300) }; }
-    if (!resultResponse.ok || resultPayload.error) throw new Error(`فشل جلب نتيجة مزوّد الفيديو (${resultResponse.status}): ${resultPayload.error ?? resultText.slice(0, 300)}`);
+    if (!resultResponse.ok || resultPayload.error) {
+      return { status: "failed", resultUrl: null, error: `فشل جلب نتيجة مزوّد الفيديو (${resultResponse.status}): ${resultPayload.error ?? resultText.slice(0, 300)}`, metadata: { fal_queue_status: statusPayload.status ?? "COMPLETED" } };
+    }
     const resultUrl = extractFalVideoUrl(resultPayload);
     return { status: resultUrl ? "succeeded" : "failed", resultUrl, error: resultUrl ? null : "اكتمل طلب المزود دون رابط فيديو", metadata: { fal_queue_status: statusPayload.status ?? "COMPLETED" } };
   },
