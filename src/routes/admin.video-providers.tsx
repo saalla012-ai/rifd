@@ -560,6 +560,13 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const evaluableCount = batch.samples.filter((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision).length;
   const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
   const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue));
+  const nextRunnableSample = nextRunnableSamples[0] ?? null;
+  const nextEvaluableSample = batch.samples.find((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) ?? null;
+  const activeInstruction = nextRunnableSample
+    ? `شغّل الآن ${nextRunnableSample.sampleId} — ${nextRunnableSample.label}${nextRunnableSample.requiredProductImage ? " مع صورة منتج واضحة" : ""}.`
+    : nextEvaluableSample
+      ? `قيّم الآن ${nextEvaluableSample.sampleId} — ${nextEvaluableSample.label} قبل الانتقال للعينة التالية.`
+      : batch.nextAction;
   return (
     <section className="mb-4 rounded-xl border border-border bg-card p-4 shadow-soft">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -599,6 +606,9 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
       <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">{batch.releaseGateReason}</p>
         <p className="rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-foreground">الخطوة التنفيذية: {batch.nextAction}</p>
+      </div>
+      <div className="mt-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs font-extrabold text-primary">
+        أمر التشغيل الحالي: {activeInstruction}
       </div>
       {nextRunnableSamples.length > 0 && (
         <div className="mt-3 rounded-lg border border-border bg-secondary/30 p-3">
