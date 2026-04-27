@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { videoTierDuration } from "@/lib/plan-catalog";
-import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES } from "@/lib/saudi-video-test";
+import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, buildSaudiVideoMediumTestSample } from "@/lib/saudi-video-test";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
@@ -140,12 +140,21 @@ function GenerateVideoPage() {
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
   const watermarkRequired = credits?.plan === "free";
   const internalMediumTestMode = search.source === "medium-test";
-  const mediumTestControlsLocked = internalMediumTestMode && Boolean(search.quality && search.aspectRatio && search.selectedPersonaId);
-  const mediumTestProductImageRequired = internalMediumTestMode && search.requiresProductImage === true;
+  const mediumTestCanonicalSample = useMemo(() => {
+    if (!internalMediumTestMode || !search.mediumTestSampleId) return null;
+    const sampleNumber = Number(search.mediumTestSampleId.replace("pilot-", ""));
+    const sampleIndex = Number.isInteger(sampleNumber) ? sampleNumber - 1 : -1;
+    if (sampleIndex < 0 || sampleIndex >= SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.length) return null;
+    const sample = buildSaudiVideoMediumTestSample(sampleIndex);
+    if (search.mediumTestTemplateId && search.mediumTestTemplateId !== sample.templateId) return null;
+    return sample;
+  }, [internalMediumTestMode, search.mediumTestSampleId, search.mediumTestTemplateId]);
+  const mediumTestControlsLocked = internalMediumTestMode;
+  const mediumTestProductImageRequired = Boolean(mediumTestCanonicalSample?.requiresProductImage);
   const productImageRequired = (isPaidPlan || mediumTestProductImageRequired) && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
-  const mediumTestTemplate = internalMediumTestMode ? SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === search.mediumTestTemplateId) : null;
+  const mediumTestTemplate = internalMediumTestMode ? SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === mediumTestCanonicalSample?.templateId) : null;
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -186,11 +195,12 @@ function GenerateVideoPage() {
 
   useEffect(() => {
     if (!internalMediumTestMode) return;
-    if (search.quality) setQuality(search.quality);
-    if (search.aspectRatio) setAspectRatio(search.aspectRatio);
-    if (search.selectedPersonaId && PERSONAS.some((persona) => persona.id === search.selectedPersonaId)) setSelectedPersonaId(search.selectedPersonaId);
-    if (search.prompt) setPrompt(search.prompt);
-  }, [internalMediumTestMode, search.quality, search.aspectRatio, search.selectedPersonaId, search.prompt]);
+    if (!mediumTestCanonicalSample) return;
+    setQuality(mediumTestCanonicalSample.quality);
+    setAspectRatio(mediumTestCanonicalSample.expectedAspectRatio);
+    setSelectedPersonaId(mediumTestCanonicalSample.personaId);
+    setPrompt(mediumTestCanonicalSample.finalPrompt);
+  }, [internalMediumTestMode, mediumTestCanonicalSample]);
 
   const generate = async () => {
     if (prompt.trim().length < 10) {
