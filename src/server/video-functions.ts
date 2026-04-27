@@ -212,7 +212,7 @@ function videoCreditError(e: unknown): Error {
 
 function publicVideoError(e: unknown): Error {
   const msg = e instanceof Error ? e.message : String(e);
-  if (/file_download_error|Failed to download the file|image_url|provider_image_unreachable|provider_image_preflight|provider_image_invalid_type|provider_image_too_large/i.test(msg)) {
+  if (/file_download_error|Failed to download the file|image_url|provider_image_unreachable|provider_image_preflight|provider_image_invalid_type|provider_image_too_large|provider_image_not_cdn/i.test(msg)) {
     return new Error("تعذر تجهيز صورة المنتج للفيديو. ارفع الصورة من جديد أو استخدم رابط صورة مباشر بصيغة JPEG/PNG/WebP ثم أعد المحاولة.");
   }
   if (/video_fast_not_allowed/i.test(msg)) return new Error("VIDEO_NOT_ALLOWED: الفيديو غير متاح في باقتك الحالية. رقّ الباقة أو اشحن نقاطاً بعد التفعيل.");
@@ -268,7 +268,7 @@ function sourceReferenceImage(input: VideoInput) {
 
 function assertProviderImageCdn(url?: string) {
   if (!url) return;
-  if (!/^https:\/\/(?:v\d+\.)?fal\.media\//i.test(url)) throw new Error("provider_image_not_cdn");
+  if (!/^https:\/\/(?:v[\da-z]+\.)?fal\.media\//i.test(url)) throw new Error("provider_image_not_cdn");
 }
 
 async function providerReachableImageUrl(url?: string) {
@@ -276,7 +276,7 @@ async function providerReachableImageUrl(url?: string) {
   const token = process.env.FAL_API_KEY;
   if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
   try {
-    if (/^https:\/\/(?:v\d+\.)?fal\.media\//i.test(url)) return url;
+    if (/^https:\/\/(?:v[\da-z]+\.)?fal\.media\//i.test(url)) return url;
     const response = url.startsWith("data:") ? await fetch(url) : await fetch(url, { headers: { "User-Agent": "Rifd-Video-Preflight/1.0" } });
     if (!response.ok) throw new Error(`provider_image_preflight_${response.status}`);
     const contentType = response.headers.get("content-type") ?? "image/jpeg";
