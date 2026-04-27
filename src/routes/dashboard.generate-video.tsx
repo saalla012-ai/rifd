@@ -155,6 +155,12 @@ function GenerateVideoPage() {
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
   const mediumTestTemplate = internalMediumTestMode ? SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === mediumTestCanonicalSample?.templateId) : null;
+  const canonicalGenerationPrompt = mediumTestCanonicalSample?.finalPrompt ?? prompt;
+  const canonicalGenerationQuality = mediumTestCanonicalSample?.quality ?? quality;
+  const canonicalGenerationAspectRatio = mediumTestCanonicalSample?.expectedAspectRatio ?? aspectRatio;
+  const canonicalGenerationDurationSeconds = mediumTestCanonicalSample?.durationSeconds ?? effectiveDurationSeconds;
+  const canonicalGenerationPersonaId = mediumTestCanonicalSample?.personaId ?? selectedPersonaId;
+  const canonicalGenerationPersona = PERSONAS.find((persona) => persona.id === canonicalGenerationPersonaId) ?? selectedPersona;
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? jobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? activeJob?.result_url ?? jobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? jobs.find((job) => job.result_url)?.result_url ?? null;
@@ -203,7 +209,7 @@ function GenerateVideoPage() {
   }, [internalMediumTestMode, mediumTestCanonicalSample]);
 
   const generate = async () => {
-    if (prompt.trim().length < 10) {
+    if (canonicalGenerationPrompt.trim().length < 10) {
       toast.error("اكتب وصف فيديو أوضح");
       return;
     }
@@ -229,12 +235,12 @@ function GenerateVideoPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateVideoFn({
-        data: { prompt, quality, aspectRatio, durationSeconds: effectiveDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(selectedPersona.image), productImageUrl, selectedPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
+        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: startingFrameUrl.trim(), speakerImageUrl: speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
-      track("generation_created", { kind: "video", quality, aspect_ratio: aspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "medium-test" : selectedTemplateId, source: search.source });
+      track("generation_created", { kind: "video", quality: canonicalGenerationQuality, aspect_ratio: canonicalGenerationAspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "medium-test" : selectedTemplateId, source: search.source });
       toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
       void refreshCredits();
       router.invalidate();
@@ -245,7 +251,7 @@ function GenerateVideoPage() {
       } else {
         toast.error(msg);
       }
-      track("generation_failed", { kind: "video", quality, aspect_ratio: aspectRatio, template_id: selectedTemplateId, reason: msg.slice(0, 120) });
+      track("generation_failed", { kind: "video", quality: canonicalGenerationQuality, aspect_ratio: canonicalGenerationAspectRatio, template_id: internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "medium-test" : selectedTemplateId, reason: msg.slice(0, 120) });
     } finally {
       setLoading(false);
     }
