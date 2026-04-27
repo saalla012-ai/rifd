@@ -140,6 +140,7 @@ function GenerateVideoPage() {
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
   const watermarkRequired = credits?.plan === "free";
   const internalMediumTestMode = search.source === "medium-test";
+  const mediumTestControlsLocked = internalMediumTestMode && Boolean(search.quality && search.aspectRatio && search.selectedPersonaId);
   const mediumTestProductImageRequired = internalMediumTestMode && search.requiresProductImage === true;
   const productImageRequired = (isPaidPlan || mediumTestProductImageRequired) && !productImageUrl.trim();
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
@@ -182,6 +183,13 @@ function GenerateVideoPage() {
   useEffect(() => {
     setPreviewError(false);
   }, [latestResult]);
+
+  useEffect(() => {
+    if (!internalMediumTestMode) return;
+    if (search.quality) setQuality(search.quality);
+    if (search.aspectRatio) setAspectRatio(search.aspectRatio);
+    if (search.selectedPersonaId && PERSONAS.some((persona) => persona.id === search.selectedPersonaId)) setSelectedPersonaId(search.selectedPersonaId);
+  }, [internalMediumTestMode, search.quality, search.aspectRatio, search.selectedPersonaId]);
 
   const generate = async () => {
     if (prompt.trim().length < 10) {
@@ -329,9 +337,10 @@ function GenerateVideoPage() {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => setQuality(key)}
+                    onClick={() => { if (!mediumTestControlsLocked) setQuality(key); }}
+                    disabled={mediumTestControlsLocked}
                     className={cn(
-                      "rounded-lg border p-4 text-right transition-colors",
+                      "rounded-lg border p-4 text-right transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                       quality === key ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70"
                     )}
                   >
@@ -357,9 +366,10 @@ function GenerateVideoPage() {
                   <button
                     key={item.value}
                     type="button"
-                    onClick={() => setAspectRatio(item.value)}
+                    onClick={() => { if (!mediumTestControlsLocked) setAspectRatio(item.value); }}
+                    disabled={mediumTestControlsLocked}
                     className={cn(
-                      "min-h-20 rounded-lg border px-2 py-3 text-center text-xs transition-colors",
+                      "min-h-20 rounded-lg border px-2 py-3 text-center text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                       aspectRatio === item.value ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-secondary/70"
                     )}
                   >
@@ -445,12 +455,13 @@ function GenerateVideoPage() {
             <Label>شخصيات سعودية جاهزة</Label>
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
               {PERSONAS.map((persona) => (
-                <button key={persona.id} type="button" onClick={() => setSelectedPersonaId(persona.id)} className={cn("overflow-hidden rounded-lg border text-right transition-colors", selectedPersonaId === persona.id ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70")}> 
+                <button key={persona.id} type="button" onClick={() => { if (!mediumTestControlsLocked) setSelectedPersonaId(persona.id); }} disabled={mediumTestControlsLocked} className={cn("overflow-hidden rounded-lg border text-right transition-colors disabled:cursor-not-allowed disabled:opacity-60", selectedPersonaId === persona.id ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70")}> 
                   <img src={persona.image} alt={persona.label} width={768} height={768} loading="lazy" className="aspect-square w-full object-cover" />
                   <span className="block px-2 py-2 text-xs font-bold">{persona.label}</span>
                 </button>
               ))}
             </div>
+            {mediumTestControlsLocked && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">إعدادات الاختبار المتوسط مقفلة من لوحة الإدارة: الجودة، المقاس، والشخصية لا تُعدّل يدوياً حتى تبقى العينة مطابقة للمصفوفة.</p>}
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
