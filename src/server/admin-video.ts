@@ -797,43 +797,7 @@ export const buildSaudiVideoPilotMatrix = createServerFn({ method: "POST" })
     const { supabase, userId } = context as { supabase: DbClient; userId: string };
     await assertAdmin(supabase, userId);
 
-    const selectedTemplates = [...SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS];
-    const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
-    const samples = selectedTemplates.map((templateId, index) => {
-      const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
-      const persona = SAUDI_VIDEO_PERSONAS.find((item) => item.id === personas[index % personas.length]) ?? SAUDI_VIDEO_PERSONAS[0];
-      const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
-      const durationSeconds: 5 | 8 = quality === "fast" ? 5 : 8;
-      const expectedAspectRatio: "9:16" | "1:1" | "16:9" = "9:16";
-      const mustPass = template.risk === "عالٍ"
-        ? ["لا ادعاءات حساسة", "سلامة اليدين والوجه", "قابلية نشر مشروطة بمراجعة بشرية"]
-        : ["ظهور المنتج خلال أول ثانيتين", "لهجة سعودية طبيعية", "لا نص عربي مشوّه"];
-      const finalPrompt = withSaudiPromptAdherence([
-        template.prompt,
-        `هدف العينة ${index + 1}: ${quality === "quality" ? "اختبار إعلان مدفوع عالي الجودة" : quality === "lite" ? "اختبار إعلان يومي قابل للنشر" : "اختبار سريع لسلامة الفكرة"}.`,
-        `الشخصية المرجعية: ${persona.brief}`,
-        "يجب تسجيل النتيجة في مصفوفة الاختبار المتوسط قبل فتح القالب للعامة.",
-      ].join("\n\n"));
-      return {
-        sampleId: `pilot-${String(index + 1).padStart(2, "0")}`,
-        templateId: template.id,
-        label: template.label,
-        sector: template.sector,
-        personaId: persona.id,
-        personaLabel: persona.label,
-        quality,
-        durationSeconds,
-        expectedAspectRatio,
-        requiresProductImage: quality !== "fast",
-        objective: quality === "quality" ? "قياس صلاحية إعلان مدفوع عالي الجودة" : quality === "lite" ? "قياس إعلان يومي قابل للنشر" : "قياس سرعة الفكرة وسلامة الهوية السعودية",
-        technicalGate: [`النسبة المطلوبة للإطلاق: ${expectedAspectRatio}`, `المدة المطلوبة: ${durationSeconds} ثوانٍ`, "H.264 MP4 قابل للنشر", "لا اعتماد تجاري لأي عينة تخرج مربعة أو أفقية ضمن مصفوفة الإطلاق"],
-        mustPass,
-        scorecard: SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD.map((item) => `${item.label} ${item.weight}%`),
-        promptAdherenceGate: "لا يُقبل القالب إذا تجاهل المنتج أو الصوت أو الحركة الأساسية حتى لو كان الفيديو جميلاً بصرياً.",
-        finalPrompt,
-        generationPayload: { prompt: finalPrompt, quality, aspectRatio: expectedAspectRatio, durationSeconds, selectedPersonaId: persona.id, selectedTemplateId: "custom" as const, requiresProductImage: quality !== "fast" },
-      };
-    });
+    const samples = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.map((_, index) => buildSaudiVideoMediumTestSample(index));
     const result: SaudiVideoPilotMatrixResult = {
       checkedAt: new Date().toISOString(),
       testLevel: "medium",
