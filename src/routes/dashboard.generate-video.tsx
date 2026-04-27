@@ -169,6 +169,7 @@ function GenerateVideoPage() {
       return metadata.medium_test === true && metadata.medium_test_sample_id === mediumTestCanonicalSample.sampleId && metadata.medium_test_template_id === mediumTestCanonicalSample.templateId;
     });
   }, [jobs, internalMediumTestMode, mediumTestCanonicalSample]);
+  const visibleJobInProgress = visibleJobs.some((job) => job.status === "pending" || job.status === "processing");
   const latestResult = useMemo(() => {
     const syncedActiveJob = activeJob ? visibleJobs.find((job) => job.id === activeJob.id) : null;
     return syncedActiveJob?.result_url ?? visibleJobs.find((job) => job.status === "completed" && job.result_url)?.result_url ?? visibleJobs.find((job) => job.result_url)?.result_url ?? null;
@@ -193,7 +194,7 @@ function GenerateVideoPage() {
         : internalMediumTestMode ? [] : out.jobs;
       setJobs(scopedJobs);
       const syncedActiveJob = activeJob ? scopedJobs.find((job) => job.id === activeJob.id) : null;
-      setActiveJob(syncedActiveJob ?? scopedJobs.find((job) => job.status === "completed" && job.result_url) ?? scopedJobs[0] ?? null);
+      setActiveJob(syncedActiveJob ?? scopedJobs.find((job) => job.status === "pending" || job.status === "processing") ?? scopedJobs.find((job) => job.status === "completed" && job.result_url) ?? scopedJobs[0] ?? null);
     } catch {
       // لا نزعج المستخدم عند فشل تحميل السجل المصغر
     }
@@ -519,8 +520,8 @@ function GenerateVideoPage() {
             </p>
           </div>
 
-          <Button onClick={generate} disabled={loading || activeJobInProgress || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
-            {loading || activeJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري معالجة الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
+          <Button onClick={generate} disabled={loading || activeJobInProgress || visibleJobInProgress || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+            {loading || activeJobInProgress || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري معالجة الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
 
