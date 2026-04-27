@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createFalClient } from "@fal-ai/client";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -265,15 +266,18 @@ function primaryReferenceImage(input: VideoInput) {
 
 async function providerReachableImageUrl(url?: string) {
   if (!url) return undefined;
-  if (url.startsWith("data:")) return url;
+  const token = process.env.FAL_API_KEY;
+  if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
   try {
-    const response = await fetch(url, { headers: { "User-Agent": "Rifd-Video-Preflight/1.0" } });
+    if (/^https:\/\/v\d+\.fal\.media\//i.test(url)) return url;
+    const response = url.startsWith("data:") ? await fetch(url) : await fetch(url, { headers: { "User-Agent": "Rifd-Video-Preflight/1.0" } });
     if (!response.ok) throw new Error(`provider_image_preflight_${response.status}`);
     const contentType = response.headers.get("content-type") ?? "image/jpeg";
     if (!contentType.startsWith("image/")) throw new Error(`provider_image_invalid_type:${contentType}`);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    if (buffer.byteLength > 8 * 1024 * 1024) throw new Error("provider_image_too_large");
-    return `data:${contentType};base64,${buffer.toString("base64")}`;
+    const arrayBuffer = await response.arrayBuffer();
+    if (arrayBuffer.byteLength > 8 * 1024 * 1024) throw new Error("provider_image_too_large");
+    const fal = createFalClient({ credentials: token });
+    return await fal.storage.upload(new Blob([arrayBuffer], { type: contentType }), { lifecycle: { expiresIn: "7d" } });
   } catch (error) {
     throw new Error(`provider_image_unreachable:${errorMessage(error)}`);
   }
