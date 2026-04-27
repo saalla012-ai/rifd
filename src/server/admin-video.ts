@@ -844,13 +844,10 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       if (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime()) jobsBySample.set(sampleId, row);
     }
 
-    const personas = ["male-premium", "female-abaya", "retail-seller", "male-young"] as const;
     const samples = SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS.map((templateId, index) => {
-      const template = SAUDI_VIDEO_PROMPT_TEMPLATES.find((item) => item.id === templateId) ?? SAUDI_VIDEO_PROMPT_TEMPLATES[index];
-      const quality: "fast" | "lite" | "quality" = index < 4 ? "fast" : index < 11 ? "lite" : "quality";
-      const durationSeconds = quality === "fast" ? 5 : 8;
-      const sampleId = `pilot-${String(index + 1).padStart(2, "0")}`;
-      const expectedPersonaId = personas[index % personas.length];
+      const plannedSample = buildSaudiVideoMediumTestSample(index);
+      const { quality, durationSeconds, sampleId } = plannedSample;
+      const expectedPersonaId = plannedSample.personaId;
       const job = jobsBySample.get(sampleId) ?? null;
       const mismatchedJob = mismatchedJobsBySample.get(sampleId) ?? null;
       const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
@@ -862,10 +859,10 @@ export const auditSaudiVideoMediumBatch = createServerFn({ method: "POST" })
       const status: VideoJobStatus | "not_generated" = job?.status ?? "not_generated";
       return {
         sampleId,
-        templateId: template.id,
-        label: template.label,
-        sector: template.sector,
-        personaId: personas[index % personas.length],
+        templateId: plannedSample.templateId,
+        label: plannedSample.label,
+        sector: plannedSample.sector,
+        personaId: plannedSample.personaId,
         requiredProductImage,
         jobId: job?.id ?? null,
         status,
