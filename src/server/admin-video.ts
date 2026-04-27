@@ -115,6 +115,7 @@ export type AdminVideoStats = {
     nextBatchTarget: number;
     nextBatchProgressPercent: number;
     nextBatchExpectedPlanPercent: number;
+    nextBatchReady: boolean;
     rolloutStartedAt: string | null;
     completed: number;
     refunded: number;
@@ -587,6 +588,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
       softFailedUnrefunded > 0 ? "توجد مهام فاشلة ضمن العينة لديها خصم بلا استرداد" : null,
       softLedgerMatched !== softRows.length ? "توجد عمليات ضمن العينة لا تطابق قاعدة ledger/refund" : null,
     ].filter(Boolean) as string[];
+    const softNextBatchReady = softRemainingToBeta > 0 && softBlockers.length === 0;
     const stats: AdminVideoStats = {
       total: totalCount ?? statsRows.length,
       pending: counts.pending,
@@ -606,6 +608,7 @@ export const listAdminVideoJobs = createServerFn({ method: "POST" })
         nextBatchTarget: softNextBatchTarget,
         nextBatchProgressPercent: softNextBatchProgressPercent,
         nextBatchExpectedPlanPercent: softNextBatchExpectedPlanPercent,
+        nextBatchReady: softNextBatchReady,
         rolloutStartedAt: archiveRolloutStartedAt,
         completed: softCompleted,
         refunded: softRefunded,

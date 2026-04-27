@@ -224,6 +224,7 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge className={stats.readyForBeta ? "bg-success/15 text-success" : "bg-warning/20 text-warning-foreground"}>{statusLabel}</Badge>
+            <Badge className={stats.nextBatchReady ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive"}>{stats.nextBatchReady ? "الدفعة التالية جاهزة" : "أوقف الدفعة"}</Badge>
             <span className="text-xs font-bold text-muted-foreground">Soft Launch · أول 10 عمليات</span>
           </div>
           <h2 className="mt-2 text-lg font-extrabold">مراقبة الإطلاق المحدود</h2>
@@ -271,7 +272,7 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
           {stats.blockers.map((blocker) => <div key={blocker}>• {blocker}</div>)}
         </div>
       ) : (
-        <div className="mt-3 rounded-lg border border-success/30 bg-success/10 p-3 text-xs font-medium text-success">لا توجد عوائق في عينة Soft Launch الحالية.</div>
+        <div className="mt-3 rounded-lg border border-success/30 bg-success/10 p-3 text-xs font-medium text-success">لا توجد عوائق في عينة Soft Launch الحالية؛ يمكن بدء دفعة المراقبة التالية.</div>
       )}
       {stats.legacyFallback > 0 && (
         <p className="mt-2 text-xs text-muted-foreground">توجد نتائج قديمة قبل قرار التخزين الداخلي وتُعرض كرابط مزود fallback؛ لا تُعد عائقاً إذا لم تتكرر في النتائج الجديدة.</p>
