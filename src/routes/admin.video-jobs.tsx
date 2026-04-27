@@ -137,6 +137,8 @@ function AdminVideoJobsPage() {
         <StatCard label="تكلفة العينة" value={`$${(stats?.estimatedCostUsd ?? 0).toFixed(2)}`} icon="cost" />
       </div>
 
+      {stats?.softLaunch && <SoftLaunchMonitor stats={stats.softLaunch} />}
+
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
           <SelectTrigger className="w-full sm:w-52"><SelectValue /></SelectTrigger>
