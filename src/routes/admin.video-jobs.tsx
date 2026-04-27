@@ -241,10 +241,11 @@ function SoftLaunchMonitor({ stats }: { stats: AdminVideoStats["softLaunch"] }) 
           <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${progressPercent}%` }} />
         </div>
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-7">
         <MiniMetric label="العينة" value={progress} />
         <MiniMetric label="مكتملة" value={fmt(stats.completed)} />
         <MiniMetric label="مسترجعة" value={fmt(stats.refunded)} />
+        <MiniMetric label="فشل بلا رد" value={fmt(stats.failedUnrefunded)} />
         <MiniMetric label="نشطة" value={fmt(stats.active)} />
         <MiniMetric label="مؤرشفة" value={fmt(stats.archived)} />
         <MiniMetric label="Legacy fallback" value={fmt(stats.legacyFallback)} />
