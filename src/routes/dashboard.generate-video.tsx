@@ -71,6 +71,23 @@ function absoluteAssetUrl(value: string) {
   return new URL(value, origin).toString();
 }
 
+const MEDIUM_TEST_PRODUCT_IMAGES: Partial<Record<string, string>> = {
+  "pilot-05": "/medium-test-pilot-05-restaurant-v2.jpg",
+};
+
+async function imageUrlToDataUrl(value: string) {
+  if (!value || value.startsWith("data:")) return value;
+  const response = await fetch(absoluteAssetUrl(value));
+  if (!response.ok) throw new Error("تعذر تجهيز صورة المنتج للفيديو. ارفع الصورة من جديد أو استخدم رابط صورة مباشر بصيغة JPEG/PNG/WebP ثم أعد المحاولة.");
+  const blob = await response.blob();
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("تعذر تجهيز صورة المنتج للفيديو. ارفع الصورة من جديد أو استخدم رابط صورة مباشر بصيغة JPEG/PNG/WebP ثم أعد المحاولة."));
+    reader.readAsDataURL(blob);
+  });
+}
+
 export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
@@ -146,7 +163,8 @@ function GenerateVideoPage() {
   }, [internalMediumTestMode, search.mediumTestSampleId, search.mediumTestTemplateId]);
   const mediumTestControlsLocked = internalMediumTestMode;
   const mediumTestProductImageRequired = Boolean(mediumTestCanonicalSample?.requiresProductImage);
-  const productImageRequired = (internalMediumTestMode ? mediumTestProductImageRequired : isPaidPlan) && !productImageUrl.trim();
+  const canonicalProductImageUrl = productImageUrl.trim() || (internalMediumTestMode && mediumTestCanonicalSample ? MEDIUM_TEST_PRODUCT_IMAGES[mediumTestCanonicalSample.sampleId] ?? "" : "");
+  const productImageRequired = (internalMediumTestMode ? mediumTestProductImageRequired : isPaidPlan) && !canonicalProductImageUrl;
   const selectedPersona = PERSONAS.find((persona) => persona.id === selectedPersonaId) ?? PERSONAS[0];
   const selectedTemplate = SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES.find((template) => template.id === selectedTemplateId) ?? SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES[0];
   const mediumTestTemplate = internalMediumTestMode ? SAUDI_VIDEO_PROMPT_TEMPLATES.find((template) => template.id === mediumTestCanonicalSample?.templateId) : null;
@@ -252,8 +270,9 @@ function GenerateVideoPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
+      const providerProductImageUrl = internalMediumTestMode && canonicalProductImageUrl ? await imageUrlToDataUrl(canonicalProductImageUrl) : productImageUrl.trim();
       const out = await generateVideoFn({
-        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: internalMediumTestMode ? "" : startingFrameUrl.trim(), speakerImageUrl: internalMediumTestMode ? "" : speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
+        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: internalMediumTestMode ? "" : startingFrameUrl.trim(), speakerImageUrl: internalMediumTestMode ? "" : speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl: providerProductImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
