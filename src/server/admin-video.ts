@@ -66,6 +66,7 @@ async function getSupabaseAdmin() {
 type VideoJobStatus = Database["public"]["Enums"]["video_job_status"];
 type VideoJobRow = Database["public"]["Tables"]["video_jobs"]["Row"];
 type MediumAuditJob = Pick<VideoJobRow, "id" | "status" | "result_url" | "credits_charged" | "estimated_cost_usd" | "product_image_url" | "error_message" | "metadata" | "created_at" | "quality" | "duration_seconds" | "aspect_ratio" | "selected_persona_id">;
+type MediumAuditProvider = Pick<Database["public"]["Tables"]["video_provider_configs"]["Row"], "provider_key" | "display_name_admin" | "enabled" | "public_enabled" | "health_status" | "priority">;
 
 export type AdminVideoJob = {
   id: string;
