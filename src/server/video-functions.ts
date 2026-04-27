@@ -520,7 +520,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
-      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId);
+      const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId);
       const mediumTestMetadata = data.source === "medium-test"
         ? {
             source: "admin_medium_video_test",
