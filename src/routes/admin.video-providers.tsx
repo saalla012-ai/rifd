@@ -561,6 +561,7 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
   const alreadyEvaluatedCount = batch.samples.filter((sample) => sample.releaseDecision).length;
   const nextRunnableSamples = batch.samples.filter((sample) => sample.status === "not_generated" || Boolean(sample.issue) || sample.releaseDecision === "reject_or_reprompt" || sample.releaseDecision === "minor_revision");
   const nextRunnableSample = nextRunnableSamples[0] ?? null;
+  const nextRunnableHref = nextRunnableSample ? { source: "medium-test" as const, mediumTestSampleId: nextRunnableSample.sampleId, mediumTestTemplateId: nextRunnableSample.templateId } : null;
   const nextEvaluableSample = batch.samples.find((sample) => sample.status === "completed" && sample.resultUrl && !sample.issue && !sample.releaseDecision) ?? null;
   const rerunReason = (sample: SaudiVideoMediumBatchResult["samples"][number]) => sample.issue ?? (sample.releaseDecision === "reject_or_reprompt" ? "قرار التقييم رفض العينة؛ أعد صياغة البرومبت أو بدّل المرجع ثم أعد التوليد." : sample.releaseDecision === "minor_revision" ? "العينة تحتاج تحسيناً قبل التوسيع؛ أعد توليد نسخة محسّنة ثم قيّمها من جديد." : "لم تُولد العينة بعد");
   const activeInstruction = nextRunnableSample
@@ -625,6 +626,11 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
       </div>
       <div className="mt-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs font-extrabold text-primary">
         أمر التشغيل الحالي: {activeInstruction}
+        {nextRunnableHref && (
+          <Button asChild size="sm" className="mt-3 h-8 w-full text-xs sm:w-auto">
+            <Link to="/dashboard/generate-video" search={nextRunnableHref} target="_blank">فتح العينة المسموحة الآن</Link>
+          </Button>
+        )}
       </div>
       <div className="mt-3 grid gap-2 md:grid-cols-3">
         <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs">
@@ -651,15 +657,19 @@ function MediumBatchPanel({ batch }: { batch: SaudiVideoMediumBatchResult }) {
               <div key={`run-${sample.sampleId}`} className={cn("rounded-md border border-border bg-background/70 p-2 text-xs", index === 0 && "border-primary/40 bg-primary/10") }>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold">{(index + 1).toLocaleString("ar-SA")} · {sample.sampleId}</span>
-                  {index === 0 ? <Badge className="bg-primary/15 text-primary">ابدأ هنا</Badge> : sample.releaseDecision === "reject_or_reprompt" ? <Badge className="bg-destructive/15 text-destructive">إعادة برومبت</Badge> : sample.releaseDecision === "minor_revision" ? <Badge className="bg-gold/15 text-gold">تحسين</Badge> : sample.issue?.includes("45 دقيقة") ? <Badge className="bg-destructive/15 text-destructive">عالقة</Badge> : sample.requiredProductImage && <Badge className="bg-gold/15 text-gold">صورة منتج</Badge>}
+                  {index === 0 ? <Badge className="bg-primary/15 text-primary">مسموحة الآن</Badge> : <Badge variant="secondary">انتظر الدور</Badge>}
                 </div>
                 <p className="mt-1 truncate text-muted-foreground">{sample.label}</p>
                 <p className="mt-1 line-clamp-2 text-muted-foreground">سبب الإعادة: {rerunReason(sample)}</p>
-                <Button asChild size="sm" variant="outline" className="mt-2 h-8 w-full text-xs">
-                  <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">
-                    فتح العينة
-                  </Link>
-                </Button>
+                {index === 0 ? (
+                  <Button asChild size="sm" variant="outline" className="mt-2 h-8 w-full text-xs">
+                    <Link to="/dashboard/generate-video" search={{ source: "medium-test", mediumTestSampleId: sample.sampleId, mediumTestTemplateId: sample.templateId }} target="_blank">
+                      فتح العينة
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="mt-2 h-8 w-full text-xs" disabled>مقفلة حتى اكتمال السابقة</Button>
+                )}
               </div>
             ))}
           </div>
