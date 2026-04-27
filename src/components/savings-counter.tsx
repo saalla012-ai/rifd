@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { TrendingUp, Users, Wand2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getPublicSavingsStats } from "@/server/public-stats";
 
 /**
  * عداد الأرقام الحية — يقرأ من قاعدة البيانات الحقيقية.
@@ -18,6 +19,7 @@ function formatNumber(n: number): string {
 }
 
 export function SavingsCounter() {
+  const fetchSavingsStats = useServerFn(getPublicSavingsStats);
   const [stats, setStats] = useState<{
     users: number;
     posts: number;
@@ -29,22 +31,12 @@ export function SavingsCounter() {
     let cancelled = false;
     void (async () => {
       try {
-        const since = new Date();
-        since.setDate(since.getDate() - 30);
-
-        // عدد المنشورات في آخر 30 يوم
-        const postsRes = await supabase
-          .from("generations")
-          .select("user_id", { count: "exact", head: false })
-          .gte("created_at", since.toISOString())
-          .limit(5000);
+        const publicStats = await fetchSavingsStats();
 
         if (cancelled) return;
 
-        const totalPosts = postsRes.count ?? 0;
-        const uniqueUsers = new Set(
-          (postsRes.data ?? []).map((r: { user_id: string }) => r.user_id)
-        ).size;
+        const totalPosts = publicStats?.posts ?? 0;
+        const uniqueUsers = publicStats?.users ?? 0;
         const savings = totalPosts * RIYAL_PER_POST;
 
         setStats({ users: uniqueUsers, posts: totalPosts, savings });
@@ -57,7 +49,7 @@ export function SavingsCounter() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchSavingsStats]);
 
   // قبل التحميل: skeleton خفيف
   if (!loaded) {
