@@ -256,7 +256,7 @@ function GenerateVideoPage() {
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
       track("generation_created", { kind: "video", quality: canonicalGenerationQuality, aspect_ratio: canonicalGenerationAspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "medium-test" : selectedTemplateId, source: search.source });
       toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
-      void refreshCredits();
+      if (out.job.status !== "pending" && out.job.status !== "processing") void refreshCredits();
       router.invalidate();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "فشل توليد الفيديو";
@@ -519,8 +519,8 @@ function GenerateVideoPage() {
             </p>
           </div>
 
-          <Button onClick={generate} disabled={loading || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري توليد الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
+          <Button onClick={generate} disabled={loading || activeJobInProgress || creditsLoading || !canonicalHasEnoughCredits || !canonicalQualityAllowed || !canonicalDurationAllowed || productImageRequired} className="w-full gradient-primary text-primary-foreground shadow-elegant">
+            {loading || activeJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري معالجة الفيديو...</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
           </Button>
         </section>
 
