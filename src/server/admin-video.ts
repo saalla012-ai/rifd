@@ -327,6 +327,41 @@ function toAdminVideoJob(row: VideoJobRow, profile?: { email: string | null; sto
   };
 }
 
+async function assertPilotEvaluationSequenceReady(admin: Awaited<ReturnType<typeof getSupabaseAdmin>>, sampleNumber: number) {
+  if (sampleNumber <= 1) return;
+  const { data, error } = await admin
+    .from("video_jobs")
+    .select("id, status, result_url, product_image_url, metadata, created_at, quality, duration_seconds, aspect_ratio, selected_persona_id")
+    .contains("metadata", { medium_test: true });
+  if (error) throw new Error(`فشل التحقق من تسلسل تقييم الاختبار المتوسط: ${error.message}`);
+
+  const latestOfficial = new Map<string, MediumAuditJob>();
+  const latestMismatch = new Map<string, Pick<VideoJobRow, "created_at">>();
+  for (const row of (data as MediumAuditJob[] | null) ?? []) {
+    const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
+    const sampleId = typeof metadata.medium_test_sample_id === "string" ? metadata.medium_test_sample_id : "";
+    const templateId = typeof metadata.medium_test_template_id === "string" ? metadata.medium_test_template_id : "";
+    const currentNumber = Number(sampleId.replace("pilot-", ""));
+    const expectedTemplateId = Number.isInteger(currentNumber) ? SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS[currentNumber - 1] : undefined;
+    if (!sampleId || !expectedTemplateId || currentNumber >= sampleNumber) continue;
+    const targetMap = templateId === expectedTemplateId ? latestOfficial : latestMismatch;
+    const current = targetMap.get(sampleId);
+    if (!current || new Date(row.created_at).getTime() > new Date(current.created_at).getTime()) targetMap.set(sampleId, row);
+  }
+
+  for (let index = 0; index < sampleNumber - 1; index += 1) {
+    const sample = buildSaudiVideoMediumTestSample(index);
+    const job = latestOfficial.get(sample.sampleId) ?? null;
+    const mismatch = latestMismatch.get(sample.sampleId) ?? null;
+    const metadata = (job?.metadata as Record<string, unknown> | null) ?? {};
+    const configurationMismatch = Boolean(job && (job.quality !== sample.quality || job.duration_seconds !== sample.durationSeconds || job.aspect_ratio !== sample.expectedAspectRatio || job.selected_persona_id !== sample.personaId));
+    const newerMismatch = Boolean(mismatch && (!job || new Date(mismatch.created_at).getTime() > new Date(job.created_at).getTime()));
+    if (!job || newerMismatch || job.status !== "completed" || !job.result_url || metadata.medium_test_release_decision !== "publishable" || configurationMismatch || (sample.requiresProductImage && !job.product_image_url)) {
+      throw new Error("لا يمكن تقييم هذه العينة قبل اعتماد كل العينات السابقة كصالحة للنشر وفق التسلسل الرسمي.");
+    }
+  }
+}
+
 function isManualBridgeJob(row: VideoJobRow): boolean {
   const metadata = (row.metadata as Record<string, unknown> | null) ?? {};
   return metadata.manual_required === true;
