@@ -41,7 +41,7 @@ export const SAUDI_VIDEO_PROMPT_ADHERENCE_SCORECARD = [
   { key: "publish", label: "قابلية النشر", weight: 10 },
 ] as const;
 
-export const FAL_PROMPT_MAX_CHARS = 1900;
+export const FAL_PROMPT_MAX_CHARS = 900;
 
 export function limitFalPrompt(prompt: string, maxLength = FAL_PROMPT_MAX_CHARS) {
   const clean = prompt.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
@@ -178,16 +178,14 @@ export const SAUDI_VIDEO_MEDIUM_TEST_PROMPT_TEMPLATES = SAUDI_VIDEO_PROMPT_TEMPL
 
 export function buildSaudiFalTestPrompt(input: { personaBrief: string; scenarioId: SaudiVideoScenarioId; includeProductImage: boolean; includeVoice: boolean }) {
   const scenario = SAUDI_VIDEO_TEST_SCENARIOS.find((item) => item.id === input.scenarioId) ?? SAUDI_VIDEO_TEST_SCENARIOS[0];
-  return limitFalPrompt(withSaudiPromptAdherence([
-    "Create a premium Saudi commercial video for ecommerce in Riyadh.",
-    `Main character reference: ${input.personaBrief} Keep identity, clothing, modesty, face structure, and Gulf/Saudi visual style consistent with the provided image.`,
-    input.includeProductImage ? `Product reference: keep the provided product image accurate, visible, and central. Product context: ${scenario.productBrief}.` : `Product context: ${scenario.productBrief}.`,
-    "Camera movement: slow cinematic push-in, subtle orbit around the product, natural hand gesture from the presenter, realistic hands, realistic face, premium retail lighting.",
-    input.includeVoice ? `Audio: clear Saudi Arabic voiceover in a natural Gulf accent, synchronized with the commercial. Spoken line: ${scenario.voiceLine}` : "No voice requirement unless the model supports audio reliably.",
-    "Avoid readable text, Arabic letters inside the generated video, distorted logos, Westernized clothing, unrealistic fingers, face warping, oversexualized styling, or exaggerated claims.",
-    "PixVerse v6 settings: enable generated audio, allow one smooth multi-clip camera change, use thinking/auto reasoning when available, and keep the product reference dominant instead of a plain white-background cutout.",
-    "Vertical 9:16, 5 to 8 seconds, high-conversion Saudi ad style.",
-  ].join("\n")));
+  return limitFalPrompt([
+    "Premium vertical Saudi ecommerce ad in Riyadh, realistic UGC commercial style.",
+    `Presenter: ${input.personaBrief} Preserve modest Saudi/Gulf clothing, face, and identity from reference image.`,
+    input.includeProductImage ? `Product: keep supplied product accurate, clear, central. Context: ${scenario.productBrief}.` : `Product context: ${scenario.productBrief}.`,
+    "Motion: slow push-in, subtle orbit, natural hand gesture, realistic face and hands, premium retail lighting.",
+    input.includeVoice ? `Audio: natural Saudi Arabic voiceover saying: ${scenario.voiceLine}` : "No voice required.",
+    "Avoid readable text, logos, distorted hands/faces, westernized clothing, immodesty, exaggerated claims. 9:16 short ad.",
+  ].join("\n"));
 }
 
 export function evaluateSaudiVideoImage(input: { hasProductImage: boolean; personaLabel: string }) {
