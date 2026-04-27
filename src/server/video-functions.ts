@@ -262,6 +262,22 @@ function primaryReferenceImage(input: VideoInput) {
   return input.productImageUrl || input.speakerImageUrl || input.startingFrameUrl || undefined;
 }
 
+async function providerReachableImageUrl(url?: string) {
+  if (!url) return undefined;
+  if (url.startsWith("data:")) return url;
+  try {
+    const response = await fetch(url, { headers: { "User-Agent": "Rifd-Video-Preflight/1.0" } });
+    if (!response.ok) return url;
+    const contentType = response.headers.get("content-type") ?? "image/jpeg";
+    if (!contentType.startsWith("image/")) return url;
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.byteLength > 8 * 1024 * 1024) return url;
+    return `data:${contentType};base64,${buffer.toString("base64")}`;
+  } catch {
+    return url;
+  }
+}
+
 function mergeMetadata(current: Json | null | undefined, patch?: Record<string, unknown>) {
   return { ...((current as Record<string, unknown> | null) ?? {}), ...(patch ?? {}) } as Json;
 }
@@ -457,6 +473,7 @@ const falProvider: VideoProvider = {
     if (!token) throw new Error("إعداد مزوّد الفيديو غير مكتمل");
     const model = FAL_MODEL_BY_QUALITY[input.quality];
       const finalProviderPrompt = buildSaudiVideoPrompt(input);
+      const providerImageUrl = await providerReachableImageUrl(primaryReferenceImage(input));
       const response = await fetch(`https://queue.fal.run/${model}`, {
       method: "POST",
       headers: { Authorization: `Key ${token}`, "Content-Type": "application/json" },
@@ -465,7 +482,7 @@ const falProvider: VideoProvider = {
         aspect_ratio: input.aspectRatio,
         duration: videoDurationPayload(input.durationSeconds),
         resolution: PIXVERSE_RESOLUTION_BY_QUALITY[input.quality],
-        image_url: primaryReferenceImage(input),
+        image_url: providerImageUrl,
         negative_prompt: PIXVERSE_NEGATIVE_PROMPT,
         generate_audio_switch: true,
         generate_multi_clip_switch: input.quality !== "fast",
