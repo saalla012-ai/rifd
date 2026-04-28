@@ -222,9 +222,27 @@ function GenerateImagePage() {
               </div>
             </div>
           )}
+          {imageUrl && (
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <Button type="button" variant="outline" size="sm" onClick={() => void go()} disabled={loading || creditsLoading || (quality === "pro" && !proAllowed)} className="gap-1">
+                <RotateCcw className="h-3.5 w-3.5" /> جرّب نسخة أخرى
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to="/dashboard/generate-video" search={{ prompt, campaignPackId: search.campaignPackId } as never}>
+                  <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من الصورة
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to={search.campaignPackId ? "/dashboard/campaign-studio" : "/dashboard/library"}>
+                  {search.campaignPackId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  {search.campaignPackId ? "العودة للحملة" : "افتح المكتبة"}
+                </Link>
+              </Button>
+            </div>
+          )}
           <div className="mt-3 text-center">
             <Link to="/dashboard/library" className="text-xs text-primary hover:underline">
-              شوف كل توليداتك في المكتبة ←
+              عرض كل المحتوى في المكتبة ←
             </Link>
           </div>
         </div>
