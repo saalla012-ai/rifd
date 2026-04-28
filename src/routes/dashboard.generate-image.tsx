@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
-import { Image as ImageIcon, Loader2, Zap, Crown, Download, LayoutGrid } from "lucide-react";
+import { Image as ImageIcon, Loader2, Zap, Crown, Download, LayoutGrid, Megaphone, Clapperboard, RotateCcw, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { track } from "@/lib/analytics/posthog";
 type ImgSearch = { template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-image")({
-  head: () => ({ meta: [{ title: "توليد صور — رِفد" }] }),
+  head: () => ({ meta: [{ title: "صمّم صورة إعلان — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): ImgSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
