@@ -97,13 +97,16 @@ function AuthPage() {
             void refreshProfile();
           });
       }
+      const mustCompleteOnboarding = Boolean(pendingWhatsapp || onboardingIntent || mode === "signup");
       if (profile && !profile.onboarded) {
+        void navigate({ to: "/onboarding" });
+      } else if (!profile && mustCompleteOnboarding) {
         void navigate({ to: "/onboarding" });
       } else if (`${location.pathname}${location.searchStr}${location.hash}` !== redirectPath) {
         void navigate({ to: redirectPath as never });
       }
     }
-  }, [authLoading, user, profile, refreshProfile, navigate, redirectPath, location.pathname, location.searchStr, location.hash]);
+  }, [authLoading, user, profile, refreshProfile, navigate, redirectPath, location.pathname, location.searchStr, location.hash, onboardingIntent, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,6 +135,7 @@ function AuthPage() {
         }
         track("signup_completed", { method: "email" });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
+        void navigate({ to: "/onboarding" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -170,9 +174,10 @@ function AuthPage() {
         }
         window.localStorage.setItem(PENDING_SIGNUP_PHONE_KEY, normalizedWhatsapp);
       }
-      const authReturnPath = redirectPath === "/dashboard"
+      const finalRedirectPath = mode === "signup" ? "/onboarding" : redirectPath;
+      const authReturnPath = finalRedirectPath === "/dashboard"
         ? "/auth"
-        : `/auth?redirect=${encodeURIComponent(redirectPath)}`;
+        : `/auth?redirect=${encodeURIComponent(finalRedirectPath)}`;
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: `${window.location.origin}${authReturnPath}`,
       });
