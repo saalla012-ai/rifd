@@ -71,7 +71,7 @@ export function HomeHero() {
               نصوص، صور، وفيديوهات تبدو سعودية… وتدفع للشراء.
             </p>
             <p className="mx-auto mt-4 max-w-2xl text-sm font-medium leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0">
-              رِفد يحوّل فهم سلوك الشراء السعودي — الثقة، السعر، اللهجة، الموسم، وطريقة اتخاذ القرار — إلى محتوى جاهز للنشر في متجرك وقنواتك الإعلانية.
+              رِفد يحوّل فهم سلوك الشراء السعودي — الثقة، السعر، اللهجة، الموسم، وطريقة اتخاذ القرار — إلى محتوى عملي يساعد متجرك على البيع والإعلان بوضوح.
             </p>
           </div>
 
@@ -181,7 +181,7 @@ function CapabilitiesStrip() {
     <div className="rounded-2xl border border-primary/15 bg-background/65 p-3 shadow-soft backdrop-blur-sm">
       <div className="mb-2 flex items-center justify-center gap-2 text-xs font-black text-primary">
         <Clapperboard className="h-3.5 w-3.5" />
-        شريط القدرات المخفية
+        ما يصنعه رِفد لمحتوى متجرك
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         {capabilities.map((item) => (
