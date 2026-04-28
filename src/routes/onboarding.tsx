@@ -205,7 +205,7 @@ function OnboardingPage() {
           </>
         )}
 
-        <div className="rounded-2xl border border-border bg-card p-7 shadow-elegant">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
           {step === 1 && (
             <div className="space-y-4">
               <div>
@@ -213,7 +213,7 @@ function OnboardingPage() {
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
                 <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على متجرك</h2>
-                <p className="mt-1 text-sm text-muted-foreground">معلومتان سريعتان نستخدمهما في كل محتوى نولّده لك</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">معلومتان فقط حتى يبدأ رِفد بتخصيص المحتوى بدل كتابة أوامر عامة في ChatGPT</p>
               </div>
               <div>
                 <Label htmlFor="store">
@@ -250,9 +250,9 @@ function OnboardingPage() {
               <Button
                 onClick={next}
                 disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
-                className="w-full gradient-primary text-primary-foreground"
+                className="h-12 w-full gradient-primary font-extrabold text-primary-foreground"
               >
-                التالي
+                خصّص محتوى متجري
               </Button>
             </div>
           )}
