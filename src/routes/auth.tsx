@@ -83,6 +83,7 @@ function AuthPage() {
     if (authLoading) return;
     if (user) {
       const pendingWhatsapp = window.localStorage.getItem(PENDING_SIGNUP_PHONE_KEY);
+      const mustCompleteOnboarding = Boolean(pendingWhatsapp || onboardingIntent || mode === "signup");
       if ((pendingWhatsapp && !profile?.whatsapp) || (!profile && mustCompleteOnboarding)) {
         void supabase
           .from("profiles")
@@ -101,7 +102,6 @@ function AuthPage() {
             void refreshProfile();
           });
       }
-      const mustCompleteOnboarding = Boolean(pendingWhatsapp || onboardingIntent || mode === "signup");
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else if (!profile && mustCompleteOnboarding) {
