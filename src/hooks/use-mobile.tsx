@@ -6,8 +6,8 @@ function getIsMobileViewport() {
   if (typeof window === "undefined") return false;
   const narrowViewport = window.innerWidth < MOBILE_BREAKPOINT;
   const realDeviceWidth = Math.min(window.screen.width, window.screen.height);
-  const isTouchPhoneOrTablet = navigator.maxTouchPoints > 0 && realDeviceWidth < 900;
-  return narrowViewport || isTouchPhoneOrTablet;
+  const isTouchPhone = navigator.maxTouchPoints > 0 && realDeviceWidth < MOBILE_BREAKPOINT;
+  return narrowViewport || isTouchPhone;
 }
 
 export function useIsMobile() {
