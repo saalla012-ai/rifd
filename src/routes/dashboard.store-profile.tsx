@@ -398,6 +398,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>كلمات أو وعود ممنوعة</Label>
+                <FieldImpact>تحمي المحتوى من وعود مبالغ فيها أو غير مناسبة لنشاطك.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.banned_phrases}
@@ -407,6 +408,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>ملاحظات الامتثال</Label>
+                <FieldImpact>توجّه رِفد للحدود اللغوية والتنظيمية قبل إنشاء المحتوى.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.compliance_notes}
@@ -423,9 +425,8 @@ function StoreProfilePage() {
               <div>
                 <h3 className="font-bold">ما النتيجة المتوقعة بعد تعبئة هذه الصفحة؟</h3>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  سيصبح رِفد أقدر على إنتاج إعلان مدروس، وصف منتج يزيل التردد، صورة تناسب السوق
-                  السعودي، سكربت فيديو قصير، منشور عرض مباشر، ودعوة شراء واضحة مرتبطة بمتجرك لا
-                  بنموذج عام.
+                  اكتمال الذاكرة = نتائج أقل عمومية وأكثر قرباً من متجرك: نص يبيع، صورة إعلان
+                  مناسبة لهويتك، فيديو قصير يشرح العرض، ودعوة شراء واضحة مرتبطة بسياقك.
                 </p>
               </div>
             </div>
