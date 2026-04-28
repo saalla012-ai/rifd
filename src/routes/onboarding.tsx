@@ -260,7 +260,7 @@ function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="text-2xl font-extrabold">وش نوع منتجاتك؟</h2>
-              <p className="text-sm text-muted-foreground">نخصص القوالب حسب نشاطك</p>
+              <p className="text-sm leading-6 text-muted-foreground">نختار زاوية النص والصورة وفكرة الفيديو حسب نشاطك</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {PRODUCT_TYPES.map((p) => (
                   <button
@@ -287,6 +287,7 @@ function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-2xl font-extrabold">من جمهورك المستهدف؟</h2>
+              <p className="text-sm leading-6 text-muted-foreground">الجمهور يغيّر الهوك، الكلمات، وطريقة عرض المنتج.</p>
               <Select value={audience} onValueChange={setAudience}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -303,7 +304,7 @@ function OnboardingPage() {
           {step === 4 && (
             <div className="space-y-4">
               <h2 className="text-2xl font-extrabold">النبرة + لون الهوية</h2>
-              <p className="text-sm text-muted-foreground">نستخدمها في النصوص والصور</p>
+              <p className="text-sm leading-6 text-muted-foreground">آخر خطوة قبل توليد أول حزمة محتوى مترابطة لمتجرك.</p>
               <div className="grid grid-cols-2 gap-2">
                 {TONES.map((t) => (
                   <button
@@ -335,8 +336,8 @@ function OnboardingPage() {
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
-                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الحفظ...</> : <>أنشئ أول محتوى لي ✨</>}
+                <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary font-extrabold text-primary-foreground shadow-elegant">
+                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الحزمة...</> : <>أنشئ أول حزمة محتوى ✨</>}
                 </Button>
               </div>
             </div>
