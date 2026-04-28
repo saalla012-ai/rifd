@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw } from "lucide-react";
+import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw, FolderKanban } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -14,7 +14,7 @@ import { listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 const ACTIVE_VIDEO_STATUSES = new Set(["pending", "processing"]);
 
 export const Route = createFileRoute("/dashboard/library")({
-  head: () => ({ meta: [{ title: "مكتبتي — رِفد" }] }),
+  head: () => ({ meta: [{ title: "مكتبة محتواك الجاهز — رِفد" }] }),
   component: LibraryPage,
 });
 
@@ -150,6 +150,9 @@ function LibraryPage() {
     return true;
   });
 
+  const textCount = items.filter((item) => item.type === "text").length;
+  const imageCount = items.filter((item) => item.type === "image" || item.type === "image_enhance").length;
+  const favoriteCount = items.filter((item) => item.is_favorite).length;
   const campaignItemCount = items.filter((item) => item.metadata?.campaign_pack_id).length
     + videoJobs.filter((job) => (job.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id).length;
   const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
