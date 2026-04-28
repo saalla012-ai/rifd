@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
-import { Image as ImageIcon, Loader2, Zap, Crown, Download, LayoutGrid } from "lucide-react";
+import { Image as ImageIcon, Loader2, Zap, Crown, Download, LayoutGrid, Megaphone, Clapperboard, RotateCcw, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { track } from "@/lib/analytics/posthog";
 type ImgSearch = { template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-image")({
-  head: () => ({ meta: [{ title: "توليد صور — رِفد" }] }),
+  head: () => ({ meta: [{ title: "صمّم صورة إعلان — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): ImgSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
@@ -86,9 +86,14 @@ function GenerateImagePage() {
     <DashboardShell>
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-black text-primary">صور منتجات وبوسترات</p>
-          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف العرض إلى صورة تسويقية واضحة</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">ابدأ بالسريع للمحتوى اليومي، أو استخدم الجودة العالية للإعلانات المهمة عند توفرها في باقتك.</p>
+          <p className="text-xs font-black text-primary">صمّم صورة إعلان</p>
+          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف العرض إلى صورة إعلان واضحة</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">ابدأ بصورة سريعة للمحتوى اليومي، أو استخدم Pro للإعلانات المهمة عند توفرها في باقتك.</p>
+          {search.campaignPackId && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+              <Megaphone className="h-3.5 w-3.5" /> هذه الصورة جزء من حملة محفوظة
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">بوستر عرض</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">صورة منتج</span>
@@ -101,7 +106,7 @@ function GenerateImagePage() {
           </Button>
           {remaining !== null && (
             <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
-              باقي {remaining.toLocaleString("ar-SA")} صورة اليوم
+              استخدامك اليومي: باقي {remaining.toLocaleString("ar-SA")} صورة
             </span>
           )}
         </div>
@@ -109,7 +114,7 @@ function GenerateImagePage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط نوع الصورة ووصفها</div>
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط نوع الإعلان ووصفه البصري</div>
           <div>
             <Label>نموذج التوليد</Label>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -119,7 +124,7 @@ function GenerateImagePage() {
                   quality === "flash" ? "border-primary bg-primary/10" : "border-border")}
               >
                 <Zap className="mb-1 h-4 w-4 text-primary" />
-                <div className="font-bold">سريع (Flash)</div>
+                <div className="font-bold">Flash سريع</div>
                 <div className="text-xs text-muted-foreground">~15 ث • للمحتوى اليومي</div>
               </button>
               <button
@@ -130,7 +135,7 @@ function GenerateImagePage() {
                   !proAllowed && "cursor-not-allowed opacity-55")}
               >
                 <Crown className="mb-1 h-4 w-4 text-gold" />
-                <div className="font-bold">جودة عالية (Pro)</div>
+                <div className="font-bold">Pro للإعلانات المهمة</div>
                 <div className="text-xs text-muted-foreground">{proAllowed ? "~30 ث • للإعلانات الممولة" : "متاحة من Growth"}</div>
               </button>
             </div>
@@ -149,11 +154,11 @@ function GenerateImagePage() {
           </div>
 
           <div>
-            <Label>وصف الصورة</Label>
+            <Label>وصف الإعلان البصري</Label>
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="مثلاً: بوستر جمعة بيضاء بخصم 50% بألوان فاخرة وذهبية"
+              placeholder="مثلاً: صورة إعلان لعطر شرقي فاخر، المنتج في المنتصف، خلفية نظيفة، مساحة واضحة للسعر والعرض"
               className="mt-1 min-h-24"
               maxLength={1500}
             />
@@ -177,13 +182,13 @@ function GenerateImagePage() {
           </div>
 
           <Button onClick={go} disabled={loading || creditsLoading || (quality === "pro" && !proAllowed)} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الصورة...</> : <><ImageIcon className="h-4 w-4" /> ولّد صورة جاهزة للاستخدام</>}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الصورة...</> : <><ImageIcon className="h-4 w-4" /> صمّم الصورة الآن</>}
           </Button>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">2) المعاينة والتحميل</h3>
+            <h3 className="font-bold">2) صورة الإعلان الجاهزة</h3>
             {imageUrl && (
               <a
                 href={imageUrl}
@@ -202,7 +207,7 @@ function GenerateImagePage() {
             ) : loading ? (
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             ) : (
-              "اكتب وصف الصورة واضغط التوليد — المعاينة ستظهر هنا."
+              "اكتب وصف الإعلان واضغط التصميم — المعاينة ستظهر هنا."
             )}
           </div>
           {memorySignals.length > 0 && (
@@ -217,9 +222,27 @@ function GenerateImagePage() {
               </div>
             </div>
           )}
+          {imageUrl && (
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <Button type="button" variant="outline" size="sm" onClick={() => void go()} disabled={loading || creditsLoading || (quality === "pro" && !proAllowed)} className="gap-1">
+                <RotateCcw className="h-3.5 w-3.5" /> جرّب نسخة أخرى
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to="/dashboard/generate-video" search={{ prompt, campaignPackId: search.campaignPackId } as never}>
+                  <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من الصورة
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to={search.campaignPackId ? "/dashboard/campaign-studio" : "/dashboard/library"}>
+                  {search.campaignPackId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  {search.campaignPackId ? "العودة للحملة" : "افتح المكتبة"}
+                </Link>
+              </Button>
+            </div>
+          )}
           <div className="mt-3 text-center">
             <Link to="/dashboard/library" className="text-xs text-primary hover:underline">
-              شوف كل توليداتك في المكتبة ←
+              عرض كل المحتوى في المكتبة ←
             </Link>
           </div>
         </div>
