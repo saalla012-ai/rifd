@@ -575,7 +575,7 @@ function GenerateVideoPage() {
         <aside className="space-y-5">
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="font-extrabold">2) المعاينة والتحميل</h2>
+              <h2 className="font-extrabold">2) معاينة الإعلان وتحميله</h2>
               <div className="flex flex-wrap items-center gap-2">
                 {activeJobInProgress && (
                   <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
@@ -609,7 +609,7 @@ function GenerateVideoPage() {
               ) : (
                 <div className="px-8">
                   <Film className="mx-auto mb-3 h-8 w-8 text-primary" />
-                  الفيديو سيظهر هنا بعد التوليد
+                  الفيديو سيظهر هنا بعد الإنشاء
                 </div>
               )}
             </div>
@@ -617,7 +617,7 @@ function GenerateVideoPage() {
 
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="font-extrabold">آخر الفيديوهات</h2>
+              <h2 className="font-extrabold">فيديوهاتك الأخيرة</h2>
               <button type="button" onClick={loadJobs} className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary" aria-label="تحديث">
                 <RefreshCw className="h-4 w-4" />
               </button>
