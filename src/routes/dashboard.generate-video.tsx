@@ -569,7 +569,7 @@ function GenerateVideoPage() {
         <aside className="space-y-5">
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="font-extrabold">المعاينة</h2>
+              <h2 className="font-extrabold">2) المعاينة والتحميل</h2>
               <div className="flex flex-wrap items-center gap-2">
                 {activeJobInProgress && (
                   <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
