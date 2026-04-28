@@ -66,7 +66,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<"google" | "apple" | null>(null);
   const whatsappTouched = whatsapp.trim().length > 0;
   const whatsappValid = validateSaudiPhone(whatsapp);
 
@@ -179,14 +179,14 @@ function AuthPage() {
     }
   };
 
-  const handleGoogle = async () => {
-    setGoogleLoading(true);
+  const handleSocialAuth = async (provider: "google" | "apple") => {
+    setSocialLoading(provider);
     try {
       if (mode === "signup") {
         const normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
         if (!normalizedWhatsapp) {
           toast.error(SAUDI_PHONE_ERROR);
-          setGoogleLoading(false);
+          setSocialLoading(null);
           return;
         }
         window.localStorage.setItem(PENDING_SIGNUP_PHONE_KEY, normalizedWhatsapp);
@@ -195,23 +195,23 @@ function AuthPage() {
       const authReturnPath = finalRedirectPath === "/dashboard"
         ? "/auth"
         : `/auth?redirect=${encodeURIComponent(finalRedirectPath)}`;
-      const result = await lovable.auth.signInWithOAuth("google", {
+      const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: `${window.location.origin}${authReturnPath}`,
       });
       if (result.error) {
         window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
-        console.warn("[auth] google oauth rejected", result.error.message);
-        toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
-        setGoogleLoading(false);
+        console.warn(`[auth] ${provider} oauth rejected`, result.error.message);
+        toast.error(`فشل الاتصال بـ${provider === "apple" ? "Apple" : "Google"}. حاول مرة أخرى بعد قليل.`);
+        setSocialLoading(null);
         return;
       }
-      // إذا redirected = true، المتصفح بيتحول لGoogle تلقائياً
+      // إذا redirected = true، المتصفح بيتحول لمزوّد الدخول تلقائياً
       // إذا رجعت tokens، الجلسة بتنحفظ والـuseEffect أعلاه يحوّل للوجهة الصحيحة
     } catch (err) {
-      console.warn("[auth] google oauth error", err);
+      console.warn(`[auth] ${provider} oauth error`, err);
         window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
-        toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
-      setGoogleLoading(false);
+        toast.error(`فشل الاتصال بـ${provider === "apple" ? "Apple" : "Google"}. حاول مرة أخرى بعد قليل.`);
+      setSocialLoading(null);
     }
   };
 
