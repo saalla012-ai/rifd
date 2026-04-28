@@ -105,7 +105,7 @@ function OnboardingPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      void navigate({ to: "/auth" });
+      void navigate({ to: "/auth", search: { redirect: "/onboarding" } });
       return;
     }
     // إذا أكمل onboarding من قبل وعنده رقم واتساب → dashboard مباشرة
