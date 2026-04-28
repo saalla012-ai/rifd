@@ -50,7 +50,7 @@ function AuthPage() {
     redirectPath === "/onboarding" ||
     location.searchStr.includes("redirect=/onboarding") ||
     location.searchStr.includes("redirect=%2Fonboarding");
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">(onboardingIntent ? "signup" : "login");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
