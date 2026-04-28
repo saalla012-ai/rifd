@@ -193,9 +193,7 @@ function EditImagePage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        {/* العمود الأيمن: الإدخال */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft space-y-4">
-          {/* رفع الصورة */}
           <div>
             <Label>الصورة الأصلية</Label>
             {!originalDataUrl ? (
@@ -239,9 +237,8 @@ function EditImagePage() {
             />
           </div>
 
-          {/* القوالب */}
           <div>
-            <Label>قالب التعديل</Label>
+            <Label>نوع التحسين</Label>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {PRESETS.map((p) => (
                 <button
@@ -263,21 +260,20 @@ function EditImagePage() {
             </div>
           </div>
 
-          {/* prompt حر اختياري */}
           <div>
             <Label htmlFor="custom-prompt">
-              أو اكتب تعديلك بنفسك (اختياري)
+              أو اكتب التحسين المطلوب بنفسك (اختياري)
             </Label>
             <Textarea
               id="custom-prompt"
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="مثلاً: غيّر الخلفية لذهبية فخمة وأضف ظل خفيف للمنتج"
+              placeholder="مثلاً: اجعل الخلفية ذهبية فخمة، أضف ظلاً خفيفاً، واترك المنتج واضحاً بدون تغطية"
               className="mt-1 min-h-20"
               maxLength={1500}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              لو كتبت هنا، سيتم تجاهل القالب أعلاه
+              لو كتبت هنا، سيتم استخدام وصفك بدلاً من نوع التحسين المختار
             </p>
           </div>
 
@@ -288,17 +284,16 @@ function EditImagePage() {
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" /> جاري التعديل...
+                <Loader2 className="h-4 w-4 animate-spin" /> جاري تحسين الصورة...
               </>
             ) : (
               <>
-                <Wand2 className="h-4 w-4" /> عدّل الصورة
+                <Wand2 className="h-4 w-4" /> حسّن الصورة
               </>
             )}
           </Button>
         </div>
 
-        {/* العمود الأيسر: النتيجة */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
             <h3 className="font-bold">النتيجة</h3>
@@ -310,7 +305,7 @@ function EditImagePage() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent"
               >
-                <Download className="h-3 w-3" /> تنزيل
+                <Download className="h-3 w-3" /> تحميل
               </a>
             )}
           </div>
@@ -329,7 +324,7 @@ function EditImagePage() {
             ) : (
               <div className="flex flex-col items-center gap-2 text-center">
                 <ImageIcon className="h-8 w-8 opacity-40" />
-                <p>الصورة المعدّلة بتظهر هنا</p>
+                <p>الصورة المحسّنة ستظهر هنا</p>
               </div>
             )}
           </div>
@@ -338,7 +333,7 @@ function EditImagePage() {
               to="/dashboard/library"
               className="text-xs text-primary hover:underline"
             >
-              شوف كل توليداتك في المكتبة ←
+              اعرض كل أصولك في المكتبة ←
             </Link>
           </div>
         </div>
