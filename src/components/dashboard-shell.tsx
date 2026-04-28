@@ -30,6 +30,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getNewContactCount } from "@/server/admin-contact-submissions";
@@ -38,6 +39,27 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/hooks/use-theme";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+type DashboardNavPath =
+  | "/dashboard"
+  | "/dashboard/campaign-studio"
+  | "/dashboard/generate-text"
+  | "/dashboard/generate-image"
+  | "/dashboard/generate-video"
+  | "/dashboard/edit-image"
+  | "/dashboard/templates"
+  | "/dashboard/library"
+  | "/dashboard/store-profile"
+  | "/dashboard/usage"
+  | "/dashboard/credits"
+  | "/dashboard/billing"
+  | "/dashboard/settings";
+
+type NavItem = {
+  to: DashboardNavPath;
+  label: string;
+  icon: LucideIcon;
+};
 
 const NAV_GROUPS = [
   {
@@ -73,9 +95,9 @@ const NAV_GROUPS = [
       { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
     ],
   },
-] as const;
+] satisfies readonly { label: string; items: readonly NavItem[] }[];
 
-const NAV = NAV_GROUPS.flatMap((group) => group.items);
+const NAV: readonly NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
 const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
