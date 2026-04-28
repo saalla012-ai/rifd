@@ -127,18 +127,30 @@ function StoreProfilePage() {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-2xl font-extrabold">ملف متجري 2.0 — الذاكرة التراكمية</h1>
+              <h1 className="text-2xl font-extrabold">بناء المتجر — ذاكرة بيع لا مجرد ملف تعريفي</h1>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
-                هذه الصفحة لم تعد مجرد اسم متجر ونبرة. هنا نبني ذاكرة تشغيل حقيقية تجعل كل توليدة لاحقة أقرب لهوية متجرك، أوضح بيعياً، وأكثر اتساقاً مع سياساتك ومواسمك.
+                هنا نثبت ما يجعل العميل يشتري منك: الوعد، الجمهور، الاعتراضات، السياسات، المنتجات الأعلى قيمة والمواسم. كل حقل جيد هنا يجعل النص والصورة والفيديو أقرب للبيع وأقل عمومية.
               </p>
             </div>
             <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
               <div className="flex items-center gap-2 font-bold text-primary">
                 <Sparkles className="h-4 w-4" />
-                اكتمال الذاكرة: {completionPct}%
+                جاهزية البيع: {completionPct}%
               </div>
-              <p className="mt-1 text-muted-foreground">كل حقل تضيفه هنا يرفع دقة النتائج القادمة ويقلل التكرار العام.</p>
+              <p className="mt-1 text-muted-foreground">كل حقل مكتمل يقلل التردد في المخرجات ويزيد وضوح زاوية الشراء.</p>
             </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {[
+              "رسائل مبنية على سبب الشراء لا على وصف المنتج فقط",
+              "CTA يناسب قناتك: متجر، واتساب، إعلان أو ستوري",
+              "ثقة أعلى عبر الشحن والاستبدال والأسئلة المتكررة",
+            ].map((item) => (
+              <div key={item} className="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm font-bold leading-6 text-foreground/85">
+                {item}
+              </div>
+            ))}
           </div>
 
           <div className="mt-6 grid gap-3 md:grid-cols-4">
