@@ -170,7 +170,7 @@ function OnboardingPage() {
   return (
     <MarketingLayout>
       <div className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
-        {step <= 4 && (
+        {step <= 2 && (
           <>
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
@@ -181,18 +181,18 @@ function OnboardingPage() {
                 جهّز أول حزمة محتوى بالعامية السعودية
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                أربع خطوات قصيرة تربط وعد الصفحة الرئيسية بملف متجر فعلي: نصوص، صور، وفكرة فيديو.
+                خطوتان فقط تربطان وعد الصفحة الرئيسية بملف متجر فعلي: نصوص، صور، وفكرة فيديو.
               </p>
             </div>
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 4</span>
+              <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 2</span>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 بدون بطاقة ائتمان
               </span>
             </div>
             <div className="mb-8 flex gap-1.5">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2].map((i) => (
                 <div
                   key={i}
                   className={cn(
