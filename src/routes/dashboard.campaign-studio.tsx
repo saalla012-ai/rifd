@@ -196,11 +196,11 @@ function CampaignStudioPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Megaphone className="h-3.5 w-3.5" /> Campaign Studio
+            <Megaphone className="h-3.5 w-3.5" /> مركز قيادة الحملة
           </div>
-          <h1 className="text-2xl font-extrabold">استوديو الحملات</h1>
+          <h1 className="text-2xl font-extrabold">ابنِ موجز حملة واضحاً ثم انتقل للتنفيذ</h1>
           <p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">
-            ابنِ Campaign Pack محفوظة تربط النص، الصورة، والفيديو في مسار واحد قابل للرجوع والتنفيذ.
+            هذه الصفحة لا تولّد كل شيء داخلها؛ دورها ترتيب الهدف والزاوية والقناة، ثم توجيهك إلى أداة النص أو الصورة أو الفيديو.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -208,10 +208,24 @@ function CampaignStudioPage() {
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} حفظ مسودة
           </Button>
           <Button asChild variant="outline" size="sm" className="gap-1">
-            <Link to="/dashboard/templates"><LayoutTemplate className="h-3.5 w-3.5" /> القوالب</Link>
+              <Link to="/dashboard/templates"><LayoutTemplate className="h-3.5 w-3.5" /> ابدأ من قالب</Link>
           </Button>
         </div>
       </div>
+
+        <div className="mt-5 grid gap-2 sm:grid-cols-4">
+          {[
+            "اختر الهدف",
+            "اكتب موجز الحملة",
+            "احفظ السياق",
+            "انتقل لأداة التنفيذ",
+          ].map((step, index) => (
+            <div key={step} className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground shadow-soft">
+              <span className="ms-1 text-primary">{index + 1}</span>
+              {step}
+            </div>
+          ))}
+        </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -252,12 +266,12 @@ function CampaignStudioPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-extrabold">موجز الحملة الجاهز</p>
-                <p className="mt-1 text-xs text-muted-foreground">انسخه أو احفظه كحزمة Campaign Pack مترابطة.</p>
+                <p className="mt-1 text-xs text-muted-foreground">هذا هو السياق الذي سيقود النص والصورة والفيديو بدون تشتيت.</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" size="sm" onClick={copyBrief} className="gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
                 <Button type="button" size="sm" onClick={() => void saveCurrentPack("generated")} disabled={saving} className="gap-1 gradient-primary text-primary-foreground shadow-elegant">
-                  {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FolderKanban className="h-3.5 w-3.5" />} حفظ كحزمة
+                  {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FolderKanban className="h-3.5 w-3.5" />} حفظ الموجز
                 </Button>
               </div>
             </div>
