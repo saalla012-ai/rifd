@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
-import { Sparkles, Mail, Lock, User, Loader2 } from "lucide-react";
+import { Sparkles, Mail, Lock, User, Loader2, MessageCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,12 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
+import {
+  normalizeSaudiPhone,
+  validateSaudiPhone,
+  SAUDI_PHONE_ERROR,
+  SAUDI_PHONE_PLACEHOLDER,
+} from "@/lib/phone";
 
 function sanitizeRedirectPath(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -18,6 +24,8 @@ function sanitizeRedirectPath(value: unknown): string | undefined {
   if (value.includes("://")) return undefined;
   return value;
 }
+
+const PENDING_SIGNUP_PHONE_KEY = "rifd_pending_signup_whatsapp";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -42,13 +50,16 @@ function AuthPage() {
     redirectPath === "/onboarding" ||
     location.searchStr.includes("redirect=/onboarding") ||
     location.searchStr.includes("redirect=%2Fonboarding");
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">(onboardingIntent ? "signup" : "login");
   const [name, setName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const whatsappTouched = whatsapp.trim().length > 0;
+  const whatsappValid = validateSaudiPhone(whatsapp);
 
   useEffect(() => {
     if (onboardingIntent) setMode("signup");
@@ -58,13 +69,22 @@ function AuthPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user) {
+      const pendingWhatsapp = window.localStorage.getItem(PENDING_SIGNUP_PHONE_KEY);
+      if (pendingWhatsapp && !profile?.whatsapp) {
+        window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+        void supabase
+          .from("profiles")
+          .update({ whatsapp: pendingWhatsapp })
+          .eq("id", user.id)
+          .then(() => void refreshProfile());
+      }
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else if (`${location.pathname}${location.searchStr}${location.hash}` !== redirectPath) {
         void navigate({ to: redirectPath as never });
       }
     }
-  }, [authLoading, user, profile, navigate, redirectPath, location.pathname, location.searchStr, location.hash]);
+  }, [authLoading, user, profile, refreshProfile, navigate, redirectPath, location.pathname, location.searchStr, location.hash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +92,13 @@ function AuthPage() {
 
     try {
       if (mode === "signup") {
+        const normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
+        if (!normalizedWhatsapp) {
+          toast.error(SAUDI_PHONE_ERROR);
+          setSubmitting(false);
+          return;
+        }
+        window.localStorage.setItem(PENDING_SIGNUP_PHONE_KEY, normalizedWhatsapp);
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -112,6 +139,15 @@ function AuthPage() {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     try {
+      if (mode === "signup") {
+        const normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
+        if (!normalizedWhatsapp) {
+          toast.error(SAUDI_PHONE_ERROR);
+          setGoogleLoading(false);
+          return;
+        }
+        window.localStorage.setItem(PENDING_SIGNUP_PHONE_KEY, normalizedWhatsapp);
+      }
       const authReturnPath = redirectPath === "/dashboard"
         ? "/auth"
         : `/auth?redirect=${encodeURIComponent(redirectPath)}`;
@@ -200,20 +236,60 @@ function AuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (
-              <div>
-                <Label htmlFor="name">الاسم الكامل</Label>
-                <div className="relative mt-1">
-                  <User className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="مثلاً: أحمد العتيبي"
-                    required
-                    className="pr-10"
-                  />
+              <>
+                <div>
+                  <Label htmlFor="name">الاسم الكامل</Label>
+                  <div className="relative mt-1">
+                    <User className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="مثلاً: أحمد العتيبي"
+                      required
+                      className="pr-10"
+                    />
+                  </div>
                 </div>
-              </div>
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <Label htmlFor="whatsapp">رقم الجوال للواتساب</Label>
+                    <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-extrabold text-success">
+                      بدون OTP
+                    </span>
+                  </div>
+                  <div
+                    className={cn(
+                      "mt-1 flex min-h-11 items-center overflow-hidden rounded-lg border bg-background shadow-sm transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring",
+                      whatsappTouched && !whatsappValid ? "border-destructive" : "border-input",
+                    )}
+                  >
+                    <div className="flex h-11 shrink-0 items-center gap-2 border-l border-border bg-secondary px-3 text-sm font-extrabold text-foreground">
+                      <MessageCircle className="h-4 w-4 text-success" />
+                      <span dir="ltr">+966</span>
+                    </div>
+                    <Input
+                      id="whatsapp"
+                      dir="ltr"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      placeholder={SAUDI_PHONE_PLACEHOLDER}
+                      required
+                      maxLength={20}
+                      inputMode="tel"
+                      autoComplete="tel"
+                      aria-invalid={whatsappTouched && !whatsappValid}
+                      className="h-11 border-0 bg-transparent px-3 text-left font-bold shadow-none focus-visible:ring-0"
+                    />
+                  </div>
+                  <div className="mt-2 flex items-start gap-2 text-xs leading-5">
+                    <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                    <p className={cn("text-muted-foreground", whatsappTouched && !whatsappValid && "text-destructive")}>
+                      {whatsappTouched && !whatsappValid ? SAUDI_PHONE_ERROR : "مطلوب فقط للتواصل الخاص بتجهيز الحساب."}
+                    </p>
+                  </div>
+                </div>
+              </>
             )}
             <div>
               <Label htmlFor="email">البريد الإلكتروني</Label>
@@ -266,7 +342,7 @@ function AuthPage() {
 
             <Button
               type="submit"
-              disabled={submitting || googleLoading}
+              disabled={submitting || googleLoading || (mode === "signup" && !whatsappValid)}
               className="w-full gradient-primary text-primary-foreground shadow-elegant"
             >
               {submitting ? (
