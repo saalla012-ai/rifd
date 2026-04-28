@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, Clapperboard, PlayCircle, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,16 +7,13 @@ import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
 const HERO_EXPERIMENT = "hero_hook" as const;
 
 const capabilities = [
-  "هوكات إعلانية",
-  "أوصاف منتجات",
-  "منشورات عروض",
-  "أفكار ريلز",
-  "سكربت فيديو",
-  "صور منتجات",
-  "حملات موسمية",
-  "رسائل واتساب",
-  "عناوين إعلانات",
-  "محتوى إطلاق منتج",
+  "إعلان مدروس يفتح زاوية البيع",
+  "وصف منتج يزيل التردد",
+  "صورة تناسب السوق السعودي",
+  "سكربت فيديو قصير",
+  "منشور عرض مباشر",
+  "دعوة شراء واضحة",
+  "فيديو إعلاني قوي لمنشورك",
 ] as const;
 
 const proofItems = [
@@ -138,6 +135,30 @@ export function HomeHero() {
 }
 
 function VideoProofCard() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          void video.play().catch(() => {
+            // Some browsers may block autoplay; controls remain available.
+          });
+          return;
+        }
+
+        video.pause();
+      },
+      { threshold: 0.45 }
+    );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="relative mx-auto max-w-2xl lg:mx-0">
       <div className="absolute inset-0 -z-10 translate-y-4 rounded-[1.75rem] bg-primary/15 blur-2xl" aria-hidden />
@@ -154,9 +175,11 @@ function VideoProofCard() {
         </div>
         <div className="aspect-video bg-background">
           <video
+            ref={videoRef}
             className="h-full w-full object-cover"
             src="/rifd-promo.mp4"
             controls
+            loop
             muted
             playsInline
             preload="metadata"
@@ -181,7 +204,7 @@ function CapabilitiesStrip() {
     <div className="rounded-2xl border border-primary/15 bg-background/65 p-3 shadow-soft backdrop-blur-sm">
       <div className="mb-2 flex items-center justify-center gap-2 text-xs font-black text-primary">
         <Clapperboard className="h-3.5 w-3.5" />
-        ما يصنعه رِفد لمحتوى متجرك
+        من وصف متجرك إلى محتوى جاهز للبيع
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         {capabilities.map((item) => (
