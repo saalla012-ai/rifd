@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
@@ -211,7 +211,7 @@ function OnboardingPage() {
               نحفظ ذاكرة متجرك داخل حسابك حتى تظهر اقتراحات رِفد مخصصة لك في كل مرة.
             </p>
             <Button asChild className="mt-5 h-11 w-full gradient-primary font-extrabold text-primary-foreground">
-              <a href="/auth?redirect=/onboarding">تسجيل الدخول أو إنشاء حساب</a>
+              <Link to="/auth" search={{ redirect: "/onboarding" }}>تسجيل الدخول أو إنشاء حساب</Link>
             </Button>
           </div>
         </main>
