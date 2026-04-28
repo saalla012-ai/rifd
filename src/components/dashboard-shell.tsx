@@ -150,6 +150,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     "sticky top-0 z-10 hidden border-b border-border bg-background/80 backdrop-blur md:block";
   const mobileHeaderClass =
     "sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur md:hidden";
+  const forcedMobileHeaderClass =
+    "sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur";
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -241,7 +243,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </header>
 
         {/* Mobile top bar */}
-        <header className={isMobile ? mobileHeaderClass.replace(" md:hidden", "") : mobileHeaderClass}>
+        <header className={isMobile ? forcedMobileHeaderClass : mobileHeaderClass}>
           <div className="flex items-center justify-between gap-2 px-4 py-3">
             <Link to="/" className="flex items-center gap-2 font-bold">
               <Sparkles className="h-4 w-4 text-primary" /> رِفد
