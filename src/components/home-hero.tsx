@@ -138,13 +138,19 @@ function VideoProofCard() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const isVideoVisibleRef = useRef(false);
   const hasReachedVideoRef = useRef(false);
+  const userPausedRef = useRef(false);
+  const programmaticPauseRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || typeof IntersectionObserver === "undefined") return;
 
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const saveData = "connection" in navigator && Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
+    if (prefersReducedMotion || saveData) return;
+
     const playWhenReady = () => {
-      if (!isVideoVisibleRef.current || !hasReachedVideoRef.current) return;
+      if (!isVideoVisibleRef.current || !hasReachedVideoRef.current || userPausedRef.current) return;
       void video.play().catch(() => {
         // Some browsers may block autoplay; controls remain available.
       });
@@ -164,17 +170,36 @@ function VideoProofCard() {
           return;
         }
 
+        programmaticPauseRef.current = true;
         video.pause();
       },
       { threshold: 0.45 }
     );
 
+    const handleManualPause = () => {
+      if (programmaticPauseRef.current) {
+        programmaticPauseRef.current = false;
+        return;
+      }
+
+      userPausedRef.current = true;
+    };
+
+    const handlePlay = () => {
+      userPausedRef.current = false;
+      programmaticPauseRef.current = false;
+    };
+
     observer.observe(video);
+    video.addEventListener("pause", handleManualPause);
+    video.addEventListener("play", handlePlay);
     window.addEventListener("scroll", markReachedAfterScroll, { passive: true });
     markReachedAfterScroll();
 
     return () => {
       observer.disconnect();
+      video.removeEventListener("pause", handleManualPause);
+      video.removeEventListener("play", handlePlay);
       window.removeEventListener("scroll", markReachedAfterScroll);
     };
   }, []);
