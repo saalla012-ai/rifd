@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/store-profile")({
   head: () => ({ meta: [{ title: "ملف متجري — رِفد" }] }),
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/dashboard/store-profile")({
 
 function StoreProfilePage() {
   const { user, profile, refreshProfile } = useAuth();
+  const isMobile = useIsMobile();
   const [form, setForm] = useState({
     store_name: "",
     audience: "",
@@ -113,6 +116,9 @@ function StoreProfilePage() {
     (completionKeys.filter((key) => String(form[key]).trim()).length / completionKeys.length) * 100,
   );
 
+  const formGridClass = cn("mt-5 grid gap-4", !isMobile && "md:grid-cols-2");
+  const fullRowClass = cn(!isMobile && "md:col-span-2");
+
   const splitList = (value: string) =>
     value
       .split(/[\n،,]/)
@@ -153,9 +159,9 @@ function StoreProfilePage() {
 
   return (
     <DashboardShell>
-      <div className="max-w-5xl">
+      <div className={cn("max-w-5xl", isMobile && "mx-auto max-w-md")}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className={cn("flex flex-col gap-4", !isMobile && "lg:flex-row lg:items-start lg:justify-between")}>
             <div>
               <h1 className="text-2xl font-extrabold">
                 بناء المتجر — ذاكرة بيع لا مجرد ملف تعريفي
@@ -177,7 +183,7 @@ function StoreProfilePage() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className={cn("mt-5 grid gap-3", !isMobile && "md:grid-cols-3")}>
             {[
               "رسائل مبنية على سبب الشراء لا على وصف المنتج فقط",
               "CTA يناسب قناتك: متجر، واتساب، إعلان أو ستوري",
@@ -192,7 +198,7 @@ function StoreProfilePage() {
             ))}
           </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-4">
+          <div className={cn("mt-6 grid gap-3", !isMobile && "md:grid-cols-4")}>
             {sections.map((section) => {
               const filledCount = section.keys.filter((key) =>
                 String(form[key as keyof typeof form]).trim(),
@@ -218,7 +224,7 @@ function StoreProfilePage() {
         <div className="mt-6 grid gap-6">
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">هوية المتجر</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>اسم المتجر</Label>
                 <Input
@@ -245,7 +251,7 @@ function StoreProfilePage() {
                   <option value="other">آخر</option>
                 </select>
               </div>
-              <div className="md:col-span-2">
+              <div className={fullRowClass}>
                 <Label>الجمهور المستهدف</Label>
                 <Textarea
                   className="mt-1"
@@ -307,7 +313,7 @@ function StoreProfilePage() {
 
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">تشغيل البيع والمحتوى</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>دعوة الشراء المفضلة</Label>
                 <Input
@@ -349,7 +355,7 @@ function StoreProfilePage() {
 
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">السياسات والثقة</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>سياسة الشحن</Label>
                 <Textarea
@@ -373,7 +379,7 @@ function StoreProfilePage() {
 
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">الامتثال والحماية</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>كلمات أو وعود ممنوعة</Label>
                 <Textarea
