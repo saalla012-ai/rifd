@@ -61,7 +61,7 @@ export function HomeHero() {
           </div>
 
           <h1 className="mt-4 text-[2rem] font-black leading-[1.08] tracking-normal sm:text-5xl lg:text-6xl">
-            <span className="block">ودّع ChatGPT،</span>
+            <span className="block">ودّع <bdi dir="ltr">ChatGPT</bdi>،</span>
             <span className="mt-1 block text-gradient-primary">واختصر ساعات من كتابة وصناعة محتوى متجرك.</span>
             <span className="mt-3 block text-[0.58em] font-extrabold leading-[1.35] text-foreground/90 sm:text-[0.5em]">
               نصوص وصور وفيديوهات بالعامية السعودية جاهزة.
@@ -101,8 +101,11 @@ export function HomeHero() {
             ))}
           </div>
 
-          <CapabilitiesStrip />
         </div>
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-4 pb-6 lg:-mt-3 lg:pb-8">
+        <CapabilitiesStrip />
       </div>
 
       <LiveProofTicker />
