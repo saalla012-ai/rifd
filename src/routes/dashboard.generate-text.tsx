@@ -90,10 +90,16 @@ function GenerateTextPage() {
 
   return (
     <DashboardShell>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold">توليد نص</h1>
-          <p className="mt-1 text-sm text-muted-foreground">اختر قالب واكتب فكرتك — نحن نتكفّل بالباقي</p>
+          <p className="text-xs font-black text-primary">نصوص متجر جاهزة للنشر</p>
+          <h1 className="mt-1 text-2xl font-extrabold">حوّل فكرة المنتج إلى نص سعودي مقنع</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر قالباً، أضف تفاصيل العرض، واستلم نصاً مناسباً للمتجر بدل البدء من صفحة بيضاء.</p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">هوك + وصف + CTA</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">عامية سعودية</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">قابل للنسخ فوراً</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm" className="gap-1">
@@ -109,6 +115,7 @@ function GenerateTextPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
+          <div className="mb-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اختر القالب واكتب تفاصيل العرض</div>
           <div className="space-y-4">
             <div>
               <Label>اختر قالباً</Label>
@@ -169,15 +176,15 @@ function GenerateTextPage() {
                 </div>
               )}
             </div>
-            <Button onClick={generate} disabled={loading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
-              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري التوليد...</> : <><Wand2 className="h-4 w-4" /> ولّد النص</>}
+            <Button onClick={generate} disabled={loading} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز النص...</> : <><Wand2 className="h-4 w-4" /> ولّد نصاً جاهزاً للنشر</>}
             </Button>
           </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">النتيجة</h3>
+            <h3 className="font-bold">2) النتيجة الجاهزة</h3>
             {result && (
               <button
                 onClick={copy}
@@ -191,7 +198,7 @@ function GenerateTextPage() {
             <pre className="mt-3 whitespace-pre-wrap rounded-lg border border-border bg-secondary/40 p-4 text-right font-sans text-sm leading-relaxed">{result}</pre>
           ) : (
             <div className="mt-3 flex h-48 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-              النتيجة بتظهر هنا
+              اكتب تفاصيل المنتج واضغط التوليد — النتيجة ستظهر هنا جاهزة للنسخ.
             </div>
           )}
           {memorySignals.length > 0 && (

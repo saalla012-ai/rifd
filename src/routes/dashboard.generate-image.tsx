@@ -84,10 +84,16 @@ function GenerateImagePage() {
 
   return (
     <DashboardShell>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold">توليد صور</h1>
-          <p className="mt-1 text-sm text-muted-foreground">بوسترات وصور منتجات ضمن حصة يومية مجانية</p>
+          <p className="text-xs font-black text-primary">صور منتجات وبوسترات</p>
+          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف العرض إلى صورة تسويقية واضحة</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">ابدأ بالسريع للمحتوى اليومي، أو استخدم الجودة العالية للإعلانات المهمة عند توفرها في باقتك.</p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">بوستر عرض</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">صورة منتج</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">جاهزة للتحميل</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm" className="gap-1">
@@ -102,7 +108,8 @@ function GenerateImagePage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card p-5 shadow-soft space-y-4">
+        <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-soft">
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط نوع الصورة ووصفها</div>
           <div>
             <Label>نموذج التوليد</Label>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -169,14 +176,14 @@ function GenerateImagePage() {
             )}
           </div>
 
-          <Button onClick={go} disabled={loading || creditsLoading || (quality === "pro" && !proAllowed)} className="w-full gradient-primary text-primary-foreground shadow-elegant">
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري التوليد...</> : <><ImageIcon className="h-4 w-4" /> ولّد الصورة</>}
+          <Button onClick={go} disabled={loading || creditsLoading || (quality === "pro" && !proAllowed)} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الصورة...</> : <><ImageIcon className="h-4 w-4" /> ولّد صورة جاهزة للاستخدام</>}
           </Button>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">المعاينة</h3>
+            <h3 className="font-bold">2) المعاينة والتحميل</h3>
             {imageUrl && (
               <a
                 href={imageUrl}
@@ -195,7 +202,7 @@ function GenerateImagePage() {
             ) : loading ? (
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             ) : (
-              "الصورة بتظهر هنا"
+              "اكتب وصف الصورة واضغط التوليد — المعاينة ستظهر هنا."
             )}
           </div>
           {memorySignals.length > 0 && (

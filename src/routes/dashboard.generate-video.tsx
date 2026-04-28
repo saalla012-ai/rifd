@@ -378,10 +378,16 @@ function GenerateVideoPage() {
 
   return (
     <DashboardShell>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold">توليد فيديو</h1>
-          <p className="mt-1 text-sm text-muted-foreground">حوّل وصف حملتك إلى لقطة فيديو قصيرة بنقاط فيديو واضحة قبل التنفيذ</p>
+          <p className="text-xs font-black text-primary">فيديوهات قصيرة للمتاجر</p>
+          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف حملتك إلى فيديو قصير قابل للنشر</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر الجودة والمقاس، أضف وصفاً واضحاً وصورة منتج عند الحاجة، ثم تابع المهمة حتى تصبح جاهزة للتحميل.</p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">Reels / TikTok</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">شخصيات سعودية</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">استرجاع تلقائي عند الفشل</span>
+          </div>
           {internalMediumTestMode && <p className="mt-2 w-fit rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-xs font-bold text-gold">وضع اختبار داخلي: لن يُفتح القالب للعامة حتى يجتاز بوابة الالتزام 80%+</p>}
         </div>
         <Button asChild variant="outline" size="sm" className="w-fit gap-1">
@@ -391,6 +397,7 @@ function GenerateVideoPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط الفيديو قبل خصم النقاط</div>
           <div>
             <Label>جودة الفيديو</Label>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -554,15 +561,15 @@ function GenerateVideoPage() {
             )}
           </div>
 
-          <Button type="button" onClick={() => void generate()} disabled={loading || reachedConcurrentLimit || visibleJobInProgress || creditsLoading} className="w-full gradient-primary text-primary-foreground shadow-elegant">
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال المهمة...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> ولّد الفيديو</>}
+          <Button type="button" onClick={() => void generate()} disabled={loading || reachedConcurrentLimit || visibleJobInProgress || creditsLoading} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال مهمة الفيديو...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> ولّد فيديو جاهزاً للنشر</>}
           </Button>
         </section>
 
         <aside className="space-y-5">
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="font-extrabold">المعاينة</h2>
+              <h2 className="font-extrabold">2) المعاينة والتحميل</h2>
               <div className="flex flex-wrap items-center gap-2">
                 {activeJobInProgress && (
                   <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
