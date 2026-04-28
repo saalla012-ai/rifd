@@ -53,10 +53,13 @@ function AuthPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">(onboardingIntent ? "signup" : "login");
   const [name, setName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const whatsappTouched = whatsapp.trim().length > 0;
+  const whatsappValid = validateSaudiPhone(whatsapp);
 
   useEffect(() => {
     if (onboardingIntent) setMode("signup");
@@ -66,13 +69,22 @@ function AuthPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user) {
+      const pendingWhatsapp = window.localStorage.getItem(PENDING_SIGNUP_PHONE_KEY);
+      if (pendingWhatsapp && !profile?.whatsapp) {
+        window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+        void supabase
+          .from("profiles")
+          .update({ whatsapp: pendingWhatsapp })
+          .eq("id", user.id)
+          .then(() => void refreshProfile());
+      }
       if (profile && !profile.onboarded) {
         void navigate({ to: "/onboarding" });
       } else if (`${location.pathname}${location.searchStr}${location.hash}` !== redirectPath) {
         void navigate({ to: redirectPath as never });
       }
     }
-  }, [authLoading, user, profile, navigate, redirectPath, location.pathname, location.searchStr, location.hash]);
+  }, [authLoading, user, profile, refreshProfile, navigate, redirectPath, location.pathname, location.searchStr, location.hash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
