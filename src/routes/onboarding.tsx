@@ -94,9 +94,6 @@ function OnboardingPage() {
     if (profile?.brand_color) setColor(profile.brand_color);
   }, [authLoading, user, profile, navigate]);
 
-  const next = () => setStep((s) => Math.min(2, s + 1));
-  const prev = () => setStep((s) => Math.max(1, s - 1));
-
   const finish = async () => {
     if (!user) return;
     setGenerating(true);
@@ -171,7 +168,7 @@ function OnboardingPage() {
   return (
     <MarketingLayout>
       <div className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
-        {step <= 2 && (
+        {step === 1 && (
           <>
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
@@ -182,7 +179,7 @@ function OnboardingPage() {
                 ابنِ ذاكرة متجرك ثم شاهد أول حزمة بيع جاهزة
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                خطوتان فقط تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق
+                صفحة واحدة تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق
                 السعودي.
               </p>
             </div>
