@@ -249,10 +249,10 @@ function OnboardingPage() {
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
                 <h2 className="mt-3 text-2xl font-extrabold">
-                  عرّفنا على المتجر الذي تريد أن يبيع بوضوح
+                  حوّل بيانات متجرك إلى ذاكرة بيع دقيقة
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  نحتاج أقل بيانات مؤثرة فقط حتى لا يخرج المحتوى عاماً أو مفصولاً عن جمهورك الفعلي.
+                  نأخذ الاسم، المجال، ورقم التواصل حتى تصبح المخرجات مخصصة وليست نصوصاً عامة.
                 </p>
               </div>
               <div>
@@ -302,7 +302,7 @@ function OnboardingPage() {
                   <p className={cn("text-muted-foreground", whatsappTouched && !whatsappValid && "text-destructive")}>
                     {whatsappTouched && !whatsappValid
                       ? SAUDI_PHONE_ERROR
-                      : "نستخدمه للتواصل معك على واتساب بخصوص إعداد متجرك فقط — لا رسائل تحقق ولا اتصال مزعج."}
+                      : "للمتابعة الخاصة بإعداد الحساب وربط معلومات المتجر بشكل صحيح."}
                   </p>
                 </div>
               </div>
