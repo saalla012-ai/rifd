@@ -38,8 +38,12 @@ function AuthPage() {
   const location = useLocation();
   const search = useSearch({ from: "/auth" });
   const redirectPath = search.redirect ?? "/dashboard";
+  const onboardingIntent =
+    redirectPath === "/onboarding" ||
+    location.searchStr.includes("redirect=/onboarding") ||
+    location.searchStr.includes("redirect=%2Fonboarding");
   const { user, profile, loading: authLoading } = useAuth();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(onboardingIntent ? "signup" : "login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,8 +51,8 @@ function AuthPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
-    if (redirectPath === "/onboarding") setMode("signup");
-  }, [redirectPath]);
+    if (onboardingIntent) setMode("signup");
+  }, [onboardingIntent]);
 
   // إذا المستخدم مسجل دخول، حوّله مباشرة
   useEffect(() => {
