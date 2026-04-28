@@ -96,7 +96,7 @@ async function imageUrlToDataUrl(value: string) {
 }
 
 export const Route = createFileRoute("/dashboard/generate-video")({
-  head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
+  head: () => ({ meta: [{ title: "أنشئ فيديو قصير — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
@@ -285,11 +285,11 @@ function GenerateVideoPage() {
       setActiveJob(out.job);
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
       track("generation_created", { kind: "video", quality: canonicalGenerationQuality, aspect_ratio: canonicalGenerationAspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "medium-test" : selectedTemplateId, source: search.source });
-      toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
+      toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "الفيديو جاهز ✨");
       if (out.job.status !== "pending" && out.job.status !== "processing") void refreshCredits();
       router.invalidate();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "فشل توليد الفيديو";
+      const msg = e instanceof Error ? e.message : "فشل إنشاء الفيديو";
       if (isQuotaError(msg)) {
         setQuotaDialog({ open: true, reason: msg });
       } else {
@@ -381,12 +381,13 @@ function GenerateVideoPage() {
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-black text-primary">فيديوهات قصيرة للمتاجر</p>
-          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف حملتك إلى فيديو قصير قابل للنشر</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر الجودة والمقاس، أضف وصفاً واضحاً وصورة منتج عند الحاجة، ثم تابع المهمة حتى تصبح جاهزة للتحميل.</p>
+          <h1 className="mt-1 text-2xl font-extrabold">أنشئ فيديو قصير يشرح عرضك في ثوانٍ</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اكتب عرضك بلغة واضحة، اختر مقاس النشر، وأضف صورة المنتج عندما تكون مطلوبة حتى يخرج الإعلان قابلاً للنشر.</p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">Reels / TikTok</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">شخصيات سعودية</span>
-            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">استرجاع تلقائي عند الفشل</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">مناسب لإعلانات العروض</span>
+            {search.campaignPackId && <span className="rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-gold">ضمن حملة محفوظة</span>}
           </div>
           {internalMediumTestMode && <p className="mt-2 w-fit rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-xs font-bold text-gold">وضع اختبار داخلي: لن يُفتح القالب للعامة حتى يجتاز بوابة الالتزام 80%+</p>}
         </div>
@@ -397,9 +398,9 @@ function GenerateVideoPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط الفيديو قبل خصم النقاط</div>
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) جهّز إعلان الفيديو قبل خصم النقاط</div>
           <div>
-            <Label>جودة الفيديو</Label>
+            <Label>نوع الاستخدام</Label>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {(Object.keys(QUALITY) as VideoQuality[]).map((key) => {
                 const option = QUALITY[key];
@@ -500,7 +501,7 @@ function GenerateVideoPage() {
 
           <div>
             <div className="flex items-center justify-between gap-2">
-              <Label>وصف الفيديو</Label>
+              <Label>اكتب عرضك للفيديو</Label>
               <span className="text-xs text-muted-foreground">{promptCount.toLocaleString("ar-SA")} / 1800</span>
             </div>
             <Textarea
@@ -509,13 +510,13 @@ function GenerateVideoPage() {
               readOnly={internalMediumTestMode}
               maxLength={1800}
               className="mt-2 min-h-36 read-only:bg-secondary/30"
-              placeholder="مثلاً: لقطة عمودية لمنتج عطر فاخر على خلفية خضراء وذهبية، حركة كاميرا بطيئة، المنتج واضح طوال المشهد، دعوة مباشرة للطلب عبر واتساب"
+              placeholder="مثلاً: اعرض عطر فاخر كهدية أنيقة، المنتج واضح طوال المشهد، حركة كاميرا بطيئة، وانتهِ بدعوة مباشرة للطلب عبر واتساب"
             />
             {internalMediumTestMode && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">برومبت الاختبار المتوسط مقفل من لوحة الإدارة وخادم التوليد يرفض أي تعديل عليه حتى تبقى النتيجة قابلة للمقارنة.</p>}
           </div>
 
           <div>
-            <Label>رابط صورة بداية اختياري</Label>
+            <Label>صورة افتتاحية اختيارية</Label>
             <input
               value={startingFrameUrl}
               onChange={(e) => { if (!internalMediumTestMode) setStartingFrameUrl(e.target.value); }}
@@ -543,33 +544,38 @@ function GenerateVideoPage() {
             <ImageInputCard label="صورة الشخص المتحدث" value={internalMediumTestMode ? absoluteAssetUrl(canonicalGenerationPersona.image) : speakerImageUrl} uploading={uploadingInput === "speaker"} disabled={internalMediumTestMode} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
             <ImageInputCard label={isPaidPlan || mediumTestProductImageRequired ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
           </div>
-          {productImageRequired && <p className="text-xs font-bold text-destructive">{mediumTestProductImageRequired ? "هذه عينة اختبار متوسط تتطلب صورة منتج؛ تشغيلها بدون صورة سيجعل نتيجة الالتزام غير صالحة." : "ارفع صورة المنتج قبل التوليد؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة."}</p>}
+            {productImageRequired && <p className="text-xs font-bold text-destructive">{mediumTestProductImageRequired ? "هذه عينة اختبار متوسط تتطلب صورة منتج؛ تشغيلها بدون صورة سيجعل نتيجة الالتزام غير صالحة." : "ارفع صورة المنتج قبل إنشاء الفيديو؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة."}</p>}
 
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-foreground">سيتم خصم {canonicalSelectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
               <span className={cn("text-xs", canonicalHasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{canonicalHasEnoughCredits ? `المدة المعتمدة: ${canonicalGenerationDurationSeconds}ث · يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم` : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">الاستخدام يعتمد على رصيد النقاط فقط، مع حماية تشغيلية للمهام المتزامنة.</p>
+            <div className="mt-3 grid gap-2 text-xs font-bold sm:grid-cols-2">
+              <span className="rounded-md border border-border bg-card px-3 py-2">رصيدك الحالي: {creditsLoading ? "..." : `${(credits?.totalCredits ?? 0).toLocaleString("ar-SA")} نقطة`}</span>
+              <span className={cn("rounded-md border px-3 py-2", canonicalQualityAllowed ? "border-border bg-card text-muted-foreground" : "border-destructive/30 bg-destructive/10 text-destructive")}>{canonicalQualityAllowed ? "الجودة متاحة في باقتك" : "الجودة غير متاحة في باقتك"}</span>
+              <span className={cn("rounded-md border px-3 py-2", canonicalDurationAllowed ? "border-border bg-card text-muted-foreground" : "border-destructive/30 bg-destructive/10 text-destructive")}>{canonicalDurationAllowed ? `المدة متاحة: ${canonicalGenerationDurationSeconds}ث` : "المدة غير متاحة في باقتك"}</span>
+              <span className={cn("rounded-md border px-3 py-2", productImageRequired ? "border-destructive/30 bg-destructive/10 text-destructive" : "border-border bg-card text-muted-foreground")}>{productImageRequired ? "صورة المنتج مطلوبة" : "صورة المنتج غير مطلوبة الآن"}</span>
+            </div>
             <p className="mt-1 text-xs font-bold text-muted-foreground">
-              {watermarkRequired ? "الباقة المجانية تضيف علامة Rifd المائية تلقائياً؛ الباقات المدفوعة بدون علامة مائية." : "باقتك الحالية تولّد فيديوهات بدون علامة مائية من Rifd."}
+              {watermarkRequired ? "الباقة المجانية تضيف علامة رِفد المائية تلقائياً؛ الباقات المدفوعة بدون علامة مائية." : "باقتك الحالية تنشئ فيديوهات بدون علامة مائية من رِفد."}
             </p>
             {reachedConcurrentLimit && (
               <p className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs font-bold text-warning-foreground">
-                لديك مهمتا فيديو قيد المعالجة الآن؛ يمكنك توليد فيديو جديد بعد اكتمال أو استرداد إحداهما.
+                لديك مهمتا فيديو قيد المعالجة الآن؛ يمكنك إنشاء فيديو جديد بعد اكتمال أو استرداد إحداهما.
               </p>
             )}
           </div>
 
           <Button type="button" onClick={() => void generate()} disabled={loading || reachedConcurrentLimit || visibleJobInProgress || creditsLoading} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال مهمة الفيديو...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> ولّد فيديو جاهزاً للنشر</>}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال مهمة الفيديو...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> أنشئ فيديو جاهزاً للنشر</>}
           </Button>
         </section>
 
         <aside className="space-y-5">
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="font-extrabold">2) المعاينة والتحميل</h2>
+              <h2 className="font-extrabold">2) معاينة الإعلان وتحميله</h2>
               <div className="flex flex-wrap items-center gap-2">
                 {activeJobInProgress && (
                   <button type="button" onClick={() => void refreshActiveJob()} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent">
@@ -603,7 +609,7 @@ function GenerateVideoPage() {
               ) : (
                 <div className="px-8">
                   <Film className="mx-auto mb-3 h-8 w-8 text-primary" />
-                  الفيديو سيظهر هنا بعد التوليد
+                  الفيديو سيظهر هنا بعد الإنشاء
                 </div>
               )}
             </div>
@@ -611,7 +617,7 @@ function GenerateVideoPage() {
 
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="font-extrabold">آخر الفيديوهات</h2>
+              <h2 className="font-extrabold">فيديوهاتك الأخيرة</h2>
               <button type="button" onClick={loadJobs} className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary" aria-label="تحديث">
                 <RefreshCw className="h-4 w-4" />
               </button>
