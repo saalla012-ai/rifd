@@ -381,12 +381,13 @@ function GenerateVideoPage() {
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-black text-primary">فيديوهات قصيرة للمتاجر</p>
-          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف حملتك إلى فيديو قصير قابل للنشر</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر الجودة والمقاس، أضف وصفاً واضحاً وصورة منتج عند الحاجة، ثم تابع المهمة حتى تصبح جاهزة للتحميل.</p>
+          <h1 className="mt-1 text-2xl font-extrabold">أنشئ فيديو قصير يشرح عرضك في ثوانٍ</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اكتب عرضك بلغة واضحة، اختر مقاس النشر، وأضف صورة المنتج عندما تكون مطلوبة حتى يخرج الإعلان قابلاً للنشر.</p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">Reels / TikTok</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">شخصيات سعودية</span>
-            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">استرجاع تلقائي عند الفشل</span>
+            <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">مناسب لإعلانات العروض</span>
+            {search.campaignPackId && <span className="rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-gold">ضمن حملة محفوظة</span>}
           </div>
           {internalMediumTestMode && <p className="mt-2 w-fit rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-xs font-bold text-gold">وضع اختبار داخلي: لن يُفتح القالب للعامة حتى يجتاز بوابة الالتزام 80%+</p>}
         </div>
