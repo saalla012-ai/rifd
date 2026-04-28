@@ -22,7 +22,6 @@ export function useIsMobile() {
     window.addEventListener("resize", onChange);
     window.addEventListener("orientationchange", onChange);
     setIsMobile(getIsMobileViewport());
-    return () => mql.removeEventListener("change", onChange);
     return () => {
       mql.removeEventListener("change", onChange);
       window.removeEventListener("resize", onChange);
