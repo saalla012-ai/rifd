@@ -300,6 +300,9 @@ function AuthPage() {
                     />
                   </div>
                 </div>
+                <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-xs font-bold leading-5 text-muted-foreground">
+                  Google هو الأسرع، والبريد متاح إذا تفضل كلمة سر خاصة.
+                </div>
               </>
             )}
             <div>
