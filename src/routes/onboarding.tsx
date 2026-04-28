@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
+import { CheckCircle2, Loader2, MessageCircle, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -87,6 +87,10 @@ function OnboardingPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
+  const trimmedStoreName = storeName.trim();
+  const normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
+  const whatsappTouched = whatsapp.trim().length > 0;
+  const whatsappValid = normalizedWhatsapp !== null;
 
   // المستخدم لازم يكون مسجل دخول للوصول
   useEffect(() => {
@@ -132,7 +136,7 @@ function OnboardingPage() {
       const { error } = await supabase
         .from("profiles")
         .update({
-          store_name: storeName.trim(),
+          store_name: trimmedStoreName,
           whatsapp: normalizedWhatsapp,
           product_type: productType,
           audience,
@@ -149,7 +153,7 @@ function OnboardingPage() {
       // 2) ولّد أول منشور حقيقي عبر AI (يستخدم سياق الملف الجديد)
       const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
       const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
-      const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${storeName.trim()}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
+      const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${trimmedStoreName}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
 
       const out = await generateText({
         data: {
@@ -162,7 +166,7 @@ function OnboardingPage() {
       setResult(out.result);
       setSuccessPack(
         buildSuccessPack({
-          storeName: storeName.trim(),
+          storeName: trimmedStoreName,
           productTypeLabel: productLabel,
           audienceLabel,
           tone,
