@@ -53,7 +53,9 @@ export function CreditsBar() {
   const total = data.totalCredits;
   const lowCredits = total < 50;
   const textPct = pct(data.dailyTextUsed, data.dailyTextCap);
+  const imagePct = pct(data.dailyImageUsed, data.dailyImageCap);
   const textNearLimit = textPct >= 80;
+  const imageNearLimit = imagePct >= 80;
   const planLabel = PLAN_LABEL[data.plan] ?? data.plan;
 
   // ---- Trigger (mobile/tablet/desktop) ----
@@ -71,7 +73,7 @@ export function CreditsBar() {
           <Coins className="h-3.5 w-3.5" />
           <span className="tabular-nums">{formatNum(total)}</span>
           <span className="hidden text-muted-foreground sm:inline">نقطة فيديو</span>
-          {(lowCredits || textNearLimit) && (
+          {(lowCredits || textNearLimit || imageNearLimit) && (
             <AlertTriangle className="h-3.5 w-3.5 text-warning" />
           )}
         </button>
@@ -110,10 +112,10 @@ export function CreditsBar() {
             </div>
           </div>
 
-          {/* Daily text quota */}
+          {/* Daily operational usage */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-muted-foreground">حصة النصوص اليومية</span>
+              <span className="text-muted-foreground">استخدامك اليومي للنصوص</span>
               <span
                 className={cn(
                   "font-bold tabular-nums",
@@ -136,15 +138,15 @@ export function CreditsBar() {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-muted-foreground">حصة الصور اليومية</span>
-              <span className="font-bold tabular-nums text-foreground">
+              <span className="text-muted-foreground">استخدامك اليومي للصور</span>
+              <span className={cn("font-bold tabular-nums", imageNearLimit ? "text-warning-foreground" : "text-foreground")}>
                 {formatNum(data.dailyImageUsed)} / {formatNum(data.dailyImageCap)}
               </span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
               <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${pct(data.dailyImageUsed, data.dailyImageCap)}%` }}
+                className={cn("h-full rounded-full transition-all", imageNearLimit ? "bg-warning" : "bg-primary")}
+                style={{ width: `${imagePct}%` }}
               />
             </div>
           </div>
