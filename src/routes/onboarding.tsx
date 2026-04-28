@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
@@ -26,20 +26,20 @@ import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "ابدأ مع رِفد — صفحة واحدة لأول محتوى مخصص" },
+      { title: "Onboarding رِفد — صفحة واحدة" },
       {
         name: "description",
-        content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد.",
+        content: "جهّز ذاكرة متجرك في صفحة واحدة واحصل على أول حزمة محتوى مخصصة للسوق السعودي.",
       },
-      { property: "og:title", content: "ابدأ مع رِفد — صفحة واحدة لأول حملة مخصصة لمتجرك" },
+      { property: "og:title", content: "Onboarding رِفد — صفحة واحدة" },
       {
         property: "og:description",
-        content: "ملف متجرك في دقيقة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+        content: "ذاكرة متجر مختصرة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
       },
-      { name: "twitter:title", content: "ابدأ مع رِفد — صفحة واحدة لأول حملة مخصصة لمتجرك" },
+      { name: "twitter:title", content: "Onboarding رِفد — صفحة واحدة" },
       {
         name: "twitter:description",
-        content: "ملف متجرك في دقيقة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+        content: "ذاكرة متجر مختصرة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
       },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
@@ -65,7 +65,7 @@ const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "
 function OnboardingPage() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const [step, setStep] = useState(1);
+  const [stage, setStage] = useState<"form" | "success">("form");
   const [storeName, setStoreName] = useState("");
   const [productType, setProductType] = useState("dropshipping");
   const [audience, setAudience] = useState("young");
@@ -76,23 +76,36 @@ function OnboardingPage() {
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
   const trimmedStoreName = storeName.trim();
 
-  // المستخدم لازم يكون مسجل دخول للوصول
+  const profilePayload = {
+    email: user?.email ?? null,
+    full_name: (user?.user_metadata?.full_name as string | undefined) ?? (user?.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
+    store_name: trimmedStoreName,
+    product_type: productType,
+    audience,
+    tone,
+    brand_color: color,
+  };
+
+  const baseProfilePayload = {
+    email: user?.email ?? null,
+    full_name: (user?.user_metadata?.full_name as string | undefined) ?? (user?.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
+  };
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
       void navigate({ to: "/auth", search: { redirect: "/onboarding" } });
       return;
     }
-    if (profile?.onboarded) {
+    if (profile?.onboarded && stage === "form") {
       void navigate({ to: "/dashboard" });
     }
-    // عبّي القيم لو فيه profile جزئي
     if (profile?.store_name) setStoreName(profile.store_name);
     if (profile?.product_type) setProductType(profile.product_type);
     if (profile?.audience) setAudience(profile.audience);
     if (profile?.tone) setTone(profile.tone);
     if (profile?.brand_color) setColor(profile.brand_color);
-  }, [authLoading, user, profile, navigate]);
+  }, [authLoading, user, profile, navigate, stage]);
 
   const finish = async () => {
     if (!user) return;
@@ -103,26 +116,18 @@ function OnboardingPage() {
     }
 
     try {
-      // 1) احفظ ملف المتجر
       const { error } = await supabase
         .from("profiles")
         .upsert({
           id: user.id,
-          email: user.email ?? null,
-          full_name: (user.user_metadata?.full_name as string | undefined) ?? (user.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
-          store_name: trimmedStoreName,
-          product_type: productType,
-          audience,
-          tone,
-          brand_color: color,
-          onboarded: true,
+          ...profilePayload,
+          onboarded: false,
         });
 
       if (error) throw error;
       track("onboarding_completed", { product_type: productType, audience });
       await refreshProfile();
 
-      // 2) ولّد أول منشور حقيقي عبر AI (يستخدم سياق الملف الجديد)
       const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
       const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
       const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${trimmedStoreName}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
@@ -145,7 +150,12 @@ function OnboardingPage() {
           primaryPost: out.result,
         }),
       );
-      setStep(3);
+      const { error: completeError } = await supabase
+        .from("profiles")
+        .update({ onboarded: true })
+        .eq("id", user.id);
+      if (completeError) throw completeError;
+      setStage("success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       console.warn("[onboarding] failed", message);
@@ -155,7 +165,30 @@ function OnboardingPage() {
     }
   };
 
-  if (authLoading || !user) {
+  const skipToDashboard = async () => {
+    if (!user) return;
+    setGenerating(true);
+    try {
+      const optionalOnboardingPayload = trimmedStoreName
+        ? profilePayload
+        : baseProfilePayload;
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({ id: user.id, ...optionalOnboardingPayload, onboarded: true });
+      if (error) throw error;
+      track("onboarding_skipped_pack", { product_type: productType, audience });
+      await refreshProfile();
+      void navigate({ to: "/dashboard" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      console.warn("[onboarding] skip failed", message);
+      toast.error("تعذر حفظ الإعدادات الآن");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  if (authLoading) {
     return (
       <MarketingLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -165,22 +198,42 @@ function OnboardingPage() {
     );
   }
 
+  if (!user) {
+    return (
+      <MarketingLayout>
+        <main className="mx-auto flex min-h-[60vh] max-w-lg items-center px-4 py-12 text-center">
+          <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-elegant sm:p-8">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck className="h-6 w-6" />
+            </span>
+            <h1 className="mt-4 text-2xl font-black leading-tight">ابدأ الإعداد بعد تسجيل الدخول</h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              نحفظ ذاكرة متجرك داخل حسابك حتى تظهر اقتراحات رِفد مخصصة لك في كل مرة.
+            </p>
+            <Button asChild className="mt-5 h-11 w-full gradient-primary font-extrabold text-primary-foreground">
+              <Link to="/auth" search={{ redirect: "/onboarding" }}>تسجيل الدخول أو إنشاء حساب</Link>
+            </Button>
+          </div>
+        </main>
+      </MarketingLayout>
+    );
+  }
+
   return (
     <MarketingLayout>
       <div className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
-        {step === 1 && (
+        {stage === "form" && (
           <>
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
                 <Zap className="h-3.5 w-3.5" />
-                بناء متجر يختصر قرار الشراء
+                إعداد ذكي بدون احتكاك
               </span>
               <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-                ابنِ ذاكرة متجرك ثم شاهد أول حزمة بيع جاهزة
+                جهّز ذاكرة متجرك وشاهد أول حزمة بيع جاهزة
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                صفحة واحدة تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق
-                السعودي.
+                صفحة واحدة تجمع أهم إشارات البيع: النشاط، الجمهور، النبرة والهوية — بدون طلب رقم الجوال مرة أخرى.
               </p>
             </div>
             <div className="mb-5 grid gap-2 sm:grid-cols-3">
@@ -205,22 +258,20 @@ function OnboardingPage() {
         )}
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
-          {step === 1 && (
+          {stage === "form" && (
             <div className="space-y-4">
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold">
-                  حوّل بيانات متجرك إلى ذاكرة بيع دقيقة
-                </h2>
+                <h2 className="mt-3 text-2xl font-extrabold">بيانات قليلة، نتيجة أقرب للبيع</h2>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  نأخذ اسم النشاط، المجال، الجمهور والنبرة فقط حتى يبدأ رِفد بمخرجات سعودية مخصصة بدون أسئلة زائدة.
+                  اكتب اسم النشاط واختر أقرب وصف له؛ رِفد يستخدمها لتوليد محتوى أقرب لطريقة شراء العميل السعودي.
                 </p>
               </div>
               <div>
                 <Label htmlFor="store">
-                  اسم المتجر <span className="text-destructive">*</span>
+                  اسم المتجر أو النشاط <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="store"
@@ -233,7 +284,7 @@ function OnboardingPage() {
                 />
               </div>
               <div>
-                <Label>وش نوع منتجاتك؟</Label>
+                <Label>وش نوع نشاطك؟</Label>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {PRODUCT_TYPES.map((p) => (
                     <button
@@ -313,6 +364,15 @@ function OnboardingPage() {
                   <>أنشئ أول حزمة بيع ✨</>
                 )}
               </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => void skipToDashboard()}
+                disabled={generating}
+                className="h-10 w-full font-bold text-muted-foreground"
+              >
+                تخطي الآن والدخول للوحة
+              </Button>
               <div className="grid gap-2 sm:grid-cols-2">
                 {quickOutputs.map((item) => (
                   <div
@@ -325,7 +385,7 @@ function OnboardingPage() {
               </div>
             </div>
           )}
-          {step === 3 && result && successPack && <OnboardingSuccessPack pack={successPack} />}
+          {stage === "success" && result && successPack && <OnboardingSuccessPack pack={successPack} />}
         </div>
       </div>
     </MarketingLayout>
