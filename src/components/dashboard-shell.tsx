@@ -30,6 +30,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { getNewContactCount } from "@/server/admin-contact-submissions";
@@ -39,21 +40,64 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/hooks/use-theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const NAV = [
-  { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
-  { to: "/dashboard/generate-text", label: "توليد نص", icon: Wand2 },
-  { to: "/dashboard/generate-image", label: "توليد صور", icon: ImageIcon },
-  { to: "/dashboard/generate-video", label: "توليد فيديو", icon: Clapperboard },
-  { to: "/dashboard/campaign-studio", label: "استوديو الحملات", icon: Megaphone },
-  { to: "/dashboard/edit-image", label: "تعديل صور", icon: ImagePlus },
-  { to: "/dashboard/templates", label: "معرض القوالب", icon: LayoutGrid },
-  { to: "/dashboard/library", label: "مكتبتي", icon: Library },
-  { to: "/dashboard/store-profile", label: "ملف متجري", icon: Store },
-  { to: "/dashboard/usage", label: "الاستخدام", icon: BarChart3 },
-  { to: "/dashboard/credits", label: "شحن نقاط الفيديو", icon: Coins },
-  { to: "/dashboard/billing", label: "الفواتير", icon: CreditCard },
-  { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
+type DashboardNavPath =
+  | "/dashboard"
+  | "/dashboard/campaign-studio"
+  | "/dashboard/generate-text"
+  | "/dashboard/generate-image"
+  | "/dashboard/generate-video"
+  | "/dashboard/edit-image"
+  | "/dashboard/templates"
+  | "/dashboard/library"
+  | "/dashboard/store-profile"
+  | "/dashboard/usage"
+  | "/dashboard/credits"
+  | "/dashboard/billing"
+  | "/dashboard/settings";
+
+type NavItem = {
+  to: DashboardNavPath;
+  label: string;
+  icon: LucideIcon;
+};
+
+const NAV_GROUPS: readonly { label: string; items: readonly NavItem[] }[] = [
+  {
+    label: "ابدأ",
+    items: [
+      { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
+      { to: "/dashboard/campaign-studio", label: "استوديو الحملات", icon: Megaphone },
+    ],
+  },
+  {
+    label: "أدوات الإنشاء",
+    items: [
+      { to: "/dashboard/generate-text", label: "اكتب نصاً يبيع", icon: Wand2 },
+      { to: "/dashboard/generate-image", label: "صمّم صورة إعلان", icon: ImageIcon },
+      { to: "/dashboard/generate-video", label: "أنشئ فيديو قصير", icon: Clapperboard },
+      { to: "/dashboard/edit-image", label: "حسّن صورة منتج", icon: ImagePlus },
+    ],
+  },
+  {
+    label: "الأصول والهوية",
+    items: [
+      { to: "/dashboard/templates", label: "معرض القوالب", icon: LayoutGrid },
+      { to: "/dashboard/library", label: "مكتبتي", icon: Library },
+      { to: "/dashboard/store-profile", label: "ذاكرة المتجر", icon: Store },
+    ],
+  },
+  {
+    label: "الحساب",
+    items: [
+      { to: "/dashboard/usage", label: "الاستخدام والرصيد", icon: BarChart3 },
+      { to: "/dashboard/credits", label: "نقاط الفيديو", icon: Coins },
+      { to: "/dashboard/billing", label: "الاشتراك والفواتير", icon: CreditCard },
+      { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
+    ],
+  },
 ] as const;
+
+const NAV: readonly NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
 const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
@@ -175,18 +219,25 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
-          {NAV.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
-              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
-              activeOptions={{ exact: item.to === "/dashboard" }}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
+        <nav className="flex-1 space-y-3 overflow-y-auto p-3">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label} className="space-y-1">
+              <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {group.label}
+              </div>
+              {group.items.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
+                  activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
+                  activeOptions={{ exact: item.to === "/dashboard" }}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           ))}
           {isAdmin && (
             <>
