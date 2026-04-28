@@ -166,7 +166,7 @@ function VsChatgptPage() {
           <div className="mt-12 rounded-2xl gradient-primary p-8 text-center text-primary-foreground shadow-elegant">
             <h3 className="text-2xl font-extrabold">جرّب الفرق بنفسك — مجاناً</h3>
             <p className="mt-2 text-primary-foreground/90">
-              تجربة بداية واضحة بدون بطاقة ائتمان
+              خطوتان فقط لأول محتوى سعودي جاهز: منشور يبيع، صور تبيع، وفيديو يبيع
             </p>
             <Button asChild size="lg" variant="secondary" className="mt-5 shadow-elegant">
               <Link to="/onboarding">
