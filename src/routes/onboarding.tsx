@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Loader2, Sparkles, Zap } from "lucide-react";
+import { CheckCircle2, Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,14 @@ const TONES = [
   { id: "luxury", label: "فخم وراقي" },
   { id: "friendly", label: "ودود وعائلي" },
 ];
+
+const setupProof = [
+  { icon: Target, label: "زاوية بيع أوضح" },
+  { icon: ShieldCheck, label: "اعتراضات أقل قبل الشراء" },
+  { icon: Sparkles, label: "مخرجات جاهزة للحملة" },
+] as const;
+
+const quickOutputs = ["منشور عرض مباشر", "وصف منتج يزيل التردد", "فكرة صورة تناسب السوق السعودي", "سكربت فيديو قصير"] as const;
 
 function OnboardingPage() {
   const navigate = useNavigate();
@@ -175,14 +183,22 @@ function OnboardingPage() {
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
                 <Zap className="h-3.5 w-3.5" />
-                بداية +150 قدرة محتوى لمتجرك
+                بناء متجر يختصر قرار الشراء
               </span>
               <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-                جهّز أول حزمة محتوى بالعامية السعودية
+                ابنِ ذاكرة متجرك ثم شاهد أول حزمة بيع جاهزة
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                خطوتان فقط تربطانك بأول حزمة محتوى قابلة للنشر: منشور يبيع، صور تبيع، وفيديو يبيع.
+                خطوتان فقط تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق السعودي.
               </p>
+            </div>
+            <div className="mb-5 grid gap-2 sm:grid-cols-3">
+              {setupProof.map((item) => (
+                <div key={item.label} className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground shadow-soft">
+                  <item.icon className="h-3.5 w-3.5 text-primary" />
+                  {item.label}
+                </div>
+              ))}
             </div>
             <div className="mb-4 flex items-center justify-between">
               <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 2</span>
@@ -212,8 +228,8 @@ function OnboardingPage() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على متجرك</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">معلومتان فقط حتى يبدأ رِفد بتخصيص المحتوى بدل كتابة أوامر عامة في ChatGPT</p>
+                <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على المتجر الذي تريد أن يبيع بوضوح</h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">نحتاج أقل بيانات مؤثرة فقط حتى لا يخرج المحتوى عاماً أو مفصولاً عن جمهورك الفعلي.</p>
               </div>
               <div>
                 <Label htmlFor="store">
@@ -223,7 +239,7 @@ function OnboardingPage() {
                   id="store"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
-                  placeholder="مثلاً: متجر النور"
+                  placeholder="مثلاً: لمسة عطر / دار العباءة"
                   className="mt-1"
                   maxLength={80}
                   autoFocus
@@ -244,7 +260,7 @@ function OnboardingPage() {
                   inputMode="tel"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  للتنبيهات المهمة وتفعيل اشتراكك — لن نتصل بك مطلقاً، واتساب فقط ✅
+                  لإرسال التنبيهات المهمة وتفعيل الاشتراك — واتساب فقط، بدون اتصال مزعج.
                 </p>
               </div>
               <div>
@@ -272,8 +288,15 @@ function OnboardingPage() {
                 disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
                 className="h-12 w-full gradient-primary font-extrabold text-primary-foreground"
               >
-                خصّص محتوى متجري
+                أكمل زاوية البيع
               </Button>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {quickOutputs.map((item) => (
+                  <div key={item} className="rounded-lg bg-secondary/60 px-3 py-2 text-xs font-bold text-muted-foreground">
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
