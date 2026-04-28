@@ -227,7 +227,7 @@ function AuthPage() {
 
   return (
     <MarketingLayout>
-      <div className="mx-auto flex min-h-[calc(100vh-12rem)] max-w-md items-center px-4 py-10">
+      <div className="mx-auto flex min-h-[calc(100vh-12rem)] max-w-md items-center px-4 pb-28 pt-10 sm:py-10">
         <div className="w-full rounded-2xl border border-border bg-card p-7 shadow-elegant">
           <div className="mb-6 text-center">
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-elegant">

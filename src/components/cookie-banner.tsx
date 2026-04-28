@@ -54,7 +54,7 @@ export function CookieBanner() {
       aria-label="إشعار ملفات تعريف الارتباط"
       className="fixed inset-x-0 bottom-3 z-[35] px-3 sm:bottom-4 sm:px-6 lg:start-6 lg:end-auto lg:w-full lg:max-w-xs lg:px-0"
     >
-      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md sm:max-w-xl sm:flex-row sm:items-center sm:gap-4 lg:mx-0 lg:max-w-xs lg:flex-col lg:items-start">
+      <div className="mx-auto flex max-w-sm items-center gap-2 rounded-xl border border-border bg-background/95 p-2 shadow-2xl backdrop-blur-md sm:max-w-xl sm:gap-4 sm:p-3 lg:mx-0 lg:max-w-xs lg:flex-col lg:items-start">
         <button
           type="button"
           onClick={reject}
@@ -63,19 +63,19 @@ export function CookieBanner() {
         >
           <X className="h-4 w-4" />
         </button>
-        <div className="flex-1 pe-8 text-xs leading-6 text-muted-foreground sm:pe-0 lg:text-xs lg:leading-6">
-          <span className="sm:hidden">نستخدم ملفات أساسية للتشغيل وأخرى اختيارية لتحسين الأداء. اطّلع على </span>
+        <div className="flex-1 pe-7 text-[11px] leading-5 text-muted-foreground sm:pe-0 sm:text-xs sm:leading-6 lg:text-xs lg:leading-6">
+          <span className="sm:hidden">ملفات أساسية للتشغيل وتحسين الأداء. </span>
           <span className="hidden sm:inline">نستخدم ملفات تعريف الارتباط الأساسية لتشغيل الموقع، وملفات اختيارية لتحسين التجربة وتحليل الأداء. اطّلع على </span>
           <Link to="/legal/privacy" className="font-medium text-primary underline-offset-4 hover:underline">
             سياسة الخصوصية
           </Link>
           .
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-2 lg:w-full lg:justify-start">
-          <Button variant="ghost" size="sm" onClick={reject} className="h-9 px-3 text-muted-foreground">
+        <div className="flex shrink-0 items-center justify-end gap-1.5 lg:w-full lg:justify-start">
+          <Button variant="ghost" size="sm" onClick={reject} className="h-8 px-2 text-xs text-muted-foreground sm:h-9 sm:px-3">
             رفض
           </Button>
-          <Button size="sm" onClick={accept} className="h-9 px-3">
+          <Button size="sm" onClick={accept} className="h-8 px-2 text-xs sm:h-9 sm:px-3">
             موافق
           </Button>
         </div>
