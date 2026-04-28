@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Loader2, MessageCircle, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
+import { Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -21,13 +21,6 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
 import { OnboardingSuccessPack } from "@/components/onboarding-success-pack";
-import {
-  formatSaudiPhoneDisplay,
-  normalizeSaudiPhone,
-  validateSaudiPhone,
-  SAUDI_PHONE_ERROR,
-  SAUDI_PHONE_PLACEHOLDER,
-} from "@/lib/phone";
 import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 
 export const Route = createFileRoute("/onboarding")({
@@ -67,21 +60,7 @@ const setupProof = [
   { icon: Sparkles, label: "مخرجات جاهزة للحملة" },
 ] as const;
 
-const quickOutputs = [
-  "منشور عرض مباشر",
-  "وصف منتج يزيل التردد",
-  "فكرة صورة تناسب السوق السعودي",
-  "سكربت فيديو قصير",
-] as const;
-
-function profilePhoneErrorMessage(message?: string) {
-  if (!message) return "تعذر حفظ رقم واتساب الآن. حاول مرة أخرى.";
-  if (message.includes("duplicate key") || message.includes("profiles_whatsapp_unique_idx")) {
-    return "رقم واتساب مستخدم مسبقاً في حساب آخر.";
-  }
-  if (message.includes("INVALID_SAUDI_WHATSAPP")) return SAUDI_PHONE_ERROR;
-  return "تعذر حفظ رقم واتساب الآن. حاول مرة أخرى.";
-}
+const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "فكرة صورة", "سكربت Reel"] as const;
 
 function OnboardingPage() {
   const navigate = useNavigate();
