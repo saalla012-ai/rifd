@@ -247,6 +247,26 @@ function OnboardingPage() {
                   للتنبيهات المهمة وتفعيل اشتراكك — لن نتصل بك مطلقاً، واتساب فقط ✅
                 </p>
               </div>
+              <div>
+                <Label>وش نوع منتجاتك؟</Label>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {PRODUCT_TYPES.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setProductType(p.id)}
+                      className={cn(
+                        "rounded-lg border p-3 text-sm font-medium transition-colors",
+                        productType === p.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/40"
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Button
                 onClick={next}
                 disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
