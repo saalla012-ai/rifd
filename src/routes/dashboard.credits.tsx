@@ -9,7 +9,7 @@
  * يعتمد على trg_lock_topup_from_package لمنع التلاعب بالكميات/الأسعار.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -35,9 +35,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { listTopupPackages } from "@/server/credits";
 import { cn } from "@/lib/utils";
+import { estimateVideoCount, VIDEO_QUALITY_LABELS, videoCreditCost } from "@/lib/plan-catalog";
 
 export const Route = createFileRoute("/dashboard/credits")({
-  head: () => ({ meta: [{ title: "شحن نقاط الفيديو — رِفد" }] }),
+  head: () => ({ meta: [{ title: "نقاط الفيديو: وقود حملاتك المرئية — رِفد" }] }),
   component: CreditsPage,
 });
 
@@ -88,13 +89,7 @@ function CreditsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadFor, setActiveUploadFor] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    void loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -112,7 +107,12 @@ function CreditsPage() {
     setPackages((pkgRes?.packages as Package[]) ?? []);
     setPurchases((purchaseRes.data as Purchase[]) ?? []);
     setLoading(false);
-  }
+  }, [fetchPackages]);
+
+  useEffect(() => {
+    if (!user) return;
+    void loadAll();
+  }, [user, loadAll]);
 
   const pendingPurchase = useMemo(
     () => purchases.find((p) => p.status === "pending" || p.status === "paid"),
