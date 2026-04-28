@@ -320,11 +320,11 @@ function CampaignField({ id, label, value, onChange, placeholder }: { id: string
 function SavedPacksSection({ packs, loading, activePackId, onOpen, onArchive }: { packs: CampaignPack[]; loading: boolean; activePackId?: string; onOpen: (pack: CampaignPack) => void; onArchive: (pack: CampaignPack) => void }) {
   return (
     <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-center gap-2"><FolderKanban className="h-4 w-4 text-primary" /><h2 className="font-extrabold">Campaign Packs</h2></div>
+      <div className="flex items-center gap-2"><FolderKanban className="h-4 w-4 text-primary" /><h2 className="font-extrabold">موجزات الحملات المحفوظة</h2></div>
       {loading ? (
         <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
       ) : packs.length === 0 ? (
-        <p className="mt-4 rounded-lg border border-dashed border-border p-4 text-center text-xs leading-6 text-muted-foreground">لا توجد حزم محفوظة بعد.</p>
+        <p className="mt-4 rounded-lg border border-dashed border-border p-4 text-center text-xs leading-6 text-muted-foreground">لا توجد موجزات محفوظة بعد.</p>
       ) : (
         <div className="mt-4 space-y-2">
           {packs.map((pack) => (
@@ -363,7 +363,7 @@ function OutputStep({ icon: Icon, title, desc, to, payload, saving, onOpen }: { 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Button type="button" variant="outline" size="sm" onClick={copy} className="flex-1 gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
         <Button type="button" size="sm" disabled={saving} onClick={() => void onOpen(to, payload)} className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>فتح الأداة <ArrowLeft className="h-3.5 w-3.5" /></>}
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>انتقل للأداة <ArrowLeft className="h-3.5 w-3.5" /></>}
         </Button>
       </div>
     </div>
