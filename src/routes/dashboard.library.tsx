@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw } from "lucide-react";
+import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw, FolderKanban } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -14,7 +14,7 @@ import { listVideoJobs, refreshVideoJob } from "@/server/video-functions";
 const ACTIVE_VIDEO_STATUSES = new Set(["pending", "processing"]);
 
 export const Route = createFileRoute("/dashboard/library")({
-  head: () => ({ meta: [{ title: "مكتبتي — رِفد" }] }),
+  head: () => ({ meta: [{ title: "مكتبة محتواك الجاهز — رِفد" }] }),
   component: LibraryPage,
 });
 
@@ -49,16 +49,7 @@ function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "text" | "image" | "video" | "fav">("all");
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    void load();
-  }, [authLoading, user]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -84,7 +75,16 @@ function LibraryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [listVideoJobsFn, user]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    void load();
+  }, [authLoading, load, user]);
 
   const toggleFav = async (id: string, current: boolean) => {
     setItems((s) => s.map((i) => (i.id === id ? { ...i, is_favorite: !current } : i)));
@@ -150,6 +150,9 @@ function LibraryPage() {
     return true;
   });
 
+  const textCount = items.filter((item) => item.type === "text").length;
+  const imageCount = items.filter((item) => item.type === "image" || item.type === "image_enhance").length;
+  const favoriteCount = items.filter((item) => item.is_favorite).length;
   const campaignItemCount = items.filter((item) => item.metadata?.campaign_pack_id).length
     + videoJobs.filter((job) => (job.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id).length;
   const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
@@ -161,18 +164,26 @@ function LibraryPage() {
     <DashboardShell>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold">مكتبتي</h1>
-          <p className="mt-1 text-sm text-muted-foreground">المفضلة وكل توليداتك السابقة، مع ربط مخرجات الحملات بسياقها</p>
+          <p className="text-xs font-black text-primary">الأصول والذاكرة</p>
+          <h1 className="mt-1 text-2xl font-extrabold">مكتبة محتواك الجاهز</h1>
+          <p className="mt-1 text-sm text-muted-foreground">كل نص وصورة وفيديو وحملة محفوظة في مكان واحد، مع إبراز ما اخترته للمفضلة.</p>
         </div>
-        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} توليدة • {campaignItemCount} من حملة</div>
+        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} أصل جاهز • {campaignItemCount} من حملة</div>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: videoJobs.length, icon: Clapperboard }, { label: "حملات", value: campaignItemCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
+          const Icon = stat.icon;
+          return <div key={stat.label} className="rounded-lg border border-border bg-card p-3 shadow-soft"><Icon className="h-4 w-4 text-primary" /><div className="mt-2 text-lg font-extrabold">{stat.value.toLocaleString("ar-SA")}</div><div className="text-xs text-muted-foreground">{stat.label}</div></div>;
+        })}
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {[
-          { id: "all", label: "الكل" },
+          { id: "all", label: "كل الأصول" },
           { id: "text", label: "نصوص" },
           { id: "image", label: "صور" },
-          { id: "video", label: "فيديو" },
+          { id: "video", label: "فيديوهات" },
           { id: "fav", label: "المفضلة ⭐" },
         ].map((f) => (
           <button
@@ -194,12 +205,12 @@ function LibraryPage() {
         <div className="mt-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : !hasVisibleItems ? (
         <div className="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
-          ما عندك توليدات بعد. ابدأ من{" "}
-          <Link to="/dashboard/generate-text" className="text-primary hover:underline">توليد نص</Link>{" "}
-          أو{" "}
-          <Link to="/dashboard/generate-image" className="text-primary hover:underline">توليد صور</Link>{" "}
-          أو{" "}
-          <Link to="/dashboard/generate-video" className="text-primary hover:underline">توليد فيديو</Link>.
+          <FolderKanban className="mx-auto mb-3 h-8 w-8 text-primary" />
+          <p className="font-bold text-foreground">لا توجد أصول جاهزة بعد.</p>
+          <p className="mt-1">ابدأ من مركز قيادة الحملة حتى تنتج نصاً يبيع، صورة إعلان، أو فيديو قصير ضمن نفس السياق.</p>
+          <Button asChild className="mt-4 gradient-primary text-primary-foreground">
+            <Link to="/dashboard/campaign-studio">ابدأ من مركز قيادة الحملة</Link>
+          </Button>
         </div>
       ) : (
         <>
@@ -219,7 +230,7 @@ function LibraryPage() {
               <div className="mt-3">
                 {g.metadata?.campaign_pack_id && (
                   <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[11px] leading-5 text-primary">
-                    من حملة: {g.metadata.campaign_product || "Campaign Pack"} · {g.metadata.campaign_channel || "قناة"}
+                    من حملة: {g.metadata.campaign_product || "حملة محفوظة"} · {g.metadata.campaign_channel || "قناة"}
                   </div>
                 )}
                 {g.type === "text" ? (
@@ -265,12 +276,12 @@ function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob
         <div className="flex items-center gap-2">
           <Clapperboard className="h-4 w-4 text-primary" />
           <div>
-            <h2 className="text-sm font-extrabold">فيديوهاتك</h2>
-            <p className="text-xs text-muted-foreground">كل مهام الفيديو محفوظة بحالتها ونقاطها داخل المكتبة.</p>
+            <h2 className="text-sm font-extrabold">فيديوهاتك الجاهزة وقيد المعالجة</h2>
+            <p className="text-xs text-muted-foreground">إعلانات الفيديو محفوظة بحالتها ونقاطها داخل مكتبة محتواك الجاهز.</p>
           </div>
         </div>
         <Button asChild size="sm" variant="outline">
-          <Link to="/dashboard/generate-video">فتح الفيديوهات</Link>
+          <Link to="/dashboard/generate-video">أنشئ فيديو قصير</Link>
         </Button>
       </div>
       {jobs.length > 0 && (
@@ -283,7 +294,7 @@ function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob
               <div className="space-y-2 p-3 text-xs">
                 {(job.metadata as { campaign_pack_id?: string; campaign_product?: string; campaign_channel?: string } | null)?.campaign_pack_id && (
                   <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-bold text-primary">
-                    من حملة: {(job.metadata as { campaign_product?: string; campaign_channel?: string }).campaign_product || "Campaign Pack"} · {(job.metadata as { campaign_channel?: string }).campaign_channel || "قناة"}
+                    من حملة: {(job.metadata as { campaign_product?: string; campaign_channel?: string }).campaign_product || "حملة محفوظة"} · {(job.metadata as { campaign_channel?: string }).campaign_channel || "قناة"}
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-2">
