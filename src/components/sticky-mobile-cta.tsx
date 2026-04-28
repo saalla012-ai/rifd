@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
-import { HERO_EXPERIMENT } from "./home-hero-content";
+
+const HERO_EXPERIMENT = "hero_hook" as const;
 
 /**
  * Sticky CTA bar للموبايل فقط.
