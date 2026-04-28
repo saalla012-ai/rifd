@@ -313,7 +313,7 @@ function StoreProfilePage() {
 
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">تشغيل البيع والمحتوى</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>دعوة الشراء المفضلة</Label>
                 <Input
@@ -355,7 +355,7 @@ function StoreProfilePage() {
 
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">السياسات والثقة</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>سياسة الشحن</Label>
                 <Textarea
@@ -379,7 +379,7 @@ function StoreProfilePage() {
 
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">الامتثال والحماية</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>كلمات أو وعود ممنوعة</Label>
                 <Textarea
