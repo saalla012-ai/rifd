@@ -276,12 +276,12 @@ function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob
         <div className="flex items-center gap-2">
           <Clapperboard className="h-4 w-4 text-primary" />
           <div>
-            <h2 className="text-sm font-extrabold">فيديوهاتك</h2>
-            <p className="text-xs text-muted-foreground">كل مهام الفيديو محفوظة بحالتها ونقاطها داخل المكتبة.</p>
+            <h2 className="text-sm font-extrabold">فيديوهاتك الجاهزة وقيد المعالجة</h2>
+            <p className="text-xs text-muted-foreground">إعلانات الفيديو محفوظة بحالتها ونقاطها داخل مكتبة محتواك الجاهز.</p>
           </div>
         </div>
         <Button asChild size="sm" variant="outline">
-          <Link to="/dashboard/generate-video">فتح الفيديوهات</Link>
+          <Link to="/dashboard/generate-video">أنشئ فيديو قصير</Link>
         </Button>
       </div>
       {jobs.length > 0 && (
@@ -294,7 +294,7 @@ function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob
               <div className="space-y-2 p-3 text-xs">
                 {(job.metadata as { campaign_pack_id?: string; campaign_product?: string; campaign_channel?: string } | null)?.campaign_pack_id && (
                   <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-bold text-primary">
-                    من حملة: {(job.metadata as { campaign_product?: string; campaign_channel?: string }).campaign_product || "Campaign Pack"} · {(job.metadata as { campaign_channel?: string }).campaign_channel || "قناة"}
+                    من حملة: {(job.metadata as { campaign_product?: string; campaign_channel?: string }).campaign_product || "حملة محفوظة"} · {(job.metadata as { campaign_channel?: string }).campaign_channel || "قناة"}
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-2">
