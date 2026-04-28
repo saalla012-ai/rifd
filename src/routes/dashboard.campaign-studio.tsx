@@ -64,7 +64,7 @@ const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string
 };
 
 export const Route = createFileRoute("/dashboard/campaign-studio")({
-  head: () => ({ meta: [{ title: "Campaign Studio — رِفد" }] }),
+  head: () => ({ meta: [{ title: "استوديو الحملات — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): CampaignSearch => ({
     product: typeof s.product === "string" ? s.product.slice(0, 500) : undefined,
     audience: typeof s.audience === "string" ? s.audience.slice(0, 500) : undefined,

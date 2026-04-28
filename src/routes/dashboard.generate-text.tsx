@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
-import { Wand2, Copy, Check, Loader2, Star, LayoutGrid } from "lucide-react";
+import { Wand2, Copy, Check, Loader2, Star, LayoutGrid, Megaphone, Image as ImageIcon, Clapperboard, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import { track } from "@/lib/analytics/posthog";
 type TextSearch = { template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
-  head: () => ({ meta: [{ title: "توليد نص — رِفد" }] }),
+  head: () => ({ meta: [{ title: "اكتب نصاً يبيع — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): TextSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
