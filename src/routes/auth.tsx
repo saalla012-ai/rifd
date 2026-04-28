@@ -23,7 +23,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "تسجيل الدخول — رِفد للتقنية" },
-      { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديداً لتجربة توليد محتوى متجرك ضمن حدود بداية واضحة وبدون بطاقة." },
+      { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديداً لتجهيز أول حزمة محتوى سعودية لمتجرك: منشور، صورة، وفكرة فيديو." },
     ],
   }),
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
@@ -147,7 +147,7 @@ function AuthPage() {
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {mode === "login"
                 ? "ادخل لمتابعة توليد المحتوى لمتجرك"
-                  : "أنشئ حسابك ثم جهّز أول حزمة محتوى لمتجرك بالعامية السعودية — بدون بطاقة ائتمان"}
+                  : "أنشئ حسابك ثم جهّز أول حزمة محتوى لمتجرك بالعامية السعودية: منشور، صورة، وفكرة فيديو"}
             </p>
           </div>
 

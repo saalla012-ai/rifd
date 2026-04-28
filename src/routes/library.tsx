@@ -211,7 +211,7 @@ function LibraryPage() {
         <div className="mt-12 rounded-2xl border border-primary/20 bg-secondary/40 p-6 text-center">
           <h3 className="text-lg font-bold">جاهز تجرّب القوالب على متجرك؟</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            ابدأ مجاناً — تجربة بداية واضحة بدون بطاقة ائتمان
+            خطوتان فقط لأول محتوى جاهز: منشور يبيع، صور تبيع، وفيديو يبيع
           </p>
           <Button asChild className="mt-4 gradient-primary text-primary-foreground shadow-elegant">
             <Link to="/onboarding">ابدأ الآن</Link>
