@@ -52,9 +52,9 @@ export function CookieBanner() {
       role="dialog"
       aria-live="polite"
       aria-label="إشعار ملفات تعريف الارتباط"
-      className="fixed inset-x-0 bottom-3 z-[60] px-3 sm:bottom-4 sm:px-6 lg:start-auto lg:end-6 lg:w-full lg:max-w-sm lg:px-0"
+      className="fixed inset-x-0 bottom-3 z-[60] px-3 sm:bottom-4 sm:px-6 lg:start-6 lg:end-auto lg:w-full lg:max-w-xs lg:px-0"
     >
-      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md sm:max-w-xl sm:flex-row sm:items-center sm:gap-4 lg:mx-0 lg:max-w-sm lg:flex-col lg:items-start lg:p-4">
+      <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md sm:max-w-xl sm:flex-row sm:items-center sm:gap-4 lg:mx-0 lg:max-w-xs lg:flex-col lg:items-start">
         <button
           type="button"
           onClick={reject}
@@ -63,7 +63,7 @@ export function CookieBanner() {
         >
           <X className="h-4 w-4" />
         </button>
-        <div className="flex-1 pe-8 text-xs leading-6 text-muted-foreground sm:pe-0 sm:text-sm sm:leading-relaxed">
+        <div className="flex-1 pe-8 text-xs leading-6 text-muted-foreground sm:pe-0 lg:text-xs lg:leading-6">
           <span className="sm:hidden">نستخدم ملفات أساسية للتشغيل وأخرى اختيارية لتحسين الأداء. اطّلع على </span>
           <span className="hidden sm:inline">نستخدم ملفات تعريف الارتباط الأساسية لتشغيل الموقع، وملفات اختيارية لتحسين التجربة وتحليل الأداء. اطّلع على </span>
           <Link to="/legal/privacy" className="font-medium text-primary underline-offset-4 hover:underline">
