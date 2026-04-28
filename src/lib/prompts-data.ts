@@ -401,7 +401,7 @@ export const PROMPTS: Prompt[] = [
     title: "بنر المتجر الإلكتروني (هيدر)",
     description: "بنر هوريزونتال 1920×600 لرأس متجرك",
     type: "image",
-    category: "store",
+    category: "launch",
     freeTier: false,
     estimatedTime: "20 ثانية",
     variables: ["اسم المتجر", "الرسالة"],
