@@ -92,6 +92,13 @@ function AuthPage() {
 
     try {
       if (mode === "signup") {
+        const normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
+        if (!normalizedWhatsapp) {
+          toast.error(SAUDI_PHONE_ERROR);
+          setSubmitting(false);
+          return;
+        }
+        window.localStorage.setItem(PENDING_SIGNUP_PHONE_KEY, normalizedWhatsapp);
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -132,6 +139,15 @@ function AuthPage() {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     try {
+      if (mode === "signup") {
+        const normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
+        if (!normalizedWhatsapp) {
+          toast.error(SAUDI_PHONE_ERROR);
+          setGoogleLoading(false);
+          return;
+        }
+        window.localStorage.setItem(PENDING_SIGNUP_PHONE_KEY, normalizedWhatsapp);
+      }
       const authReturnPath = redirectPath === "/dashboard"
         ? "/auth"
         : `/auth?redirect=${encodeURIComponent(redirectPath)}`;
