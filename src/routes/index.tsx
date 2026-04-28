@@ -45,17 +45,17 @@ function HomePage() {
     <MarketingLayout>
       <HomeHero />
 
-      <section className="border-b border-border bg-background py-12 sm:py-14">
+      <section className="border-b border-border bg-background py-10 sm:py-12">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-black text-primary">من الفكرة إلى محتوى قابل للنشر</p>
-            <h2 className="mt-2 text-3xl font-black leading-tight sm:text-4xl">
-              ثلاث خطوات تختصر الطريق على متجر سعودي يريد محتوى أسرع
+            <h2 className="mt-2 text-2xl font-black leading-tight sm:text-4xl">
+              ثلاث خطوات تختصر طريق المحتوى لمتجرك
             </h2>
           </div>
           <div className="mt-8 grid gap-3 md:grid-cols-3">
             {steps.map((step, index) => (
-              <article key={step} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+              <article key={step} className="rounded-2xl border border-border bg-card p-4 shadow-soft sm:p-5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-black text-primary">
                   {index + 1}
                 </div>
@@ -70,7 +70,7 @@ function HomePage() {
         </div>
       </section>
 
-      <section id="final-cta" className="bg-background py-12 pb-24 sm:pb-14">
+      <section id="final-cta" className="bg-background py-10 pb-24 sm:pb-14">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <div className="rounded-2xl gradient-primary p-7 text-primary-foreground shadow-elegant sm:p-10">
             <p className="text-sm font-black text-primary-foreground/80">ابدأ بخطوة واحدة</p>
