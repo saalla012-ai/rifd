@@ -218,9 +218,29 @@ function GenerateTextPage() {
               </div>
             </div>
           )}
+          {result && (
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                  <ImageIcon className="h-3.5 w-3.5" /> صمّم صورة لهذا النص
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                  <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من النص
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to={search.campaignPackId ? "/dashboard/campaign-studio" : "/dashboard/library"}>
+                  {search.campaignPackId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  {search.campaignPackId ? "العودة للحملة" : "افتح المكتبة"}
+                </Link>
+              </Button>
+            </div>
+          )}
           <div className="mt-3 text-center">
             <Link to="/dashboard/library" className="text-xs text-primary hover:underline">
-              شوف كل توليداتك في المكتبة ←
+              عرض كل المحتوى في المكتبة ←
             </Link>
           </div>
         </div>
