@@ -154,12 +154,12 @@ function VideoProofCard() {
 
 function CapabilitiesStrip() {
   return (
-    <div className="mt-6 rounded-2xl border border-primary/15 bg-background/65 p-3 shadow-soft backdrop-blur-sm">
-      <div className="mb-2 flex items-center justify-center gap-2 text-xs font-black text-primary lg:justify-start">
+    <div className="rounded-2xl border border-primary/15 bg-background/65 p-3 shadow-soft backdrop-blur-sm">
+      <div className="mb-2 flex items-center justify-center gap-2 text-xs font-black text-primary">
         <Clapperboard className="h-3.5 w-3.5" />
         شريط القدرات المخفية
       </div>
-      <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+      <div className="flex flex-wrap justify-center gap-2">
         {capabilities.map((item) => (
           <span key={item} className="rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground/85 shadow-soft sm:text-xs">
             {item}
