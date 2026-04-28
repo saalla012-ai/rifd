@@ -281,20 +281,23 @@ function CampaignStudioPage() {
 
         <aside className="space-y-5">
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
-            <h2 className="font-extrabold">مخرجات الحملة</h2>
+            <h2 className="font-extrabold">وجهات التنفيذ</h2>
+            <p className="mt-1 text-xs leading-6 text-muted-foreground">
+              اختر الوجهة المناسبة؛ سيتم حفظ الموجز وتمريره للأداة حتى يبقى كل مخرج جزءاً من نفس الحملة.
+            </p>
             <div className="mt-4 space-y-3">
-              <OutputStep icon={Wand2} title="نص الحملة" desc="منشور، CTA، ونسخة واتساب" to="/dashboard/generate-text" payload={textPrompt} saving={saving} onOpen={openOutputTool} />
-              <OutputStep icon={ImageIcon} title="الصورة الإعلانية" desc="بوستر أو صورة منتج متوافقة مع الزاوية" to="/dashboard/generate-image" payload={imagePrompt} saving={saving} onOpen={openOutputTool} />
-              <OutputStep icon={Clapperboard} title="الفيديو القصير" desc="Prompt جاهز للفيديو السريع أو الاحترافي" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} onOpen={openOutputTool} />
+              <OutputStep icon={Wand2} title="اكتب نصاً يبيع" desc="منشور، CTA، ونسخة واتساب من نفس الموجز" to="/dashboard/generate-text" payload={textPrompt} saving={saving} onOpen={openOutputTool} />
+              <OutputStep icon={ImageIcon} title="صمّم صورة إعلان" desc="بوستر أو صورة منتج متوافقة مع زاوية الحملة" to="/dashboard/generate-image" payload={imagePrompt} saving={saving} onOpen={openOutputTool} />
+              <OutputStep icon={Clapperboard} title="أنشئ فيديو قصير" desc="فكرة فيديو جاهزة مرتبطة بالهدف والقناة" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} onOpen={openOutputTool} />
             </div>
           </section>
 
           <SavedPacksSection packs={packs} loading={loadingPacks} activePackId={activePackId} onOpen={applyPack} onArchive={(pack) => void archivePack(pack)} />
 
           <section className="rounded-xl border border-primary/20 bg-primary/5 p-5 shadow-soft">
-            <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h2 className="font-extrabold">تسلسل نشر مقترح</h2></div>
+            <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h2 className="font-extrabold">خريطة نشر مختصرة</h2></div>
             <ol className="mt-4 space-y-3 text-sm leading-7">
-              <li className="rounded-lg bg-background/70 p-3"><strong>اليوم 1:</strong> Hook نصي + صورة Hero لاختبار الزاوية.</li>
+              <li className="rounded-lg bg-background/70 p-3"><strong>اليوم 1:</strong> نص بيع + صورة إعلان لاختبار الزاوية.</li>
               <li className="rounded-lg bg-background/70 p-3"><strong>اليوم 2:</strong> فيديو قصير بنفس الرسالة لزيادة الثقة.</li>
               <li className="rounded-lg bg-background/70 p-3"><strong>اليوم 3:</strong> رسالة واتساب مختصرة للمهتمين أو العملاء السابقين.</li>
             </ol>
