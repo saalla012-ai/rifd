@@ -178,13 +178,16 @@ function TemplatesPage() {
                 <h3 className="mt-3 line-clamp-2 font-bold leading-snug">{p.title}</h3>
                 <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{p.description}</p>
 
-                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+                <div className="mt-3 space-y-1.5 text-[11px] text-muted-foreground">
                   {cat && (
-                    <span className="rounded-md bg-secondary px-2 py-0.5">
-                      {cat.emoji} {cat.label}
-                    </span>
+                    <p className="rounded-md bg-secondary px-2 py-1"><strong className="text-foreground">متى تستخدمه:</strong> {CATEGORY_GOALS[p.category] ?? cat.label}</p>
                   )}
-                  <span className="rounded-md bg-secondary px-2 py-0.5">⏱️ {p.estimatedTime}</span>
+                  <p className="rounded-md bg-secondary px-2 py-1"><strong className="text-foreground">ماذا يعطيك:</strong> {p.description}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cat && <span className="rounded-md bg-secondary px-2 py-0.5">{cat.emoji} {cat.label}</span>}
+                    <span className="rounded-md bg-secondary px-2 py-0.5">النوع: {TYPE_LABEL[p.type]}</span>
+                    <span className="rounded-md bg-secondary px-2 py-0.5">⏱️ {p.estimatedTime}</span>
+                  </div>
                 </div>
 
                 <Button onClick={() => openTemplate(p.id, p.type)} className="mt-4 gap-2 gradient-primary text-primary-foreground" size="sm">
