@@ -124,7 +124,7 @@ function GenerateImagePage() {
                   quality === "flash" ? "border-primary bg-primary/10" : "border-border")}
               >
                 <Zap className="mb-1 h-4 w-4 text-primary" />
-                <div className="font-bold">سريع (Flash)</div>
+                <div className="font-bold">Flash سريع</div>
                 <div className="text-xs text-muted-foreground">~15 ث • للمحتوى اليومي</div>
               </button>
               <button
@@ -135,7 +135,7 @@ function GenerateImagePage() {
                   !proAllowed && "cursor-not-allowed opacity-55")}
               >
                 <Crown className="mb-1 h-4 w-4 text-gold" />
-                <div className="font-bold">جودة عالية (Pro)</div>
+                <div className="font-bold">Pro للإعلانات المهمة</div>
                 <div className="text-xs text-muted-foreground">{proAllowed ? "~30 ث • للإعلانات الممولة" : "متاحة من Growth"}</div>
               </button>
             </div>
@@ -154,11 +154,11 @@ function GenerateImagePage() {
           </div>
 
           <div>
-            <Label>وصف الصورة</Label>
+            <Label>وصف الإعلان البصري</Label>
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="مثلاً: بوستر جمعة بيضاء بخصم 50% بألوان فاخرة وذهبية"
+              placeholder="مثلاً: صورة إعلان لعطر شرقي فاخر، المنتج في المنتصف، خلفية نظيفة، مساحة واضحة للسعر والعرض"
               className="mt-1 min-h-24"
               maxLength={1500}
             />
@@ -182,13 +182,13 @@ function GenerateImagePage() {
           </div>
 
           <Button onClick={go} disabled={loading || creditsLoading || (quality === "pro" && !proAllowed)} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الصورة...</> : <><ImageIcon className="h-4 w-4" /> ولّد صورة جاهزة للاستخدام</>}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الصورة...</> : <><ImageIcon className="h-4 w-4" /> صمّم الصورة الآن</>}
           </Button>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">2) المعاينة والتحميل</h3>
+            <h3 className="font-bold">2) صورة الإعلان الجاهزة</h3>
             {imageUrl && (
               <a
                 href={imageUrl}
@@ -207,7 +207,7 @@ function GenerateImagePage() {
             ) : loading ? (
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             ) : (
-              "اكتب وصف الصورة واضغط التوليد — المعاينة ستظهر هنا."
+              "اكتب وصف الإعلان واضغط التصميم — المعاينة ستظهر هنا."
             )}
           </div>
           {memorySignals.length > 0 && (
