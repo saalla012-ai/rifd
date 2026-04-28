@@ -247,4 +247,22 @@
     background-clip: text;
     color: transparent;
   }
+  .live-proof-marquee {
+    animation: live-proof-scroll 34s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-proof-marquee {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+  }
+  @keyframes live-proof-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(50%);
+    }
+  }
 }

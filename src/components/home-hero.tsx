@@ -1,14 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, Sparkles, Star } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clapperboard, PlayCircle, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SubscribersCounter } from "./subscribers-counter";
 import { getVariant, rememberAttribution, trackEvent } from "@/lib/ab-test";
-import { HERO_BENEFITS, HERO_EXPERIMENT, HERO_HOOKS } from "./home-hero-content";
 
-/**
- * Hero الصفحة الرئيسية — نسخة أنظف مع فصل المحتوى الثابت عن منطق العرض.
- */
+const HERO_EXPERIMENT = "hero_hook" as const;
+
+const capabilities = [
+  "هوكات إعلانية",
+  "أوصاف منتجات",
+  "منشورات عروض",
+  "أفكار ريلز",
+  "سكربت فيديو",
+  "صور منتجات",
+  "حملات موسمية",
+  "رسائل واتساب",
+  "عناوين إعلانات",
+  "محتوى إطلاق منتج",
+] as const;
+
+const proofItems = [
+  "عطر شتوي: هوك + وصف + فكرة ريلز",
+  "عباية سوداء: منشور عرض + زاوية تصوير",
+  "قهوة مختصة: نص إعلان + فكرة صورة",
+  "إلكترونيات: وصف منتج + CTA",
+  "هدايا: حملة موسمية + سكربت قصير",
+  "عناية وبشرة: عرض + منشور + فكرة فيديو",
+] as const;
+
 export function HomeHero() {
   const [variant, setVariant] = useState<"A" | "B">("A");
 
@@ -26,116 +45,148 @@ export function HomeHero() {
 
   return (
     <section className="relative overflow-hidden gradient-hero">
-      {/* تأثيرات بصرية أعمق */}
-      <div className="pointer-events-none absolute -top-40 -left-32 h-[28rem] w-[28rem] rounded-full bg-primary/25 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-gold/30 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-gold/60 to-transparent" />
+      <div className="pointer-events-none absolute -top-28 right-[-12%] h-[26rem] w-[26rem] rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 left-[-10%] h-[24rem] w-[24rem] rounded-full bg-gold/25 blur-3xl" />
 
-      <div className="relative mx-auto max-w-4xl px-4 py-8 sm:py-14 lg:py-16">
-        <div className="flex flex-col items-center justify-center gap-2.5 sm:flex-row sm:flex-wrap">
-          <SubscribersCounter variant="inline" />
-          <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold-foreground">
-            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
-            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
-            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
-            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
-            <Star className="h-3.5 w-3.5 fill-gold text-gold" />
-            <span className="ms-1 font-extrabold">4.9</span>
-          </span>
+      <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-7 sm:py-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-12">
+        <div className="order-2 lg:order-1">
+          <VideoProofCard />
         </div>
 
-        <h1 className="mt-4 min-h-[12.25rem] text-center text-[1.48rem] font-black leading-[1.14] tracking-tight sm:mt-6 sm:min-h-[12.5rem] sm:text-[2.75rem] sm:leading-[1.1] lg:min-h-[13rem] lg:text-[3.5rem]">
-          <span className="block text-[0.66em] font-bold text-muted-foreground sm:text-[0.42em]">
-            {HERO_HOOKS[variant].eyebrow}
-          </span>
-           <span className="mt-2 block space-y-1.5 sm:space-y-0">
-             <span className="block text-gradient-primary sm:inline">{HERO_HOOKS[variant].promiseLead}</span>{" "}
-             <span className="block sm:ms-2 sm:inline">{HERO_HOOKS[variant].promiseEnd}</span>
-           </span>
-          <span className="mt-2 block text-[0.66em] font-bold leading-[1.36] text-foreground/90 sm:text-[0.56em]">
-            <span>{HERO_HOOKS[variant].outputs[0]}</span>
-            <span className="mx-1 inline-block align-middle font-light text-muted-foreground/60 sm:mx-2">+</span>
-            <span className="text-gradient-gold">{HERO_HOOKS[variant].outputs[1]}</span>
-            <span className="mx-1 inline-block align-middle font-light text-muted-foreground/60 sm:mx-2">+</span>
-            <span>{HERO_HOOKS[variant].outputs[2]}</span>
-          </span>
-          <span className="mt-2 block text-[0.8em] leading-[1.16] sm:text-[0.9em]">
-            لمتجرك في{" "}
-            <span className="relative inline-block whitespace-nowrap">
-              <span
-                className="absolute inset-x-[-8px] bottom-[8%] -z-10 h-[44%] -rotate-1 rounded-md bg-gold/60"
-                aria-hidden
-              />
-              <span className="relative">وقت قهوتك ☕</span>
-            </span>
-          </span>
-        </h1>
+        <div className="order-1 text-center lg:order-2 lg:text-right">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary lg:mx-0">
+            <Zap className="h-3.5 w-3.5" />
+            +150 قدرة محتوى للمتاجر السعودية
+          </div>
 
-        <div className="mx-auto mt-5 flex max-w-[17rem] items-center justify-center gap-2 text-sm font-bold sm:mt-5 sm:max-w-md sm:gap-3 sm:text-lg">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1.5 text-destructive line-through decoration-2">
-            5 ساعات
-          </span>
-          <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1.5 text-success">
-            ✓ 5 دقائق
-          </span>
-        </div>
-
-        <div className="mt-7 flex flex-col items-center gap-4">
-          <Button
-            asChild
-            size="lg"
-            className="h-14 w-full max-w-[18rem] gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold transition-transform hover:scale-[1.02] sm:w-auto sm:px-8 lg:px-10"
-          >
-            <Link to="/onboarding" onClick={handleCtaClick}>
-              <Sparkles className="h-5 w-5" />
-              ابدأ مجاناً
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-foreground/80 sm:text-sm">
-            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/80 px-3 py-1.5 shadow-soft backdrop-blur-sm">
-              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-              هذا المسار مناسب إذا كنت تريد تشغيل متجر واحد بسرعة
+          <h1 className="mt-4 text-[2rem] font-black leading-[1.08] tracking-normal sm:text-5xl lg:text-6xl">
+            <span className="block">ودّع ChatGPT،</span>
+            <span className="mt-1 block text-gradient-primary">واختصر ساعات من كتابة وصناعة محتوى متجرك.</span>
+            <span className="mt-3 block text-[0.58em] font-extrabold leading-[1.35] text-foreground/90 sm:text-[0.5em]">
+              نصوص وصور وفيديوهات بالعامية السعودية جاهزة.
             </span>
-            <Link
-              to="/proof-center"
-              className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-primary transition-colors hover:bg-primary/10"
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0">
+            منصة سعودية شاملة لصناعة محتوى المتاجر: نصوص، صور، وفيديوهات بالعامية السعودية، مبنية على فهم عملي ومدروس لسلوك السوق السعودي، وتعمل بأقوى أدوات الذكاء الاصطناعي.
+          </p>
+
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <Button
+              asChild
+              size="lg"
+              className="h-14 w-full max-w-[19rem] gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold sm:w-auto sm:px-8"
             >
-              شاهد الإثبات أولاً
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </Link>
+              <Link to="/onboarding" onClick={handleCtaClick}>
+                <Sparkles className="h-5 w-5" />
+                ابدأ مجاناً
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 w-full max-w-[19rem] bg-background/70 font-extrabold sm:w-auto">
+              <Link to="/proof-center">
+                شاهد الإثبات
+                <PlayCircle className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
-          <div className="grid w-full max-w-[18rem] grid-cols-1 gap-1 text-center text-[10px] font-medium text-muted-foreground sm:max-w-xl sm:grid-cols-3 sm:gap-x-3 sm:gap-y-1.5 sm:text-[11px]">
-            <span>✓ بداية مجانية بحدود واضحة</span>
-            <span>✓ بدون بطاقة ائتمان</span>
-            <span>✓ بداية سريعة خلال ثوانٍ</span>
+
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-foreground/80 lg:justify-start">
+            {['بدون بطاقة ائتمان', 'بداية سريعة', 'مناسب للمتاجر السعودية'].map((item) => (
+              <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/85 px-3 py-1.5 shadow-soft">
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                {item}
+              </span>
+            ))}
+          </div>
+
+          <CapabilitiesStrip />
+        </div>
+      </div>
+
+      <LiveProofTicker />
+    </section>
+  );
+}
+
+function VideoProofCard() {
+  return (
+    <div className="relative mx-auto max-w-2xl lg:mx-0">
+      <div className="absolute inset-0 -z-10 translate-y-4 rounded-[1.75rem] bg-primary/15 blur-2xl" aria-hidden />
+      <div className="overflow-hidden rounded-[1.5rem] border border-border bg-card shadow-elegant">
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-secondary/45 px-4 py-3">
+          <div>
+            <div className="text-xs font-extrabold text-primary">شاهد رِفد في ثوانٍ</div>
+            <div className="mt-1 text-sm font-black">من وصف بسيط إلى محتوى متجر جاهز</div>
+          </div>
+          <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-bold text-success">
+            <span className="h-2 w-2 rounded-full bg-success" />
+            فيديو
           </div>
         </div>
+        <div className="aspect-video bg-background">
+          <video
+            className="h-full w-full object-cover"
+            src="/rifd-promo.mp4"
+            controls
+            muted
+            playsInline
+            preload="metadata"
+            poster="/og-image.jpg"
+            aria-label="فيديو رِفد الذي يوضح كيف يساعد المتاجر السعودية في صناعة المحتوى"
+          >
+            متصفحك لا يدعم تشغيل الفيديو.
+          </video>
+        </div>
+        <div className="grid grid-cols-3 border-t border-border bg-background/85 text-center text-[11px] font-extrabold text-foreground/85 sm:text-xs">
+          <div className="border-l border-border px-2 py-3">نصوص</div>
+          <div className="border-l border-border px-2 py-3">صور</div>
+          <div className="px-2 py-3">فيديوهات</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-        <div className="mx-auto mt-7 max-w-3xl">
-          <div className="mb-3 text-center text-xs font-bold text-muted-foreground sm:text-sm">
-            ماذا ستحسم في أول ثوانٍ؟ الوعد، الفرق، والثقة — قبل أن تنزل لباقي الصفحة.
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
-            {HERO_BENEFITS.map((b) => (
-              <div
-                key={b.title}
-                className="grid min-h-[96px] grid-cols-[auto,1fr] items-start gap-2 rounded-xl border border-border bg-card/80 p-3 backdrop-blur-sm sm:min-h-[unset] sm:gap-3"
+function CapabilitiesStrip() {
+  return (
+    <div className="mt-6 rounded-2xl border border-primary/15 bg-background/65 p-3 shadow-soft backdrop-blur-sm">
+      <div className="mb-2 flex items-center justify-center gap-2 text-xs font-black text-primary lg:justify-start">
+        <Clapperboard className="h-3.5 w-3.5" />
+        شريط القدرات المخفية
+      </div>
+      <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+        {capabilities.map((item) => (
+          <span key={item} className="rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground/85 shadow-soft sm:text-xs">
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LiveProofTicker() {
+  const repeated = [...proofItems, ...proofItems, ...proofItems];
+
+  return (
+    <div className="border-y border-border bg-primary text-primary-foreground">
+      <div className="flex items-center gap-3 overflow-hidden py-3">
+        <div className="shrink-0 pe-1 ps-4 text-xs font-black sm:ps-6 sm:text-sm">الإثبات الحي</div>
+        <div className="relative min-w-0 flex-1 overflow-hidden">
+          <div className="live-proof-marquee flex w-max items-center gap-3">
+            {repeated.map((item, index) => (
+              <span
+                key={`${item}-${index}`}
+                className="rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-xs font-bold text-primary-foreground/95 sm:text-sm"
               >
-                <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center text-xl sm:h-auto sm:w-auto sm:text-2xl">
-                  {b.icon}
-                </span>
-                <div className="min-w-0 self-stretch">
-                  <div className="text-sm font-extrabold leading-[1.2]">{b.title}</div>
-                  <div className="mt-1 text-[11px] leading-[1.35] text-muted-foreground">
-                    {b.sub}
-                  </div>
-                </div>
-              </div>
+                {item}
+              </span>
             ))}
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
