@@ -8,11 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { PROMPTS, CATEGORIES, type PromptType, type PromptCategory } from "@/lib/prompts-data";
 import { cn } from "@/lib/utils";
 
+const CATEGORY_GOALS: Partial<Record<PromptCategory, string>> = {
+  launch: "ابدأ منتجاً جديداً برسالة واضحة",
+  offer: "حوّل الخصم إلى سبب شراء الآن",
+  season: "اربط حملتك بلحظة موسمية جاهزة",
+  product: "اكتب قيمة المنتج بطريقة تقنع العميل",
+  social: "حضّر منشوراً سريعاً لقنواتك اليومية",
+  trust: "ابنِ ثقة العميل قبل قرار الشراء",
+  video: "جهّز زاوية فيديو قصيرة قابلة للنشر",
+};
+
+const TYPE_LABEL: Record<PromptType, string> = {
+  text: "نص",
+  image: "صورة",
+};
+
 export const Route = createFileRoute("/dashboard/templates")({
   head: () => ({
     meta: [
       { title: "معرض القوالب — رِفد" },
-      { name: "description", content: "مكتبة قوالب جاهزة للنصوص والصور — اختر قالباً وابدأ التوليد فوراً." },
+      { name: "description", content: "لا تعرف من أين تبدأ؟ اختر هدفك ثم استخدم قالباً يكتب نصاً يبيع أو يصمّم صورة إعلان." },
     ],
   }),
   component: TemplatesPage,
@@ -56,15 +71,16 @@ function TemplatesPage() {
     <DashboardShell>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold">معرض القوالب</h1>
+          <p className="text-xs font-black text-primary">لا تعرف من أين تبدأ؟ اختر هدفك.</p>
+          <h1 className="mt-1 text-2xl font-extrabold">معرض القوالب</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filtered.length} من {PROMPTS.length} قالب — اختر قالباً وابدأ التوليد فوراً
+            {filtered.length} من {PROMPTS.length} قالب — اختر هدفاً تجارياً ثم انتقل للأداة المناسبة
           </p>
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="ابحث عن قالب..."
+            placeholder="ابحث حسب الهدف أو المنتج..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pr-10"
@@ -72,7 +88,6 @@ function TemplatesPage() {
         </div>
       </div>
 
-      {/* Type filter */}
       <div className="mt-5 flex flex-wrap gap-2">
         {([
           { id: "all", label: "الكل", icon: Sparkles, count: counts.all },
@@ -99,7 +114,6 @@ function TemplatesPage() {
         ))}
       </div>
 
-      {/* Category filter */}
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           onClick={() => setCategory("all")}
@@ -129,7 +143,6 @@ function TemplatesPage() {
         ))}
       </div>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           لا توجد قوالب تطابق بحثك. جرّب كلمة أخرى أو غيّر الفلاتر.
@@ -165,13 +178,16 @@ function TemplatesPage() {
                 <h3 className="mt-3 line-clamp-2 font-bold leading-snug">{p.title}</h3>
                 <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{p.description}</p>
 
-                <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+                <div className="mt-3 space-y-1.5 text-[11px] text-muted-foreground">
                   {cat && (
-                    <span className="rounded-md bg-secondary px-2 py-0.5">
-                      {cat.emoji} {cat.label}
-                    </span>
+                    <p className="rounded-md bg-secondary px-2 py-1"><strong className="text-foreground">متى تستخدمه:</strong> {CATEGORY_GOALS[p.category] ?? cat.label}</p>
                   )}
-                  <span className="rounded-md bg-secondary px-2 py-0.5">⏱️ {p.estimatedTime}</span>
+                  <p className="rounded-md bg-secondary px-2 py-1"><strong className="text-foreground">ماذا يعطيك:</strong> {p.description}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cat && <span className="rounded-md bg-secondary px-2 py-0.5">{cat.emoji} {cat.label}</span>}
+                    <span className="rounded-md bg-secondary px-2 py-0.5">النوع: {TYPE_LABEL[p.type]}</span>
+                    <span className="rounded-md bg-secondary px-2 py-0.5">⏱️ {p.estimatedTime}</span>
+                  </div>
                 </div>
 
                 <Button onClick={() => openTemplate(p.id, p.type)} className="mt-4 gap-2 gradient-primary text-primary-foreground" size="sm">
