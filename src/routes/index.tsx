@@ -82,7 +82,7 @@ function HomePage() {
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button asChild size="lg" variant="secondary" className="w-full max-w-[18rem] font-extrabold shadow-elegant sm:w-auto">
-                <Link to="/onboarding">
+                <Link to="/auth" search={{ redirect: "/onboarding" }}>
                   <Sparkles className="h-4 w-4" />
                   ابدأ مجاناً
                 </Link>
