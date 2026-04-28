@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
@@ -26,20 +26,20 @@ import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "ابدأ مع رِفد — خطوتان لأول محتوى مخصص" },
+      { title: "ابدأ مع رِفد — صفحة واحدة لأول محتوى مخصص" },
       {
         name: "description",
         content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد.",
       },
-      { property: "og:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
+      { property: "og:title", content: "ابدأ مع رِفد — صفحة واحدة لأول حملة مخصصة لمتجرك" },
       {
         property: "og:description",
-        content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+        content: "ملف متجرك في دقيقة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
       },
-      { name: "twitter:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
+      { name: "twitter:title", content: "ابدأ مع رِفد — صفحة واحدة لأول حملة مخصصة لمتجرك" },
       {
         name: "twitter:description",
-        content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+        content: "ملف متجرك في دقيقة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
       },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
