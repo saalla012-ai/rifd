@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckCircle2, Loader2, Sparkles, Store, Truck, ShieldCheck, Megaphone } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  Sparkles,
+  Store,
+  Truck,
+  ShieldCheck,
+  Megaphone,
+} from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -38,12 +46,32 @@ function StoreProfilePage() {
 
   const sections = useMemo(
     () => [
-      { title: "هوية المتجر", icon: Store, keys: ["store_name", "product_type", "audience", "tone", "brand_color", "brand_personality", "unique_selling_point"] },
-      { title: "تشغيل البيع", icon: Megaphone, keys: ["cta_style", "high_margin_products", "seasonal_priorities", "faq_notes"] },
+      {
+        title: "هوية المتجر",
+        icon: Store,
+        keys: [
+          "store_name",
+          "product_type",
+          "audience",
+          "tone",
+          "brand_color",
+          "brand_personality",
+          "unique_selling_point",
+        ],
+      },
+      {
+        title: "تشغيل البيع",
+        icon: Megaphone,
+        keys: ["cta_style", "high_margin_products", "seasonal_priorities", "faq_notes"],
+      },
       { title: "السياسات والثقة", icon: Truck, keys: ["shipping_policy", "exchange_policy"] },
-      { title: "الامتثال والحماية", icon: ShieldCheck, keys: ["banned_phrases", "compliance_notes"] },
+      {
+        title: "الامتثال والحماية",
+        icon: ShieldCheck,
+        keys: ["banned_phrases", "compliance_notes"],
+      },
     ],
-    []
+    [],
   );
 
   useEffect(() => {
@@ -82,7 +110,7 @@ function StoreProfilePage() {
   ] as const;
 
   const completionPct = Math.round(
-    (completionKeys.filter((key) => String(form[key]).trim()).length / completionKeys.length) * 100
+    (completionKeys.filter((key) => String(form[key]).trim()).length / completionKeys.length) * 100,
   );
 
   const splitList = (value: string) =>
@@ -116,7 +144,9 @@ function StoreProfilePage() {
   if (!profile) {
     return (
       <DashboardShell>
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       </DashboardShell>
     );
   }
@@ -127,9 +157,13 @@ function StoreProfilePage() {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-2xl font-extrabold">بناء المتجر — ذاكرة بيع لا مجرد ملف تعريفي</h1>
+              <h1 className="text-2xl font-extrabold">
+                بناء المتجر — ذاكرة بيع لا مجرد ملف تعريفي
+              </h1>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
-                هنا نثبت ما يجعل العميل يشتري منك: الوعد، الجمهور، الاعتراضات، السياسات، المنتجات الأعلى قيمة والمواسم. كل حقل جيد هنا يجعل النص والصورة والفيديو أقرب للبيع وأقل عمومية.
+                هنا نثبت ما يجعل العميل يشتري منك: الوعد، الجمهور، الاعتراضات، السياسات، المنتجات
+                الأعلى قيمة والمواسم. كل حقل جيد هنا يجعل النص والصورة والفيديو أقرب للبيع وأقل
+                عمومية.
               </p>
             </div>
             <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
@@ -137,7 +171,9 @@ function StoreProfilePage() {
                 <Sparkles className="h-4 w-4" />
                 جاهزية البيع: {completionPct}%
               </div>
-              <p className="mt-1 text-muted-foreground">كل حقل مكتمل يقلل التردد في المخرجات ويزيد وضوح زاوية الشراء.</p>
+              <p className="mt-1 text-muted-foreground">
+                كل حقل مكتمل يقلل التردد في المخرجات ويزيد وضوح زاوية الشراء.
+              </p>
             </div>
           </div>
 
@@ -147,7 +183,10 @@ function StoreProfilePage() {
               "CTA يناسب قناتك: متجر، واتساب، إعلان أو ستوري",
               "ثقة أعلى عبر الشحن والاستبدال والأسئلة المتكررة",
             ].map((item) => (
-              <div key={item} className="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm font-bold leading-6 text-foreground/85">
+              <div
+                key={item}
+                className="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm font-bold leading-6 text-foreground/85"
+              >
                 {item}
               </div>
             ))}
@@ -155,14 +194,21 @@ function StoreProfilePage() {
 
           <div className="mt-6 grid gap-3 md:grid-cols-4">
             {sections.map((section) => {
-              const filledCount = section.keys.filter((key) => String(form[key as keyof typeof form]).trim()).length;
+              const filledCount = section.keys.filter((key) =>
+                String(form[key as keyof typeof form]).trim(),
+              ).length;
               return (
-                <div key={section.title} className="rounded-xl border border-border bg-background p-4">
+                <div
+                  key={section.title}
+                  className="rounded-xl border border-border bg-background p-4"
+                >
                   <div className="flex items-center gap-2 font-bold">
                     <section.icon className="h-4 w-4 text-primary" />
                     {section.title}
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">{filledCount} / {section.keys.length} حقول مكتملة</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {filledCount} / {section.keys.length} حقول مكتملة
+                  </p>
                 </div>
               );
             })}
@@ -175,11 +221,19 @@ function StoreProfilePage() {
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div>
                 <Label>اسم المتجر</Label>
-                <Input className="mt-1" value={form.store_name} onChange={(e) => setForm({ ...form, store_name: e.target.value })} />
+                <Input
+                  className="mt-1"
+                  value={form.store_name}
+                  onChange={(e) => setForm({ ...form, store_name: e.target.value })}
+                />
               </div>
               <div>
                 <Label>نوع المتجر</Label>
-                <select className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.product_type} onChange={(e) => setForm({ ...form, product_type: e.target.value })}>
+                <select
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={form.product_type}
+                  onChange={(e) => setForm({ ...form, product_type: e.target.value })}
+                >
                   <option value="">— اختر —</option>
                   <option value="dropshipping">دروبشيبنق</option>
                   <option value="fashion">أزياء وملابس</option>
@@ -193,11 +247,20 @@ function StoreProfilePage() {
               </div>
               <div className="md:col-span-2">
                 <Label>الجمهور المستهدف</Label>
-                <Textarea className="mt-1" value={form.audience} onChange={(e) => setForm({ ...form, audience: e.target.value })} placeholder="مثلاً: نساء 23-40 يبحثن عن هدايا أنيقة أو عطور راقية للاستخدام اليومي" />
+                <Textarea
+                  className="mt-1"
+                  value={form.audience}
+                  onChange={(e) => setForm({ ...form, audience: e.target.value })}
+                  placeholder="مثلاً: نساء 23-40 يبحثن عن هدايا أنيقة أو عطور راقية للاستخدام اليومي"
+                />
               </div>
               <div>
                 <Label>النبرة المفضلة</Label>
-                <select className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.tone} onChange={(e) => setForm({ ...form, tone: e.target.value })}>
+                <select
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={form.tone}
+                  onChange={(e) => setForm({ ...form, tone: e.target.value })}
+                >
                   <option value="">— اختر —</option>
                   <option value="fun">مرح وقريب</option>
                   <option value="pro">احترافي ورصين</option>
@@ -208,17 +271,36 @@ function StoreProfilePage() {
               <div>
                 <Label>اللون الأساسي للهوية</Label>
                 <div className="mt-1 flex items-center gap-2">
-                  <Input className="font-mono" value={form.brand_color} onChange={(e) => setForm({ ...form, brand_color: e.target.value })} />
-                  <input type="color" value={form.brand_color} onChange={(e) => setForm({ ...form, brand_color: e.target.value })} className="h-9 w-12 cursor-pointer rounded border border-input" />
+                  <Input
+                    className="font-mono"
+                    value={form.brand_color}
+                    onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
+                  />
+                  <input
+                    type="color"
+                    value={form.brand_color}
+                    onChange={(e) => setForm({ ...form, brand_color: e.target.value })}
+                    className="h-9 w-12 cursor-pointer rounded border border-input"
+                  />
                 </div>
               </div>
               <div>
                 <Label>شخصية العلامة</Label>
-                <Input className="mt-1" value={form.brand_personality} onChange={(e) => setForm({ ...form, brand_personality: e.target.value })} placeholder="مثلاً: راقية، قريبة، موثوقة، أنثوية" />
+                <Input
+                  className="mt-1"
+                  value={form.brand_personality}
+                  onChange={(e) => setForm({ ...form, brand_personality: e.target.value })}
+                  placeholder="مثلاً: راقية، قريبة، موثوقة، أنثوية"
+                />
               </div>
               <div>
                 <Label>الوعد البيعي / سبب الشراء منك</Label>
-                <Input className="mt-1" value={form.unique_selling_point} onChange={(e) => setForm({ ...form, unique_selling_point: e.target.value })} placeholder="ما الذي يميز متجرك فعلاً عن المنافسين؟" />
+                <Input
+                  className="mt-1"
+                  value={form.unique_selling_point}
+                  onChange={(e) => setForm({ ...form, unique_selling_point: e.target.value })}
+                  placeholder="ما الذي يميز متجرك فعلاً عن المنافسين؟"
+                />
               </div>
             </div>
           </section>
@@ -228,19 +310,39 @@ function StoreProfilePage() {
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div>
                 <Label>دعوة الشراء المفضلة</Label>
-                <Input className="mt-1" value={form.cta_style} onChange={(e) => setForm({ ...form, cta_style: e.target.value })} placeholder="مثلاً: اطلب الآن / شاهد المجموعة / احجز عبر واتساب" />
+                <Input
+                  className="mt-1"
+                  value={form.cta_style}
+                  onChange={(e) => setForm({ ...form, cta_style: e.target.value })}
+                  placeholder="مثلاً: اطلب الآن / شاهد المجموعة / احجز عبر واتساب"
+                />
               </div>
               <div>
                 <Label>المنتجات التي تستحق دفع البيع لها</Label>
-                <Textarea className="mt-1" value={form.high_margin_products} onChange={(e) => setForm({ ...form, high_margin_products: e.target.value })} placeholder="افصل بينها بفاصلة: عطر 100مل، بوكس هدايا فاخر، اشتراك شهري" />
+                <Textarea
+                  className="mt-1"
+                  value={form.high_margin_products}
+                  onChange={(e) => setForm({ ...form, high_margin_products: e.target.value })}
+                  placeholder="افصل بينها بفاصلة: عطر 100مل، بوكس هدايا فاخر، اشتراك شهري"
+                />
               </div>
               <div>
                 <Label>الأولويات الموسمية</Label>
-                <Textarea className="mt-1" value={form.seasonal_priorities} onChange={(e) => setForm({ ...form, seasonal_priorities: e.target.value })} placeholder="رمضان، العيد، الجمعة البيضاء، العودة للمدارس..." />
+                <Textarea
+                  className="mt-1"
+                  value={form.seasonal_priorities}
+                  onChange={(e) => setForm({ ...form, seasonal_priorities: e.target.value })}
+                  placeholder="رمضان، العيد، الجمعة البيضاء، العودة للمدارس..."
+                />
               </div>
               <div>
                 <Label>اعتراضات وأسئلة ما قبل الشراء</Label>
-                <Textarea className="mt-1" value={form.faq_notes} onChange={(e) => setForm({ ...form, faq_notes: e.target.value })} placeholder="ما أكثر ما يجعل العميل يتردد؟ السعر، المقاس، الثبات، الشحن، الضمان، الخامة..." />
+                <Textarea
+                  className="mt-1"
+                  value={form.faq_notes}
+                  onChange={(e) => setForm({ ...form, faq_notes: e.target.value })}
+                  placeholder="ما أكثر ما يجعل العميل يتردد؟ السعر، المقاس، الثبات، الشحن، الضمان، الخامة..."
+                />
               </div>
             </div>
           </section>
@@ -250,11 +352,21 @@ function StoreProfilePage() {
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div>
                 <Label>سياسة الشحن</Label>
-                <Textarea className="mt-1" value={form.shipping_policy} onChange={(e) => setForm({ ...form, shipping_policy: e.target.value })} placeholder="مثلاً: شحن خلال 24-48 ساعة داخل المدن الرئيسية" />
+                <Textarea
+                  className="mt-1"
+                  value={form.shipping_policy}
+                  onChange={(e) => setForm({ ...form, shipping_policy: e.target.value })}
+                  placeholder="مثلاً: شحن خلال 24-48 ساعة داخل المدن الرئيسية"
+                />
               </div>
               <div>
                 <Label>سياسة الاستبدال / الاسترجاع</Label>
-                <Textarea className="mt-1" value={form.exchange_policy} onChange={(e) => setForm({ ...form, exchange_policy: e.target.value })} placeholder="مثلاً: الاستبدال خلال 7 أيام بشرط سلامة المنتج" />
+                <Textarea
+                  className="mt-1"
+                  value={form.exchange_policy}
+                  onChange={(e) => setForm({ ...form, exchange_policy: e.target.value })}
+                  placeholder="مثلاً: الاستبدال خلال 7 أيام بشرط سلامة المنتج"
+                />
               </div>
             </div>
           </section>
@@ -264,11 +376,21 @@ function StoreProfilePage() {
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div>
                 <Label>كلمات أو وعود ممنوعة</Label>
-                <Textarea className="mt-1" value={form.banned_phrases} onChange={(e) => setForm({ ...form, banned_phrases: e.target.value })} placeholder="مثلاً: الأفضل مطلقاً، علاج مضمون، نتيجة مضمونة 100%" />
+                <Textarea
+                  className="mt-1"
+                  value={form.banned_phrases}
+                  onChange={(e) => setForm({ ...form, banned_phrases: e.target.value })}
+                  placeholder="مثلاً: الأفضل مطلقاً، علاج مضمون، نتيجة مضمونة 100%"
+                />
               </div>
               <div>
                 <Label>ملاحظات الامتثال</Label>
-                <Textarea className="mt-1" value={form.compliance_notes} onChange={(e) => setForm({ ...form, compliance_notes: e.target.value })} placeholder="أي حدود تنظيمية أو لغوية يجب مراعاتها في محتوى متجرك" />
+                <Textarea
+                  className="mt-1"
+                  value={form.compliance_notes}
+                  onChange={(e) => setForm({ ...form, compliance_notes: e.target.value })}
+                  placeholder="أي حدود تنظيمية أو لغوية يجب مراعاتها في محتوى متجرك"
+                />
               </div>
             </div>
           </section>
@@ -279,14 +401,26 @@ function StoreProfilePage() {
               <div>
                 <h3 className="font-bold">ما النتيجة المتوقعة بعد تعبئة هذه الصفحة؟</h3>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  سيصبح رِفد أقدر على إنتاج إعلان مدروس، وصف منتج يزيل التردد، صورة تناسب السوق السعودي، سكربت فيديو قصير، منشور عرض مباشر، ودعوة شراء واضحة مرتبطة بمتجرك لا بنموذج عام.
+                  سيصبح رِفد أقدر على إنتاج إعلان مدروس، وصف منتج يزيل التردد، صورة تناسب السوق
+                  السعودي، سكربت فيديو قصير، منشور عرض مباشر، ودعوة شراء واضحة مرتبطة بمتجرك لا
+                  بنموذج عام.
                 </p>
               </div>
             </div>
           </div>
 
-          <Button onClick={save} disabled={saving} className="gradient-primary text-primary-foreground">
-            {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الحفظ...</> : "حفظ ذاكرة البيع"}
+          <Button
+            onClick={save}
+            disabled={saving}
+            className="gradient-primary text-primary-foreground"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> جاري الحفظ...
+              </>
+            ) : (
+              "حفظ ذاكرة البيع"
+            )}
           </Button>
         </div>
       </div>

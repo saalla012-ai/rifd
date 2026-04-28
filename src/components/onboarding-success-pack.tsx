@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Clapperboard, Copy, ImagePlus, Lightbulb, Megaphone, PlayCircle, Sparkles, Tags, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Clapperboard,
+  Copy,
+  ImagePlus,
+  Lightbulb,
+  Megaphone,
+  PlayCircle,
+  Sparkles,
+  Tags,
+  Wand2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SuccessPack } from "@/lib/onboarding-success";
 
@@ -34,16 +46,22 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
           <Check className="h-5 w-5 text-success" />
         </div>
         <div>
-          <h2 className="text-xl font-extrabold">هذه ليست تجربة كتابة — هذه بداية حملة بيع قابلة للتنفيذ</h2>
+          <h2 className="text-xl font-extrabold">
+            هذه ليست تجربة كتابة — هذه بداية حملة بيع قابلة للتنفيذ
+          </h2>
           <p className="text-sm leading-7 text-muted-foreground">
-            حزمة تشغيل مبنية على القطاع والجمهور والنبرة التي أدخلتها، مع تفسير بيعي وخطوة تالية تقلل التردد وتقرّب العميل من الطلب.
+            حزمة تشغيل مبنية على القطاع والجمهور والنبرة التي أدخلتها، مع تفسير بيعي وخطوة تالية
+            تقلل التردد وتقرّب العميل من الطلب.
           </p>
         </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
         {activationWins.map((item) => (
-          <div key={item} className="rounded-xl border border-border bg-background/80 px-4 py-4 text-sm leading-6 text-muted-foreground">
+          <div
+            key={item}
+            className="rounded-xl border border-border bg-background/80 px-4 py-4 text-sm leading-6 text-muted-foreground"
+          >
             {item}
           </div>
         ))}
@@ -55,7 +73,9 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
             <Megaphone className="h-4 w-4" />
             المنشور الرئيسي
           </div>
-          <pre className="whitespace-pre-wrap text-right font-sans text-sm leading-7">{pack.primaryPost}</pre>
+          <pre className="whitespace-pre-wrap text-right font-sans text-sm leading-7">
+            {pack.primaryPost}
+          </pre>
         </div>
 
         <div className="rounded-xl border border-gold/30 bg-gold/10 p-4">
@@ -73,8 +93,7 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 text-sm font-bold">
-            <Lightbulb className="h-4 w-4 text-primary" />
-            3 هوكات بديلة
+            <Lightbulb className="h-4 w-4 text-primary" />3 هوكات بديلة
           </div>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {pack.hooks.map((hook) => (
@@ -93,7 +112,10 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
           <div className="mt-3 rounded-lg bg-secondary/60 px-3 py-2 text-sm">{pack.cta}</div>
           <div className="mt-3 flex flex-wrap gap-2">
             {pack.hashtags.map((tag) => (
-              <span key={tag} className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+              <span
+                key={tag}
+                className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary"
+              >
                 {tag}
               </span>
             ))}
@@ -137,7 +159,10 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
           </div>
           <div className="mt-3 space-y-2">
             {pack.storySequence.map((item, index) => (
-              <div key={item} className="rounded-lg bg-secondary/60 px-3 py-2 text-sm leading-6 text-muted-foreground">
+              <div
+                key={item}
+                className="rounded-lg bg-secondary/60 px-3 py-2 text-sm leading-6 text-muted-foreground"
+              >
                 <span className="ml-2 text-xs font-extrabold text-primary">{index + 1}.</span>
                 {item}
               </div>
@@ -148,13 +173,20 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
 
       <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-xl border border-border bg-card p-4 text-sm leading-7 text-muted-foreground">
-          <div className="mb-2 text-sm font-bold text-foreground">لماذا هذه النتيجة مناسبة لمتجرك؟</div>
+          <div className="mb-2 text-sm font-bold text-foreground">
+            لماذا هذه النتيجة مناسبة لمتجرك؟
+          </div>
           <p>{pack.whyItFits}</p>
 
           <div className="mt-4 space-y-2">
             {pack.campaignSequence.map((step) => (
-              <div key={step.title} className="rounded-lg border border-border bg-secondary/40 px-3 py-3">
-                <div className="text-xs font-extrabold uppercase tracking-normal text-primary">{step.title}</div>
+              <div
+                key={step.title}
+                className="rounded-lg border border-border bg-secondary/40 px-3 py-3"
+              >
+                <div className="text-xs font-extrabold uppercase tracking-normal text-primary">
+                  {step.title}
+                </div>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">{step.detail}</p>
               </div>
             ))}
@@ -169,7 +201,10 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
           <p className="mt-3 text-sm leading-7 text-foreground">{pack.nextMove}</p>
           <div className="mt-4 space-y-2">
             {pack.quickChecklist.map((item, index) => (
-              <div key={item} className="rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground">
+              <div
+                key={item}
+                className="rounded-lg border border-border bg-background/80 px-3 py-3 text-sm leading-6 text-muted-foreground"
+              >
                 <span className="ml-2 text-xs font-extrabold text-primary">{index + 1}.</span>
                 {item}
               </div>
@@ -194,7 +229,9 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
             </div>
             <div className="mt-3 space-y-2 text-sm leading-6 text-foreground/85">
               <p>1) ولّد الصورة من الـ prompt الجاهز نفسه قبل تغيير الرسالة.</p>
-              <p>2) استخدمها كأصل الإعلان الأول أو كغطاء Reel حتى يبقى الوعد البصري متطابقاً مع النص.</p>
+              <p>
+                2) استخدمها كأصل الإعلان الأول أو كغطاء Reel حتى يبقى الوعد البصري متطابقاً مع النص.
+              </p>
               <p>3) بعد ذلك فقط ابدأ اختبار هوك ثانٍ أو CTA بديل.</p>
             </div>
           </div>
@@ -204,9 +241,12 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-extrabold text-primary">الخطوة التي ترفع قيمة التجربة الآن</div>
+            <div className="text-sm font-extrabold text-primary">
+              الخطوة التي ترفع قيمة التجربة الآن
+            </div>
             <p className="mt-1 text-sm leading-7 text-foreground/85">
-              إذا كانت هذه البداية مناسبة، فالقرار الآن ليس "هل أكتب منشوراً آخر؟" بل كيف تحوّل نفس الزاوية إلى إعلان وصورة وفيديو وجدول نشر أسبوعي.
+              إذا كانت هذه البداية مناسبة، فالقرار الآن ليس "هل أكتب منشوراً آخر؟" بل كيف تحوّل نفس
+              الزاوية إلى إعلان وصورة وفيديو وجدول نشر أسبوعي.
             </p>
           </div>
           <Button asChild variant="outline" className="w-full sm:w-auto">
@@ -215,16 +255,22 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-lg border border-border bg-background/70 px-3 py-3 text-sm leading-6 text-muted-foreground">
-            <span className="font-extrabold text-foreground">المسار التنفيذي الأنسب الآن:</span> ابدأ من توليد الصورة أو تحسينها داخل لوحة التحكم ثم افتح القوالب لتوسيع الحملة على نفس الزاوية.
+            <span className="font-extrabold text-foreground">المسار التنفيذي الأنسب الآن:</span>{" "}
+            ابدأ من توليد الصورة أو تحسينها داخل لوحة التحكم ثم افتح القوالب لتوسيع الحملة على نفس
+            الزاوية.
           </div>
           <div className="rounded-lg border border-border bg-background/70 px-3 py-3 text-sm leading-6 text-muted-foreground">
-            <span className="font-extrabold text-foreground">مسار الإثبات التالي:</span> شاهد فيديو الإثبات ومركز الإثبات حتى ترى كيف تتحول نفس البداية إلى تشغيل أسبوعي مستمر.
+            <span className="font-extrabold text-foreground">مسار الإثبات التالي:</span> شاهد فيديو
+            الإثبات ومركز الإثبات حتى ترى كيف تتحول نفس البداية إلى تشغيل أسبوعي مستمر.
           </div>
         </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <Button asChild className="gradient-primary text-primary-foreground shadow-elegant md:col-span-1">
+        <Button
+          asChild
+          className="gradient-primary text-primary-foreground shadow-elegant md:col-span-1"
+        >
           <Link to="/dashboard">
             ادخل لوحة التحكم
             <ArrowLeft className="h-4 w-4" />
@@ -233,7 +279,12 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
         <Button asChild variant="outline" className="md:col-span-1">
           <Link to="/dashboard/generate-image">ولّد الصورة الآن</Link>
         </Button>
-        <Button type="button" variant="outline" className="gap-2 md:col-span-1" onClick={handleCopy}>
+        <Button
+          type="button"
+          variant="outline"
+          className="gap-2 md:col-span-1"
+          onClick={handleCopy}
+        >
           <Copy className="h-4 w-4" />
           {copied ? "تم نسخ المنشور" : "انسخ المنشور الرئيسي"}
         </Button>

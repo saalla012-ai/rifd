@@ -34,11 +34,20 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
       { title: "ابدأ مع رِفد — خطوتان لأول محتوى مخصص" },
-      { name: "description", content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
+      {
+        name: "description",
+        content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد.",
+      },
       { property: "og:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
-      { property: "og:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
+      {
+        property: "og:description",
+        content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+      },
       { name: "twitter:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
-      { name: "twitter:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
+      {
+        name: "twitter:description",
+        content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
   }),
@@ -58,7 +67,12 @@ const setupProof = [
   { icon: Sparkles, label: "مخرجات جاهزة للحملة" },
 ] as const;
 
-const quickOutputs = ["منشور عرض مباشر", "وصف منتج يزيل التردد", "فكرة صورة تناسب السوق السعودي", "سكربت فيديو قصير"] as const;
+const quickOutputs = [
+  "منشور عرض مباشر",
+  "وصف منتج يزيل التردد",
+  "فكرة صورة تناسب السوق السعودي",
+  "سكربت فيديو قصير",
+] as const;
 
 function OnboardingPage() {
   const navigate = useNavigate();
@@ -133,10 +147,8 @@ function OnboardingPage() {
       await refreshProfile();
 
       // 2) ولّد أول منشور حقيقي عبر AI (يستخدم سياق الملف الجديد)
-      const productLabel =
-        PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
-      const audienceLabel =
-        AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
+      const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
+      const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
       const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${storeName.trim()}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
 
       const out = await generateText({
@@ -155,7 +167,7 @@ function OnboardingPage() {
           audienceLabel,
           tone,
           primaryPost: out.result,
-        })
+        }),
       );
       setStep(3);
     } catch (err) {
@@ -189,12 +201,16 @@ function OnboardingPage() {
                 ابنِ ذاكرة متجرك ثم شاهد أول حزمة بيع جاهزة
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                خطوتان فقط تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق السعودي.
+                خطوتان فقط تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق
+                السعودي.
               </p>
             </div>
             <div className="mb-5 grid gap-2 sm:grid-cols-3">
               {setupProof.map((item) => (
-                <div key={item.label} className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground shadow-soft">
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground shadow-soft"
+                >
                   <item.icon className="h-3.5 w-3.5 text-primary" />
                   {item.label}
                 </div>
@@ -213,7 +229,7 @@ function OnboardingPage() {
                   key={i}
                   className={cn(
                     "h-1.5 flex-1 rounded-full transition-colors",
-                    i <= step ? "bg-primary" : "bg-secondary"
+                    i <= step ? "bg-primary" : "bg-secondary",
                   )}
                 />
               ))}
@@ -228,8 +244,12 @@ function OnboardingPage() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على المتجر الذي تريد أن يبيع بوضوح</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">نحتاج أقل بيانات مؤثرة فقط حتى لا يخرج المحتوى عاماً أو مفصولاً عن جمهورك الفعلي.</p>
+                <h2 className="mt-3 text-2xl font-extrabold">
+                  عرّفنا على المتجر الذي تريد أن يبيع بوضوح
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  نحتاج أقل بيانات مؤثرة فقط حتى لا يخرج المحتوى عاماً أو مفصولاً عن جمهورك الفعلي.
+                </p>
               </div>
               <div>
                 <Label htmlFor="store">
@@ -275,7 +295,7 @@ function OnboardingPage() {
                         "rounded-lg border p-3 text-sm font-medium transition-colors",
                         productType === p.id
                           ? "border-primary bg-primary/10 text-primary"
-                          : "border-border hover:border-primary/40"
+                          : "border-border hover:border-primary/40",
                       )}
                     >
                       {p.label}
@@ -292,7 +312,10 @@ function OnboardingPage() {
               </Button>
               <div className="grid gap-2 sm:grid-cols-2">
                 {quickOutputs.map((item) => (
-                  <div key={item} className="rounded-lg bg-secondary/60 px-3 py-2 text-xs font-bold text-muted-foreground">
+                  <div
+                    key={item}
+                    className="rounded-lg bg-secondary/60 px-3 py-2 text-xs font-bold text-muted-foreground"
+                  >
                     {item}
                   </div>
                 ))}
@@ -304,13 +327,22 @@ function OnboardingPage() {
             <div className="space-y-4">
               <div>
                 <h2 className="text-2xl font-extrabold">ثبّت الجمهور والنبرة قبل أول نتيجة</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">هذه الاختيارات تحدد: هل نخاطب العميل بالسعر، الثقة، الهدية، الفخامة، أو سرعة القرار.</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  هذه الاختيارات تحدد: هل نخاطب العميل بالسعر، الثقة، الهدية، الفخامة، أو سرعة
+                  القرار.
+                </p>
               </div>
               <Label>من جمهورك المستهدف؟</Label>
               <Select value={audience} onValueChange={setAudience}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {AUDIENCES.map((a) => <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>)}
+                  {AUDIENCES.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Label>النبرة الأقرب لعلامتك</Label>
@@ -324,7 +356,7 @@ function OnboardingPage() {
                       "rounded-lg border p-3 text-sm font-medium",
                       tone === t.id
                         ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary/40"
+                        : "border-border hover:border-primary/40",
                     )}
                   >
                     {t.label}
@@ -341,24 +373,39 @@ function OnboardingPage() {
                     onChange={(e) => setColor(e.target.value)}
                     className="h-10 w-16 cursor-pointer rounded-md border border-input bg-background"
                   />
-                  <Input value={color} onChange={(e) => setColor(e.target.value)} className="font-mono" />
+                  <Input
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="font-mono"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري بناء الحزمة البيعية...</> : <>أنشئ أول حزمة بيع ✨</>}
+                <Button variant="outline" onClick={prev} className="flex-1">
+                  السابق
+                </Button>
+                <Button
+                  onClick={finish}
+                  disabled={generating}
+                  className="flex-1 gradient-primary font-extrabold text-primary-foreground shadow-elegant"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> جاري بناء الحزمة البيعية...
+                    </>
+                  ) : (
+                    <>أنشئ أول حزمة بيع ✨</>
+                  )}
                 </Button>
               </div>
               <div className="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-7 text-foreground/85">
-                النتيجة التالية ليست منشوراً واحداً فقط؛ ستظهر زاوية حملة، CTA، فكرة صورة، وسكربت Reel حتى تعرف ماذا تنشر بعد الضغط مباشرة.
+                النتيجة التالية ليست منشوراً واحداً فقط؛ ستظهر زاوية حملة، CTA، فكرة صورة، وسكربت
+                Reel حتى تعرف ماذا تنشر بعد الضغط مباشرة.
               </div>
             </div>
           )}
 
-          {step === 3 && result && successPack && (
-            <OnboardingSuccessPack pack={successPack} />
-          )}
+          {step === 3 && result && successPack && <OnboardingSuccessPack pack={successPack} />}
         </div>
       </div>
     </MarketingLayout>
