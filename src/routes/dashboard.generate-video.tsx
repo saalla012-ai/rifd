@@ -96,7 +96,7 @@ async function imageUrlToDataUrl(value: string) {
 }
 
 export const Route = createFileRoute("/dashboard/generate-video")({
-  head: () => ({ meta: [{ title: "توليد فيديو — رِفد" }] }),
+  head: () => ({ meta: [{ title: "أنشئ فيديو قصير — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
@@ -285,11 +285,11 @@ function GenerateVideoPage() {
       setActiveJob(out.job);
       setJobs((current) => [out.job, ...current.filter((job) => job.id !== out.job.id)].slice(0, 20));
       track("generation_created", { kind: "video", quality: canonicalGenerationQuality, aspect_ratio: canonicalGenerationAspectRatio, credits: out.creditsCharged, template_id: internalMediumTestMode ? mediumTestCanonicalSample?.templateId ?? "medium-test" : selectedTemplateId, source: search.source });
-      toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "تم توليد الفيديو ✨");
+      toast.success(out.pending ? "تم إنشاء مهمة الفيديو — جاري المعالجة" : "الفيديو جاهز ✨");
       if (out.job.status !== "pending" && out.job.status !== "processing") void refreshCredits();
       router.invalidate();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "فشل توليد الفيديو";
+      const msg = e instanceof Error ? e.message : "فشل إنشاء الفيديو";
       if (isQuotaError(msg)) {
         setQuotaDialog({ open: true, reason: msg });
       } else {
