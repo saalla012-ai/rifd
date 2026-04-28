@@ -136,17 +136,31 @@ export function HomeHero() {
 
 function VideoProofCard() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isVideoVisibleRef = useRef(false);
+  const hasReachedVideoRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || typeof IntersectionObserver === "undefined") return;
 
+    const playWhenReady = () => {
+      if (!isVideoVisibleRef.current || !hasReachedVideoRef.current) return;
+      void video.play().catch(() => {
+        // Some browsers may block autoplay; controls remain available.
+      });
+    };
+
+    const markReachedAfterScroll = () => {
+      if (window.scrollY <= 80) return;
+      hasReachedVideoRef.current = true;
+      playWhenReady();
+    };
+
     const observer = new IntersectionObserver(
       ([entry]) => {
+        isVideoVisibleRef.current = entry.isIntersecting;
         if (entry.isIntersecting) {
-          void video.play().catch(() => {
-            // Some browsers may block autoplay; controls remain available.
-          });
+          playWhenReady();
           return;
         }
 
@@ -156,7 +170,13 @@ function VideoProofCard() {
     );
 
     observer.observe(video);
-    return () => observer.disconnect();
+    window.addEventListener("scroll", markReachedAfterScroll, { passive: true });
+    markReachedAfterScroll();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", markReachedAfterScroll);
+    };
   }, []);
 
   return (
