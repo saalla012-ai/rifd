@@ -196,7 +196,7 @@ function OnboardingPage() {
   return (
     <MarketingLayout>
       <div className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
-        {step === 1 && (
+        {stage === "form" && (
           <>
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
@@ -233,7 +233,7 @@ function OnboardingPage() {
         )}
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
-          {step === 1 && (
+          {stage === "form" && (
             <div className="space-y-4">
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
@@ -353,7 +353,7 @@ function OnboardingPage() {
               </div>
             </div>
           )}
-          {step === 3 && result && successPack && <OnboardingSuccessPack pack={successPack} />}
+          {stage === "success" && result && successPack && <OnboardingSuccessPack pack={successPack} />}
         </div>
       </div>
     </MarketingLayout>
