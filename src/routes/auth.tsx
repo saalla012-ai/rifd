@@ -252,12 +252,7 @@ function AuthPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <Label htmlFor="whatsapp">رقم الجوال للواتساب</Label>
-                    <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-extrabold text-success">
-                      بدون OTP
-                    </span>
-                  </div>
+                  <Label htmlFor="whatsapp">رقم الجوال للواتساب</Label>
                   <div
                     className={cn(
                       "mt-1 flex min-h-11 items-center overflow-hidden rounded-lg border bg-background shadow-sm transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring",
