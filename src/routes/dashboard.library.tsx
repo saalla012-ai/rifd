@@ -205,12 +205,12 @@ function LibraryPage() {
         <div className="mt-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : !hasVisibleItems ? (
         <div className="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
-          ما عندك توليدات بعد. ابدأ من{" "}
-          <Link to="/dashboard/generate-text" className="text-primary hover:underline">توليد نص</Link>{" "}
-          أو{" "}
-          <Link to="/dashboard/generate-image" className="text-primary hover:underline">توليد صور</Link>{" "}
-          أو{" "}
-          <Link to="/dashboard/generate-video" className="text-primary hover:underline">توليد فيديو</Link>.
+          <FolderKanban className="mx-auto mb-3 h-8 w-8 text-primary" />
+          <p className="font-bold text-foreground">لا توجد أصول جاهزة بعد.</p>
+          <p className="mt-1">ابدأ من مركز قيادة الحملة حتى تنتج نصاً يبيع، صورة إعلان، أو فيديو قصير ضمن نفس السياق.</p>
+          <Button asChild className="mt-4 gradient-primary text-primary-foreground">
+            <Link to="/dashboard/campaign-studio">ابدأ من مركز قيادة الحملة</Link>
+          </Button>
         </div>
       ) : (
         <>
@@ -230,7 +230,7 @@ function LibraryPage() {
               <div className="mt-3">
                 {g.metadata?.campaign_pack_id && (
                   <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[11px] leading-5 text-primary">
-                    من حملة: {g.metadata.campaign_product || "Campaign Pack"} · {g.metadata.campaign_channel || "قناة"}
+                    من حملة: {g.metadata.campaign_product || "حملة محفوظة"} · {g.metadata.campaign_channel || "قناة"}
                   </div>
                 )}
                 {g.type === "text" ? (
