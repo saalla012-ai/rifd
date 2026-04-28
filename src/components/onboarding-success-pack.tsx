@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import type { SuccessPack } from "@/lib/onboarding-success";
 
 const activationWins = [
-  "خرجت بنتيجة مبنية على نوع متجرك وجمهورك لا نص عام.",
-  "صار عندك اتجاه حملة أولية: منشور + صورة + ريلز + CTA.",
-  "الخطوة التالية أصبحت أوضح: ماذا تنشر أولاً وماذا تولّد بعده.",
+  "عرفت زاوية البيع التي تفتح قرار الشراء بدل الاكتفاء بوصف عام.",
+  "صار عندك مسار حملة أولية: منشور + صورة + Reel + CTA واضح.",
+  "الخطوة التالية أصبحت عملية: ماذا تنشر الآن وماذا تختبر بعده.",
 ];
 
 type OnboardingSuccessPackProps = {
@@ -34,9 +34,9 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
           <Check className="h-5 w-5 text-success" />
         </div>
         <div>
-          <h2 className="text-xl font-extrabold">هذه ليست نتيجة عابرة — هذه بداية حملة أولى قابلة للتنفيذ</h2>
+          <h2 className="text-xl font-extrabold">هذه ليست تجربة كتابة — هذه بداية حملة بيع قابلة للتنفيذ</h2>
           <p className="text-sm leading-7 text-muted-foreground">
-            حزمة تشغيل أولية مبنية على القطاع والجمهور والنبرة التي أدخلتها، مع تفسير بيعي وخطوة تالية واضحة داخل حسابك.
+            حزمة تشغيل مبنية على القطاع والجمهور والنبرة التي أدخلتها، مع تفسير بيعي وخطوة تالية تقلل التردد وتقرّب العميل من الطلب.
           </p>
         </div>
       </div>
@@ -204,13 +204,13 @@ export function OnboardingSuccessPack({ pack }: OnboardingSuccessPackProps) {
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-extrabold text-primary">الخطوة المنطقية التالية</div>
+            <div className="text-sm font-extrabold text-primary">الخطوة التي ترفع قيمة التجربة الآن</div>
             <p className="mt-1 text-sm leading-7 text-foreground/85">
-              إذا أعجبتك هذه البداية، فالقرار الآن ليس "هل أكتب منشوراً آخر؟" بل كيف تحوّل هذه الزاوية إلى تشغيل أسبوعي داخل حسابك.
+              إذا كانت هذه البداية مناسبة، فالقرار الآن ليس "هل أكتب منشوراً آخر؟" بل كيف تحوّل نفس الزاوية إلى إعلان وصورة وفيديو وجدول نشر أسبوعي.
             </p>
           </div>
           <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link to="/pricing">شاهد الباقات المناسبة بعد التجربة</Link>
+            <Link to="/pricing">حوّلها إلى تشغيل أسبوعي</Link>
           </Button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
