@@ -52,7 +52,7 @@ export function CookieBanner() {
       role="dialog"
       aria-live="polite"
       aria-label="إشعار ملفات تعريف الارتباط"
-      className="fixed inset-x-0 bottom-3 z-[60] px-3 sm:bottom-4 sm:px-6 lg:start-6 lg:end-auto lg:w-full lg:max-w-xs lg:px-0"
+      className="fixed inset-x-0 bottom-3 z-[35] px-3 sm:bottom-4 sm:px-6 lg:start-6 lg:end-auto lg:w-full lg:max-w-xs lg:px-0"
     >
       <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-2xl border border-border bg-background/95 p-3 shadow-2xl backdrop-blur-md sm:max-w-xl sm:flex-row sm:items-center sm:gap-4 lg:mx-0 lg:max-w-xs lg:flex-col lg:items-start">
         <button
