@@ -61,7 +61,7 @@ export function HomeHero() {
           </div>
 
           <h1 className="mt-4 text-[2rem] font-black leading-[1.08] tracking-normal sm:text-5xl lg:text-6xl">
-            <span className="block">ودّع ChatGPT،</span>
+            <span className="block">ودّع <bdi dir="ltr">ChatGPT</bdi>،</span>
             <span className="mt-1 block text-gradient-primary">واختصر ساعات من كتابة وصناعة محتوى متجرك.</span>
             <span className="mt-3 block text-[0.58em] font-extrabold leading-[1.35] text-foreground/90 sm:text-[0.5em]">
               نصوص وصور وفيديوهات بالعامية السعودية جاهزة.
@@ -101,8 +101,11 @@ export function HomeHero() {
             ))}
           </div>
 
-          <CapabilitiesStrip />
         </div>
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-4 pb-6 lg:-mt-3 lg:pb-8">
+        <CapabilitiesStrip />
       </div>
 
       <LiveProofTicker />
@@ -151,12 +154,12 @@ function VideoProofCard() {
 
 function CapabilitiesStrip() {
   return (
-    <div className="mt-6 rounded-2xl border border-primary/15 bg-background/65 p-3 shadow-soft backdrop-blur-sm">
-      <div className="mb-2 flex items-center justify-center gap-2 text-xs font-black text-primary lg:justify-start">
+    <div className="rounded-2xl border border-primary/15 bg-background/65 p-3 shadow-soft backdrop-blur-sm">
+      <div className="mb-2 flex items-center justify-center gap-2 text-xs font-black text-primary">
         <Clapperboard className="h-3.5 w-3.5" />
         شريط القدرات المخفية
       </div>
-      <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+      <div className="flex flex-wrap justify-center gap-2">
         {capabilities.map((item) => (
           <span key={item} className="rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground/85 shadow-soft sm:text-xs">
             {item}
