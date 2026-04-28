@@ -92,9 +92,14 @@ function GenerateTextPage() {
     <DashboardShell>
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-black text-primary">نصوص متجر جاهزة للنشر</p>
-          <h1 className="mt-1 text-2xl font-extrabold">حوّل فكرة المنتج إلى نص سعودي مقنع</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر قالباً، أضف تفاصيل العرض، واستلم نصاً مناسباً للمتجر بدل البدء من صفحة بيضاء.</p>
+          <p className="text-xs font-black text-primary">اكتب نصاً يبيع</p>
+          <h1 className="mt-1 text-2xl font-extrabold">حوّل موجز الحملة إلى كلام يدفع للشراء</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر قالباً، أضف تفاصيل العرض، واستلم نصاً واضحاً للمتجر أو الإعلان أو واتساب.</p>
+          {search.campaignPackId && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+              <Megaphone className="h-3.5 w-3.5" /> هذا النص جزء من حملة محفوظة
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">هوك + وصف + CTA</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">عامية سعودية</span>
@@ -107,7 +112,7 @@ function GenerateTextPage() {
           </Button>
           {remaining !== null && (
             <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">
-              باقي {remaining} نص اليوم
+              استخدامك اليومي: باقي {remaining} نص
             </span>
           )}
         </div>
