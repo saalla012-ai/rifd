@@ -278,7 +278,7 @@ function GenerateVideoPage() {
     }
   };
 
-  const refreshActiveJob = async (showToast = true) => {
+  const refreshActiveJob = useCallback(async (showToast = true) => {
     if (!activeJob) return;
     try {
       const previousStatus = activeJob.status;
@@ -296,7 +296,30 @@ function GenerateVideoPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
     }
-  };
+  }, [activeJob, refreshCredits, refreshVideoJobFn]);
+
+  useEffect(() => {
+    void loadJobs();
+  }, [loadJobs]);
+
+  useEffect(() => {
+    if (!activeJobInProgress) return;
+    const id = window.setInterval(() => void refreshActiveJob(false), 8_000);
+    return () => window.clearInterval(id);
+  }, [activeJobInProgress, refreshActiveJob]);
+
+  useEffect(() => {
+    setPreviewError(false);
+  }, [latestResult]);
+
+  useEffect(() => {
+    if (!internalMediumTestMode) return;
+    if (!mediumTestCanonicalSample) return;
+    setQuality(mediumTestCanonicalSample.quality);
+    setAspectRatio(mediumTestCanonicalSample.expectedAspectRatio);
+    setSelectedPersonaId(mediumTestCanonicalSample.personaId);
+    setPrompt(mediumTestCanonicalSample.finalPrompt);
+  }, [internalMediumTestMode, mediumTestCanonicalSample]);
 
   const downloadLatestVideo = async () => {
     if (!latestResult) return;
