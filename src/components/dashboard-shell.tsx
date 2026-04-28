@@ -61,7 +61,7 @@ type NavItem = {
   icon: LucideIcon;
 };
 
-const NAV_GROUPS = [
+const NAV_GROUPS: readonly { label: string; items: readonly NavItem[] }[] = [
   {
     label: "ابدأ",
     items: [
@@ -95,7 +95,7 @@ const NAV_GROUPS = [
       { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
     ],
   },
-] satisfies readonly { label: string; items: readonly NavItem[] }[];
+] as const;
 
 const NAV: readonly NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
