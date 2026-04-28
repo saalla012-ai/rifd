@@ -197,23 +197,12 @@ function OnboardingPage() {
                 </div>
               ))}
             </div>
-            <div className="mb-4 flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 2</span>
+            <div className="mb-6 flex items-center justify-between rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+              <span className="text-xs font-bold text-muted-foreground">صفحة واحدة فقط</span>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                محتوى تسويقي جاهز
+                <ShieldCheck className="h-3.5 w-3.5" />
+                جاهزة خلال دقيقة
               </span>
-            </div>
-            <div className="mb-8 flex gap-1.5">
-              {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "h-1.5 flex-1 rounded-full transition-colors",
-                    i <= step ? "bg-primary" : "bg-secondary",
-                  )}
-                />
-              ))}
             </div>
           </>
         )}
@@ -229,7 +218,7 @@ function OnboardingPage() {
                   حوّل بيانات متجرك إلى ذاكرة بيع دقيقة
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  نأخذ الاسم، المجال، ورقم التواصل حتى تصبح المخرجات مخصصة وليست نصوصاً عامة.
+                  نأخذ اسم النشاط، المجال، الجمهور والنبرة فقط حتى يبدأ رِفد بمخرجات سعودية مخصصة بدون أسئلة زائدة.
                 </p>
               </div>
               <div>
@@ -245,43 +234,6 @@ function OnboardingPage() {
                   maxLength={80}
                   autoFocus
                 />
-              </div>
-              <div>
-                <Label htmlFor="whatsapp">
-                  رقم الجوال للواتساب <span className="text-destructive">*</span>
-                </Label>
-                <div
-                  className={cn(
-                    "mt-1 flex min-h-12 items-center overflow-hidden rounded-lg border bg-background shadow-sm transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring",
-                    whatsappTouched && !whatsappValid ? "border-destructive" : "border-input",
-                  )}
-                >
-                  <div className="flex h-12 shrink-0 items-center gap-2 border-l border-border bg-secondary px-3 text-sm font-extrabold text-foreground">
-                    <MessageCircle className="h-4 w-4 text-success" />
-                    <span dir="ltr">+966</span>
-                  </div>
-                  <Input
-                    id="whatsapp"
-                    className="h-12 border-0 bg-transparent px-3 text-left font-bold tracking-normal shadow-none ring-0 placeholder:text-muted-foreground focus-visible:ring-0"
-                    dir="ltr"
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder={SAUDI_PHONE_PLACEHOLDER}
-                    maxLength={20}
-                    inputMode="tel"
-                    autoComplete="tel"
-                    aria-invalid={whatsappTouched && !whatsappValid}
-                    aria-describedby="whatsapp-help"
-                  />
-                </div>
-                <div id="whatsapp-help" className="mt-2 flex items-start gap-2 text-xs leading-5">
-                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                  <p className={cn("text-muted-foreground", whatsappTouched && !whatsappValid && "text-destructive")}>
-                    {whatsappTouched && !whatsappValid
-                      ? SAUDI_PHONE_ERROR
-                      : "للمتابعة الخاصة بإعداد الحساب وربط معلومات المتجر بشكل صحيح."}
-                  </p>
-                </div>
               </div>
               <div>
                 <Label>وش نوع منتجاتك؟</Label>
