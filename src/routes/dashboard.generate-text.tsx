@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
-import { Wand2, Copy, Check, Loader2, Star, LayoutGrid } from "lucide-react";
+import { Wand2, Copy, Check, Loader2, Star, LayoutGrid, Megaphone, Image as ImageIcon, Clapperboard, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import { track } from "@/lib/analytics/posthog";
 type TextSearch = { template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
-  head: () => ({ meta: [{ title: "توليد نص — رِفد" }] }),
+  head: () => ({ meta: [{ title: "اكتب نصاً يبيع — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): TextSearch => ({
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
@@ -92,9 +92,14 @@ function GenerateTextPage() {
     <DashboardShell>
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-black text-primary">نصوص متجر جاهزة للنشر</p>
-          <h1 className="mt-1 text-2xl font-extrabold">حوّل فكرة المنتج إلى نص سعودي مقنع</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر قالباً، أضف تفاصيل العرض، واستلم نصاً مناسباً للمتجر بدل البدء من صفحة بيضاء.</p>
+          <p className="text-xs font-black text-primary">اكتب نصاً يبيع</p>
+          <h1 className="mt-1 text-2xl font-extrabold">حوّل موجز الحملة إلى كلام يدفع للشراء</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر قالباً، أضف تفاصيل العرض، واستلم نصاً واضحاً للمتجر أو الإعلان أو واتساب.</p>
+          {search.campaignPackId && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+              <Megaphone className="h-3.5 w-3.5" /> هذا النص جزء من حملة محفوظة
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">هوك + وصف + CTA</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">عامية سعودية</span>
@@ -107,7 +112,7 @@ function GenerateTextPage() {
           </Button>
           {remaining !== null && (
             <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">
-              باقي {remaining} نص اليوم
+              استخدامك اليومي: باقي {remaining} نص
             </span>
           )}
         </div>
@@ -115,7 +120,7 @@ function GenerateTextPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="mb-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اختر القالب واكتب تفاصيل العرض</div>
+          <div className="mb-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اختر القالب واكتب تفاصيل البيع</div>
           <div className="space-y-4">
             <div>
               <Label>اختر قالباً</Label>
@@ -133,12 +138,12 @@ function GenerateTextPage() {
               <p className="mt-1 text-xs text-muted-foreground">{template.description}</p>
             </div>
             <div>
-              <Label htmlFor="topic">الموضوع / التفاصيل</Label>
+              <Label htmlFor="topic">تفاصيل المنتج أو الحملة</Label>
               <Textarea
                 id="topic"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="مثلاً: عرض جديد على عطر شرقي بسعر 199 ر.س لمناسبة اليوم الوطني"
+                placeholder="مثلاً: عطر شرقي فاخر بسعر 199 ر.س، مناسب كهدية، مع توصيل سريع داخل السعودية"
                 className="mt-1 min-h-32"
                 maxLength={2000}
               />
@@ -177,14 +182,14 @@ function GenerateTextPage() {
               )}
             </div>
             <Button onClick={generate} disabled={loading} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز النص...</> : <><Wand2 className="h-4 w-4" /> ولّد نصاً جاهزاً للنشر</>}
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز النص...</> : <><Wand2 className="h-4 w-4" /> اكتب النص الآن</>}
             </Button>
           </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">2) النتيجة الجاهزة</h3>
+            <h3 className="font-bold">2) النص الجاهز للبيع</h3>
             {result && (
               <button
                 onClick={copy}
@@ -198,7 +203,7 @@ function GenerateTextPage() {
             <pre className="mt-3 whitespace-pre-wrap rounded-lg border border-border bg-secondary/40 p-4 text-right font-sans text-sm leading-relaxed">{result}</pre>
           ) : (
             <div className="mt-3 flex h-48 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-              اكتب تفاصيل المنتج واضغط التوليد — النتيجة ستظهر هنا جاهزة للنسخ.
+              اكتب تفاصيل المنتج واضغط زر الكتابة — النص سيظهر هنا جاهزاً للنسخ.
             </div>
           )}
           {memorySignals.length > 0 && (
@@ -213,9 +218,29 @@ function GenerateTextPage() {
               </div>
             </div>
           )}
+          {result && (
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                  <ImageIcon className="h-3.5 w-3.5" /> صمّم صورة لهذا النص
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                  <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من النص
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link to={search.campaignPackId ? "/dashboard/campaign-studio" : "/dashboard/library"}>
+                  {search.campaignPackId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  {search.campaignPackId ? "العودة للحملة" : "افتح المكتبة"}
+                </Link>
+              </Button>
+            </div>
+          )}
           <div className="mt-3 text-center">
             <Link to="/dashboard/library" className="text-xs text-primary hover:underline">
-              شوف كل توليداتك في المكتبة ←
+              عرض كل المحتوى في المكتبة ←
             </Link>
           </div>
         </div>
