@@ -13,9 +13,9 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "ودّع ChatGPT واختصر ساعات صناعة محتوى متجرك. رِفد يفهم سلوك المتسوق السعودي ويجهّز نصوصاً وصوراً وفيديوهات لقنوات البيع والإعلان.",
+          "محتوى متجر يبدو سعودياً ويبيع: رِفد يحوّل فهم سلوك المتسوق السعودي إلى نصوص وصور وفيديوهات جاهزة لقنوات البيع والإعلان.",
       },
-      { property: "og:title", content: "رِفد — نصوص وصور وفيديوهات بالعامية السعودية" },
+      { property: "og:title", content: "رِفد — محتوى متجرك يبدو سعودياً ويبيع" },
       {
         property: "og:description",
         content: "محتوى متجر مبني على فهم السوق السعودي ومتوافق مع سلة، زد، شوبيفاي، Instagram، Google Ads، TikTok، X وSnapchat.",
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:image", content: ogHomeImage },
       { name: "twitter:image:alt", content: "رِفد — محتوى متجر سعودي جاهز" },
       { name: "twitter:title", content: "رِفد — محتوى متجر سعودي بدل ساعات ChatGPT" },
-      { name: "twitter:description", content: "نصوص وصور وفيديوهات بالعامية السعودية جاهزة للمتاجر." },
+      { name: "twitter:description", content: "نصوص وصور وفيديوهات مبنية على فهم سلوك المتسوق السعودي." },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/" }],
   }),
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
 
 const steps = [
   "اكتب وصف متجرك أو منتجك",
-  "استلم نصوصاً وصوراً وأفكار فيديو مترابطة",
+  "استلم محتوى مناسباً لقنوات البيع والإعلان",
   "انشر أسرع وكرّر حملاتك بثقة",
 ] as const;
 

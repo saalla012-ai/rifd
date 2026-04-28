@@ -30,6 +30,8 @@ const proofItems = [
 
 const channelProof = ["سلة", "زد", "شوبيفاي", "Instagram", "Google Ads", "TikTok", "X", "Snapchat"] as const;
 
+const marketSignals = ["نية شراء", "لهجة سعودية", "حساسية السعر", "مواسم محلية"] as const;
+
 export function HomeHero() {
   const [variant, setVariant] = useState<"A" | "B">("A");
 
@@ -48,8 +50,6 @@ export function HomeHero() {
   return (
     <section className="relative overflow-hidden gradient-hero">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-gold/60 to-transparent" />
-      <div className="pointer-events-none absolute -top-28 right-[-12%] h-[26rem] w-[26rem] rounded-full bg-primary/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 left-[-10%] h-[24rem] w-[24rem] rounded-full bg-gold/25 blur-3xl" />
 
       <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-7 sm:py-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-12">
         <div className="order-2 lg:order-1">
@@ -59,23 +59,32 @@ export function HomeHero() {
         <div className="order-1 text-center lg:order-2 lg:text-right">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary lg:mx-0">
             <Zap className="h-3.5 w-3.5" />
-            +150 قدرة محتوى للمتاجر السعودية
+            محرك محتوى مبني على سلوك السوق السعودي
           </div>
 
           <h1 className="mt-4 text-[2rem] font-black leading-[1.08] tracking-normal sm:text-5xl lg:text-6xl">
-            <span className="block">ودّع <bdi dir="ltr">ChatGPT</bdi>،</span>
-            <span className="mt-1 block text-gradient-primary">واختصر ساعات من كتابة وصناعة محتوى متجرك.</span>
+            <span className="block">محتوى متجرك</span>
+            <span className="mt-1 block text-gradient-primary">يبدو سعودياً… ويبيع.</span>
             <span className="mt-3 block text-[0.58em] font-extrabold leading-[1.35] text-foreground/90 sm:text-[0.5em]">
-              نصوص وصور وفيديوهات بالعامية السعودية جاهزة.
+              بدل مخرجات عامة من <bdi dir="ltr">ChatGPT</bdi>: نصوص، صور، وفيديوهات جاهزة للنشر.
             </span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0">
-            رِفد لا يترجم أوامر عامة؛ يصنع محتوى مبنياً على فهم مدروس لطريقة تفكير المتسوق السعودي: دوافع الشراء، حساسية السعر، الثقة، اللهجة، والموسمية — ثم يجهّزه للنشر عبر متجرك وقنواتك الإعلانية.
+            رِفد لا يترجم أوامر عامة؛ يحوّل قراءة مدروسة لطريقة تفكير المتسوق السعودي — الثقة، السعر، اللهجة، والموسمية — إلى محتوى مناسب لقنوات البيع والإعلان التي تستخدمها فعلياً.
           </p>
 
+          <div className="mx-auto mt-4 flex max-w-2xl flex-wrap justify-center gap-2 lg:mx-0 lg:justify-start">
+            {marketSignals.map((signal) => (
+              <span key={signal} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-extrabold text-foreground/85 shadow-soft">
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                {signal}
+              </span>
+            ))}
+          </div>
+
           <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-border bg-background/65 p-3 shadow-soft lg:mx-0">
-            <div className="mb-2 text-xs font-black text-primary">متوافق مع أماكن البيع والتسويق السعودية</div>
+            <div className="mb-2 text-xs font-black text-primary">جاهز حيث تبيع وتعلن</div>
             <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
               {channelProof.map((channel) => (
                 <span key={channel} className="rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[11px] font-extrabold text-foreground/90">
@@ -93,7 +102,7 @@ export function HomeHero() {
             >
               <Link to="/auth" search={{ redirect: "/onboarding" }} onClick={handleCtaClick}>
                 <Sparkles className="h-5 w-5" />
-                ابدأ مجاناً
+                جهّز أول حزمة محتوى
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
@@ -106,7 +115,7 @@ export function HomeHero() {
           </div>
 
           <div className="mt-4 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-2xl border border-primary/15 bg-primary/10 px-4 py-3 text-sm font-black leading-7 text-foreground shadow-soft lg:justify-start">
-            <span>خطوتان فقط تربطانك بمحتوى جاهز للتحويل:</span>
+            <span>خطوتان فقط من وصف المتجر إلى:</span>
             {['منشور يبيع', 'صور تبيع', 'فيديو يبيع'].map((item) => (
               <span key={item} className="inline-flex items-center gap-1.5 rounded-full bg-background/80 px-3 py-1 text-xs text-primary shadow-sm">
                 <CheckCircle2 className="h-3.5 w-3.5 text-success" />
