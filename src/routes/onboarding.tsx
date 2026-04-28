@@ -26,20 +26,20 @@ import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "ابدأ مع رِفد — صفحة واحدة لأول محتوى مخصص" },
+      { title: "Onboarding رِفد — صفحة واحدة" },
       {
         name: "description",
-        content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد.",
+        content: "جهّز ذاكرة متجرك في صفحة واحدة واحصل على أول حزمة محتوى مخصصة للسوق السعودي.",
       },
-      { property: "og:title", content: "ابدأ مع رِفد — صفحة واحدة لأول حملة مخصصة لمتجرك" },
+      { property: "og:title", content: "Onboarding رِفد — صفحة واحدة" },
       {
         property: "og:description",
-        content: "ملف متجرك في دقيقة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+        content: "ذاكرة متجر مختصرة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
       },
-      { name: "twitter:title", content: "ابدأ مع رِفد — صفحة واحدة لأول حملة مخصصة لمتجرك" },
+      { name: "twitter:title", content: "Onboarding رِفد — صفحة واحدة" },
       {
         name: "twitter:description",
-        content: "ملف متجرك في دقيقة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+        content: "ذاكرة متجر مختصرة + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
       },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
@@ -208,14 +208,13 @@ function OnboardingPage() {
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
                 <Zap className="h-3.5 w-3.5" />
-                بناء متجر يختصر قرار الشراء
+                إعداد ذكي بدون احتكاك
               </span>
               <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-                ابنِ ذاكرة متجرك ثم شاهد أول حزمة بيع جاهزة
+                جهّز ذاكرة متجرك وشاهد أول حزمة بيع جاهزة
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                صفحة واحدة تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق
-                السعودي.
+                صفحة واحدة تجمع أهم إشارات البيع: النشاط، الجمهور، النبرة والهوية — بدون طلب رقم الجوال مرة أخرى.
               </p>
             </div>
             <div className="mb-5 grid gap-2 sm:grid-cols-3">
@@ -246,16 +245,14 @@ function OnboardingPage() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold">
-                  حوّل بيانات متجرك إلى ذاكرة بيع دقيقة
-                </h2>
+                <h2 className="mt-3 text-2xl font-extrabold">بيانات قليلة، نتيجة أقرب للبيع</h2>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  نأخذ اسم النشاط، المجال، الجمهور والنبرة فقط حتى يبدأ رِفد بمخرجات سعودية مخصصة بدون أسئلة زائدة.
+                  اكتب اسم النشاط واختر أقرب وصف له؛ رِفد يستخدمها لتوليد محتوى أقرب لطريقة شراء العميل السعودي.
                 </p>
               </div>
               <div>
                 <Label htmlFor="store">
-                  اسم المتجر <span className="text-destructive">*</span>
+                  اسم المتجر أو النشاط <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="store"
@@ -268,7 +265,7 @@ function OnboardingPage() {
                 />
               </div>
               <div>
-                <Label>وش نوع منتجاتك؟</Label>
+                <Label>وش نوع نشاطك؟</Label>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {PRODUCT_TYPES.map((p) => (
                     <button
