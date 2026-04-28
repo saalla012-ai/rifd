@@ -328,7 +328,7 @@ function OnboardingPage() {
             </div>
           )}
 
-          {step === 5 && result && successPack && (
+          {step === 3 && result && successPack && (
             <OnboardingSuccessPack pack={successPack} />
           )}
         </div>
