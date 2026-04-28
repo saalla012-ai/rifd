@@ -39,21 +39,43 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/hooks/use-theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const NAV = [
-  { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
-  { to: "/dashboard/generate-text", label: "توليد نص", icon: Wand2 },
-  { to: "/dashboard/generate-image", label: "توليد صور", icon: ImageIcon },
-  { to: "/dashboard/generate-video", label: "توليد فيديو", icon: Clapperboard },
-  { to: "/dashboard/campaign-studio", label: "استوديو الحملات", icon: Megaphone },
-  { to: "/dashboard/edit-image", label: "تعديل صور", icon: ImagePlus },
-  { to: "/dashboard/templates", label: "معرض القوالب", icon: LayoutGrid },
-  { to: "/dashboard/library", label: "مكتبتي", icon: Library },
-  { to: "/dashboard/store-profile", label: "ملف متجري", icon: Store },
-  { to: "/dashboard/usage", label: "الاستخدام", icon: BarChart3 },
-  { to: "/dashboard/credits", label: "شحن نقاط الفيديو", icon: Coins },
-  { to: "/dashboard/billing", label: "الفواتير", icon: CreditCard },
-  { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
+const NAV_GROUPS = [
+  {
+    label: "ابدأ",
+    items: [
+      { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
+      { to: "/dashboard/campaign-studio", label: "استوديو الحملات", icon: Megaphone },
+    ],
+  },
+  {
+    label: "أدوات الإنشاء",
+    items: [
+      { to: "/dashboard/generate-text", label: "اكتب نصاً يبيع", icon: Wand2 },
+      { to: "/dashboard/generate-image", label: "صمّم صورة إعلان", icon: ImageIcon },
+      { to: "/dashboard/generate-video", label: "أنشئ فيديو قصير", icon: Clapperboard },
+      { to: "/dashboard/edit-image", label: "حسّن صورة منتج", icon: ImagePlus },
+    ],
+  },
+  {
+    label: "الأصول والهوية",
+    items: [
+      { to: "/dashboard/templates", label: "معرض القوالب", icon: LayoutGrid },
+      { to: "/dashboard/library", label: "مكتبتي", icon: Library },
+      { to: "/dashboard/store-profile", label: "ذاكرة المتجر", icon: Store },
+    ],
+  },
+  {
+    label: "الحساب",
+    items: [
+      { to: "/dashboard/usage", label: "الاستخدام والرصيد", icon: BarChart3 },
+      { to: "/dashboard/credits", label: "نقاط الفيديو", icon: Coins },
+      { to: "/dashboard/billing", label: "الاشتراك والفواتير", icon: CreditCard },
+      { to: "/dashboard/settings", label: "الإعدادات", icon: Settings },
+    ],
+  },
 ] as const;
+
+const NAV = NAV_GROUPS.flatMap((group) => group.items);
 
 const ADMIN_NAV = [
   { to: "/admin/analytics", label: "تحليلات الأدمن", icon: TrendingUp },
