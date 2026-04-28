@@ -21,9 +21,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/store-profile")({
-  head: () => ({ meta: [{ title: "ملف متجري — رِفد" }] }),
+  head: () => ({ meta: [{ title: "ذاكرة البيع الخاصة بمتجرك — رِفد" }] }),
   component: StoreProfilePage,
 });
+
+function FieldImpact({ children }: { children: string }) {
+  return <p className="mt-1 text-xs leading-5 text-muted-foreground">{children}</p>;
+}
 
 function StoreProfilePage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -164,12 +168,11 @@ function StoreProfilePage() {
           <div className={cn("flex flex-col gap-4", !isMobile && "lg:flex-row lg:items-start lg:justify-between")}>
             <div>
               <h1 className="text-2xl font-extrabold">
-                بناء المتجر — ذاكرة بيع لا مجرد ملف تعريفي
+                ذاكرة البيع الخاصة بمتجرك
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
                 هنا نثبت ما يجعل العميل يشتري منك: الوعد، الجمهور، الاعتراضات، السياسات، المنتجات
-                الأعلى قيمة والمواسم. كل حقل جيد هنا يجعل النص والصورة والفيديو أقرب للبيع وأقل
-                عمومية.
+                الأعلى قيمة والمواسم. اكتمال الذاكرة = نتائج أقل عمومية وأكثر قرباً من متجرك.
               </p>
             </div>
             <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
@@ -178,7 +181,7 @@ function StoreProfilePage() {
                 جاهزية البيع: {completionPct}%
               </div>
               <p className="mt-1 text-muted-foreground">
-                كل حقل مكتمل يقلل التردد في المخرجات ويزيد وضوح زاوية الشراء.
+                كل حقل مكتمل يجعل النص والصورة والفيديو أقرب لهوية متجرك وسبب الشراء.
               </p>
             </div>
           </div>
