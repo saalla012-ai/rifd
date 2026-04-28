@@ -60,7 +60,7 @@ export function HomeHero() {
             +150 قدرة محتوى للمتاجر السعودية
           </div>
 
-          <h1 className="mt-4 text-[2rem] font-black leading-[1.08] sm:text-5xl lg:text-6xl">
+          <h1 className="mt-4 text-[2rem] font-black leading-[1.08] tracking-normal sm:text-5xl lg:text-6xl">
             <span className="block">ودّع ChatGPT،</span>
             <span className="mt-1 block text-gradient-primary">واختصر ساعات من كتابة وصناعة محتوى متجرك.</span>
             <span className="mt-3 block text-[0.58em] font-extrabold leading-[1.35] text-foreground/90 sm:text-[0.5em]">
@@ -76,7 +76,7 @@ export function HomeHero() {
             <Button
               asChild
               size="lg"
-              className="h-13 w-full max-w-[19rem] gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold sm:w-auto sm:px-8"
+              className="h-14 w-full max-w-[19rem] gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold sm:w-auto sm:px-8"
             >
               <Link to="/onboarding" onClick={handleCtaClick}>
                 <Sparkles className="h-5 w-5" />
@@ -84,7 +84,7 @@ export function HomeHero() {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="h-13 w-full max-w-[19rem] bg-background/70 font-extrabold sm:w-auto">
+            <Button asChild size="lg" variant="outline" className="h-14 w-full max-w-[19rem] bg-background/70 font-extrabold sm:w-auto">
               <Link to="/proof-center">
                 شاهد الإثبات
                 <PlayCircle className="h-4 w-4" />
