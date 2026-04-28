@@ -46,6 +46,10 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  useEffect(() => {
+    if (redirectPath === "/onboarding") setMode("signup");
+  }, [redirectPath]);
+
   // إذا المستخدم مسجل دخول، حوّله مباشرة
   useEffect(() => {
     if (authLoading) return;
@@ -133,13 +137,13 @@ function AuthPage() {
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-elegant">
               <Sparkles className="h-6 w-6" />
             </span>
-            <h1 className="mt-4 text-2xl font-extrabold">
-              {mode === "login" ? "أهلاً بعودتك" : "أنشئ حسابك في ثوانٍ"}
+              <h1 className="mt-4 text-2xl font-extrabold">
+                {mode === "login" ? "أهلاً بعودتك" : "ابدأ مجاناً مع رِفد"}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {mode === "login"
                 ? "ادخل لمتابعة توليد المحتوى لمتجرك"
-                : "جرّب رِفد بحدود بداية واضحة، بدون بطاقة"}
+                  : "أنشئ حسابك ثم جهّز أول حزمة محتوى لمتجرك بالعامية السعودية — بدون بطاقة ائتمان"}
             </p>
           </div>
 
