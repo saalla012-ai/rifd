@@ -544,14 +544,19 @@ function GenerateVideoPage() {
             <ImageInputCard label="صورة الشخص المتحدث" value={internalMediumTestMode ? absoluteAssetUrl(canonicalGenerationPersona.image) : speakerImageUrl} uploading={uploadingInput === "speaker"} disabled={internalMediumTestMode} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
             <ImageInputCard label={isPaidPlan || mediumTestProductImageRequired ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
           </div>
-          {productImageRequired && <p className="text-xs font-bold text-destructive">{mediumTestProductImageRequired ? "هذه عينة اختبار متوسط تتطلب صورة منتج؛ تشغيلها بدون صورة سيجعل نتيجة الالتزام غير صالحة." : "ارفع صورة المنتج قبل التوليد؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة."}</p>}
+            {productImageRequired && <p className="text-xs font-bold text-destructive">{mediumTestProductImageRequired ? "هذه عينة اختبار متوسط تتطلب صورة منتج؛ تشغيلها بدون صورة سيجعل نتيجة الالتزام غير صالحة." : "ارفع صورة المنتج قبل إنشاء الفيديو؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة."}</p>}
 
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-foreground">سيتم خصم {canonicalSelectedCost.toLocaleString("ar-SA")} نقطة فيديو</span>
               <span className={cn("text-xs", canonicalHasEnoughCredits ? "text-muted-foreground" : "font-bold text-destructive")}>{canonicalHasEnoughCredits ? `المدة المعتمدة: ${canonicalGenerationDurationSeconds}ث · يتم الاسترجاع تلقائياً إذا فشل التوليد بعد الخصم` : "رصيدك الحالي لا يكفي لهذه الجودة"}</span>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">الاستخدام يعتمد على رصيد النقاط فقط، مع حماية تشغيلية للمهام المتزامنة.</p>
+            <div className="mt-3 grid gap-2 text-xs font-bold sm:grid-cols-2">
+              <span className="rounded-md border border-border bg-card px-3 py-2">رصيدك الحالي: {creditsLoading ? "..." : `${(credits?.totalCredits ?? 0).toLocaleString("ar-SA")} نقطة`}</span>
+              <span className={cn("rounded-md border px-3 py-2", canonicalQualityAllowed ? "border-border bg-card text-muted-foreground" : "border-destructive/30 bg-destructive/10 text-destructive")}>{canonicalQualityAllowed ? "الجودة متاحة في باقتك" : "الجودة غير متاحة في باقتك"}</span>
+              <span className={cn("rounded-md border px-3 py-2", canonicalDurationAllowed ? "border-border bg-card text-muted-foreground" : "border-destructive/30 bg-destructive/10 text-destructive")}>{canonicalDurationAllowed ? `المدة متاحة: ${canonicalGenerationDurationSeconds}ث` : "المدة غير متاحة في باقتك"}</span>
+              <span className={cn("rounded-md border px-3 py-2", productImageRequired ? "border-destructive/30 bg-destructive/10 text-destructive" : "border-border bg-card text-muted-foreground")}>{productImageRequired ? "صورة المنتج مطلوبة" : "صورة المنتج غير مطلوبة الآن"}</span>
+            </div>
             <p className="mt-1 text-xs font-bold text-muted-foreground">
               {watermarkRequired ? "الباقة المجانية تضيف علامة Rifd المائية تلقائياً؛ الباقات المدفوعة بدون علامة مائية." : "باقتك الحالية تولّد فيديوهات بدون علامة مائية من Rifd."}
             </p>
@@ -563,7 +568,7 @@ function GenerateVideoPage() {
           </div>
 
           <Button type="button" onClick={() => void generate()} disabled={loading || reachedConcurrentLimit || visibleJobInProgress || creditsLoading} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال مهمة الفيديو...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> ولّد فيديو جاهزاً للنشر</>}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري إرسال مهمة الفيديو...</> : reachedConcurrentLimit || visibleJobInProgress ? <><Loader2 className="h-4 w-4 animate-spin" /> انتظر اكتمال إحدى المهام</> : <><Clapperboard className="h-4 w-4" /> أنشئ فيديو جاهزاً للنشر</>}
           </Button>
         </section>
 
