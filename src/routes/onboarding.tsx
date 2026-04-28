@@ -74,6 +74,15 @@ const quickOutputs = [
   "سكربت فيديو قصير",
 ] as const;
 
+function profilePhoneErrorMessage(message?: string) {
+  if (!message) return "تعذر حفظ رقم واتساب الآن. حاول مرة أخرى.";
+  if (message.includes("duplicate key") || message.includes("profiles_whatsapp_unique_idx")) {
+    return "رقم واتساب مستخدم مسبقاً في حساب آخر.";
+  }
+  if (message.includes("INVALID_SAUDI_WHATSAPP")) return SAUDI_PHONE_ERROR;
+  return "تعذر حفظ رقم واتساب الآن. حاول مرة أخرى.";
+}
+
 function OnboardingPage() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
@@ -175,7 +184,12 @@ function OnboardingPage() {
       );
       setStep(3);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "فشل إنشاء المحتوى");
+      const message = err instanceof Error ? err.message : "";
+      toast.error(
+        message.includes("whatsapp") || message.includes("profiles_whatsapp_unique_idx") || message.includes("INVALID_SAUDI_WHATSAPP")
+          ? profilePhoneErrorMessage(message)
+          : "فشل إنشاء المحتوى",
+      );
     } finally {
       setGenerating(false);
     }
