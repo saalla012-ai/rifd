@@ -558,11 +558,11 @@ function GenerateVideoPage() {
               <span className={cn("rounded-md border px-3 py-2", productImageRequired ? "border-destructive/30 bg-destructive/10 text-destructive" : "border-border bg-card text-muted-foreground")}>{productImageRequired ? "صورة المنتج مطلوبة" : "صورة المنتج غير مطلوبة الآن"}</span>
             </div>
             <p className="mt-1 text-xs font-bold text-muted-foreground">
-              {watermarkRequired ? "الباقة المجانية تضيف علامة Rifd المائية تلقائياً؛ الباقات المدفوعة بدون علامة مائية." : "باقتك الحالية تولّد فيديوهات بدون علامة مائية من Rifd."}
+              {watermarkRequired ? "الباقة المجانية تضيف علامة رِفد المائية تلقائياً؛ الباقات المدفوعة بدون علامة مائية." : "باقتك الحالية تنشئ فيديوهات بدون علامة مائية من رِفد."}
             </p>
             {reachedConcurrentLimit && (
               <p className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs font-bold text-warning-foreground">
-                لديك مهمتا فيديو قيد المعالجة الآن؛ يمكنك توليد فيديو جديد بعد اكتمال أو استرداد إحداهما.
+                لديك مهمتا فيديو قيد المعالجة الآن؛ يمكنك إنشاء فيديو جديد بعد اكتمال أو استرداد إحداهما.
               </p>
             )}
           </div>
