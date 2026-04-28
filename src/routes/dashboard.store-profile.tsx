@@ -217,7 +217,7 @@ function StoreProfilePage() {
                 <Input className="mt-1" value={form.brand_personality} onChange={(e) => setForm({ ...form, brand_personality: e.target.value })} placeholder="مثلاً: راقية، قريبة، موثوقة، أنثوية" />
               </div>
               <div>
-                <Label>الوعد البيعي / USP</Label>
+                <Label>الوعد البيعي / سبب الشراء منك</Label>
                 <Input className="mt-1" value={form.unique_selling_point} onChange={(e) => setForm({ ...form, unique_selling_point: e.target.value })} placeholder="ما الذي يميز متجرك فعلاً عن المنافسين؟" />
               </div>
             </div>
@@ -227,11 +227,11 @@ function StoreProfilePage() {
             <h2 className="text-lg font-extrabold">تشغيل البيع والمحتوى</h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div>
-                <Label>أسلوب الـ CTA المفضل</Label>
-                <Input className="mt-1" value={form.cta_style} onChange={(e) => setForm({ ...form, cta_style: e.target.value })} placeholder="مثلاً: اطلب الآن / اكتشف المجموعة / راسلنا على واتساب" />
+                <Label>دعوة الشراء المفضلة</Label>
+                <Input className="mt-1" value={form.cta_style} onChange={(e) => setForm({ ...form, cta_style: e.target.value })} placeholder="مثلاً: اطلب الآن / شاهد المجموعة / احجز عبر واتساب" />
               </div>
               <div>
-                <Label>المنتجات الأعلى هامشاً</Label>
+                <Label>المنتجات التي تستحق دفع البيع لها</Label>
                 <Textarea className="mt-1" value={form.high_margin_products} onChange={(e) => setForm({ ...form, high_margin_products: e.target.value })} placeholder="افصل بينها بفاصلة: عطر 100مل، بوكس هدايا فاخر، اشتراك شهري" />
               </div>
               <div>
@@ -239,8 +239,8 @@ function StoreProfilePage() {
                 <Textarea className="mt-1" value={form.seasonal_priorities} onChange={(e) => setForm({ ...form, seasonal_priorities: e.target.value })} placeholder="رمضان، العيد، الجمعة البيضاء، العودة للمدارس..." />
               </div>
               <div>
-                <Label>أسئلة العملاء الشائعة</Label>
-                <Textarea className="mt-1" value={form.faq_notes} onChange={(e) => setForm({ ...form, faq_notes: e.target.value })} placeholder="ما أكثر الأسئلة أو الاعتراضات التي تتكرر قبل الشراء؟" />
+                <Label>اعتراضات وأسئلة ما قبل الشراء</Label>
+                <Textarea className="mt-1" value={form.faq_notes} onChange={(e) => setForm({ ...form, faq_notes: e.target.value })} placeholder="ما أكثر ما يجعل العميل يتردد؟ السعر، المقاس، الثبات، الشحن، الضمان، الخامة..." />
               </div>
             </div>
           </section>
@@ -279,14 +279,14 @@ function StoreProfilePage() {
               <div>
                 <h3 className="font-bold">ما النتيجة المتوقعة بعد تعبئة هذه الصفحة؟</h3>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  سيصبح رِفد أقدر على اقتراح زوايا بيع أقرب لهوية متجرك، وتجنّب اللغة غير المناسبة، وربط المخرجات بالمواسم والمنتجات الأعلى قيمة لديك، وهذا هو الأساس الحقيقي للتجديد الشهري.
+                  سيصبح رِفد أقدر على إنتاج إعلان مدروس، وصف منتج يزيل التردد، صورة تناسب السوق السعودي، سكربت فيديو قصير، منشور عرض مباشر، ودعوة شراء واضحة مرتبطة بمتجرك لا بنموذج عام.
                 </p>
               </div>
             </div>
           </div>
 
           <Button onClick={save} disabled={saving} className="gradient-primary text-primary-foreground">
-            {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الحفظ...</> : "حفظ ذاكرة المتجر 2.0"}
+            {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الحفظ...</> : "حفظ ذاكرة البيع"}
           </Button>
         </div>
       </div>
