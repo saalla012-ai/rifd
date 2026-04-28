@@ -230,6 +230,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>اسم المتجر</Label>
+                <FieldImpact>يظهر الاسم في النصوص والدعوات حتى لا تبدو المخرجات عامة.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.store_name}
@@ -238,6 +239,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>نوع المتجر</Label>
+                <FieldImpact>يساعد رِفد على اختيار مفردات مناسبة لفئة منتجاتك.</FieldImpact>
                 <select
                   className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={form.product_type}
@@ -256,6 +258,7 @@ function StoreProfilePage() {
               </div>
               <div className={fullRowClass}>
                 <Label>الجمهور المستهدف</Label>
+                <FieldImpact>يوجّه زاوية البيع حسب من يشتري، لا حسب وصف المنتج فقط.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.audience}
@@ -265,6 +268,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>النبرة المفضلة</Label>
+                <FieldImpact>تجعل الصياغة ثابتة بين الإعلان، الوصف، والفيديو.</FieldImpact>
                 <select
                   className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={form.tone}
@@ -279,6 +283,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>اللون الأساسي للهوية</Label>
+                <FieldImpact>يفيد عند تصميم صورة إعلان أو مواد بصرية متسقة.</FieldImpact>
                 <div className="mt-1 flex items-center gap-2">
                   <Input
                     className="font-mono"
@@ -295,6 +300,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>شخصية العلامة</Label>
+                <FieldImpact>تحدد الإحساس العام: فاخر، قريب، عملي، أو جريء.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.brand_personality}
@@ -304,6 +310,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>الوعد البيعي / سبب الشراء منك</Label>
+                <FieldImpact>هذا أهم حقل لتحويل المحتوى من وصف إلى سبب شراء.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.unique_selling_point}
