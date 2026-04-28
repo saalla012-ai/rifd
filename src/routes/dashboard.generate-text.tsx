@@ -120,7 +120,7 @@ function GenerateTextPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="mb-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اختر القالب واكتب تفاصيل العرض</div>
+          <div className="mb-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اختر القالب واكتب تفاصيل البيع</div>
           <div className="space-y-4">
             <div>
               <Label>اختر قالباً</Label>
@@ -138,12 +138,12 @@ function GenerateTextPage() {
               <p className="mt-1 text-xs text-muted-foreground">{template.description}</p>
             </div>
             <div>
-              <Label htmlFor="topic">الموضوع / التفاصيل</Label>
+              <Label htmlFor="topic">تفاصيل المنتج أو الحملة</Label>
               <Textarea
                 id="topic"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="مثلاً: عرض جديد على عطر شرقي بسعر 199 ر.س لمناسبة اليوم الوطني"
+                placeholder="مثلاً: عطر شرقي فاخر بسعر 199 ر.س، مناسب كهدية، مع توصيل سريع داخل السعودية"
                 className="mt-1 min-h-32"
                 maxLength={2000}
               />
@@ -182,14 +182,14 @@ function GenerateTextPage() {
               )}
             </div>
             <Button onClick={generate} disabled={loading} className="h-12 w-full gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز النص...</> : <><Wand2 className="h-4 w-4" /> ولّد نصاً جاهزاً للنشر</>}
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز النص...</> : <><Wand2 className="h-4 w-4" /> اكتب النص الآن</>}
             </Button>
           </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold">2) النتيجة الجاهزة</h3>
+            <h3 className="font-bold">2) النص الجاهز للبيع</h3>
             {result && (
               <button
                 onClick={copy}
@@ -203,7 +203,7 @@ function GenerateTextPage() {
             <pre className="mt-3 whitespace-pre-wrap rounded-lg border border-border bg-secondary/40 p-4 text-right font-sans text-sm leading-relaxed">{result}</pre>
           ) : (
             <div className="mt-3 flex h-48 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
-              اكتب تفاصيل المنتج واضغط التوليد — النتيجة ستظهر هنا جاهزة للنسخ.
+              اكتب تفاصيل المنتج واضغط زر الكتابة — النص سيظهر هنا جاهزاً للنسخ.
             </div>
           )}
           {memorySignals.length > 0 && (
