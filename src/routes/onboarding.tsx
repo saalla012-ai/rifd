@@ -252,12 +252,66 @@ function OnboardingPage() {
                   ))}
                 </div>
               </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label>من جمهورك المستهدف؟</Label>
+                  <Select value={audience} onValueChange={setAudience}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AUDIENCES.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>
+                          {a.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="color">لون الهوية</Label>
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      id="color"
+                      type="color"
+                      value={color}
+                      onChange={(e) => setColor(e.target.value)}
+                      className="h-10 w-14 cursor-pointer rounded-md border border-input bg-background"
+                    />
+                    <Input value={color} onChange={(e) => setColor(e.target.value)} className="font-mono" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label>النبرة الأقرب لعلامتك</Label>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {TONES.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTone(t.id)}
+                      className={cn(
+                        "rounded-lg border p-3 text-sm font-medium",
+                        tone === t.id ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/40",
+                      )}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Button
-                onClick={next}
-                disabled={!trimmedStoreName}
+                onClick={finish}
+                disabled={!trimmedStoreName || generating}
                 className="h-12 w-full gradient-primary font-extrabold text-primary-foreground"
               >
-                أكمل زاوية البيع
+                {generating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> جاري بناء الحزمة البيعية...
+                  </>
+                ) : (
+                  <>أنشئ أول حزمة بيع ✨</>
+                )}
               </Button>
               <div className="grid gap-2 sm:grid-cols-2">
                 {quickOutputs.map((item) => (
