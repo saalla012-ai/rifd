@@ -398,9 +398,9 @@ function GenerateVideoPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط الفيديو قبل خصم النقاط</div>
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) جهّز إعلان الفيديو قبل خصم النقاط</div>
           <div>
-            <Label>جودة الفيديو</Label>
+            <Label>نوع الاستخدام</Label>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {(Object.keys(QUALITY) as VideoQuality[]).map((key) => {
                 const option = QUALITY[key];
@@ -501,7 +501,7 @@ function GenerateVideoPage() {
 
           <div>
             <div className="flex items-center justify-between gap-2">
-              <Label>وصف الفيديو</Label>
+              <Label>اكتب عرضك للفيديو</Label>
               <span className="text-xs text-muted-foreground">{promptCount.toLocaleString("ar-SA")} / 1800</span>
             </div>
             <Textarea
@@ -510,13 +510,13 @@ function GenerateVideoPage() {
               readOnly={internalMediumTestMode}
               maxLength={1800}
               className="mt-2 min-h-36 read-only:bg-secondary/30"
-              placeholder="مثلاً: لقطة عمودية لمنتج عطر فاخر على خلفية خضراء وذهبية، حركة كاميرا بطيئة، المنتج واضح طوال المشهد، دعوة مباشرة للطلب عبر واتساب"
+              placeholder="مثلاً: اعرض عطر فاخر كهدية أنيقة، المنتج واضح طوال المشهد، حركة كاميرا بطيئة، وانتهِ بدعوة مباشرة للطلب عبر واتساب"
             />
             {internalMediumTestMode && <p className="mt-2 rounded-lg border border-border bg-secondary/30 p-3 text-xs font-semibold text-muted-foreground">برومبت الاختبار المتوسط مقفل من لوحة الإدارة وخادم التوليد يرفض أي تعديل عليه حتى تبقى النتيجة قابلة للمقارنة.</p>}
           </div>
 
           <div>
-            <Label>رابط صورة بداية اختياري</Label>
+            <Label>صورة افتتاحية اختيارية</Label>
             <input
               value={startingFrameUrl}
               onChange={(e) => { if (!internalMediumTestMode) setStartingFrameUrl(e.target.value); }}
