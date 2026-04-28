@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
-import { Sparkles, Mail, Lock, User, Loader2 } from "lucide-react";
+import { Sparkles, Mail, Lock, User, Loader2, MessageCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,12 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
+import {
+  normalizeSaudiPhone,
+  validateSaudiPhone,
+  SAUDI_PHONE_ERROR,
+  SAUDI_PHONE_PLACEHOLDER,
+} from "@/lib/phone";
 
 function sanitizeRedirectPath(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -18,6 +24,8 @@ function sanitizeRedirectPath(value: unknown): string | undefined {
   if (value.includes("://")) return undefined;
   return value;
 }
+
+const PENDING_SIGNUP_PHONE_KEY = "rifd_pending_signup_whatsapp";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
