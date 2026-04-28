@@ -302,8 +302,10 @@ function OnboardingPage() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">تخصيص سريع قبل التوليد</h2>
-              <p className="text-sm leading-6 text-muted-foreground">اختياران فقط يكفيان لرفع جودة أول حزمة محتوى.</p>
+              <div>
+                <h2 className="text-2xl font-extrabold">ثبّت الجمهور والنبرة قبل أول نتيجة</h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">هذه الاختيارات تحدد: هل نخاطب العميل بالسعر، الثقة، الهدية، الفخامة، أو سرعة القرار.</p>
+              </div>
               <Label>من جمهورك المستهدف؟</Label>
               <Select value={audience} onValueChange={setAudience}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -345,8 +347,11 @@ function OnboardingPage() {
               <div className="flex gap-2">
                 <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
                 <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الحزمة...</> : <>أنشئ أول حزمة محتوى ✨</>}
+                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري بناء الحزمة البيعية...</> : <>أنشئ أول حزمة بيع ✨</>}
                 </Button>
+              </div>
+              <div className="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-7 text-foreground/85">
+                النتيجة التالية ليست منشوراً واحداً فقط؛ ستظهر زاوية حملة، CTA، فكرة صورة، وسكربت Reel حتى تعرف ماذا تنشر بعد الضغط مباشرة.
               </div>
             </div>
           )}
