@@ -219,18 +219,25 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
-          {NAV.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
-              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
-              activeOptions={{ exact: item.to === "/dashboard" }}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
+        <nav className="flex-1 space-y-3 overflow-y-auto p-3">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label} className="space-y-1">
+              <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {group.label}
+              </div>
+              {group.items.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent"
+                  activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
+                  activeOptions={{ exact: item.to === "/dashboard" }}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           ))}
           {isAdmin && (
             <>
