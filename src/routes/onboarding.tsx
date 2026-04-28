@@ -86,6 +86,11 @@ function OnboardingPage() {
     brand_color: color,
   };
 
+  const baseProfilePayload = {
+    email: user?.email ?? null,
+    full_name: (user?.user_metadata?.full_name as string | undefined) ?? (user?.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
+  };
+
   // المستخدم لازم يكون مسجل دخول للوصول
   useEffect(() => {
     if (authLoading) return;
@@ -163,12 +168,15 @@ function OnboardingPage() {
   };
 
   const skipToDashboard = async () => {
-    if (!user || !trimmedStoreName) return;
+    if (!user) return;
     setGenerating(true);
     try {
+      const optionalOnboardingPayload = trimmedStoreName
+        ? profilePayload
+        : baseProfilePayload;
       const { error } = await supabase
         .from("profiles")
-        .upsert({ id: user.id, ...profilePayload, onboarded: true });
+        .upsert({ id: user.id, ...optionalOnboardingPayload, onboarded: true });
       if (error) throw error;
       track("onboarding_skipped_pack", { product_type: productType, audience });
       await refreshProfile();
@@ -344,10 +352,10 @@ function OnboardingPage() {
                 type="button"
                 variant="ghost"
                 onClick={() => void skipToDashboard()}
-                disabled={!trimmedStoreName || generating}
+                disabled={generating}
                 className="h-10 w-full font-bold text-muted-foreground"
               >
-                حفظ الإعدادات والدخول للوحة
+                تخطي الآن والدخول للوحة
               </Button>
               <div className="grid gap-2 sm:grid-cols-2">
                 {quickOutputs.map((item) => (
