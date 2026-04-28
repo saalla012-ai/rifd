@@ -116,6 +116,9 @@ function StoreProfilePage() {
     (completionKeys.filter((key) => String(form[key]).trim()).length / completionKeys.length) * 100,
   );
 
+  const formGridClass = cn("mt-5 grid gap-4", !isMobile && "md:grid-cols-2");
+  const fullRowClass = cn(!isMobile && "md:col-span-2");
+
   const splitList = (value: string) =>
     value
       .split(/[\n،,]/)
@@ -156,7 +159,7 @@ function StoreProfilePage() {
 
   return (
     <DashboardShell>
-      <div className={cn("max-w-5xl", isMobile && "mx-auto max-w-md")}> 
+      <div className={cn("max-w-5xl", isMobile && "mx-auto max-w-md")}>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
           <div className={cn("flex flex-col gap-4", !isMobile && "lg:flex-row lg:items-start lg:justify-between")}>
             <div>
@@ -221,7 +224,7 @@ function StoreProfilePage() {
         <div className="mt-6 grid gap-6">
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="text-lg font-extrabold">هوية المتجر</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className={formGridClass}>
               <div>
                 <Label>اسم المتجر</Label>
                 <Input
@@ -248,7 +251,7 @@ function StoreProfilePage() {
                   <option value="other">آخر</option>
                 </select>
               </div>
-              <div className="md:col-span-2">
+              <div className={fullRowClass}>
                 <Label>الجمهور المستهدف</Label>
                 <Textarea
                   className="mt-1"
