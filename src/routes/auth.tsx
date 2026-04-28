@@ -65,6 +65,10 @@ function AuthPage() {
     if (onboardingIntent) setMode("signup");
   }, [onboardingIntent]);
 
+  useEffect(() => {
+    if (mode === "login") window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+  }, [mode]);
+
   // إذا المستخدم مسجل دخول، حوّله مباشرة
   useEffect(() => {
     if (authLoading) return;
@@ -107,7 +111,10 @@ function AuthPage() {
             data: { full_name: name.trim() },
           },
         });
-        if (error) throw error;
+        if (error) {
+          window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+          throw error;
+        }
         track("signup_completed", { method: "email" });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
       } else {
@@ -155,6 +162,7 @@ function AuthPage() {
         redirect_uri: `${window.location.origin}${authReturnPath}`,
       });
       if (result.error) {
+        window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
         console.warn("[auth] google oauth rejected", result.error.message);
         toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
         setGoogleLoading(false);
@@ -164,7 +172,8 @@ function AuthPage() {
       // إذا رجعت tokens، الجلسة بتنحفظ والـuseEffect أعلاه يحوّل للوجهة الصحيحة
     } catch (err) {
       console.warn("[auth] google oauth error", err);
-      toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
+        window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+        toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
       setGoogleLoading(false);
     }
   };
