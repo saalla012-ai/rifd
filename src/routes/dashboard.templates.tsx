@@ -71,15 +71,16 @@ function TemplatesPage() {
     <DashboardShell>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold">معرض القوالب</h1>
+          <p className="text-xs font-black text-primary">لا تعرف من أين تبدأ؟ اختر هدفك.</p>
+          <h1 className="mt-1 text-2xl font-extrabold">معرض القوالب</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filtered.length} من {PROMPTS.length} قالب — اختر قالباً وابدأ التوليد فوراً
+            {filtered.length} من {PROMPTS.length} قالب — اختر هدفاً تجارياً ثم انتقل للأداة المناسبة
           </p>
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="ابحث عن قالب..."
+            placeholder="ابحث حسب الهدف أو المنتج..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pr-10"
@@ -87,7 +88,6 @@ function TemplatesPage() {
         </div>
       </div>
 
-      {/* Type filter */}
       <div className="mt-5 flex flex-wrap gap-2">
         {([
           { id: "all", label: "الكل", icon: Sparkles, count: counts.all },
@@ -114,7 +114,6 @@ function TemplatesPage() {
         ))}
       </div>
 
-      {/* Category filter */}
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           onClick={() => setCategory("all")}
@@ -144,7 +143,6 @@ function TemplatesPage() {
         ))}
       </div>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           لا توجد قوالب تطابق بحثك. جرّب كلمة أخرى أو غيّر الفلاتر.
