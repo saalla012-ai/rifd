@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw, FolderKanban } from "lucide-react";
 import { toast } from "sonner";
@@ -49,16 +49,7 @@ function LibraryPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "text" | "image" | "video" | "fav">("all");
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    void load();
-  }, [authLoading, user]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -84,7 +75,16 @@ function LibraryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [listVideoJobsFn, user]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    void load();
+  }, [authLoading, load, user]);
 
   const toggleFav = async (id: string, current: boolean) => {
     setItems((s) => s.map((i) => (i.id === id ? { ...i, is_favorite: !current } : i)));
