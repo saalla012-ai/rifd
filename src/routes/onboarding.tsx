@@ -93,7 +93,7 @@ function OnboardingPage() {
       void navigate({ to: "/auth", search: { redirect: "/onboarding" } });
       return;
     }
-    if (profile?.onboarded) {
+    if (profile?.onboarded && stage === "form") {
       void navigate({ to: "/dashboard" });
     }
     // عبّي القيم لو فيه profile جزئي
@@ -102,7 +102,7 @@ function OnboardingPage() {
     if (profile?.audience) setAudience(profile.audience);
     if (profile?.tone) setTone(profile.tone);
     if (profile?.brand_color) setColor(profile.brand_color);
-  }, [authLoading, user, profile, navigate]);
+  }, [authLoading, user, profile, navigate, stage]);
 
   const finish = async () => {
     if (!user) return;
@@ -152,7 +152,6 @@ function OnboardingPage() {
         .update({ onboarded: true })
         .eq("id", user.id);
       if (completeError) throw completeError;
-      await refreshProfile();
       setStage("success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
@@ -340,6 +339,15 @@ function OnboardingPage() {
                 ) : (
                   <>أنشئ أول حزمة بيع ✨</>
                 )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => void skipToDashboard()}
+                disabled={!trimmedStoreName || generating}
+                className="h-10 w-full font-bold text-muted-foreground"
+              >
+                حفظ الإعدادات والدخول للوحة
               </Button>
               <div className="grid gap-2 sm:grid-cols-2">
                 {quickOutputs.map((item) => (
