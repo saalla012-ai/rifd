@@ -257,7 +257,7 @@ function OnboardingPage() {
               </div>
               <Button
                 onClick={next}
-                disabled={!trimmedStoreName || !whatsappValid}
+                disabled={!trimmedStoreName}
                 className="h-12 w-full gradient-primary font-extrabold text-primary-foreground"
               >
                 أكمل زاوية البيع
