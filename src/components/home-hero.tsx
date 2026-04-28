@@ -28,6 +28,8 @@ const proofItems = [
   "عناية وبشرة: عرض + منشور + فكرة فيديو",
 ] as const;
 
+const channelProof = ["سلة", "زد", "شوبيفاي", "Instagram", "Google Ads", "TikTok", "X", "Snapchat"] as const;
+
 export function HomeHero() {
   const [variant, setVariant] = useState<"A" | "B">("A");
 
@@ -69,8 +71,19 @@ export function HomeHero() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0">
-            منصة سعودية شاملة لصناعة محتوى المتاجر: نصوص، صور، وفيديوهات بالعامية السعودية، مبنية على فهم عملي ومدروس لسلوك السوق السعودي، وتعمل بأقوى أدوات الذكاء الاصطناعي.
+            رِفد لا يترجم أوامر عامة؛ يصنع محتوى مبنياً على فهم مدروس لطريقة تفكير المتسوق السعودي: دوافع الشراء، حساسية السعر، الثقة، اللهجة، والموسمية — ثم يجهّزه للنشر عبر متجرك وقنواتك الإعلانية.
           </p>
+
+          <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-border bg-background/65 p-3 shadow-soft lg:mx-0">
+            <div className="mb-2 text-xs font-black text-primary">متوافق مع أماكن البيع والتسويق السعودية</div>
+            <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+              {channelProof.map((channel) => (
+                <span key={channel} className="rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[11px] font-extrabold text-foreground/90">
+                  <bdi dir="auto">{channel}</bdi>
+                </span>
+              ))}
+            </div>
+          </div>
 
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
             <Button

@@ -13,12 +13,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "ودّع ChatGPT واختصر ساعات صناعة محتوى متجرك. رِفد يمنحك نصوصاً وصوراً وفيديوهات بالعامية السعودية مع +150 قدرة محتوى للمتاجر السعودية.",
+          "ودّع ChatGPT واختصر ساعات صناعة محتوى متجرك. رِفد يفهم سلوك المتسوق السعودي ويجهّز نصوصاً وصوراً وفيديوهات لقنوات البيع والإعلان.",
       },
       { property: "og:title", content: "رِفد — نصوص وصور وفيديوهات بالعامية السعودية" },
       {
         property: "og:description",
-        content: "منصة سعودية شاملة لصناعة محتوى المتاجر بسرعة ووضوح، مع فيديو إثبات وشريط قدرات حي.",
+        content: "محتوى متجر مبني على فهم السوق السعودي ومتوافق مع سلة، زد، شوبيفاي، Instagram، Google Ads، TikTok، X وSnapchat.",
       },
       { property: "og:image", content: ogHomeImage },
       { property: "og:image:width", content: "1200" },
