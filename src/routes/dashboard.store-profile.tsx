@@ -21,9 +21,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/store-profile")({
-  head: () => ({ meta: [{ title: "ملف متجري — رِفد" }] }),
+  head: () => ({ meta: [{ title: "ذاكرة البيع الخاصة بمتجرك — رِفد" }] }),
   component: StoreProfilePage,
 });
+
+function FieldImpact({ children }: { children: string }) {
+  return <p className="mt-1 text-xs leading-5 text-muted-foreground">{children}</p>;
+}
 
 function StoreProfilePage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -164,12 +168,11 @@ function StoreProfilePage() {
           <div className={cn("flex flex-col gap-4", !isMobile && "lg:flex-row lg:items-start lg:justify-between")}>
             <div>
               <h1 className="text-2xl font-extrabold">
-                بناء المتجر — ذاكرة بيع لا مجرد ملف تعريفي
+                ذاكرة البيع الخاصة بمتجرك
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
                 هنا نثبت ما يجعل العميل يشتري منك: الوعد، الجمهور، الاعتراضات، السياسات، المنتجات
-                الأعلى قيمة والمواسم. كل حقل جيد هنا يجعل النص والصورة والفيديو أقرب للبيع وأقل
-                عمومية.
+                الأعلى قيمة والمواسم. اكتمال الذاكرة = نتائج أقل عمومية وأكثر قرباً من متجرك.
               </p>
             </div>
             <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
@@ -178,7 +181,7 @@ function StoreProfilePage() {
                 جاهزية البيع: {completionPct}%
               </div>
               <p className="mt-1 text-muted-foreground">
-                كل حقل مكتمل يقلل التردد في المخرجات ويزيد وضوح زاوية الشراء.
+                كل حقل مكتمل يجعل النص والصورة والفيديو أقرب لهوية متجرك وسبب الشراء.
               </p>
             </div>
           </div>
@@ -227,6 +230,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>اسم المتجر</Label>
+                <FieldImpact>يظهر الاسم في النصوص والدعوات حتى لا تبدو المخرجات عامة.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.store_name}
@@ -235,6 +239,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>نوع المتجر</Label>
+                <FieldImpact>يساعد رِفد على اختيار مفردات مناسبة لفئة منتجاتك.</FieldImpact>
                 <select
                   className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={form.product_type}
@@ -253,6 +258,7 @@ function StoreProfilePage() {
               </div>
               <div className={fullRowClass}>
                 <Label>الجمهور المستهدف</Label>
+                <FieldImpact>يوجّه زاوية البيع حسب من يشتري، لا حسب وصف المنتج فقط.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.audience}
@@ -262,6 +268,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>النبرة المفضلة</Label>
+                <FieldImpact>تجعل الصياغة ثابتة بين الإعلان، الوصف، والفيديو.</FieldImpact>
                 <select
                   className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={form.tone}
@@ -276,6 +283,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>اللون الأساسي للهوية</Label>
+                <FieldImpact>يفيد عند تصميم صورة إعلان أو مواد بصرية متسقة.</FieldImpact>
                 <div className="mt-1 flex items-center gap-2">
                   <Input
                     className="font-mono"
@@ -292,6 +300,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>شخصية العلامة</Label>
+                <FieldImpact>تحدد الإحساس العام: فاخر، قريب، عملي، أو جريء.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.brand_personality}
@@ -301,6 +310,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>الوعد البيعي / سبب الشراء منك</Label>
+                <FieldImpact>هذا أهم حقل لتحويل المحتوى من وصف إلى سبب شراء.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.unique_selling_point}
@@ -316,6 +326,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>دعوة الشراء المفضلة</Label>
+                <FieldImpact>توحّد نهاية النصوص والإعلانات حسب مسار الشراء الفعلي.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.cta_style}
@@ -325,6 +336,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>المنتجات التي تستحق دفع البيع لها</Label>
+                <FieldImpact>تساعد على دفع المنتجات الأعلى قيمة في الحملات والمحتوى.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.high_margin_products}
@@ -334,6 +346,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>الأولويات الموسمية</Label>
+                <FieldImpact>تجعل القوالب والعروض أقرب للموسم الحالي بدل محتوى عام.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.seasonal_priorities}
@@ -343,6 +356,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>اعتراضات وأسئلة ما قبل الشراء</Label>
+                <FieldImpact>تحوّل المخاوف المتكررة إلى نقاط ثقة داخل النصوص.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.faq_notes}
@@ -358,6 +372,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>سياسة الشحن</Label>
+                <FieldImpact>تضيف وضوحاً يقلل تردد العميل قبل الطلب.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.shipping_policy}
@@ -367,6 +382,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>سياسة الاستبدال / الاسترجاع</Label>
+                <FieldImpact>تُستخدم كدليل ثقة في وصف المنتج والإعلانات.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.exchange_policy}
@@ -382,6 +398,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>كلمات أو وعود ممنوعة</Label>
+                <FieldImpact>تحمي المحتوى من وعود مبالغ فيها أو غير مناسبة لنشاطك.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.banned_phrases}
@@ -391,6 +408,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>ملاحظات الامتثال</Label>
+                <FieldImpact>توجّه رِفد للحدود اللغوية والتنظيمية قبل إنشاء المحتوى.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.compliance_notes}
@@ -407,9 +425,8 @@ function StoreProfilePage() {
               <div>
                 <h3 className="font-bold">ما النتيجة المتوقعة بعد تعبئة هذه الصفحة؟</h3>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  سيصبح رِفد أقدر على إنتاج إعلان مدروس، وصف منتج يزيل التردد، صورة تناسب السوق
-                  السعودي، سكربت فيديو قصير، منشور عرض مباشر، ودعوة شراء واضحة مرتبطة بمتجرك لا
-                  بنموذج عام.
+                  اكتمال الذاكرة = نتائج أقل عمومية وأكثر قرباً من متجرك: نص يبيع، صورة إعلان
+                  مناسبة لهويتك، فيديو قصير يشرح العرض، ودعوة شراء واضحة مرتبطة بسياقك.
                 </p>
               </div>
             </div>
