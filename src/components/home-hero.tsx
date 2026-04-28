@@ -78,7 +78,7 @@ export function HomeHero() {
               size="lg"
               className="h-14 w-full max-w-[19rem] gap-2 gradient-gold text-base font-extrabold text-gold-foreground shadow-gold sm:w-auto sm:px-8"
             >
-              <Link to="/onboarding" onClick={handleCtaClick}>
+              <Link to="/auth" search={{ redirect: "/onboarding" }} onClick={handleCtaClick}>
                 <Sparkles className="h-5 w-5" />
                 ابدأ مجاناً
                 <ArrowLeft className="h-5 w-5" />
