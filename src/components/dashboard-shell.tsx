@@ -37,6 +37,7 @@ import { CreditsBar } from "@/components/credits-bar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/hooks/use-theme";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const NAV = [
   { to: "/dashboard", label: "نظرة عامة", icon: LayoutDashboard },
@@ -73,6 +74,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const { user, profile, loading, isAdmin, signOut } = useAuth();
   const { theme, toggle } = useTheme();
+  const isMobile = useIsMobile();
   const fetchNewContacts = useServerFn(getNewContactCount);
   const [newContactCount, setNewContactCount] = useState(0);
 
@@ -144,8 +146,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-l border-sidebar-border bg-sidebar md:flex">
+      <div className="flex min-h-screen bg-background">
+      <aside className={isMobile ? "hidden" : "sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-l border-sidebar-border bg-sidebar md:flex"}>
         <Link to="/" className="flex items-center gap-2 border-b border-sidebar-border px-5 py-4 font-bold">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary text-primary-foreground">
             <Sparkles className="h-4 w-4" />
@@ -226,14 +228,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
       <div className="flex-1 overflow-x-hidden">
         {/* Desktop top bar — يحوي شريط الرصيد */}
-        <header className="sticky top-0 z-10 hidden border-b border-border bg-background/80 backdrop-blur md:block">
+        <header className={isMobile ? "hidden" : "sticky top-0 z-10 hidden border-b border-border bg-background/80 backdrop-blur md:block"}>
           <div className="flex items-center justify-end gap-3 px-6 py-3">
             <CreditsBar />
           </div>
         </header>
 
         {/* Mobile top bar */}
-        <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur md:hidden">
+        <header className={isMobile ? "sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur" : "sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur md:hidden"}>
           <div className="flex items-center justify-between gap-2 px-4 py-3">
             <Link to="/" className="flex items-center gap-2 font-bold">
               <Sparkles className="h-4 w-4 text-primary" /> رِفد
