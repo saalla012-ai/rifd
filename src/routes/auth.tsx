@@ -65,6 +65,10 @@ function AuthPage() {
     if (onboardingIntent) setMode("signup");
   }, [onboardingIntent]);
 
+  useEffect(() => {
+    if (mode === "login") window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+  }, [mode]);
+
   // إذا المستخدم مسجل دخول، حوّله مباشرة
   useEffect(() => {
     if (authLoading) return;
@@ -107,7 +111,10 @@ function AuthPage() {
             data: { full_name: name.trim() },
           },
         });
-        if (error) throw error;
+        if (error) {
+          window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+          throw error;
+        }
         track("signup_completed", { method: "email" });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
       } else {
@@ -155,6 +162,7 @@ function AuthPage() {
         redirect_uri: `${window.location.origin}${authReturnPath}`,
       });
       if (result.error) {
+        window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
         console.warn("[auth] google oauth rejected", result.error.message);
         toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
         setGoogleLoading(false);
@@ -164,7 +172,8 @@ function AuthPage() {
       // إذا رجعت tokens، الجلسة بتنحفظ والـuseEffect أعلاه يحوّل للوجهة الصحيحة
     } catch (err) {
       console.warn("[auth] google oauth error", err);
-      toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
+        window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+        toast.error("فشل الاتصال بـGoogle. حاول مرة أخرى بعد قليل.");
       setGoogleLoading(false);
     }
   };
@@ -198,7 +207,7 @@ function AuthPage() {
       <div className="mt-2 flex items-start gap-2 text-xs leading-5">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
         <p className={cn("text-muted-foreground", whatsappTouched && !whatsappValid && "text-destructive")}>
-          {whatsappTouched && !whatsappValid ? SAUDI_PHONE_ERROR : "مطلوب فقط للتواصل الخاص بتجهيز الحساب."}
+          {whatsappTouched && !whatsappValid ? SAUDI_PHONE_ERROR : "لحجز إعداد حسابك ومتابعة التجهيز عبر واتساب."}
         </p>
       </div>
     </div>
@@ -213,12 +222,12 @@ function AuthPage() {
               <Sparkles className="h-6 w-6" />
             </span>
               <h1 className="mt-4 text-2xl font-extrabold">
-                {mode === "login" ? "أهلاً بعودتك" : "ابدأ مجاناً مع رِفد"}
+                {mode === "login" ? "أهلاً بعودتك" : "ابدأ حسابك خلال دقيقة"}
             </h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {mode === "login"
                 ? "ادخل لمتابعة توليد المحتوى لمتجرك"
-                  : "أنشئ حسابك ثم جهّز أول حزمة محتوى لمتجرك بالعامية السعودية: منشور، صورة، وفكرة فيديو"}
+                  : "سجّل بجوجل أو البريد، ثم نبني ذاكرة متجرك ونجهّز أول حزمة محتوى سعودية."}
             </p>
           </div>
 
@@ -249,8 +258,11 @@ function AuthPage() {
             type="button"
             variant="outline"
             onClick={handleGoogle}
-            disabled={googleLoading || submitting || (mode === "signup" && !whatsappValid)}
-            className="w-full gap-2"
+            disabled={googleLoading || submitting}
+            className={cn(
+              "h-11 w-full gap-2 font-extrabold",
+              mode === "signup" && "border-primary/40 bg-primary/5 hover:bg-primary/10",
+            )}
           >
             {googleLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -262,7 +274,7 @@ function AuthPage() {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
             )}
-            متابعة بحساب Google
+            {mode === "signup" ? "سجّل سريعاً بحساب Google" : "متابعة بحساب Google"}
           </Button>
 
           <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
@@ -287,6 +299,9 @@ function AuthPage() {
                       className="pr-10"
                     />
                   </div>
+                </div>
+                <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-xs font-bold leading-5 text-muted-foreground">
+                  Google هو الأسرع، والبريد متاح إذا تفضل كلمة سر خاصة.
                 </div>
               </>
             )}
