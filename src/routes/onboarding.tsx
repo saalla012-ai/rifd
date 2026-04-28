@@ -65,7 +65,7 @@ const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "
 function OnboardingPage() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const [step, setStep] = useState(1);
+  const [stage, setStage] = useState<"form" | "success">("form");
   const [storeName, setStoreName] = useState("");
   const [productType, setProductType] = useState("dropshipping");
   const [audience, setAudience] = useState("young");
@@ -75,6 +75,16 @@ function OnboardingPage() {
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
   const trimmedStoreName = storeName.trim();
+
+  const profilePayload = {
+    email: user?.email ?? null,
+    full_name: (user?.user_metadata?.full_name as string | undefined) ?? (user?.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
+    store_name: trimmedStoreName,
+    product_type: productType,
+    audience,
+    tone,
+    brand_color: color,
+  };
 
   // المستخدم لازم يكون مسجل دخول للوصول
   useEffect(() => {
@@ -103,26 +113,18 @@ function OnboardingPage() {
     }
 
     try {
-      // 1) احفظ ملف المتجر
       const { error } = await supabase
         .from("profiles")
         .upsert({
           id: user.id,
-          email: user.email ?? null,
-          full_name: (user.user_metadata?.full_name as string | undefined) ?? (user.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
-          store_name: trimmedStoreName,
-          product_type: productType,
-          audience,
-          tone,
-          brand_color: color,
-          onboarded: true,
+          ...profilePayload,
+          onboarded: false,
         });
 
       if (error) throw error;
       track("onboarding_completed", { product_type: productType, audience });
       await refreshProfile();
 
-      // 2) ولّد أول منشور حقيقي عبر AI (يستخدم سياق الملف الجديد)
       const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
       const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
       const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${trimmedStoreName}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
@@ -145,11 +147,37 @@ function OnboardingPage() {
           primaryPost: out.result,
         }),
       );
-      setStep(3);
+      const { error: completeError } = await supabase
+        .from("profiles")
+        .update({ onboarded: true })
+        .eq("id", user.id);
+      if (completeError) throw completeError;
+      await refreshProfile();
+      setStage("success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       console.warn("[onboarding] failed", message);
       toast.error("فشل إنشاء المحتوى");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const skipToDashboard = async () => {
+    if (!user || !trimmedStoreName) return;
+    setGenerating(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({ id: user.id, ...profilePayload, onboarded: true });
+      if (error) throw error;
+      track("onboarding_skipped_pack", { product_type: productType, audience });
+      await refreshProfile();
+      void navigate({ to: "/dashboard" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      console.warn("[onboarding] skip failed", message);
+      toast.error("تعذر حفظ الإعدادات الآن");
     } finally {
       setGenerating(false);
     }
