@@ -33,11 +33,11 @@ import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "ابدأ مع رِفد — 4 خطوات لأول محتوى مخصص لمتجرك" },
-      { name: "description", content: "أنشئ ملف متجرك في 3 دقائق واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
-      { property: "og:title", content: "ابدأ مع رِفد — 4 خطوات لأول حملة مخصصة لمتجرك" },
+      { title: "ابدأ مع رِفد — خطوتان لأول محتوى مخصص" },
+      { name: "description", content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
+      { property: "og:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
       { property: "og:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
-      { name: "twitter:title", content: "ابدأ مع رِفد — 4 خطوات لأول حملة مخصصة لمتجرك" },
+      { name: "twitter:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
       { name: "twitter:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
@@ -87,7 +87,7 @@ function OnboardingPage() {
     if (profile?.brand_color) setColor(profile.brand_color);
   }, [authLoading, user, profile, navigate]);
 
-  const next = () => setStep((s) => Math.min(5, s + 1));
+  const next = () => setStep((s) => Math.min(2, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
 
   const finish = async () => {
@@ -149,7 +149,7 @@ function OnboardingPage() {
           primaryPost: out.result,
         })
       );
-      setStep(5);
+      setStep(3);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "فشل إنشاء المحتوى");
     } finally {
