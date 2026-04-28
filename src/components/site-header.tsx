@@ -32,7 +32,7 @@ export function SiteHeader() {
             </span>
           </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex lg:gap-1">
+        <nav className="hidden items-center gap-0.5 xl:flex xl:gap-1">
           {NAV.map((item) => (
             <Link
               key={item.to}
@@ -56,10 +56,10 @@ export function SiteHeader() {
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button asChild size="sm" className="h-9 px-3 text-xs shadow-elegant lg:hidden">
+          <Button asChild size="sm" className="h-9 px-3 text-xs shadow-elegant xl:hidden">
             <Link to="/onboarding">ابدأ مجاناً</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex">
+          <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex">
             <Link to="/auth">تسجيل دخول</Link>
           </Button>
           <Button asChild size="sm" className="hidden xl:inline-flex shadow-elegant">
@@ -68,7 +68,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 lg:hidden"
+            className="h-9 w-9 xl:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label="القائمة"
           >
@@ -79,7 +79,7 @@ export function SiteHeader() {
 
       <div
         className={cn(
-          "border-t border-border bg-background/95 backdrop-blur-md lg:hidden",
+          "border-t border-border bg-background/95 backdrop-blur-md xl:hidden",
           open ? "block" : "hidden"
         )}
       >
