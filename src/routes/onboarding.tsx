@@ -91,7 +91,6 @@ function OnboardingPage() {
     full_name: (user?.user_metadata?.full_name as string | undefined) ?? (user?.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
   };
 
-  // المستخدم لازم يكون مسجل دخول للوصول
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -101,7 +100,6 @@ function OnboardingPage() {
     if (profile?.onboarded && stage === "form") {
       void navigate({ to: "/dashboard" });
     }
-    // عبّي القيم لو فيه profile جزئي
     if (profile?.store_name) setStoreName(profile.store_name);
     if (profile?.product_type) setProductType(profile.product_type);
     if (profile?.audience) setAudience(profile.audience);
@@ -190,12 +188,33 @@ function OnboardingPage() {
     }
   };
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return (
       <MarketingLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
+      </MarketingLayout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <MarketingLayout>
+        <main className="mx-auto flex min-h-[60vh] max-w-lg items-center px-4 py-12 text-center">
+          <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-elegant sm:p-8">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck className="h-6 w-6" />
+            </span>
+            <h1 className="mt-4 text-2xl font-black leading-tight">ابدأ الإعداد بعد تسجيل الدخول</h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              نحفظ ذاكرة متجرك داخل حسابك حتى تظهر اقتراحات رِفد مخصصة لك في كل مرة.
+            </p>
+            <Button asChild className="mt-5 h-11 w-full gradient-primary font-extrabold text-primary-foreground">
+              <a href="/auth?redirect=/onboarding">تسجيل الدخول أو إنشاء حساب</a>
+            </Button>
+          </div>
+        </main>
       </MarketingLayout>
     );
   }
