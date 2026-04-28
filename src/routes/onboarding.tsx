@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Loader2, Sparkles, Zap } from "lucide-react";
+import { CheckCircle2, Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -34,11 +34,20 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
       { title: "ابدأ مع رِفد — خطوتان لأول محتوى مخصص" },
-      { name: "description", content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
+      {
+        name: "description",
+        content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد.",
+      },
       { property: "og:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
-      { property: "og:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
+      {
+        property: "og:description",
+        content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+      },
       { name: "twitter:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
-      { name: "twitter:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
+      {
+        name: "twitter:description",
+        content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
   }),
@@ -51,6 +60,19 @@ const TONES = [
   { id: "luxury", label: "فخم وراقي" },
   { id: "friendly", label: "ودود وعائلي" },
 ];
+
+const setupProof = [
+  { icon: Target, label: "زاوية بيع أوضح" },
+  { icon: ShieldCheck, label: "اعتراضات أقل قبل الشراء" },
+  { icon: Sparkles, label: "مخرجات جاهزة للحملة" },
+] as const;
+
+const quickOutputs = [
+  "منشور عرض مباشر",
+  "وصف منتج يزيل التردد",
+  "فكرة صورة تناسب السوق السعودي",
+  "سكربت فيديو قصير",
+] as const;
 
 function OnboardingPage() {
   const navigate = useNavigate();
@@ -125,10 +147,8 @@ function OnboardingPage() {
       await refreshProfile();
 
       // 2) ولّد أول منشور حقيقي عبر AI (يستخدم سياق الملف الجديد)
-      const productLabel =
-        PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
-      const audienceLabel =
-        AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
+      const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
+      const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
       const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${storeName.trim()}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
 
       const out = await generateText({
@@ -147,7 +167,7 @@ function OnboardingPage() {
           audienceLabel,
           tone,
           primaryPost: out.result,
-        })
+        }),
       );
       setStep(3);
     } catch (err) {
@@ -175,14 +195,26 @@ function OnboardingPage() {
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
                 <Zap className="h-3.5 w-3.5" />
-                بداية +150 قدرة محتوى لمتجرك
+                بناء متجر يختصر قرار الشراء
               </span>
               <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-                جهّز أول حزمة محتوى بالعامية السعودية
+                ابنِ ذاكرة متجرك ثم شاهد أول حزمة بيع جاهزة
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                خطوتان فقط تربطانك بأول حزمة محتوى قابلة للنشر: منشور يبيع، صور تبيع، وفيديو يبيع.
+                خطوتان فقط تحوّل وصف المتجر إلى زاوية بيع، منشور، صورة، Reel وCTA واضح يناسب السوق
+                السعودي.
               </p>
+            </div>
+            <div className="mb-5 grid gap-2 sm:grid-cols-3">
+              {setupProof.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-foreground shadow-soft"
+                >
+                  <item.icon className="h-3.5 w-3.5 text-primary" />
+                  {item.label}
+                </div>
+              ))}
             </div>
             <div className="mb-4 flex items-center justify-between">
               <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 2</span>
@@ -197,7 +229,7 @@ function OnboardingPage() {
                   key={i}
                   className={cn(
                     "h-1.5 flex-1 rounded-full transition-colors",
-                    i <= step ? "bg-primary" : "bg-secondary"
+                    i <= step ? "bg-primary" : "bg-secondary",
                   )}
                 />
               ))}
@@ -212,8 +244,12 @@ function OnboardingPage() {
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
-                <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على متجرك</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">معلومتان فقط حتى يبدأ رِفد بتخصيص المحتوى بدل كتابة أوامر عامة في ChatGPT</p>
+                <h2 className="mt-3 text-2xl font-extrabold">
+                  عرّفنا على المتجر الذي تريد أن يبيع بوضوح
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  نحتاج أقل بيانات مؤثرة فقط حتى لا يخرج المحتوى عاماً أو مفصولاً عن جمهورك الفعلي.
+                </p>
               </div>
               <div>
                 <Label htmlFor="store">
@@ -223,7 +259,7 @@ function OnboardingPage() {
                   id="store"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
-                  placeholder="مثلاً: متجر النور"
+                  placeholder="مثلاً: لمسة عطر / دار العباءة"
                   className="mt-1"
                   maxLength={80}
                   autoFocus
@@ -244,7 +280,7 @@ function OnboardingPage() {
                   inputMode="tel"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  للتنبيهات المهمة وتفعيل اشتراكك — لن نتصل بك مطلقاً، واتساب فقط ✅
+                  لإرسال التنبيهات المهمة وتفعيل الاشتراك — واتساب فقط، بدون اتصال مزعج.
                 </p>
               </div>
               <div>
@@ -259,7 +295,7 @@ function OnboardingPage() {
                         "rounded-lg border p-3 text-sm font-medium transition-colors",
                         productType === p.id
                           ? "border-primary bg-primary/10 text-primary"
-                          : "border-border hover:border-primary/40"
+                          : "border-border hover:border-primary/40",
                       )}
                     >
                       {p.label}
@@ -272,20 +308,41 @@ function OnboardingPage() {
                 disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
                 className="h-12 w-full gradient-primary font-extrabold text-primary-foreground"
               >
-                خصّص محتوى متجري
+                أكمل زاوية البيع
               </Button>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {quickOutputs.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-lg bg-secondary/60 px-3 py-2 text-xs font-bold text-muted-foreground"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">تخصيص سريع قبل التوليد</h2>
-              <p className="text-sm leading-6 text-muted-foreground">اختياران فقط يكفيان لرفع جودة أول حزمة محتوى.</p>
+              <div>
+                <h2 className="text-2xl font-extrabold">ثبّت الجمهور والنبرة قبل أول نتيجة</h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  هذه الاختيارات تحدد: هل نخاطب العميل بالسعر، الثقة، الهدية، الفخامة، أو سرعة
+                  القرار.
+                </p>
+              </div>
               <Label>من جمهورك المستهدف؟</Label>
               <Select value={audience} onValueChange={setAudience}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {AUDIENCES.map((a) => <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>)}
+                  {AUDIENCES.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Label>النبرة الأقرب لعلامتك</Label>
@@ -299,7 +356,7 @@ function OnboardingPage() {
                       "rounded-lg border p-3 text-sm font-medium",
                       tone === t.id
                         ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary/40"
+                        : "border-border hover:border-primary/40",
                     )}
                   >
                     {t.label}
@@ -316,21 +373,39 @@ function OnboardingPage() {
                     onChange={(e) => setColor(e.target.value)}
                     className="h-10 w-16 cursor-pointer rounded-md border border-input bg-background"
                   />
-                  <Input value={color} onChange={(e) => setColor(e.target.value)} className="font-mono" />
+                  <Input
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="font-mono"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary font-extrabold text-primary-foreground shadow-elegant">
-                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الحزمة...</> : <>أنشئ أول حزمة محتوى ✨</>}
+                <Button variant="outline" onClick={prev} className="flex-1">
+                  السابق
                 </Button>
+                <Button
+                  onClick={finish}
+                  disabled={generating}
+                  className="flex-1 gradient-primary font-extrabold text-primary-foreground shadow-elegant"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> جاري بناء الحزمة البيعية...
+                    </>
+                  ) : (
+                    <>أنشئ أول حزمة بيع ✨</>
+                  )}
+                </Button>
+              </div>
+              <div className="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-7 text-foreground/85">
+                النتيجة التالية ليست منشوراً واحداً فقط؛ ستظهر زاوية حملة، CTA، فكرة صورة، وسكربت
+                Reel حتى تعرف ماذا تنشر بعد الضغط مباشرة.
               </div>
             </div>
           )}
 
-          {step === 3 && result && successPack && (
-            <OnboardingSuccessPack pack={successPack} />
-          )}
+          {step === 3 && result && successPack && <OnboardingSuccessPack pack={successPack} />}
         </div>
       </div>
     </MarketingLayout>
