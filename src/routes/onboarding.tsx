@@ -144,7 +144,10 @@ function OnboardingPage() {
       // 1) احفظ ملف المتجر
       const { error } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          id: user.id,
+          email: user.email ?? null,
+          full_name: (user.user_metadata?.full_name as string | undefined) ?? (user.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
           store_name: trimmedStoreName,
           whatsapp: normalizedWhatsapp,
           product_type: productType,
@@ -152,8 +155,7 @@ function OnboardingPage() {
           tone,
           brand_color: color,
           onboarded: true,
-        })
-        .eq("id", user.id);
+        });
 
       if (error) throw error;
       track("onboarding_completed", { product_type: productType, audience });
