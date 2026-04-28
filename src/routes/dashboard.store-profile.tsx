@@ -326,6 +326,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>دعوة الشراء المفضلة</Label>
+                <FieldImpact>توحّد نهاية النصوص والإعلانات حسب مسار الشراء الفعلي.</FieldImpact>
                 <Input
                   className="mt-1"
                   value={form.cta_style}
@@ -335,6 +336,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>المنتجات التي تستحق دفع البيع لها</Label>
+                <FieldImpact>تساعد على دفع المنتجات الأعلى قيمة في الحملات والمحتوى.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.high_margin_products}
@@ -344,6 +346,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>الأولويات الموسمية</Label>
+                <FieldImpact>تجعل القوالب والعروض أقرب للموسم الحالي بدل محتوى عام.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.seasonal_priorities}
@@ -353,6 +356,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>اعتراضات وأسئلة ما قبل الشراء</Label>
+                <FieldImpact>تحوّل المخاوف المتكررة إلى نقاط ثقة داخل النصوص.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.faq_notes}
@@ -368,6 +372,7 @@ function StoreProfilePage() {
             <div className={formGridClass}>
               <div>
                 <Label>سياسة الشحن</Label>
+                <FieldImpact>تضيف وضوحاً يقلل تردد العميل قبل الطلب.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.shipping_policy}
@@ -377,6 +382,7 @@ function StoreProfilePage() {
               </div>
               <div>
                 <Label>سياسة الاستبدال / الاسترجاع</Label>
+                <FieldImpact>تُستخدم كدليل ثقة في وصف المنتج والإعلانات.</FieldImpact>
                 <Textarea
                   className="mt-1"
                   value={form.exchange_policy}
