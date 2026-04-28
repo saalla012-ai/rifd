@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Clapperboard, Crown, Download, Film, ImageUp, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Upload, Wand2, Zap } from "lucide-react";
@@ -209,7 +209,7 @@ function GenerateVideoPage() {
     toast.success("تم تطبيق قالب برومبت سعودي مدروس");
   };
 
-  const loadJobs = async () => {
+  const loadJobs = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -226,30 +226,7 @@ function GenerateVideoPage() {
     } catch {
       // لا نزعج المستخدم عند فشل تحميل السجل المصغر
     }
-  };
-
-  useEffect(() => {
-    void loadJobs();
-  }, []);
-
-  useEffect(() => {
-    if (!activeJobInProgress) return;
-    const id = window.setInterval(() => void refreshActiveJob(false), 8_000);
-    return () => window.clearInterval(id);
-  }, [activeJob?.id, activeJobInProgress]);
-
-  useEffect(() => {
-    setPreviewError(false);
-  }, [latestResult]);
-
-  useEffect(() => {
-    if (!internalMediumTestMode) return;
-    if (!mediumTestCanonicalSample) return;
-    setQuality(mediumTestCanonicalSample.quality);
-    setAspectRatio(mediumTestCanonicalSample.expectedAspectRatio);
-    setSelectedPersonaId(mediumTestCanonicalSample.personaId);
-    setPrompt(mediumTestCanonicalSample.finalPrompt);
-  }, [internalMediumTestMode, mediumTestCanonicalSample]);
+  }, [activeJob, internalMediumTestMode, listVideoJobsFn, mediumTestCanonicalSample]);
 
   const generate = async () => {
     if (canonicalGenerationPrompt.trim().length < 10) {
@@ -301,7 +278,7 @@ function GenerateVideoPage() {
     }
   };
 
-  const refreshActiveJob = async (showToast = true) => {
+  const refreshActiveJob = useCallback(async (showToast = true) => {
     if (!activeJob) return;
     try {
       const previousStatus = activeJob.status;
@@ -319,7 +296,30 @@ function GenerateVideoPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل تحديث حالة الفيديو");
     }
-  };
+  }, [activeJob, refreshCredits, refreshVideoJobFn]);
+
+  useEffect(() => {
+    void loadJobs();
+  }, [loadJobs]);
+
+  useEffect(() => {
+    if (!activeJobInProgress) return;
+    const id = window.setInterval(() => void refreshActiveJob(false), 8_000);
+    return () => window.clearInterval(id);
+  }, [activeJobInProgress, refreshActiveJob]);
+
+  useEffect(() => {
+    setPreviewError(false);
+  }, [latestResult]);
+
+  useEffect(() => {
+    if (!internalMediumTestMode) return;
+    if (!mediumTestCanonicalSample) return;
+    setQuality(mediumTestCanonicalSample.quality);
+    setAspectRatio(mediumTestCanonicalSample.expectedAspectRatio);
+    setSelectedPersonaId(mediumTestCanonicalSample.personaId);
+    setPrompt(mediumTestCanonicalSample.finalPrompt);
+  }, [internalMediumTestMode, mediumTestCanonicalSample]);
 
   const downloadLatestVideo = async () => {
     if (!latestResult) return;
