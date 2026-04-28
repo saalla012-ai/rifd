@@ -9,7 +9,7 @@
  * يعتمد على trg_lock_topup_from_package لمنع التلاعب بالكميات/الأسعار.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -35,9 +35,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { listTopupPackages } from "@/server/credits";
 import { cn } from "@/lib/utils";
+import { estimateVideoCount, VIDEO_QUALITY_LABELS, videoCreditCost } from "@/lib/plan-catalog";
 
 export const Route = createFileRoute("/dashboard/credits")({
-  head: () => ({ meta: [{ title: "شحن نقاط الفيديو — رِفد" }] }),
+  head: () => ({ meta: [{ title: "نقاط الفيديو: وقود حملاتك المرئية — رِفد" }] }),
   component: CreditsPage,
 });
 
@@ -88,13 +89,7 @@ function CreditsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeUploadFor, setActiveUploadFor] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    void loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -112,7 +107,12 @@ function CreditsPage() {
     setPackages((pkgRes?.packages as Package[]) ?? []);
     setPurchases((purchaseRes.data as Purchase[]) ?? []);
     setLoading(false);
-  }
+  }, [fetchPackages]);
+
+  useEffect(() => {
+    if (!user) return;
+    void loadAll();
+  }, [user, loadAll]);
 
   const pendingPurchase = useMemo(
     () => purchases.find((p) => p.status === "pending" || p.status === "paid"),
@@ -213,6 +213,9 @@ function CreditsPage() {
   const total = summary?.totalCredits ?? 0;
   const planCr = summary?.planCredits ?? 0;
   const topupCr = summary?.topupCredits ?? 0;
+  const fastVideos = estimateVideoCount(total, "fast", 5);
+  const adVideos = estimateVideoCount(total, "lite", 8);
+  const proVideos = estimateVideoCount(total, "quality", 8);
 
   return (
     <DashboardShell>
@@ -225,13 +228,14 @@ function CreditsPage() {
       />
 
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between gap-3">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold flex items-center gap-2">
-            <Coins className="h-6 w-6 text-gold" /> شحن نقاط الفيديو
+          <p className="text-xs font-bold text-primary">المرحلة 5 من الخطة · التقدم 97%</p>
+          <h1 className="mt-1 flex items-center gap-2 text-2xl font-extrabold">
+            <Coins className="h-6 w-6 text-gold" /> نقاط الفيديو: وقود حملاتك المرئية
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            باقات إضافية للفيديو — لا تنتهي مع تجدّد الباقة الشهرية
+            اشحن رصيداً إضافياً للفيديو عند تكثيف الحملات؛ نقاط الشحن لا تختفي مع تجدّد الباقة.
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -244,11 +248,14 @@ function CreditsPage() {
 
       {/* Current Balance Card */}
       <div className="mb-6 rounded-2xl gradient-primary p-5 text-primary-foreground shadow-elegant">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs opacity-80">رصيدك الحالي</p>
+            <p className="text-xs opacity-80">رصيد حملات الفيديو الآن</p>
             <p className="mt-1 text-3xl font-extrabold tabular-nums">
               {fmt(total)} <span className="text-base font-medium opacity-80">نقطة فيديو</span>
+            </p>
+            <p className="mt-2 text-xs opacity-80">
+              يكفي تقريباً {fmt(fastVideos)} فيديو {VIDEO_QUALITY_LABELS.fast} أو {fmt(adVideos)} فيديو {VIDEO_QUALITY_LABELS.lite} أو {fmt(proVideos)} فيديو {VIDEO_QUALITY_LABELS.quality}.
             </p>
           </div>
           <div className="hidden rounded-full bg-primary-foreground/15 p-4 sm:block">
@@ -257,14 +264,29 @@ function CreditsPage() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
           <div className="rounded-md bg-primary-foreground/10 p-2.5">
-            <p className="opacity-70">من الباقة</p>
+            <p className="opacity-70">رصيد الباقة الشهري</p>
             <p className="mt-0.5 font-bold tabular-nums">{fmt(planCr)}</p>
           </div>
           <div className="rounded-md bg-primary-foreground/10 p-2.5">
-            <p className="opacity-70">شحن إضافي</p>
+            <p className="opacity-70">رصيد شحن لا ينتهي</p>
             <p className="mt-0.5 font-bold tabular-nums">{fmt(topupCr)}</p>
           </div>
         </div>
+      </div>
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        {(["fast", "lite", "quality"] as const).map((quality) => {
+          const duration = quality === "fast" ? 5 : 8;
+          const cost = videoCreditCost(quality, duration);
+          const count = estimateVideoCount(total, quality, duration);
+          return (
+            <div key={quality} className="rounded-xl border border-border bg-card p-4">
+              <p className="text-sm font-bold">فيديو {VIDEO_QUALITY_LABELS[quality]}</p>
+              <p className="mt-1 text-2xl font-extrabold tabular-nums">{fmt(count)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">تقريباً · {fmt(cost)} نقطة للفيديو</p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Pending purchase banner */}
@@ -300,7 +322,7 @@ function CreditsPage() {
 
       {/* Packages grid */}
       <div className="mb-8">
-        <h2 className="mb-3 text-lg font-bold">اختر باقة الشحن</h2>
+        <h2 className="mb-3 text-lg font-bold">اختر وقود حملتك التالية</h2>
         {loading ? (
           <div className="flex justify-center py-10">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -337,7 +359,7 @@ function CreditsPage() {
                     <div>
                       <p className="text-sm font-bold">{pkg.display_name}</p>
                       <p className="text-[10px] text-muted-foreground">
-                        ~{pricePerCredit.toFixed(1)} هللة / 1000 نقطة فيديو
+                        تعادل تقريباً {fmt(estimateVideoCount(pkg.credits, "lite", 8))} فيديو {VIDEO_QUALITY_LABELS.lite}
                       </p>
                     </div>
                   </div>
@@ -348,8 +370,11 @@ function CreditsPage() {
                   </div>
                   <div className="mt-1 text-sm">
                     <span className="font-bold text-primary">{fmt(pkg.price_sar)} ر.س</span>{" "}
-                    <span className="text-xs text-muted-foreground">تفاصيل الفوترة تظهر عند التفعيل</span>
+                    <span className="text-xs text-muted-foreground">~{pricePerCredit.toFixed(1)} هللة لكل 1000 نقطة</span>
                   </div>
+                  <p className="mt-3 rounded-lg bg-secondary/60 p-2 text-xs text-muted-foreground">
+                    مناسب عند إطلاق عرض جديد أو تشغيل عدة نسخ فيديو للحملة نفسها.
+                  </p>
 
                   <Button
                     className="mt-4 w-full"
@@ -414,8 +439,8 @@ function CreditsPage() {
       {/* Trust footer */}
       <div className="mt-8 rounded-xl border border-border bg-secondary/30 p-4 text-center">
         <Crown className="mx-auto h-5 w-5 text-gold" />
-        <p className="mt-2 text-xs text-muted-foreground">
-          نقاط الفيديو الإضافية لا تنتهي مع تجدّد الباقة · يتم التفعيل خلال 24 ساعة
+          <p className="mt-2 text-xs text-muted-foreground">
+          نقاط الشحن الإضافية تبقى في رصيدك بعد تجدد الباقة · يتم التفعيل خلال 24 ساعة
         </p>
       </div>
     </DashboardShell>
