@@ -213,6 +213,9 @@ function CreditsPage() {
   const total = summary?.totalCredits ?? 0;
   const planCr = summary?.planCredits ?? 0;
   const topupCr = summary?.topupCredits ?? 0;
+  const fastVideos = estimateVideoCount(total, "fast", 5);
+  const adVideos = estimateVideoCount(total, "lite", 8);
+  const proVideos = estimateVideoCount(total, "quality", 8);
 
   return (
     <DashboardShell>
@@ -225,13 +228,14 @@ function CreditsPage() {
       />
 
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between gap-3">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold flex items-center gap-2">
-            <Coins className="h-6 w-6 text-gold" /> شحن نقاط الفيديو
+          <p className="text-xs font-bold text-primary">المرحلة 5 من الخطة · التقدم 97%</p>
+          <h1 className="mt-1 flex items-center gap-2 text-2xl font-extrabold">
+            <Coins className="h-6 w-6 text-gold" /> نقاط الفيديو: وقود حملاتك المرئية
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            باقات إضافية للفيديو — لا تنتهي مع تجدّد الباقة الشهرية
+            اشحن رصيداً إضافياً للفيديو عند تكثيف الحملات؛ نقاط الشحن لا تختفي مع تجدّد الباقة.
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -244,11 +248,14 @@ function CreditsPage() {
 
       {/* Current Balance Card */}
       <div className="mb-6 rounded-2xl gradient-primary p-5 text-primary-foreground shadow-elegant">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs opacity-80">رصيدك الحالي</p>
+            <p className="text-xs opacity-80">رصيد حملات الفيديو الآن</p>
             <p className="mt-1 text-3xl font-extrabold tabular-nums">
               {fmt(total)} <span className="text-base font-medium opacity-80">نقطة فيديو</span>
+            </p>
+            <p className="mt-2 text-xs opacity-80">
+              يكفي تقريباً {fmt(fastVideos)} فيديو {VIDEO_QUALITY_LABELS.fast} أو {fmt(adVideos)} فيديو {VIDEO_QUALITY_LABELS.lite} أو {fmt(proVideos)} فيديو {VIDEO_QUALITY_LABELS.quality}.
             </p>
           </div>
           <div className="hidden rounded-full bg-primary-foreground/15 p-4 sm:block">
@@ -257,14 +264,29 @@ function CreditsPage() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
           <div className="rounded-md bg-primary-foreground/10 p-2.5">
-            <p className="opacity-70">من الباقة</p>
+            <p className="opacity-70">رصيد الباقة الشهري</p>
             <p className="mt-0.5 font-bold tabular-nums">{fmt(planCr)}</p>
           </div>
           <div className="rounded-md bg-primary-foreground/10 p-2.5">
-            <p className="opacity-70">شحن إضافي</p>
+            <p className="opacity-70">رصيد شحن لا ينتهي</p>
             <p className="mt-0.5 font-bold tabular-nums">{fmt(topupCr)}</p>
           </div>
         </div>
+      </div>
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        {(["fast", "lite", "quality"] as const).map((quality) => {
+          const duration = quality === "fast" ? 5 : 8;
+          const cost = videoCreditCost(quality, duration);
+          const count = estimateVideoCount(total, quality, duration);
+          return (
+            <div key={quality} className="rounded-xl border border-border bg-card p-4">
+              <p className="text-sm font-bold">فيديو {VIDEO_QUALITY_LABELS[quality]}</p>
+              <p className="mt-1 text-2xl font-extrabold tabular-nums">{fmt(count)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">تقريباً · {fmt(cost)} نقطة للفيديو</p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Pending purchase banner */}
