@@ -270,22 +270,46 @@ function OnboardingPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="whatsapp">
-                  رقم واتساب <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="whatsapp"
-                  className="mt-1 ltr"
-                  dir="ltr"
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder={SAUDI_PHONE_PLACEHOLDER}
-                  maxLength={20}
-                  inputMode="tel"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  لإرسال التنبيهات المهمة وتفعيل الاشتراك — واتساب فقط، بدون اتصال مزعج.
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="whatsapp">
+                    رقم الجوال للواتساب <span className="text-destructive">*</span>
+                  </Label>
+                  <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-extrabold text-success">
+                    بدون OTP
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "mt-1 flex min-h-12 items-center overflow-hidden rounded-lg border bg-background shadow-sm transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring",
+                    whatsappTouched && !whatsappValid ? "border-destructive" : "border-input",
+                  )}
+                >
+                  <div className="flex h-12 shrink-0 items-center gap-2 border-l border-border bg-secondary px-3 text-sm font-extrabold text-foreground">
+                    <MessageCircle className="h-4 w-4 text-success" />
+                    <span dir="ltr">+966</span>
+                  </div>
+                  <Input
+                    id="whatsapp"
+                    className="h-12 border-0 bg-transparent px-3 text-left font-bold tracking-normal shadow-none ring-0 placeholder:text-muted-foreground focus-visible:ring-0"
+                    dir="ltr"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder={SAUDI_PHONE_PLACEHOLDER}
+                    maxLength={20}
+                    inputMode="tel"
+                    autoComplete="tel"
+                    aria-invalid={whatsappTouched && !whatsappValid}
+                    aria-describedby="whatsapp-help"
+                  />
+                </div>
+                <div id="whatsapp-help" className="mt-2 flex items-start gap-2 text-xs leading-5">
+                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                  <p className={cn("text-muted-foreground", whatsappTouched && !whatsappValid && "text-destructive")}>
+                    {whatsappTouched && !whatsappValid
+                      ? SAUDI_PHONE_ERROR
+                      : "نستخدمه للتواصل معك على واتساب بخصوص إعداد متجرك فقط — لا رسائل تحقق ولا اتصال مزعج."}
+                  </p>
+                </div>
               </div>
               <div>
                 <Label>وش نوع منتجاتك؟</Label>
@@ -309,7 +333,7 @@ function OnboardingPage() {
               </div>
               <Button
                 onClick={next}
-                disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
+                disabled={!trimmedStoreName || !whatsappValid}
                 className="h-12 w-full gradient-primary font-extrabold text-primary-foreground"
               >
                 أكمل زاوية البيع
