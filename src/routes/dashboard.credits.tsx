@@ -322,7 +322,7 @@ function CreditsPage() {
 
       {/* Packages grid */}
       <div className="mb-8">
-        <h2 className="mb-3 text-lg font-bold">اختر باقة الشحن</h2>
+        <h2 className="mb-3 text-lg font-bold">اختر وقود حملتك التالية</h2>
         {loading ? (
           <div className="flex justify-center py-10">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -359,7 +359,7 @@ function CreditsPage() {
                     <div>
                       <p className="text-sm font-bold">{pkg.display_name}</p>
                       <p className="text-[10px] text-muted-foreground">
-                        ~{pricePerCredit.toFixed(1)} هللة / 1000 نقطة فيديو
+                        تعادل تقريباً {fmt(estimateVideoCount(pkg.credits, "lite", 8))} فيديو {VIDEO_QUALITY_LABELS.lite}
                       </p>
                     </div>
                   </div>
@@ -370,8 +370,11 @@ function CreditsPage() {
                   </div>
                   <div className="mt-1 text-sm">
                     <span className="font-bold text-primary">{fmt(pkg.price_sar)} ر.س</span>{" "}
-                    <span className="text-xs text-muted-foreground">تفاصيل الفوترة تظهر عند التفعيل</span>
+                    <span className="text-xs text-muted-foreground">~{pricePerCredit.toFixed(1)} هللة لكل 1000 نقطة</span>
                   </div>
+                  <p className="mt-3 rounded-lg bg-secondary/60 p-2 text-xs text-muted-foreground">
+                    مناسب عند إطلاق عرض جديد أو تشغيل عدة نسخ فيديو للحملة نفسها.
+                  </p>
 
                   <Button
                     className="mt-4 w-full"
@@ -436,8 +439,8 @@ function CreditsPage() {
       {/* Trust footer */}
       <div className="mt-8 rounded-xl border border-border bg-secondary/30 p-4 text-center">
         <Crown className="mx-auto h-5 w-5 text-gold" />
-        <p className="mt-2 text-xs text-muted-foreground">
-          نقاط الفيديو الإضافية لا تنتهي مع تجدّد الباقة · يتم التفعيل خلال 24 ساعة
+          <p className="mt-2 text-xs text-muted-foreground">
+          نقاط الشحن الإضافية تبقى في رصيدك بعد تجدد الباقة · يتم التفعيل خلال 24 ساعة
         </p>
       </div>
     </DashboardShell>
