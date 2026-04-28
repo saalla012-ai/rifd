@@ -24,11 +24,11 @@ import {
 export const Route = createFileRoute("/dashboard/edit-image")({
   head: () => ({
     meta: [
-      { title: "تعديل صور المنتجات بالـAI — رِفد" },
+      { title: "حسّن صورة منتجك بدل إعادة التصوير — رِفد" },
       {
         name: "description",
         content:
-          "ارفع صورة منتجك وعدّلها بالذكاء الاصطناعي: إزالة خلفية، تحسين إضاءة، إضافة نصوص عربية، خلفيات احترافية.",
+          "ارفع صورة المنتج وحسّنها لإعلان أو صفحة متجر: خلفية أنظف، إضاءة أوضح، ونص عربي عند الحاجة.",
       },
     ],
   }),
@@ -162,10 +162,10 @@ function EditImagePage() {
 
       setResultUrl(out.url);
       setRemaining(out.remainingDaily);
-      toast.success("تم تعديل الصورة ✨");
+      toast.success("الصورة محسّنة وجاهزة ✨");
       router.invalidate();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "خطأ في التعديل";
+      const msg = e instanceof Error ? e.message : "تعذر تحسين الصورة";
       if (isQuotaError(msg)) {
         setQuotaDialog({ open: true, reason: msg });
       } else {
@@ -180,14 +180,14 @@ function EditImagePage() {
     <DashboardShell>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold">تعديل صور المنتجات</h1>
+          <h1 className="text-2xl font-extrabold">حسّن صورة منتجك بدل إعادة التصوير</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            ارفع صورة منتجك وعدّلها بالذكاء الاصطناعي خلال ثوانٍ
+            ارفع صورة المنتج، اختر نوع التحسين، واحصل على نسخة أنظف جاهزة للإعلان أو صفحة المتجر.
           </p>
         </div>
         {remaining !== null && (
           <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
-            باقي {remaining.toLocaleString("ar-SA")} صورة اليوم
+            استخدامك اليومي: باقي {remaining.toLocaleString("ar-SA")} صورة
           </span>
         )}
       </div>
