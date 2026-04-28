@@ -92,9 +92,10 @@ export function HomeHero() {
             </Button>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-bold text-foreground/80 lg:justify-start">
-            {['بدون بطاقة ائتمان', 'بداية سريعة', 'مناسب للمتاجر السعودية'].map((item) => (
-              <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/85 px-3 py-1.5 shadow-soft">
+          <div className="mt-4 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-2xl border border-primary/15 bg-primary/10 px-4 py-3 text-sm font-black leading-7 text-foreground shadow-soft lg:justify-start">
+            <span>خطوتان فقط تربطانك بمحتوى جاهز للتحويل:</span>
+            {['منشور يبيع', 'صور تبيع', 'فيديو يبيع'].map((item) => (
+              <span key={item} className="inline-flex items-center gap-1.5 rounded-full bg-background/80 px-3 py-1 text-xs text-primary shadow-sm">
                 <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                 {item}
               </span>
