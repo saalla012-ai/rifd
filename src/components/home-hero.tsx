@@ -62,17 +62,18 @@ export function HomeHero() {
             محرك محتوى مبني على سلوك السوق السعودي
           </div>
 
-          <h1 className="mt-4 text-[2rem] font-black leading-[1.08] tracking-normal sm:text-5xl lg:text-6xl">
-            <span className="block">محتوى متجرك</span>
-            <span className="mt-1 block text-gradient-primary">يبدو سعودياً… ويبيع.</span>
-            <span className="mt-3 block text-[0.58em] font-extrabold leading-[1.35] text-foreground/90 sm:text-[0.5em]">
-              بدل مخرجات عامة من <bdi dir="ltr">ChatGPT</bdi>: نصوص، صور، وفيديوهات جاهزة للنشر.
-            </span>
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0">
-            رِفد لا يترجم أوامر عامة؛ يحوّل قراءة مدروسة لطريقة تفكير المتسوق السعودي — الثقة، السعر، اللهجة، والموسمية — إلى محتوى مناسب لقنوات البيع والإعلان التي تستخدمها فعلياً.
-          </p>
+          <div className="mx-auto mt-4 max-w-3xl lg:mx-0">
+            <h1 className="text-[1.95rem] font-black leading-[1.14] tracking-normal sm:text-5xl lg:text-6xl">
+              <span className="block">محتوى متجرك مبني على</span>
+              <span className="mt-1 block text-gradient-primary">فهم المتسوق السعودي</span>
+            </h1>
+            <p className="mt-4 text-lg font-black leading-8 text-foreground sm:text-2xl sm:leading-10">
+              نصوص، صور، وفيديوهات تبدو سعودية… وتدفع للشراء.
+            </p>
+            <p className="mx-auto mt-4 max-w-2xl text-sm font-medium leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0">
+              رِفد يحوّل أبحاث سلوك الشراء السعودي — الثقة، السعر، اللهجة، الموسم، وطريقة اتخاذ القرار — إلى محتوى جاهز للنشر على سلة، زد، شوبيفاي، <bdi dir="ltr">Instagram</bdi>، <bdi dir="ltr">TikTok</bdi>، <bdi dir="ltr">Snapchat</bdi>، <bdi dir="ltr">X</bdi> و<bdi dir="ltr">Google Ads</bdi>.
+            </p>
+          </div>
 
           <div className="mx-auto mt-4 flex max-w-2xl flex-wrap justify-center gap-2 lg:mx-0 lg:justify-start">
             {marketSignals.map((signal) => (
