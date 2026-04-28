@@ -84,7 +84,20 @@ function AuthPage() {
     if (user) {
       const pendingWhatsapp = window.localStorage.getItem(PENDING_SIGNUP_PHONE_KEY);
       const mustCompleteOnboarding = Boolean(pendingWhatsapp || onboardingIntent || mode === "signup");
-      if ((pendingWhatsapp && !profile?.whatsapp) || (!profile && mustCompleteOnboarding)) {
+      if (pendingWhatsapp && profile && !profile.whatsapp) {
+        void supabase
+          .from("profiles")
+          .update({ whatsapp: pendingWhatsapp })
+          .eq("id", user.id)
+          .then(({ error }) => {
+            if (error) {
+              toast.error(profilePhoneErrorMessage(error.message));
+              return;
+            }
+            window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
+            void refreshProfile();
+          });
+      } else if (!profile && mustCompleteOnboarding) {
         void supabase
           .from("profiles")
           .upsert({
