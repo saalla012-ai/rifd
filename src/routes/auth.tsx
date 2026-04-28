@@ -38,13 +38,21 @@ function AuthPage() {
   const location = useLocation();
   const search = useSearch({ from: "/auth" });
   const redirectPath = search.redirect ?? "/dashboard";
+  const onboardingIntent =
+    redirectPath === "/onboarding" ||
+    location.searchStr.includes("redirect=/onboarding") ||
+    location.searchStr.includes("redirect=%2Fonboarding");
   const { user, profile, loading: authLoading } = useAuth();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(onboardingIntent ? "signup" : "login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    if (onboardingIntent) setMode("signup");
+  }, [onboardingIntent]);
 
   // إذا المستخدم مسجل دخول، حوّله مباشرة
   useEffect(() => {
@@ -133,13 +141,13 @@ function AuthPage() {
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-elegant">
               <Sparkles className="h-6 w-6" />
             </span>
-            <h1 className="mt-4 text-2xl font-extrabold">
-              {mode === "login" ? "أهلاً بعودتك" : "أنشئ حسابك في ثوانٍ"}
+              <h1 className="mt-4 text-2xl font-extrabold">
+                {mode === "login" ? "أهلاً بعودتك" : "ابدأ مجاناً مع رِفد"}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {mode === "login"
                 ? "ادخل لمتابعة توليد المحتوى لمتجرك"
-                : "جرّب رِفد بحدود بداية واضحة، بدون بطاقة"}
+                  : "أنشئ حسابك ثم جهّز أول حزمة محتوى لمتجرك بالعامية السعودية — بدون بطاقة ائتمان"}
             </p>
           </div>
 

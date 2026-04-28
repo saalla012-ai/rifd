@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Sparkles, ArrowLeft, Check, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -169,11 +169,27 @@ function OnboardingPage() {
 
   return (
     <MarketingLayout>
-      <div className="mx-auto max-w-2xl px-4 py-10">
+      <div className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
         {step <= 4 && (
           <>
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">الخطوة {step} من 4</span>
+            <div className="mb-5 text-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
+                <Zap className="h-3.5 w-3.5" />
+                بداية +150 قدرة محتوى لمتجرك
+              </span>
+              <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
+                جهّز أول حزمة محتوى بالعامية السعودية
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                أربع خطوات قصيرة تربط وعد الصفحة الرئيسية بملف متجر فعلي: نصوص، صور، وفكرة فيديو.
+              </p>
+            </div>
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 4</span>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                بدون بطاقة ائتمان
+              </span>
             </div>
             <div className="mb-8 flex gap-1.5">
               {[1, 2, 3, 4].map((i) => (
@@ -189,7 +205,7 @@ function OnboardingPage() {
           </>
         )}
 
-        <div className="rounded-2xl border border-border bg-card p-7 shadow-elegant">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
           {step === 1 && (
             <div className="space-y-4">
               <div>
@@ -197,7 +213,7 @@ function OnboardingPage() {
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
                 </span>
                 <h2 className="mt-3 text-2xl font-extrabold">عرّفنا على متجرك</h2>
-                <p className="mt-1 text-sm text-muted-foreground">معلومتان سريعتان نستخدمهما في كل محتوى نولّده لك</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">معلومتان فقط حتى يبدأ رِفد بتخصيص المحتوى بدل كتابة أوامر عامة في ChatGPT</p>
               </div>
               <div>
                 <Label htmlFor="store">
@@ -234,9 +250,9 @@ function OnboardingPage() {
               <Button
                 onClick={next}
                 disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
-                className="w-full gradient-primary text-primary-foreground"
+                className="h-12 w-full gradient-primary font-extrabold text-primary-foreground"
               >
-                التالي
+                خصّص محتوى متجري
               </Button>
             </div>
           )}
@@ -244,7 +260,7 @@ function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="text-2xl font-extrabold">وش نوع منتجاتك؟</h2>
-              <p className="text-sm text-muted-foreground">نخصص القوالب حسب نشاطك</p>
+              <p className="text-sm leading-6 text-muted-foreground">نختار زاوية النص والصورة وفكرة الفيديو حسب نشاطك</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {PRODUCT_TYPES.map((p) => (
                   <button
@@ -271,6 +287,7 @@ function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-2xl font-extrabold">من جمهورك المستهدف؟</h2>
+              <p className="text-sm leading-6 text-muted-foreground">الجمهور يغيّر الهوك، الكلمات، وطريقة عرض المنتج.</p>
               <Select value={audience} onValueChange={setAudience}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -287,7 +304,7 @@ function OnboardingPage() {
           {step === 4 && (
             <div className="space-y-4">
               <h2 className="text-2xl font-extrabold">النبرة + لون الهوية</h2>
-              <p className="text-sm text-muted-foreground">نستخدمها في النصوص والصور</p>
+              <p className="text-sm leading-6 text-muted-foreground">آخر خطوة قبل توليد أول حزمة محتوى مترابطة لمتجرك.</p>
               <div className="grid grid-cols-2 gap-2">
                 {TONES.map((t) => (
                   <button
@@ -319,8 +336,8 @@ function OnboardingPage() {
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
-                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الحفظ...</> : <>أنشئ أول محتوى لي ✨</>}
+                <Button onClick={finish} disabled={generating} className="flex-1 gradient-primary font-extrabold text-primary-foreground shadow-elegant">
+                  {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري تجهيز الحزمة...</> : <>أنشئ أول حزمة محتوى ✨</>}
                 </Button>
               </div>
             </div>
