@@ -8,11 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { PROMPTS, CATEGORIES, type PromptType, type PromptCategory } from "@/lib/prompts-data";
 import { cn } from "@/lib/utils";
 
+const CATEGORY_GOALS: Partial<Record<PromptCategory, string>> = {
+  launch: "ابدأ منتجاً جديداً برسالة واضحة",
+  offer: "حوّل الخصم إلى سبب شراء الآن",
+  season: "اربط حملتك بلحظة موسمية جاهزة",
+  product: "اكتب قيمة المنتج بطريقة تقنع العميل",
+  social: "حضّر منشوراً سريعاً لقنواتك اليومية",
+  trust: "ابنِ ثقة العميل قبل قرار الشراء",
+  video: "جهّز زاوية فيديو قصيرة قابلة للنشر",
+};
+
+const TYPE_LABEL: Record<PromptType, string> = {
+  text: "نص",
+  image: "صورة",
+};
+
 export const Route = createFileRoute("/dashboard/templates")({
   head: () => ({
     meta: [
       { title: "معرض القوالب — رِفد" },
-      { name: "description", content: "مكتبة قوالب جاهزة للنصوص والصور — اختر قالباً وابدأ التوليد فوراً." },
+      { name: "description", content: "لا تعرف من أين تبدأ؟ اختر هدفك ثم استخدم قالباً يكتب نصاً يبيع أو يصمّم صورة إعلان." },
     ],
   }),
   component: TemplatesPage,
