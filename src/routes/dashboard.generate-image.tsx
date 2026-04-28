@@ -86,9 +86,14 @@ function GenerateImagePage() {
     <DashboardShell>
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-black text-primary">صور منتجات وبوسترات</p>
-          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف العرض إلى صورة تسويقية واضحة</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">ابدأ بالسريع للمحتوى اليومي، أو استخدم الجودة العالية للإعلانات المهمة عند توفرها في باقتك.</p>
+          <p className="text-xs font-black text-primary">صمّم صورة إعلان</p>
+          <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف العرض إلى صورة إعلان واضحة</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">ابدأ بصورة سريعة للمحتوى اليومي، أو استخدم Pro للإعلانات المهمة عند توفرها في باقتك.</p>
+          {search.campaignPackId && (
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+              <Megaphone className="h-3.5 w-3.5" /> هذه الصورة جزء من حملة محفوظة
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-foreground/80">
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">بوستر عرض</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">صورة منتج</span>
@@ -101,7 +106,7 @@ function GenerateImagePage() {
           </Button>
           {remaining !== null && (
             <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-bold text-gold">
-              باقي {remaining.toLocaleString("ar-SA")} صورة اليوم
+              استخدامك اليومي: باقي {remaining.toLocaleString("ar-SA")} صورة
             </span>
           )}
         </div>
@@ -109,7 +114,7 @@ function GenerateImagePage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط نوع الصورة ووصفها</div>
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط نوع الإعلان ووصفه البصري</div>
           <div>
             <Label>نموذج التوليد</Label>
             <div className="mt-2 grid grid-cols-2 gap-2">
