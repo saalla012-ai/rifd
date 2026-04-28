@@ -67,7 +67,6 @@ function OnboardingPage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [storeName, setStoreName] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
   const [productType, setProductType] = useState("dropshipping");
   const [audience, setAudience] = useState("young");
   const [tone, setTone] = useState("fun");
@@ -76,9 +75,6 @@ function OnboardingPage() {
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
   const trimmedStoreName = storeName.trim();
-  const normalizedWhatsapp = normalizeSaudiPhone(whatsapp);
-  const whatsappTouched = whatsapp.trim().length > 0;
-  const whatsappValid = normalizedWhatsapp !== null;
 
   // المستخدم لازم يكون مسجل دخول للوصول
   useEffect(() => {
@@ -87,14 +83,11 @@ function OnboardingPage() {
       void navigate({ to: "/auth", search: { redirect: "/onboarding" } });
       return;
     }
-    // إذا أكمل onboarding من قبل وعنده رقم واتساب → dashboard مباشرة
-    // (المستخدمون القدامى بدون رقم يكملون الاستمارة لإضافته)
-    if (profile?.onboarded && profile?.whatsapp) {
+    if (profile?.onboarded) {
       void navigate({ to: "/dashboard" });
     }
     // عبّي القيم لو فيه profile جزئي
     if (profile?.store_name) setStoreName(profile.store_name);
-    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
     if (profile?.product_type) setProductType(profile.product_type);
     if (profile?.audience) setAudience(profile.audience);
     if (profile?.tone) setTone(profile.tone);
@@ -106,13 +99,6 @@ function OnboardingPage() {
 
   const finish = async () => {
     if (!user) return;
-    // تحقق نهائي قبل الحفظ (في حال تم تجاوز الزر بأي طريقة)
-    if (!validateSaudiPhone(whatsapp)) {
-      toast.error(SAUDI_PHONE_ERROR);
-      setStep(1);
-      return;
-    }
-    const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
     setGenerating(true);
     const heroVariant = getRememberedAttribution("hero_hook");
     if (heroVariant) {
@@ -128,7 +114,6 @@ function OnboardingPage() {
           email: user.email ?? null,
           full_name: (user.user_metadata?.full_name as string | undefined) ?? (user.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
           store_name: trimmedStoreName,
-          whatsapp: normalizedWhatsapp,
           product_type: productType,
           audience,
           tone,
@@ -166,11 +151,8 @@ function OnboardingPage() {
       setStep(3);
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
-      toast.error(
-        message.includes("whatsapp") || message.includes("profiles_whatsapp_unique_idx") || message.includes("INVALID_SAUDI_WHATSAPP")
-          ? profilePhoneErrorMessage(message)
-          : "فشل إنشاء المحتوى",
-      );
+      console.warn("[onboarding] failed", message);
+      toast.error("فشل إنشاء المحتوى");
     } finally {
       setGenerating(false);
     }
