@@ -43,7 +43,8 @@ export function StickyMobileCta() {
       aria-hidden={!visible}
     >
       <Link
-        to="/onboarding"
+        to="/auth"
+        search={{ redirect: "/onboarding" }}
         onClick={() => {
           rememberAttribution(HERO_EXPERIMENT, variant);
           void trackEvent(HERO_EXPERIMENT, variant, "cta_click");
