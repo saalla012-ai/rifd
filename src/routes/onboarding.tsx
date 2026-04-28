@@ -33,11 +33,11 @@ import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "ابدأ مع رِفد — 4 خطوات لأول محتوى مخصص لمتجرك" },
-      { name: "description", content: "أنشئ ملف متجرك في 3 دقائق واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
-      { property: "og:title", content: "ابدأ مع رِفد — 4 خطوات لأول حملة مخصصة لمتجرك" },
+      { title: "ابدأ مع رِفد — خطوتان لأول محتوى مخصص" },
+      { name: "description", content: "أنشئ ملف متجرك بسرعة واحصل على بداية حملة أولى مخصصة فوراً، لا مجرد نص منفرد." },
+      { property: "og:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
       { property: "og:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
-      { name: "twitter:title", content: "ابدأ مع رِفد — 4 خطوات لأول حملة مخصصة لمتجرك" },
+      { name: "twitter:title", content: "ابدأ مع رِفد — خطوتان لأول حملة مخصصة لمتجرك" },
       { name: "twitter:description", content: "ملف متجرك في 3 دقائق + أول Success Pack مترابط: نص، صورة، فكرة Reel، وCTA." },
     ],
     links: [{ rel: "canonical", href: "https://rifd.site/onboarding" }],
@@ -87,7 +87,7 @@ function OnboardingPage() {
     if (profile?.brand_color) setColor(profile.brand_color);
   }, [authLoading, user, profile, navigate]);
 
-  const next = () => setStep((s) => Math.min(5, s + 1));
+  const next = () => setStep((s) => Math.min(2, s + 1));
   const prev = () => setStep((s) => Math.max(1, s - 1));
 
   const finish = async () => {
@@ -149,7 +149,7 @@ function OnboardingPage() {
           primaryPost: out.result,
         })
       );
-      setStep(5);
+      setStep(3);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "فشل إنشاء المحتوى");
     } finally {
@@ -170,7 +170,7 @@ function OnboardingPage() {
   return (
     <MarketingLayout>
       <div className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
-        {step <= 4 && (
+        {step <= 2 && (
           <>
             <div className="mb-5 text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">
@@ -181,18 +181,18 @@ function OnboardingPage() {
                 جهّز أول حزمة محتوى بالعامية السعودية
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                أربع خطوات قصيرة تربط وعد الصفحة الرئيسية بملف متجر فعلي: نصوص، صور، وفكرة فيديو.
+                خطوتان فقط تربطان وعد الصفحة الرئيسية بملف متجر فعلي: نصوص، صور، وفكرة فيديو.
               </p>
             </div>
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 4</span>
+              <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 2</span>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 بدون بطاقة ائتمان
               </span>
             </div>
             <div className="mb-8 flex gap-1.5">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2].map((i) => (
                 <div
                   key={i}
                   className={cn(
@@ -247,6 +247,26 @@ function OnboardingPage() {
                   للتنبيهات المهمة وتفعيل اشتراكك — لن نتصل بك مطلقاً، واتساب فقط ✅
                 </p>
               </div>
+              <div>
+                <Label>وش نوع منتجاتك؟</Label>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {PRODUCT_TYPES.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setProductType(p.id)}
+                      className={cn(
+                        "rounded-lg border p-3 text-sm font-medium transition-colors",
+                        productType === p.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/40"
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Button
                 onClick={next}
                 disabled={!storeName.trim() || !validateSaudiPhone(whatsapp)}
@@ -259,56 +279,21 @@ function OnboardingPage() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">وش نوع منتجاتك؟</h2>
-              <p className="text-sm leading-6 text-muted-foreground">نختار زاوية النص والصورة وفكرة الفيديو حسب نشاطك</p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {PRODUCT_TYPES.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setProductType(p.id)}
-                    className={cn(
-                      "rounded-lg border p-3 text-sm font-medium transition-colors",
-                      productType === p.id
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary/40"
-                    )}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={next} className="flex-1 gradient-primary text-primary-foreground">التالي</Button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">من جمهورك المستهدف؟</h2>
-              <p className="text-sm leading-6 text-muted-foreground">الجمهور يغيّر الهوك، الكلمات، وطريقة عرض المنتج.</p>
+              <h2 className="text-2xl font-extrabold">تخصيص سريع قبل التوليد</h2>
+              <p className="text-sm leading-6 text-muted-foreground">اختياران فقط يكفيان لرفع جودة أول حزمة محتوى.</p>
+              <Label>من جمهورك المستهدف؟</Label>
               <Select value={audience} onValueChange={setAudience}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {AUDIENCES.map((a) => <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={next} className="flex-1 gradient-primary text-primary-foreground">التالي</Button>
-              </div>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">النبرة + لون الهوية</h2>
-              <p className="text-sm leading-6 text-muted-foreground">آخر خطوة قبل توليد أول حزمة محتوى مترابطة لمتجرك.</p>
+              <Label>النبرة الأقرب لعلامتك</Label>
               <div className="grid grid-cols-2 gap-2">
                 {TONES.map((t) => (
                   <button
                     key={t.id}
+                    type="button"
                     onClick={() => setTone(t.id)}
                     className={cn(
                       "rounded-lg border p-3 text-sm font-medium",
@@ -343,7 +328,7 @@ function OnboardingPage() {
             </div>
           )}
 
-          {step === 5 && result && successPack && (
+          {step === 3 && result && successPack && (
             <OnboardingSuccessPack pack={successPack} />
           )}
         </div>
