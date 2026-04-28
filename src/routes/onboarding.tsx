@@ -181,14 +181,14 @@ function OnboardingPage() {
                 جهّز أول حزمة محتوى بالعامية السعودية
               </h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                خطوتان فقط تربطان وعد الصفحة الرئيسية بملف متجر فعلي: نصوص، صور، وفكرة فيديو.
+                خطوتان فقط تربطانك بأول حزمة محتوى قابلة للنشر: منشور يبيع، صور تبيع، وفيديو يبيع.
               </p>
             </div>
             <div className="mb-4 flex items-center justify-between">
               <span className="text-xs font-bold text-muted-foreground">الخطوة {step} من 2</span>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                بدون بطاقة ائتمان
+                محتوى تسويقي جاهز
               </span>
             </div>
             <div className="mb-8 flex gap-1.5">
