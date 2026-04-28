@@ -71,7 +71,7 @@ export function HomeHero() {
               نصوص، صور، وفيديوهات تبدو سعودية… وتدفع للشراء.
             </p>
             <p className="mx-auto mt-4 max-w-2xl text-sm font-medium leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0">
-              رِفد يحوّل أبحاث سلوك الشراء السعودي — الثقة، السعر، اللهجة، الموسم، وطريقة اتخاذ القرار — إلى محتوى جاهز للنشر على سلة، زد، شوبيفاي، <bdi dir="ltr">Instagram</bdi>، <bdi dir="ltr">TikTok</bdi>، <bdi dir="ltr">Snapchat</bdi>، <bdi dir="ltr">X</bdi> و<bdi dir="ltr">Google Ads</bdi>.
+              رِفد يحوّل فهم سلوك الشراء السعودي — الثقة، السعر، اللهجة، الموسم، وطريقة اتخاذ القرار — إلى محتوى جاهز للنشر في متجرك وقنواتك الإعلانية.
             </p>
           </div>
 
@@ -85,7 +85,7 @@ export function HomeHero() {
           </div>
 
           <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-border bg-background/65 p-3 shadow-soft lg:mx-0">
-            <div className="mb-2 text-xs font-black text-primary">جاهز حيث تبيع وتعلن</div>
+            <div className="mb-2 text-xs font-black text-primary">جاهز للنشر في متجرك وقنواتك الإعلانية</div>
             <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
               {channelProof.map((channel) => (
                 <span key={channel} className="rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[11px] font-extrabold text-foreground/90">
