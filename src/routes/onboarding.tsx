@@ -279,56 +279,21 @@ function OnboardingPage() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">وش نوع منتجاتك؟</h2>
-              <p className="text-sm leading-6 text-muted-foreground">نختار زاوية النص والصورة وفكرة الفيديو حسب نشاطك</p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {PRODUCT_TYPES.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setProductType(p.id)}
-                    className={cn(
-                      "rounded-lg border p-3 text-sm font-medium transition-colors",
-                      productType === p.id
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary/40"
-                    )}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={next} className="flex-1 gradient-primary text-primary-foreground">التالي</Button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">من جمهورك المستهدف؟</h2>
-              <p className="text-sm leading-6 text-muted-foreground">الجمهور يغيّر الهوك، الكلمات، وطريقة عرض المنتج.</p>
+              <h2 className="text-2xl font-extrabold">تخصيص سريع قبل التوليد</h2>
+              <p className="text-sm leading-6 text-muted-foreground">اختياران فقط يكفيان لرفع جودة أول حزمة محتوى.</p>
+              <Label>من جمهورك المستهدف؟</Label>
               <Select value={audience} onValueChange={setAudience}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {AUDIENCES.map((a) => <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={prev} className="flex-1">السابق</Button>
-                <Button onClick={next} className="flex-1 gradient-primary text-primary-foreground">التالي</Button>
-              </div>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-extrabold">النبرة + لون الهوية</h2>
-              <p className="text-sm leading-6 text-muted-foreground">آخر خطوة قبل توليد أول حزمة محتوى مترابطة لمتجرك.</p>
+              <Label>النبرة الأقرب لعلامتك</Label>
               <div className="grid grid-cols-2 gap-2">
                 {TONES.map((t) => (
                   <button
                     key={t.id}
+                    type="button"
                     onClick={() => setTone(t.id)}
                     className={cn(
                       "rounded-lg border p-3 text-sm font-medium",
