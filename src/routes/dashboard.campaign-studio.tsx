@@ -41,7 +41,7 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
 ];
 
 const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
-const PLAN_PROGRESS = 60;
+const PLAN_PROGRESS = 70;
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -140,6 +140,13 @@ function CampaignStudioPage() {
 
   const progressItems = [goal, channel, product.trim(), audience.trim(), offer.trim(), productImagePath, activePackId];
   const campaignProgress = Math.round((progressItems.filter(Boolean).length / progressItems.length) * 100);
+  const readinessChecks = [
+    { label: "هدف الحملة", done: Boolean(goal), hint: selectedGoal.label },
+    { label: "المنتج", done: Boolean(product.trim()), hint: product.trim() || "اكتب المنتج بوضوح" },
+    { label: "الجمهور", done: Boolean(audience.trim()), hint: audience.trim() || "حدّد من تبيع له" },
+    { label: "العرض", done: Boolean(offer.trim()), hint: offer.trim() || "أضف سبباً للشراء الآن" },
+    { label: "الصورة", done: Boolean(productImagePath), hint: productImagePath ? "مرتبطة بالحملة" : "ارفع صورة المنتج" },
+  ];
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -301,7 +308,7 @@ function CampaignStudioPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
-              <p className="mt-1 text-xs text-muted-foreground">اكتملت مرحلة الربط التقني وبدأت مرحلة تجربة الكانفاس التفاعلية.</p>
+              <p className="mt-1 text-xs text-muted-foreground">اكتملت مراجعة الربط والتجاوب، وبدأت طبقة جاهزية الحملة داخل المعاينة.</p>
             </div>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
           </div>
@@ -380,7 +387,7 @@ function CampaignStudioPage() {
         </section>
 
         <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} />
+          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} checks={readinessChecks} />
 
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-extrabold">وجهات التنفيذ</h2>
@@ -444,7 +451,7 @@ function ProductImageUploader({ preview, path, uploading, onUpload, onClear }: {
   );
 }
 
-function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number }) {
+function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress, checks }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number; checks: Array<{ label: string; done: boolean; hint: string }> }) {
   return (
     <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
       <div className="border-b border-border bg-primary/5 p-5">
@@ -471,6 +478,17 @@ function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, 
             <p><span className="font-bold text-foreground">الصورة:</span> {hasImage ? "مرتبطة بالحملة" : "بانتظار الرفع"}</p>
           </div>
         </article>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {checks.map((check) => (
+            <div key={check.label} className={cn("rounded-lg border px-3 py-2 text-xs", check.done ? "border-primary/20 bg-primary/5" : "border-border bg-background")}> 
+              <div className="flex items-center gap-2 font-extrabold text-foreground">
+                <CheckCircle2 className={cn("h-3.5 w-3.5", check.done ? "text-primary" : "text-muted-foreground")} />
+                {check.label}
+              </div>
+              <p className="mt-1 line-clamp-1 text-muted-foreground">{check.hint}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
