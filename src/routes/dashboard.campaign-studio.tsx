@@ -170,6 +170,18 @@ function CampaignStudioPage() {
     };
   }, [productImagePreview]);
 
+  useEffect(() => {
+    if (!productImagePath || productImagePreview) return;
+    let cancelled = false;
+    void supabase.storage
+      .from(CAMPAIGN_PRODUCT_IMAGES_BUCKET)
+      .createSignedUrl(productImagePath, 60 * 30)
+      .then(({ data, error }) => {
+        if (!cancelled && !error && data?.signedUrl) setProductImagePreview(data.signedUrl);
+      });
+    return () => { cancelled = true; };
+  }, [productImagePath, productImagePreview]);
+
   const copyBrief = async () => {
     await navigator.clipboard.writeText(campaignBrief);
     toast.success("تم نسخ موجز الحملة");
