@@ -56,10 +56,11 @@ export function useCampaignContext(input: CampaignContextInput) {
 
   return useMemo(() => ({
     campaign,
-    campaignId: campaign?.id ?? validId,
+    campaignId: campaign?.id,
+    requestedCampaignId: validId,
     loading,
     error,
     isCampaignMode: Boolean(validId),
-    returnToStudioSearch: validId ? { campaignId: validId } : undefined,
+    returnToStudioSearch: campaign?.id ? { campaignId: campaign.id } : undefined,
   }), [campaign, error, loading, validId]);
 }
