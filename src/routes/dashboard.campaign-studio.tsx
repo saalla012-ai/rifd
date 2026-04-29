@@ -32,7 +32,6 @@ type CampaignSearch = {
 type Option = { value: string; label: string; description?: string };
 
 const GENERATED_IMAGES_BUCKET = "generated-images";
-const MVP_PROGRESS = 100;
 const PACKAGE_TWO_PROGRESS = 100;
 
 const GOALS: Array<{ value: CampaignGoal; title: string; prompt: string }> = [
