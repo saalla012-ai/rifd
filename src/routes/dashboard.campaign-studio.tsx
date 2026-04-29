@@ -41,7 +41,7 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
 ];
 
 const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
-const PLAN_PROGRESS = 90;
+const PLAN_PROGRESS = 100;
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -310,11 +310,14 @@ function CampaignStudioPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
-              <p className="mt-1 text-xs text-muted-foreground">اكتملت طبقة التوجيه، وبدأ ضبط وجهات التنفيذ حسب جاهزية الحملة.</p>
+              <p className="mt-1 text-xs text-muted-foreground">اكتملت مراجعة استوديو الحملات تقنياً وتسويقياً وتجاربياً.</p>
             </div>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
           </div>
           <Progress value={PLAN_PROGRESS} className="mt-3 h-2" />
+          <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-bold leading-6 text-primary">
+            جاهز للاستخدام: البناء، المعاينة، رفع صورة المنتج، الحفظ، ووجهات التنفيذ تعمل ضمن نفس مسار الحملة.
+          </div>
           <div className="mt-4 grid gap-2 sm:grid-cols-4">
           {[
             "اختر الهدف",
