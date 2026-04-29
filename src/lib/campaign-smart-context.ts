@@ -26,10 +26,6 @@ const goalLabel: Record<CampaignPack["goal"], string> = {
   winback: "إعادة الاستهداف",
 };
 
-export function campaignSmartPrompt(campaign: CampaignPack, kind: "text" | "image" | "video") {
-  return campaignSmartPromptFromContext(resolveCampaignExecutionContext(campaign), kind, campaign);
-}
-
 export function campaignSmartPromptFromContext(context: CampaignExecutionContext, kind: "text" | "image" | "video", campaign?: CampaignPack | null) {
   const goal = context.goal ? goalLabel[context.goal as CampaignPack["goal"]] ?? context.goal : campaign?.goal ? goalLabel[campaign.goal] : "";
   const base = buildCampaignContextLines(context, campaign, goal).join("\n");
@@ -93,13 +89,6 @@ export function campaignVideoDefaults(campaign: CampaignPack) {
     selectedPersonaId: campaign.audience.includes("الفخامة") ? "male-premium" : campaign.audience.includes("الأمهات") ? "female-abaya" : "male-young",
     templateId: campaign.product.includes("عطر") ? "perfume-premium-hook" : campaign.product.includes("قهوة") ? "coffee-hospitality" : campaign.product.includes("عباية") ? "abaya-launch" : "electronics-benefit",
   };
-}
-
-export function campaignEditPreset(campaign: CampaignPack) {
-  if (campaign.goal === "launch" || campaign.audience.includes("الفخامة")) return "luxury-bg";
-  if (campaign.channel === "instagram" || campaign.channel === "snapchat") return "instagram-square";
-  if (campaign.goal === "clearance") return "add-text";
-  return "enhance";
 }
 
 export function campaignEditPresetFromContext(context: CampaignExecutionContext, campaign?: CampaignPack | null) {
