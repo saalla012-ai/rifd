@@ -29,6 +29,7 @@ type CampaignSearch = {
   channel?: DbChannel;
   campaignId?: string;
   focus?: "house";
+  updatedAsset?: "text" | "image" | "video";
 };
 type Option = { value: string; label: string; description?: string };
 
@@ -108,6 +109,7 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as DbChannel) : undefined,
     campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
     focus: s.focus === "house" ? "house" : undefined,
+    updatedAsset: ["text", "image", "video"].includes(String(s.updatedAsset)) ? (s.updatedAsset as "text" | "image" | "video") : undefined,
   }),
   component: CampaignStudioPage,
 });
@@ -245,6 +247,20 @@ function CampaignStudioPage() {
     const id = window.setTimeout(() => setHighlightHouse(false), 2600);
     return () => window.clearTimeout(id);
   }, [search.focus, activePackId]);
+
+  useEffect(() => {
+    if (!search.updatedAsset || loadingLiveHome) return;
+    const snapshot = liveSnapshot(liveHome);
+    if (!snapshot[search.updatedAsset]) return;
+    setUpdatedKinds([search.updatedAsset]);
+    setReturnBanner(true);
+    const pulseId = window.setTimeout(() => setUpdatedKinds([]), 3200);
+    const bannerId = window.setTimeout(() => setReturnBanner(false), 4200);
+    return () => {
+      window.clearTimeout(pulseId);
+      window.clearTimeout(bannerId);
+    };
+  }, [liveHome, loadingLiveHome, search.updatedAsset]);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
