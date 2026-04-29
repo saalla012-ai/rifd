@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, ChevronDown, Image as ImageIcon, Loader2, Sparkles, Upload, X } from "lucide-react";
+import { CalendarDays, Check, CheckCircle2, ChevronDown, Clapperboard, Copy, FileText, Image as ImageIcon, Loader2, PlayCircle, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
-import { generateCampaignBrief, saveCampaignPack, type CampaignBrief, type CampaignPack } from "@/server/campaign-packs";
+import { generateCampaignBrief, getCampaignLiveHome, saveCampaignPack, type CampaignBrief, type CampaignLiveHome, type CampaignPack } from "@/server/campaign-packs";
 
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
 type DbChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
@@ -32,7 +32,7 @@ type CampaignSearch = {
 type Option = { value: string; label: string; description?: string };
 
 const GENERATED_IMAGES_BUCKET = "generated-images";
-const PACKAGE_TWO_PROGRESS = 100;
+const CAMPAIGN_CENTER_PROGRESS = 100;
 
 const GOALS: Array<{ value: CampaignGoal; title: string; prompt: string }> = [
   { value: "launch", title: "إطلاق منتج", prompt: "عندك منتج جديد؟" },
