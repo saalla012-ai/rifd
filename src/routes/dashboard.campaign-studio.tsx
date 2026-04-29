@@ -637,7 +637,7 @@ function CanvasSkeleton() {
   );
 }
 
-function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveHome, updatedKinds }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; updatedKinds: Array<"text" | "image" | "video"> }) {
+function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveHome, updatedKinds, executionContext }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; updatedKinds: Array<"text" | "image" | "video">; executionContext: CampaignExecutionContext }) {
   return (
     <div className="space-y-4">
       <article className="overflow-hidden rounded-lg border border-border bg-background">
@@ -659,12 +659,12 @@ function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveH
           <CampaignCompletion liveHome={liveHome} loading={loadingLiveHome} />
         </div>
         <div className="mt-3 grid gap-3">
-          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("text")} />
-          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("image")} />
-          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("video")} />
+          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("text")} executionContext={executionContext} />
+          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("image")} executionContext={executionContext} />
+          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("video")} executionContext={executionContext} />
         </div>
       </section>
-      <NextBestAction liveHome={liveHome} campaignId={campaignId} brief={brief} />
+      <NextBestAction liveHome={liveHome} campaignId={campaignId} brief={brief} executionContext={executionContext} />
       <div className="rounded-lg border border-dashed border-primary/25 bg-primary/5 p-3 text-sm font-extrabold text-primary">📊 قريبًا: تابع أداء حملاتك بعد النشر</div>
       <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} />
       <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} />
