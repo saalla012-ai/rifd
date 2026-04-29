@@ -302,7 +302,7 @@ function EditImagePage() {
           <div>
             <Label>نوع التحسين</Label>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              اختر تحسيناً واضحاً ومختبراً. الوصف اليدوي اختياري فقط لو عندك توجيه محدد.
+              اختر نوع التحسين المناسب لصورة المنتج.
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {PRESETS.map((p) => (
@@ -311,7 +311,7 @@ function EditImagePage() {
                   onClick={() => setPresetId(p.id)}
                   className={cn(
                     "rounded-lg border p-3 text-right text-sm transition-colors",
-                    presetId === p.id && !customPrompt.trim()
+                    presetId === p.id
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/40"
                   )}
@@ -323,23 +323,6 @@ function EditImagePage() {
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="custom-prompt">
-              أو اكتب التحسين المطلوب بنفسك (اختياري)
-            </Label>
-            <Textarea
-              id="custom-prompt"
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="مثلاً: اجعل الخلفية ذهبية فخمة، أضف ظلاً خفيفاً، واترك المنتج واضحاً بدون تغطية"
-              className="mt-1 min-h-20"
-              maxLength={1500}
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              لو كتبت هنا، سيُستخدم وصفك بدلاً من نوع التحسين المختار.
-            </p>
           </div>
 
           <Button
