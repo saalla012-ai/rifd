@@ -41,7 +41,7 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
 ];
 
 const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
-const PLAN_PROGRESS = 45;
+const PLAN_PROGRESS = 60;
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -299,7 +299,10 @@ function CampaignStudioPage() {
 
         <div className="mt-5 rounded-xl border border-border bg-card p-4 shadow-soft">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
+            <div>
+              <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
+              <p className="mt-1 text-xs text-muted-foreground">اكتملت مرحلة الربط التقني وبدأت مرحلة تجربة الكانفاس التفاعلية.</p>
+            </div>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
           </div>
           <Progress value={PLAN_PROGRESS} className="mt-3 h-2" />
@@ -318,8 +321,12 @@ function CampaignStudioPage() {
           </div>
         </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px]">
-        <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px] xl:grid-cols-[minmax(0,1fr)_430px]">
+        <section className="space-y-5 rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
+          <div className="flex flex-col gap-1 border-b border-border pb-4">
+            <p className="text-xs font-bold text-primary">منطقة البناء</p>
+            <h2 className="text-lg font-extrabold">ابنِ الزاوية من الهدف إلى الموجز</h2>
+          </div>
           <div>
             <Label>هدف الحملة</Label>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -372,7 +379,7 @@ function CampaignStudioPage() {
           </div>
         </section>
 
-        <aside className="space-y-5">
+        <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
           <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} />
 
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
