@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -53,6 +53,29 @@ export const Route = createFileRoute("/dashboard/billing/")({
 const PLAN_LABELS: Record<PlanId, string> = Object.fromEntries(Object.entries(PLAN_BY_ID).map(([key, value]) => [key, value.name])) as Record<PlanId, string>;
 
 const FUTURE_INCREASE_PCT = 30;
+
+const PLAN_PURCHASE_GUIDE: Record<PaidPlanId, { fit: string; capability: string; focus: string }> = {
+  starter: {
+    fit: "للانطلاق المنظم",
+    capability: "تشغيل يومي مناسب لبداية متجر يبني حضوره",
+    focus: "فيديو سريع، نصوص بيع، وصور أساسية للحملات الخفيفة",
+  },
+  growth: {
+    fit: "للمتاجر النشطة",
+    capability: "سعة أعلى لحملات منتظمة مع صور Pro عند الحاجة",
+    focus: "أفضل توازن بين تكلفة التشغيل وكثافة المحتوى",
+  },
+  pro: {
+    fit: "للإعلانات الجادة",
+    capability: "تشغيل متقدم مع فيديو احترافي وصور Pro",
+    focus: "مناسب للعروض المتكررة وإطلاق المنتجات المدفوعة",
+  },
+  business: {
+    fit: "للفرق وتعدد الحملات",
+    capability: "سعة موسعة للمتاجر والفرق التي تعمل على أكثر من حملة",
+    focus: "تنظيم إنتاج متواصل مع مرونة أعلى للنمو",
+  },
+};
 
 const STATUS_META: Record<
   string,
