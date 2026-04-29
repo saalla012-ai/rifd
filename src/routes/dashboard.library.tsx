@@ -26,7 +26,7 @@ type Generation = {
   template: string | null;
   is_favorite: boolean;
   created_at: string;
-    metadata: { template_title?: string; campaignId?: string; campaignPackId?: string; campaign_pack_id?: string; campaign_product?: string; campaign_goal?: string; campaign_channel?: string } | null;
+  metadata: { template_title?: string; campaignId?: string; campaignPackId?: string; campaign_pack_id?: string; campaign_product?: string; campaign_goal?: string; campaign_channel?: string } | null;
 };
 
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
@@ -155,6 +155,7 @@ function LibraryPage() {
   const favoriteCount = items.filter((item) => item.is_favorite).length;
   const campaignGroups = buildCampaignGroups(items, videoJobs);
   const campaignItemCount = campaignGroups.reduce((total, group) => total + group.text + group.image + group.video, 0);
+  const completedCampaignCount = campaignGroups.filter((group) => group.completedSlots === 3).length;
   const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
   const hasVisibleItems = filter === "video"
     ? videoJobs.length > 0
@@ -168,11 +169,11 @@ function LibraryPage() {
           <h1 className="mt-1 text-2xl font-extrabold">مكتبة محتواك الجاهز</h1>
           <p className="mt-1 text-sm text-muted-foreground">كل نص وصورة وفيديو وحملة محفوظة في مكان واحد، مع إبراز ما اخترته للمفضلة.</p>
         </div>
-        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} أصل جاهز • {campaignItemCount} من حملة</div>
+        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} أصل جاهز • {campaignItemCount} أصل مرتبط بحملة</div>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: videoJobs.length, icon: Clapperboard }, { label: "حملات", value: campaignItemCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
+        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: videoJobs.length, icon: Clapperboard }, { label: "حملات مكتملة", value: completedCampaignCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
           const Icon = stat.icon;
           return <div key={stat.label} className="rounded-lg border border-border bg-card p-3 shadow-soft"><Icon className="h-4 w-4 text-primary" /><div className="mt-2 text-lg font-extrabold">{stat.value.toLocaleString("ar-SA")}</div><div className="text-xs text-muted-foreground">{stat.label}</div></div>;
         })}
