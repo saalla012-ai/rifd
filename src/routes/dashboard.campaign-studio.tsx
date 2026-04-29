@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Archive, ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, FolderKanban, Image as ImageIcon, LayoutTemplate, Loader2, Megaphone, Save, Wand2 } from "lucide-react";
+import { Archive, ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, FolderKanban, Image as ImageIcon, LayoutTemplate, Loader2, Megaphone, Save, Upload, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ type CampaignSearch = {
   offer?: string;
   goal?: CampaignGoal;
   channel?: CampaignChannel;
+  productImagePath?: string;
 };
 type OutputToolRoute = "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video";
 
