@@ -22,8 +22,9 @@ import {
   isQuotaError,
 } from "@/components/quota-exceeded-dialog";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
+import { campaignEditPreset } from "@/lib/campaign-smart-context";
 
-type EditImageSearch = { campaignId?: string; campaignPackId?: string; prompt?: string };
+type EditImageSearch = { campaignId?: string; campaignPackId?: string; prompt?: string; smart?: boolean };
 
 export const Route = createFileRoute("/dashboard/edit-image")({
   head: () => ({
@@ -40,6 +41,7 @@ export const Route = createFileRoute("/dashboard/edit-image")({
     campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+    smart: s.smart === true || s.smart === "true" ? true : undefined,
   }),
   component: EditImagePage,
 });
@@ -111,6 +113,10 @@ function EditImagePage() {
   }>({ open: false });
 
   const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
+
+  useEffect(() => {
+    if (search.smart && campaignContext.campaign) setPresetId(campaignEditPreset(campaignContext.campaign));
+  }, [campaignContext.campaign, search.smart]);
 
   useEffect(() => {
     const productImagePath = campaignContext.campaign?.product_image_path;
