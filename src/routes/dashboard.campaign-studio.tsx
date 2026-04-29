@@ -399,6 +399,63 @@ function CampaignField({ id, label, value, onChange, placeholder }: { id: string
   );
 }
 
+function ProductImageUploader({ preview, path, uploading, onUpload, onClear }: { preview: string | null; path: string | null; uploading: boolean; onUpload: (file: File) => Promise<void>; onClear: () => void }) {
+  return (
+    <section className="rounded-lg border border-border bg-background p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Label htmlFor="campaign-product-image">صورة المنتج</Label>
+          <p className="mt-1 text-xs leading-6 text-muted-foreground">ارفع صورة واضحة حتى تتحول المعاينة إلى إعلان أقرب للمنتج الحقيقي.</p>
+        </div>
+        {path && <Button type="button" variant="ghost" size="sm" onClick={onClear} className="w-fit gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> إزالة الصورة</Button>}
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-card">
+          {preview ? <img src={preview} alt="معاينة صورة المنتج" className="h-full w-full object-cover" /> : <ImageIcon className="h-8 w-8 text-muted-foreground" />}
+        </div>
+        <label htmlFor="campaign-product-image" className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4 text-center transition-colors hover:bg-primary/10">
+          {uploading ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Upload className="h-6 w-6 text-primary" />}
+          <span className="mt-2 text-sm font-extrabold">{uploading ? "جاري رفع الصورة…" : "اختر صورة المنتج"}</span>
+          <span className="mt-1 text-xs leading-6 text-muted-foreground">PNG أو JPG حتى 5MB. الصورة تبقى محفوظة داخل مساحة حملاتك.</span>
+          <input id="campaign-product-image" type="file" accept="image/*" className="sr-only" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void onUpload(file); event.currentTarget.value = ""; }} />
+        </label>
+      </div>
+    </section>
+  );
+}
+
+function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number }) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
+      <div className="border-b border-border bg-primary/5 p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-extrabold">المعاينة الحية</h2>
+          <span className="rounded-full bg-background px-3 py-1 text-xs font-extrabold text-primary">{progress}% جاهزة</span>
+        </div>
+        <p className="mt-1 text-xs leading-6 text-muted-foreground">كانفاس سريع يوضح كيف ستظهر زاوية البيع قبل الانتقال للتنفيذ.</p>
+      </div>
+      <div className="p-5">
+        <article className="overflow-hidden rounded-lg border border-border bg-background">
+          <div className="relative aspect-[4/5] bg-secondary">
+            {imagePreview ? <img src={imagePreview} alt="صورة المنتج داخل كانفاس الحملة" className="h-full w-full object-cover" /> : <div className="flex h-full flex-col items-center justify-center p-6 text-center text-muted-foreground"><ImageIcon className="h-10 w-10" /><p className="mt-3 text-sm font-bold">ارفع صورة المنتج ليظهر الإعلان بشكل أقرب للحقيقة</p></div>}
+            <div className="absolute inset-x-0 bottom-0 bg-background/90 p-4 backdrop-blur">
+              <p className="text-xs font-bold text-primary">{goalLabel} · {channelLabel}</p>
+              <h3 className="mt-1 line-clamp-2 text-lg font-extrabold">{product.trim() || "اسم المنتج يظهر هنا"}</h3>
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">{hook}</p>
+            </div>
+          </div>
+          <div className="grid gap-2 p-4 text-xs leading-6 text-muted-foreground">
+            <p><span className="font-bold text-foreground">الجمهور:</span> {audience.trim() || "حدّد من سيشتري ولماذا"}</p>
+            <p><span className="font-bold text-foreground">العرض:</span> {offer.trim() || "اكتب سبباً واضحاً للتحرك الآن"}</p>
+            <p><span className="font-bold text-foreground">CTA:</span> {cta}</p>
+            <p><span className="font-bold text-foreground">الصورة:</span> {hasImage ? "مرتبطة بالحملة" : "بانتظار الرفع"}</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function SavedPacksSection({ packs, loading, activePackId, onOpen, onArchive }: { packs: CampaignPack[]; loading: boolean; activePackId?: string; onOpen: (pack: CampaignPack) => void; onArchive: (pack: CampaignPack) => void }) {
   return (
     <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
