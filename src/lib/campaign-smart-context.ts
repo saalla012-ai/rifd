@@ -57,7 +57,7 @@ export function parseCampaignExecutionSearch(s: Record<string, unknown>): Campai
   const out: CampaignExecutionContext = { smart: s.smart === true || s.smart === "true" ? true : undefined };
   for (const key of executionKeys) {
     const value = s[key];
-    if (typeof value === "string" && value.trim()) out[key] = value.slice(0, key === "prompt" ? 5000 : 500) as never;
+    if (typeof value === "string" && value.trim()) out[key] = value.slice(0, key === "prompt" ? 5000 : key === "productImagePath" || key === "productImageUrl" ? 2000 : 500) as never;
   }
   return out;
 }
