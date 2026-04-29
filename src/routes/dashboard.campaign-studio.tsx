@@ -683,7 +683,7 @@ function NextBestAction({ liveHome, campaignId, brief }: { liveHome: CampaignLiv
       : hasText && hasImage && !hasVideo
         ? { text: "الحملة جاهزة بصرياً. حوّلها إلى فيديو قصير مناسب لريلز وتيك توك.", label: "أنشئ فيديو", to: "/dashboard/generate-video" as const, prompt: brief.videoPrompt }
         : { text: "ابدأ بأول أصل للحملة حتى يتحول البيت من خطة إلى مخرجات جاهزة.", label: "اكتب نصاً يبيع", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt };
-  return <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-bold text-foreground">{action.text}</p><Button asChild size="sm" className="mt-3 h-8 text-xs"><Link to={action.to} search={{ prompt: action.prompt, campaignId } as never}>{action.label}</Link></Button></div>;
+  return <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-bold text-foreground">{action.text}</p><Button asChild size="sm" className="mt-3 h-8 text-xs"><Link to={action.to} search={(action.to === "/dashboard/edit-image" ? { campaignId } : { prompt: action.prompt, campaignId }) as never}>{action.label}</Link></Button></div>;
 }
 
 function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, updated }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean; updated?: boolean }) {
