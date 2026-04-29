@@ -298,11 +298,11 @@ function campaignKey(metadata: unknown) {
 }
 
 function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
-  const groups = new Map<string, { id: string; name: string; goal?: string; channel?: string; text: number; image: number; video: number }>();
+  const groups = new Map<string, { id: string; name: string; goal?: string; channel?: string; text: number; image: number; video: number; completedSlots: number; completionPercent: number }>();
   const ensure = (id: string, metadata: Generation["metadata"] | Record<string, unknown> | null) => {
     const meta = metadata ?? {};
     const name = typeof meta.campaign_product === "string" && meta.campaign_product ? meta.campaign_product : "حملة محفوظة";
-    if (!groups.has(id)) groups.set(id, { id, name, goal: typeof meta.campaign_goal === "string" ? meta.campaign_goal : undefined, channel: typeof meta.campaign_channel === "string" ? meta.campaign_channel : undefined, text: 0, image: 0, video: 0 });
+    if (!groups.has(id)) groups.set(id, { id, name, goal: typeof meta.campaign_goal === "string" ? meta.campaign_goal : undefined, channel: typeof meta.campaign_channel === "string" ? meta.campaign_channel : undefined, text: 0, image: 0, video: 0, completedSlots: 0, completionPercent: 0 });
     return groups.get(id)!;
   };
   for (const item of items) {
@@ -318,7 +318,10 @@ function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
     if (!id) continue;
     ensure(id, metadata).video += 1;
   }
-  return Array.from(groups.values());
+  return Array.from(groups.values()).map((group) => {
+    const completedSlots = Number(group.text > 0) + Number(group.image > 0) + Number(group.video > 0);
+    return { ...group, completedSlots, completionPercent: Math.round((completedSlots / 3) * 100) };
+  });
 }
 
 function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob[]; refreshingJobId: string | null; onRefresh: (jobId: string) => void }) {
