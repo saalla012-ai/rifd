@@ -263,7 +263,7 @@ function GenerateVideoPage() {
       if (!session) throw new Error("سجّل الدخول أولاً");
       const providerProductImageUrl = internalMediumTestMode && canonicalProductImageUrl ? await imageUrlToDataUrl(canonicalProductImageUrl) : productImageUrl.trim();
       const out = await generateVideoFn({
-        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: internalMediumTestMode ? "" : startingFrameUrl.trim(), speakerImageUrl: internalMediumTestMode ? "" : speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl: providerProductImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
+        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: internalMediumTestMode ? "" : startingFrameUrl.trim(), speakerImageUrl: internalMediumTestMode ? "" : speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl: providerProductImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
@@ -408,7 +408,7 @@ function GenerateVideoPage() {
         </Button>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.campaignId} loading={campaignContext.loading} error={campaignContext.error} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} />
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
