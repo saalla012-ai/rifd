@@ -26,7 +26,7 @@ type Generation = {
   template: string | null;
   is_favorite: boolean;
   created_at: string;
-    metadata: { template_title?: string; campaignId?: string; campaignPackId?: string; campaign_pack_id?: string; campaign_product?: string; campaign_goal?: string; campaign_channel?: string } | null;
+  metadata: { template_title?: string; campaignId?: string; campaignPackId?: string; campaign_pack_id?: string; campaign_product?: string; campaign_goal?: string; campaign_channel?: string } | null;
 };
 
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
@@ -155,6 +155,7 @@ function LibraryPage() {
   const favoriteCount = items.filter((item) => item.is_favorite).length;
   const campaignGroups = buildCampaignGroups(items, videoJobs);
   const campaignItemCount = campaignGroups.reduce((total, group) => total + group.text + group.image + group.video, 0);
+  const completedCampaignCount = campaignGroups.filter((group) => group.completedSlots === 3).length;
   const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
   const hasVisibleItems = filter === "video"
     ? videoJobs.length > 0
@@ -168,11 +169,11 @@ function LibraryPage() {
           <h1 className="mt-1 text-2xl font-extrabold">مكتبة محتواك الجاهز</h1>
           <p className="mt-1 text-sm text-muted-foreground">كل نص وصورة وفيديو وحملة محفوظة في مكان واحد، مع إبراز ما اخترته للمفضلة.</p>
         </div>
-        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} أصل جاهز • {campaignItemCount} من حملة</div>
+        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} أصل جاهز • {campaignItemCount} أصل مرتبط بحملة</div>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: videoJobs.length, icon: Clapperboard }, { label: "حملات", value: campaignItemCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
+        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: videoJobs.length, icon: Clapperboard }, { label: "حملات مكتملة", value: completedCampaignCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
           const Icon = stat.icon;
           return <div key={stat.label} className="rounded-lg border border-border bg-card p-3 shadow-soft"><Icon className="h-4 w-4 text-primary" /><div className="mt-2 text-lg font-extrabold">{stat.value.toLocaleString("ar-SA")}</div><div className="text-xs text-muted-foreground">{stat.label}</div></div>;
         })}
@@ -216,7 +217,14 @@ function LibraryPage() {
                   <span className="rounded-full bg-secondary px-2 py-1">{group.text} نص</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.image} صورة</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.video} فيديو</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">{group.completedSlots}/3 · {group.completionPercent}%</span>
                 </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`اكتمال الحملة ${group.completionPercent}%`}>
+                  <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${group.completionPercent}%` }} />
+                </div>
+                <Button asChild size="sm" variant="outline" className="mt-3 h-8 w-full text-xs">
+                  <Link to="/dashboard/campaign-studio" search={{ campaignId: group.id } as never}>فتح بيت الحملة</Link>
+                </Button>
               </article>
             ))}
           </div>
@@ -250,9 +258,9 @@ function LibraryPage() {
                 </button>
               </div>
               <div className="mt-3">
-                {g.metadata?.campaign_pack_id && (
+                {campaignKey(g.metadata) && (
                   <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[11px] leading-5 text-primary">
-                    من حملة: {g.metadata.campaign_product || "حملة محفوظة"} · {g.metadata.campaign_channel || "قناة"}
+                    من حملة: {g.metadata?.campaign_product || "حملة محفوظة"} · {g.metadata?.campaign_channel || "قناة"}
                   </div>
                 )}
                 {g.type === "text" ? (
@@ -297,11 +305,11 @@ function campaignKey(metadata: unknown) {
 }
 
 function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
-  const groups = new Map<string, { id: string; name: string; goal?: string; channel?: string; text: number; image: number; video: number }>();
+  const groups = new Map<string, { id: string; name: string; goal?: string; channel?: string; text: number; image: number; video: number; completedVideo: number; completedSlots: number; completionPercent: number }>();
   const ensure = (id: string, metadata: Generation["metadata"] | Record<string, unknown> | null) => {
     const meta = metadata ?? {};
     const name = typeof meta.campaign_product === "string" && meta.campaign_product ? meta.campaign_product : "حملة محفوظة";
-    if (!groups.has(id)) groups.set(id, { id, name, goal: typeof meta.campaign_goal === "string" ? meta.campaign_goal : undefined, channel: typeof meta.campaign_channel === "string" ? meta.campaign_channel : undefined, text: 0, image: 0, video: 0 });
+    if (!groups.has(id)) groups.set(id, { id, name, goal: typeof meta.campaign_goal === "string" ? meta.campaign_goal : undefined, channel: typeof meta.campaign_channel === "string" ? meta.campaign_channel : undefined, text: 0, image: 0, video: 0, completedVideo: 0, completedSlots: 0, completionPercent: 0 });
     return groups.get(id)!;
   };
   for (const item of items) {
@@ -315,9 +323,14 @@ function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
     const metadata = (job.metadata as Record<string, unknown> | null) ?? null;
     const id = campaignKey(metadata);
     if (!id) continue;
-    ensure(id, metadata).video += 1;
+    const group = ensure(id, metadata);
+    group.video += 1;
+    if (job.status === "completed" && job.result_url) group.completedVideo += 1;
   }
-  return Array.from(groups.values());
+  return Array.from(groups.values()).map((group) => {
+    const completedSlots = Number(group.text > 0) + Number(group.image > 0) + Number(group.completedVideo > 0);
+    return { ...group, completedSlots, completionPercent: Math.round((completedSlots / 3) * 100) };
+  });
 }
 
 function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob[]; refreshingJobId: string | null; onRefresh: (jobId: string) => void }) {
