@@ -70,7 +70,7 @@ function GenerateImagePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateImage({
-        data: { prompt, templateTitle: template.title, templateId: template.id, quality, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId },
+        data: { prompt, templateTitle: template.title, templateId: template.id, quality, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setImageUrl(out.url);
@@ -121,7 +121,7 @@ function GenerateImagePage() {
         </div>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.campaignId} loading={campaignContext.loading} error={campaignContext.error} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -239,7 +239,7 @@ function GenerateImagePage() {
                 <RotateCcw className="h-3.5 w-3.5" /> جرّب نسخة أخرى
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-video" search={{ prompt, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-video" search={{ prompt, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined } as never}>
                   <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من الصورة
                 </Link>
               </Button>
