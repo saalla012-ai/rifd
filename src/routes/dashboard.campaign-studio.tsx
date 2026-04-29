@@ -16,7 +16,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { generateCampaignBrief, getCampaignLiveHome, saveCampaignPack, type CampaignBrief, type CampaignLiveHome, type CampaignPack } from "@/server/campaign-packs";
-import { campaignImageTemplate, campaignTextTemplate, campaignVideoDefaults } from "@/lib/campaign-smart-context";
 
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
 type DbChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
