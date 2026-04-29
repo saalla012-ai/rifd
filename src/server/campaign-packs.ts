@@ -123,6 +123,12 @@ const contextSchema = z.object({
   campaignPackId: z.string().uuid().optional(),
 });
 
+export type CampaignLiveHome = {
+  text: { id: string; result: string; prompt: string; created_at: string } | null;
+  image: { id: string; url: string; prompt: string; created_at: string } | null;
+  video: { id: string; status: string; result_url: string | null; prompt: string; created_at: string } | null;
+};
+
 const goalAngles: Record<CampaignGoal, string> = {
   launch: "الفضول + أول تجربة",
   clearance: "الفرصة الأخيرة",
@@ -132,8 +138,18 @@ const goalAngles: Record<CampaignGoal, string> = {
   winback: "اشتقنا لك + عرض حصري",
 };
 
-function mapPack(row: CampaignPackRow): CampaignPack {
-  return row as CampaignPack;
+function mapPack(row: CampaignPackRow | Record<string, unknown>): CampaignPack {
+  const pack = row as CampaignPackRow & { ab_variants?: unknown; publishing_calendar?: unknown };
+  return {
+    ...(pack as CampaignPack),
+    ab_variants: Array.isArray(pack.ab_variants) ? (pack.ab_variants as CampaignAbVariant[]) : [],
+    publishing_calendar: Array.isArray(pack.publishing_calendar) ? (pack.publishing_calendar as PublishingCalendarDay[]) : [],
+  };
+}
+
+function getCampaignMetaId(metadata: unknown) {
+  const meta = (metadata as { campaignId?: unknown; campaignPackId?: unknown; campaign_pack_id?: unknown } | null) ?? null;
+  return typeof meta?.campaignId === "string" ? meta.campaignId : typeof meta?.campaignPackId === "string" ? meta.campaignPackId : typeof meta?.campaign_pack_id === "string" ? meta.campaign_pack_id : "";
 }
 
 function toDbChannel(channel: CampaignStudioChannel): CampaignChannel {
