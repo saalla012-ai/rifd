@@ -355,6 +355,16 @@ function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
   });
 }
 
+function occasionLabel(group: { name: string; goal?: string; channel?: string }) {
+  const text = `${group.name} ${group.goal ?? ""} ${group.channel ?? ""}`;
+  if (/رمضان/.test(text)) return "🌙 رمضان";
+  if (/اليوم الوطني|وطني/.test(text)) return "🇸🇦 اليوم الوطني";
+  if (/العيد|عيد/.test(text)) return "🎁 العيد";
+  if (/العودة للمدارس|مدارس|مدرس/.test(text)) return "🎒 العودة للمدارس";
+  if (/نهاية السنة|آخر السنة|نهاية الموسم/.test(text)) return "✨ نهاية السنة";
+  return "";
+}
+
 function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob[]; refreshingJobId: string | null; onRefresh: (jobId: string) => void }) {
   return (
     <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-soft">
