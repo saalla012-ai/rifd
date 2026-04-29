@@ -103,7 +103,7 @@ function EditImagePage() {
   const [originalDataUrl, setOriginalDataUrl] = useState<string | null>(null);
   const [originalName, setOriginalName] = useState<string>("");
   const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
-  const [customPrompt, setCustomPrompt] = useState<string>(search.prompt ?? "");
+  const [customPrompt, setCustomPrompt] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -113,7 +113,6 @@ function EditImagePage() {
   }>({ open: false });
 
   const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
-  const campaignSuggestions = getCampaignEditSuggestions(campaignContext.campaign?.goal);
 
   useEffect(() => {
     const productImagePath = campaignContext.campaign?.product_image_path;
@@ -308,6 +307,9 @@ function EditImagePage() {
 
           <div>
             <Label>نوع التحسين</Label>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              اختر تحسيناً واضحاً ومختبراً. الوصف اليدوي اختياري فقط لو عندك توجيه محدد.
+            </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {PRESETS.map((p) => (
                 <button
@@ -333,18 +335,6 @@ function EditImagePage() {
             <Label htmlFor="custom-prompt">
               أو اكتب التحسين المطلوب بنفسك (اختياري)
             </Label>
-            {campaignSuggestions.length > 0 && (
-              <div className="mb-3 mt-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                <p className="text-xs font-bold text-primary">اقتراحات سريعة للحملة</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {campaignSuggestions.map((suggestion) => (
-                    <button key={suggestion} type="button" onClick={() => setCustomPrompt(suggestion)} className="rounded-full border border-primary/20 bg-background px-3 py-1 text-[11px] font-bold text-foreground hover:bg-primary/10">
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
             <Textarea
               id="custom-prompt"
               value={customPrompt}
@@ -354,7 +344,7 @@ function EditImagePage() {
               maxLength={1500}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              لو كتبت هنا، سيتم استخدام وصفك بدلاً من نوع التحسين المختار
+              لو كتبت هنا، سيُستخدم وصفك بدلاً من نوع التحسين المختار.
             </p>
           </div>
 
@@ -437,14 +427,3 @@ function EditImagePage() {
   );
 }
 
-function getCampaignEditSuggestions(goal?: string) {
-  const suggestions: Record<string, string[]> = {
-    clearance: ["جرّب تحسين الإضاءة وإضافة نص: عرض نهاية الموسم"],
-    launch: ["اجعل الخلفية نظيفة وفاخرة مع مساحة لعبارة: وصل حديثاً"],
-    upsell: ["اعرض المنتج كجزء من باقة أو مجموعة"],
-    leads: ["اجعل التصميم هادئاً مع دعوة واضحة للتسجيل أو واتساب"],
-    competitive: ["ركز على الجودة والثقة بدون مقارنة هجومية"],
-    winback: ["استخدم أسلوب دافئ مثل: رجعنا لك بعرض خاص"],
-  };
-  return goal ? suggestions[goal] ?? [] : [];
-}
