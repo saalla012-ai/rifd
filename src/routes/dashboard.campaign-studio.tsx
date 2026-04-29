@@ -298,7 +298,7 @@ function CampaignStudioPage() {
 
         <div className="mt-5 rounded-xl border border-border bg-card p-4 shadow-soft">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-extrabold">تقدم بناء الحملة</p>
+            <p className="text-sm font-extrabold">نسبة التقدم من الخطة</p>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{campaignProgress}%</span>
           </div>
           <Progress value={campaignProgress} className="mt-3 h-2" />
@@ -444,7 +444,7 @@ function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, 
           <h2 className="font-extrabold">المعاينة الحية</h2>
           <span className="rounded-full bg-background px-3 py-1 text-xs font-extrabold text-primary">{progress}% جاهزة</span>
         </div>
-        <p className="mt-1 text-xs leading-6 text-muted-foreground">كانفاس سريع يوضح كيف ستظهر زاوية البيع قبل الانتقال للتنفيذ.</p>
+        <p className="mt-1 text-xs leading-6 text-muted-foreground">كانفاس سريع يوضح تقدم الخطة وكيف ستظهر زاوية البيع قبل الانتقال للتنفيذ.</p>
       </div>
       <div className="p-5">
         <article className="overflow-hidden rounded-lg border border-border bg-background">
