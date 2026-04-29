@@ -718,6 +718,14 @@ function findOption<T extends Option>(options: T[], value: string): T {
   return options.find((option) => option.value === value) ?? options[0];
 }
 
+function liveSnapshot(liveHome: CampaignLiveHome | null) {
+  return {
+    text: Boolean(liveHome?.text),
+    image: Boolean(liveHome?.image),
+    video: Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url),
+  };
+}
+
 function toDbChannel(channel: StudioChannel): DbChannel {
   return ["instagram", "snapchat", "tiktok", "whatsapp"].includes(channel) ? (channel as DbChannel) : "instagram";
 }
