@@ -23,7 +23,7 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
  * NOTE: نتجنّب CSP "Strict" مع nonce حتى لا نكسر Vite hydration. الإعداد الحالي
  * متوازن بين الأمان والاستقرار، ومع ذلك يحمي من معظم نواقل XSS الكلاسيكية.
  */
-const CSP = [
+const buildCsp = (allowLovablePreviewFrame: boolean) => [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://accounts.google.com https://*.gstatic.com https://*.googleapis.com https://*.posthog.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -31,7 +31,7 @@ const CSP = [
   "img-src 'self' data: blob: https://*.supabase.co https://wubcgjuodozhrrigtngs.supabase.co https://*.gstatic.com https://*.googleusercontent.com https://*.posthog.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://wubcgjuodozhrrigtngs.supabase.co https://accounts.google.com https://*.googleapis.com https://*.posthog.com https://*.i.posthog.com",
   "frame-src 'self' https://accounts.google.com",
-  "frame-ancestors 'none'",
+  allowLovablePreviewFrame ? "frame-ancestors 'self' https://*.lovable.dev https://*.lovable.app https://*.lovableproject.com" : "frame-ancestors 'none'",
   "worker-src 'self' blob:",
   "base-uri 'self'",
   "form-action 'self'",
@@ -46,11 +46,11 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ next, reque
     return next();
   }
 
+  const allowLovablePreviewFrame = url.searchParams.has("__lovable_token") || url.hostname.endsWith(".lovableproject.com");
+
   const result = await next();
 
-  setResponseHeaders({
-    // منع clickjacking
-    "X-Frame-Options": "DENY",
+  const headers: Record<string, string> = {
     // منع MIME-sniffing
     "X-Content-Type-Options": "nosniff",
     // إجبار HTTPS لمدة سنة + كل الـsubdomains
@@ -59,9 +59,16 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ next, reque
     "Referrer-Policy": "strict-origin-when-cross-origin",
     // قفل الواجهات البرمجية الحساسة في المتصفح
     "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
-    // CSP — حماية شاملة ضد XSS
-    "Content-Security-Policy": CSP,
-  });
+    // CSP — حماية شاملة ضد XSS مع استثناء مشروط لمعاينة Lovable فقط
+    "Content-Security-Policy": buildCsp(allowLovablePreviewFrame),
+  };
+
+  if (!allowLovablePreviewFrame) {
+    // منع clickjacking في الإنتاج؛ لا يُرسل في معاينة Lovable حتى لا يحجب iframe المعاينة.
+    headers["X-Frame-Options"] = "DENY";
+  }
+
+  setResponseHeaders(headers);
 
   return result;
 });
