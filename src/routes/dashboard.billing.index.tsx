@@ -160,6 +160,7 @@ function BillingPage() {
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
   const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
   const selected = PLAN_BY_ID[plan];
+  const selectedGuide = PLAN_PURCHASE_GUIDE[plan];
   const price = billingCycle === "yearly" ? selected.yearlyPriceSar : selected.monthlyPriceSar;
   const futurePrice = Math.round(price * (1 + increasePct / 100));
   const selectedFastVideos = estimateVideoCount(selected.monthlyCredits, "fast", 5);
@@ -238,8 +239,9 @@ function BillingPage() {
     <DashboardShell>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold">الفواتير والاشتراك</h1>
-          <p className="mt-1 text-sm text-muted-foreground">اختر باقة نقاط الفيديو المناسبة، والنصوص والصور تبقى ضمن سقوف يومية.</p>
+          <p className="text-xs font-bold text-primary">المرحلة 5 من الخطة · التقدم 99%</p>
+          <h1 className="mt-1 text-2xl font-extrabold">اختر قدرة النمو المناسبة لمتجرك</h1>
+          <p className="mt-1 text-sm text-muted-foreground">الباقات هنا قدرات تشغيل للحملات: نقاط فيديو واضحة، صور Pro عند الحاجة، واستخدام يومي للنصوص والصور دون تحويلها إلى أرقام بيع.</p>
         </div>
         <Button asChild variant="outline">
           <Link to="/pricing">عرض صفحة الأسعار</Link>
@@ -270,7 +272,7 @@ function BillingPage() {
           <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2">
             <div className="mb-5 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold">طلب الاشتراك</h2>
+              <h2 className="text-lg font-bold">اختر قدرة التشغيل</h2>
             </div>
 
             <div className="mb-5">
@@ -291,7 +293,8 @@ function BillingPage() {
                   </div>
                   <div className="mt-2 text-2xl font-extrabold">{p.monthlyPriceSar} <span className="text-xs font-normal text-muted-foreground">ر.س</span></div>
                   <div className="mt-1 text-xs text-primary">{formatPlanNumber(p.monthlyCredits)} نقطة فيديو</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{p.tagline}</div>
+                  <div className="mt-1 text-[11px] font-semibold text-foreground">{PLAN_PURCHASE_GUIDE[p.id as PaidPlanId].fit}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{PLAN_PURCHASE_GUIDE[p.id as PaidPlanId].capability}</div>
                 </button>
               ))}
             </div>
@@ -341,6 +344,7 @@ function BillingPage() {
                   <p className="mt-1 text-xs text-muted-foreground">
                     تقريباً {formatPlanNumber(selectedFastVideos)} فيديو سريع أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو احترافي` : "الاحترافي غير متاح"} — الفيديو محكوم بالنقاط.
                   </p>
+                  <p className="mt-2 text-xs font-medium text-foreground">{selectedGuide.focus}</p>
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
                   </p>
