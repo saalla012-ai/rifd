@@ -11,6 +11,8 @@ type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" 
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
 type CampaignStudioChannel = CampaignChannel | "email" | "all";
 type CampaignStatus = "draft" | "generated" | "archived";
+export type CampaignAbVariant = { style: string; icon: string; hook: string; message: string; cta: string };
+export type PublishingCalendarDay = { day: number; label: string; channel: string; contentType: string; message: string; goal: string };
 
 export type CampaignPack = {
   id: string;
@@ -25,6 +27,8 @@ export type CampaignPack = {
   text_prompt: string;
   image_prompt: string;
   video_prompt: string;
+  ab_variants: CampaignAbVariant[];
+  publishing_calendar: PublishingCalendarDay[];
   product_image_path: string | null;
   created_at: string;
   updated_at: string;
@@ -40,11 +44,16 @@ export type CampaignBrief = {
   textPrompt: string;
   imagePrompt: string;
   videoPrompt: string;
+  abVariants: CampaignAbVariant[];
+  publishingCalendar: PublishingCalendarDay[];
 };
 
 export type AdminCampaignPack = CampaignPack & {
   user_email: string | null;
   user_store: string | null;
+  output_counts: { text: number; image: number; video: number };
+  completion_percent: number;
+  last_output_at: string | null;
 };
 
 const goals = ["launch", "clearance", "upsell", "leads", "competitive", "winback"] as const;
@@ -63,6 +72,8 @@ const packSchema = z.object({
   textPrompt: z.string().max(5000),
   imagePrompt: z.string().max(3000),
   videoPrompt: z.string().max(3000),
+  abVariants: z.array(z.object({ style: z.string().max(80), icon: z.string().max(12), hook: z.string().max(180), message: z.string().max(320), cta: z.string().max(80) })).max(3).default([]),
+  publishingCalendar: z.array(z.object({ day: z.number().int().min(1).max(7), label: z.string().max(40), channel: z.string().max(80), contentType: z.string().max(120), message: z.string().max(420), goal: z.string().max(120) })).max(7).default([]),
   productImagePath: z.string().max(1000).nullable().optional(),
 });
 
@@ -93,6 +104,8 @@ const briefSchema = z.object({
   textPrompt: z.string().min(10).max(5000),
   imagePrompt: z.string().min(10).max(3000),
   videoPrompt: z.string().min(10).max(3000),
+  abVariants: z.array(z.object({ style: z.string().min(2).max(80), icon: z.string().min(1).max(12), hook: z.string().min(3).max(180), message: z.string().min(8).max(320), cta: z.string().min(2).max(80) })).length(3),
+  publishingCalendar: z.array(z.object({ day: z.number().int().min(1).max(7), label: z.string().min(2).max(40), channel: z.string().min(2).max(80), contentType: z.string().min(2).max(120), message: z.string().min(8).max(420), goal: z.string().min(2).max(120) })).length(7),
 });
 
 const listSchema = z.object({
