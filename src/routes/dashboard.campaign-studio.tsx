@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { campaignExecutionSearch, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { generateCampaignBrief, getCampaignLiveHome, saveCampaignPack, type CampaignBrief, type CampaignLiveHome, type CampaignPack } from "@/server/campaign-packs";
 
@@ -150,6 +151,17 @@ function CampaignStudioPage() {
   const occasionOption = findOption(OCCASIONS, occasion);
   const stageOption = findOption(CUSTOMER_STAGES, customerStage);
   const dbChannel = toDbChannel(channel);
+  const executionContext = useMemo<CampaignExecutionContext>(() => ({
+    campaignId: activePackId,
+    sector: sectorOption.label,
+    audience: audienceOption.label,
+    offer: offerOption.label,
+    channel: channelOption.label,
+    occasion: occasionOption.label,
+    customerStage: stageOption.label,
+    goal: goal ?? undefined,
+    productName: product.trim() || undefined,
+  }), [activePackId, audienceOption.label, channelOption.label, goal, occasionOption.label, offerOption.label, product, sectorOption.label, stageOption.label]);
   const planProgressItems = useMemo(
     () => [
       { label: "هدف الحملة", done: Boolean(goal) },
@@ -506,6 +518,7 @@ function CampaignStudioPage() {
             liveHome={liveHome}
             loadingLiveHome={loadingLiveHome}
             campaignId={activePackId}
+            executionContext={executionContext}
           />
         </div>
       </div>
@@ -575,7 +588,7 @@ function SmartCombobox({ label, value, options, onChange }: { label: string; val
   );
 }
 
-function MagicCanvas({ refEl, highlight, updatedKinds, returnBanner, goal, product, audience, offer, channel, imagePreview, generating, brief, liveHome, loadingLiveHome, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; highlight: boolean; updatedKinds: Array<"text" | "image" | "video">; returnBanner: boolean; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; campaignId?: string }) {
+function MagicCanvas({ refEl, highlight, updatedKinds, returnBanner, goal, product, audience, offer, channel, imagePreview, generating, brief, liveHome, loadingLiveHome, campaignId, executionContext }: { refEl: MutableRefObject<HTMLElement | null>; highlight: boolean; updatedKinds: Array<"text" | "image" | "video">; returnBanner: boolean; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; campaignId?: string; executionContext: CampaignExecutionContext }) {
   return (
     <aside ref={refEl} className="space-y-4 lg:sticky lg:top-6 lg:self-start">
       <section className={cn("overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft transition-all duration-700", highlight && "ring-4 ring-primary/20 ring-offset-2 ring-offset-background")}>
@@ -585,7 +598,7 @@ function MagicCanvas({ refEl, highlight, updatedKinds, returnBanner, goal, produ
         </div>
         <div className="p-4">
             {returnBanner && <div className="mb-3 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-xs font-bold text-success">أهلاً بعودتك! تم تحديث مخرجات حملتك.</div>}
-            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} liveHome={liveHome} loadingLiveHome={loadingLiveHome} updatedKinds={updatedKinds} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
+            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} liveHome={liveHome} loadingLiveHome={loadingLiveHome} updatedKinds={updatedKinds} executionContext={executionContext} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
         </div>
       </section>
     </aside>
