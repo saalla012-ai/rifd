@@ -237,7 +237,10 @@ export const generateImage = createServerFn({ method: "POST" })
         imageDataUrl = out.images[0];
         if (!imageDataUrl) throw new Error("لم يتم توليد صورة");
       } catch (e) {
-        if (e instanceof AIError) throw new Error(e.message);
+        if (e instanceof AIError) {
+          if (e.code === "rate_limited") await releaseImageDailyQuota(supabase, userId);
+          throw new Error(e.message);
+        }
         throw e;
       }
 
@@ -376,7 +379,10 @@ export const editImage = createServerFn({ method: "POST" })
         editedDataUrl = out.images[0];
         if (!editedDataUrl) throw new Error("لم يتم توليد صورة معدّلة");
       } catch (e) {
-        if (e instanceof AIError) throw new Error(e.message);
+        if (e instanceof AIError) {
+          if (e.code === "rate_limited") await releaseImageDailyQuota(supabase, userId);
+          throw new Error(e.message);
+        }
         throw e;
       }
 
