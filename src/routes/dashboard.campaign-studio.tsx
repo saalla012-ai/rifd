@@ -692,7 +692,7 @@ function NextBestAction({ liveHome, campaignId, brief, executionContext }: { liv
   const action = hasImage && !hasText
     ? { text: "الآن وقد أصبحت الصورة جاهزة، هل تود كتابة نص إعلاني يطابقها؟", label: "اكتب نصاً", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt }
     : hasText && !hasImage
-      ? { text: "النص جاهز. حسّن صورة المنتج بنوع تحسين واضح ومختبر.", label: "حسّن الصورة", to: "/dashboard/edit-image" as const, prompt: "" }
+      ? { text: "النص جاهز. صمّم صورة إعلان تكمل نفس الرسالة والعرض.", label: "صمّم صورة إعلان", to: "/dashboard/generate-image" as const, prompt: brief.imagePrompt }
       : hasText && hasImage && !hasVideo
         ? { text: "الحملة جاهزة بصرياً. حوّلها إلى فيديو قصير مناسب لريلز وتيك توك.", label: "أنشئ فيديو", to: "/dashboard/generate-video" as const, prompt: brief.videoPrompt }
         : { text: "ابدأ بأول أصل للحملة حتى يتحول البيت من خطة إلى مخرجات جاهزة.", label: "اكتب نصاً يبيع", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt };
