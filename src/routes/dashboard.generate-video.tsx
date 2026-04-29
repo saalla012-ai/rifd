@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Clapperboard, Crown, Download, Film, ImageUp, Loader2, MonitorSmartphone, RefreshCw, Sparkles, Upload, Wand2, Zap } from "lucide-react";
+import { ArrowLeft, Clapperboard, Crown, Download, Film, ImageUp, Loader2, Megaphone, MonitorSmartphone, RefreshCw, Sparkles, Upload, Wand2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { generateVideo, listVideoJobs, refreshVideoJob } from "@/server/video-fu
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
+import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { videoTierDuration } from "@/lib/plan-catalog";
 import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, buildSaudiVideoMediumTestSample } from "@/lib/saudi-video-test";
@@ -19,6 +20,7 @@ import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
 import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
+import type { CampaignPack } from "@/server/campaign-packs";
 
 type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
@@ -26,6 +28,7 @@ type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
 type VideoSearch = {
   __lovable_token?: string;
   prompt?: string;
+  campaignId?: string;
   campaignPackId?: string;
   quality?: VideoQuality;
   aspectRatio?: AspectRatio;
@@ -101,6 +104,7 @@ export const Route = createFileRoute("/dashboard/generate-video")({
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
     __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
     quality: s.quality === "fast" || s.quality === "lite" || s.quality === "quality" ? s.quality : undefined,
     aspectRatio: s.aspectRatio === "9:16" || s.aspectRatio === "1:1" || s.aspectRatio === "16:9" ? s.aspectRatio : undefined,
@@ -137,6 +141,7 @@ function ImageInputCard({ label, value, uploading, disabled = false, onFile, onU
 function GenerateVideoPage() {
   const router = useRouter();
   const search = useSearch({ from: "/dashboard/generate-video" });
+  const campaignContext = useCampaignContext({ campaignId: search.campaignId, campaignPackId: search.campaignPackId });
   const generateVideoFn = useServerFn(generateVideo);
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
@@ -258,7 +263,7 @@ function GenerateVideoPage() {
       if (!session) throw new Error("سجّل الدخول أولاً");
       const providerProductImageUrl = internalMediumTestMode && canonicalProductImageUrl ? await imageUrlToDataUrl(canonicalProductImageUrl) : productImageUrl.trim();
       const out = await generateVideoFn({
-        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: internalMediumTestMode ? "" : startingFrameUrl.trim(), speakerImageUrl: internalMediumTestMode ? "" : speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl: providerProductImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
+        data: { prompt: canonicalGenerationPrompt, quality: canonicalGenerationQuality, aspectRatio: canonicalGenerationAspectRatio, durationSeconds: canonicalGenerationDurationSeconds, startingFrameUrl: internalMediumTestMode ? "" : startingFrameUrl.trim(), speakerImageUrl: internalMediumTestMode ? "" : speakerImageUrl || absoluteAssetUrl(canonicalGenerationPersona.image), productImageUrl: providerProductImageUrl, selectedPersonaId: canonicalGenerationPersonaId, selectedTemplateId: internalMediumTestMode ? "custom" : selectedTemplateId, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId, source: search.source, mediumTestSampleId: mediumTestCanonicalSample?.sampleId, mediumTestTemplateId: mediumTestCanonicalSample?.templateId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setActiveJob(out.job);
@@ -322,6 +327,11 @@ function GenerateVideoPage() {
     setSelectedPersonaId(mediumTestCanonicalSample.personaId);
     setPrompt(mediumTestCanonicalSample.finalPrompt);
   }, [internalMediumTestMode, mediumTestCanonicalSample]);
+
+  useEffect(() => {
+    if (internalMediumTestMode || search.prompt || !campaignContext.campaign?.video_prompt) return;
+    setPrompt(campaignContext.campaign.video_prompt);
+  }, [campaignContext.campaign?.video_prompt, internalMediumTestMode, search.prompt]);
 
   const downloadLatestVideo = async () => {
     if (!latestResult) return;
@@ -389,7 +399,7 @@ function GenerateVideoPage() {
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">Reels / TikTok</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">شخصيات سعودية</span>
             <span className="rounded-full border border-border bg-secondary/50 px-3 py-1">مناسب لإعلانات العروض</span>
-            {search.campaignPackId && <span className="rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-gold">ضمن حملة محفوظة</span>}
+            {campaignContext.campaignId && <span className="rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-gold">ضمن حملة محفوظة</span>}
           </div>
           {internalMediumTestMode && <p className="mt-2 w-fit rounded-md border border-gold/30 bg-gold/5 px-2 py-1 text-xs font-bold text-gold">وضع اختبار داخلي: لن يُفتح القالب للعامة حتى يجتاز بوابة الالتزام 80%+</p>}
         </div>
@@ -397,6 +407,8 @@ function GenerateVideoPage() {
           <Link to="/dashboard/credits"><Sparkles className="h-3.5 w-3.5" /> شحن نقاط الفيديو</Link>
         </Button>
       </div>
+
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.campaignId} loading={campaignContext.loading} error={campaignContext.error} />
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
