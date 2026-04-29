@@ -115,6 +115,7 @@ function CampaignStudioPage() {
   const campaignContext = useCampaignContext({ campaignId: search.campaignId });
   const savePackFn = useServerFn(saveCampaignPack);
   const generateBriefFn = useServerFn(generateCampaignBrief);
+  const getLiveHomeFn = useServerFn(getCampaignLiveHome);
   const previewRef = useRef<HTMLElement | null>(null);
   const [goal, setGoal] = useState<CampaignGoal | null>(search.goal ?? null);
   const [product, setProduct] = useState(search.product ?? "");
@@ -130,6 +131,8 @@ function CampaignStudioPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [brief, setBrief] = useState<CampaignBrief | null>(null);
+  const [liveHome, setLiveHome] = useState<CampaignLiveHome | null>(null);
+  const [loadingLiveHome, setLoadingLiveHome] = useState(false);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? null;
   const sectorOption = findOption(SECTORS, sector);
@@ -185,6 +188,22 @@ function CampaignStudioPage() {
     setProductImagePath(pack.product_image_path);
     setBrief(briefFromPack(pack));
   }, [campaignContext.campaign]);
+
+  useEffect(() => {
+    if (!activePackId) {
+      setLiveHome(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingLiveHome(true);
+    void authHeaders()
+      .then((headers) => getLiveHomeFn({ data: { campaignId: activePackId }, headers }))
+      .then((out) => { if (!cancelled) setLiveHome(out.liveHome); })
+      .catch(() => { if (!cancelled) setLiveHome(null); })
+      .finally(() => { if (!cancelled) setLoadingLiveHome(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePackId, getLiveHomeFn]);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
