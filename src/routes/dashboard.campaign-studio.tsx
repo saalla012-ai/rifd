@@ -32,7 +32,7 @@ type CampaignSearch = {
 type Option = { value: string; label: string; description?: string };
 
 const GENERATED_IMAGES_BUCKET = "generated-images";
-const MVP_PROGRESS = 100;
+const PACKAGE_TWO_PROGRESS = 100;
 
 const GOALS: Array<{ value: CampaignGoal; title: string; prompt: string }> = [
   { value: "launch", title: "إطلاق منتج", prompt: "عندك منتج جديد؟" },
@@ -313,10 +313,10 @@ function CampaignStudioPage() {
             <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">استوديو حملات استراتيجي</Badge>
             <div className="min-w-40 rounded-lg border border-border bg-card px-3 py-2 shadow-soft">
               <div className="flex items-center justify-between gap-3 text-xs font-extrabold">
-                <span className="text-muted-foreground">تقدّم الخطة المعتمدة</span>
-                <span className="text-primary">{MVP_PROGRESS}%</span>
+                <span className="text-muted-foreground">تقدّم الحزمة الثانية</span>
+                <span className="text-primary">{PACKAGE_TWO_PROGRESS}%</span>
               </div>
-              <Progress value={MVP_PROGRESS} className="mt-2 h-1.5" />
+              <Progress value={PACKAGE_TWO_PROGRESS} className="mt-2 h-1.5" />
             </div>
           </div>
           <h1 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">ابنِ حملة واضحة قبل ما تبدأ التنفيذ</h1>

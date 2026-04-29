@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Clapperboard, Crown, Download, Film, ImageUp, Loader2, Megaphone, MonitorSmartphone, RefreshCw, Sparkles, Upload, Wand2, Zap } from "lucide-react";
+import { Clapperboard, Crown, Download, Film, ImageUp, Loader2, Megaphone, MonitorSmartphone, RefreshCw, Sparkles, Upload, Wand2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { CampaignContextBar } from "@/components/campaign-context-bar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +21,6 @@ import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
 import personaMalePremium from "@/assets/saudi-persona-male-premium.jpg";
 import personaFemaleAbaya from "@/assets/saudi-persona-female-abaya.jpg";
 import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
-import type { CampaignPack } from "@/server/campaign-packs";
 
 type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
@@ -675,17 +675,3 @@ function GenerateVideoPage() {
   );
 }
 
-function CampaignContextBar({ campaign, campaignId, loading, error }: { campaign: CampaignPack | null; campaignId?: string; loading: boolean; error: string | null }) {
-  if (!campaignId) return null;
-  return (
-    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
-      <div className="min-w-0 text-sm">
-        <p className="font-extrabold text-primary">{loading ? "جاري تحميل سياق الحملة…" : campaign ? `مرتبطة بحملة: ${campaign.product || "حملة محفوظة"}` : "الأداة تعمل بدون سياق حملة"}</p>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaign ? `${campaign.goal} · ${campaign.channel}` : error ?? "يمكنك المتابعة بشكل طبيعي."}</p>
-      </div>
-      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
-        <Link to="/dashboard/campaign-studio" search={{ campaignId } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
-      </Button>
-    </div>
-  );
-}

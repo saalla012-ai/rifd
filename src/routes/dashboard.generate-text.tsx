@@ -14,11 +14,11 @@ import { getSuggestionsFor } from "@/lib/prompt-suggestions";
 import { generateText } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
+import { CampaignContextBar } from "@/components/campaign-context-bar";
 import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
-import type { CampaignPack } from "@/server/campaign-packs";
 
 type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string };
 
@@ -104,7 +104,7 @@ function GenerateTextPage() {
           <p className="text-xs font-black text-primary">اكتب نصاً يبيع</p>
           <h1 className="mt-1 text-2xl font-extrabold">حوّل موجز الحملة إلى كلام يدفع للشراء</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر قالباً، أضف تفاصيل العرض، واستلم نصاً واضحاً للمتجر أو الإعلان أو واتساب.</p>
-          {search.campaignPackId && (
+          {campaignContext.campaignId && (
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
               <Megaphone className="h-3.5 w-3.5" /> هذا النص جزء من حملة محفوظة
             </div>
@@ -267,17 +267,3 @@ function GenerateTextPage() {
   );
 }
 
-function CampaignContextBar({ campaign, campaignId, loading, error }: { campaign: CampaignPack | null; campaignId?: string; loading: boolean; error: string | null }) {
-  if (!campaignId) return null;
-  return (
-    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
-      <div className="min-w-0 text-sm">
-        <p className="font-extrabold text-primary">{loading ? "جاري تحميل سياق الحملة…" : campaign ? `مرتبطة بحملة: ${campaign.product || "حملة محفوظة"}` : "الأداة تعمل بدون سياق حملة"}</p>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaign ? `${campaign.goal} · ${campaign.channel}` : error ?? "يمكنك المتابعة بشكل طبيعي."}</p>
-      </div>
-      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
-        <Link to="/dashboard/campaign-studio" search={{ campaignId } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
-      </Button>
-    </div>
-  );
-}
