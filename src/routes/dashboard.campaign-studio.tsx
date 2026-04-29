@@ -261,6 +261,8 @@ function CampaignStudioPage() {
         data: {
           campaignId: activePackId,
           product,
+          sector,
+          sectorLabel: sectorOption.label,
           audience,
           audienceLabel: audienceOption.label,
           offer,
@@ -297,7 +299,7 @@ function CampaignStudioPage() {
         </header>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(360px,2fr)] lg:items-start">
-          <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
+          <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-soft sm:p-5">
             <div className="border-b border-border pb-4">
               <p className="text-xs font-bold text-primary">منطقة البناء</p>
               <h2 className="mt-1 text-lg font-extrabold">ابدأ من القرار التجاري</h2>
@@ -363,6 +365,7 @@ function CampaignStudioPage() {
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
+              <SmartCombobox label="قطاع متجرك" value={sector} options={SECTORS} onChange={setSector} />
               <SmartCombobox label="الجمهور المستهدف" value={audience} options={AUDIENCES} onChange={setAudience} />
               <SmartCombobox label="العرض" value={offer} options={OFFERS} onChange={setOffer} />
               <SmartCombobox label="قناة النشر" value={channel} options={CHANNELS} onChange={(value) => setChannel(value as StudioChannel)} />
