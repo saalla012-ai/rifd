@@ -44,6 +44,7 @@ function GenerateImagePage() {
   const [prompt, setPrompt] = useState(search.prompt ?? "");
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [referenceImageUrl, setReferenceImageUrl] = useState("");
   const [remaining, setRemaining] = useState<number | null>(null);
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
   const router = useRouter();
@@ -63,6 +64,23 @@ function GenerateImagePage() {
     if (search.smart && campaignContext.campaign) setTemplateId(campaignImageTemplate(campaignContext.campaign));
   }, [campaignContext.campaign, search.prompt, search.smart]);
 
+  useEffect(() => {
+    const directUrl = resolvedCampaignContext.productImageUrl?.trim();
+    if (directUrl) {
+      setReferenceImageUrl(directUrl);
+      return;
+    }
+    const path = resolvedCampaignContext.productImagePath;
+    if (!path) return;
+    supabase.storage
+      .from("campaign-product-images")
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (data?.signedUrl) setReferenceImageUrl(data.signedUrl);
+      })
+      .catch(() => undefined);
+  }, [resolvedCampaignContext.productImagePath, resolvedCampaignContext.productImageUrl]);
+
   const go = async () => {
     if (!prompt.trim()) { toast.error("اكتب وصف الصورة أولاً"); return; }
     if (quality === "pro" && !proAllowed) {
@@ -75,7 +93,7 @@ function GenerateImagePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateImage({
-        data: { prompt, templateTitle: template.title, templateId: template.id, quality, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined },
+        data: { prompt, templateTitle: template.title, templateId: template.id, quality, campaignId: campaignContext.campaignId ?? search.campaignId, campaignPackId: search.campaignPackId, referenceImageUrl: referenceImageUrl || undefined },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setImageUrl(out.url);
@@ -178,6 +196,15 @@ function GenerateImagePage() {
               className="mt-1 min-h-24"
               maxLength={1500}
             />
+            {referenceImageUrl && (
+              <div className="mt-3 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
+                <img src={referenceImageUrl} alt="صورة المنتج المرجعية" className="h-14 w-14 rounded-md border border-border object-cover" loading="lazy" />
+                <div className="min-w-0">
+                  <p className="font-extrabold text-primary">صورة المنتج مرفقة كمرجع</p>
+                  <p className="mt-1 leading-5 text-muted-foreground">سيتم تصميم الإعلان حول نفس المنتج مع الحفاظ على شكله وتفاصيله.</p>
+                </div>
+              </div>
+            )}
             {smartSuggestions.length > 0 && (
               <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
                 <p className="text-xs font-bold text-primary">اقتراحات بصرية مبنية على ذاكرة متجرك</p>
