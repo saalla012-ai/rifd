@@ -41,7 +41,7 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
 ];
 
 const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
-const PLAN_PROGRESS = 60;
+const PLAN_PROGRESS = 70;
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -140,6 +140,13 @@ function CampaignStudioPage() {
 
   const progressItems = [goal, channel, product.trim(), audience.trim(), offer.trim(), productImagePath, activePackId];
   const campaignProgress = Math.round((progressItems.filter(Boolean).length / progressItems.length) * 100);
+  const readinessChecks = [
+    { label: "هدف الحملة", done: Boolean(goal), hint: selectedGoal.label },
+    { label: "المنتج", done: Boolean(product.trim()), hint: product.trim() || "اكتب المنتج بوضوح" },
+    { label: "الجمهور", done: Boolean(audience.trim()), hint: audience.trim() || "حدّد من تبيع له" },
+    { label: "العرض", done: Boolean(offer.trim()), hint: offer.trim() || "أضف سبباً للشراء الآن" },
+    { label: "الصورة", done: Boolean(productImagePath), hint: productImagePath ? "مرتبطة بالحملة" : "ارفع صورة المنتج" },
+  ];
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -301,7 +308,7 @@ function CampaignStudioPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
-              <p className="mt-1 text-xs text-muted-foreground">اكتملت مرحلة الربط التقني وبدأت مرحلة تجربة الكانفاس التفاعلية.</p>
+              <p className="mt-1 text-xs text-muted-foreground">اكتملت مراجعة الربط والتجاوب، وبدأت طبقة جاهزية الحملة داخل المعاينة.</p>
             </div>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
           </div>
@@ -380,7 +387,7 @@ function CampaignStudioPage() {
         </section>
 
         <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} />
+          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} checks={readinessChecks} />
 
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-extrabold">وجهات التنفيذ</h2>
