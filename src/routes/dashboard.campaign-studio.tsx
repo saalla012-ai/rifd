@@ -682,7 +682,7 @@ function CampaignCompletion({ liveHome, loading }: { liveHome: CampaignLiveHome 
   return <Badge variant="outline" className="bg-background text-xs">{loading ? "يتم التحديث…" : `${done}/3 · ${percent}%`}</Badge>;
 }
 
-function NextBestAction({ liveHome, campaignId, brief }: { liveHome: CampaignLiveHome | null; campaignId?: string; brief: CampaignBrief }) {
+function NextBestAction({ liveHome, campaignId, brief, executionContext }: { liveHome: CampaignLiveHome | null; campaignId?: string; brief: CampaignBrief; executionContext: CampaignExecutionContext }) {
   const hasText = Boolean(liveHome?.text);
   const hasImage = Boolean(liveHome?.image);
   const hasVideo = Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url);
@@ -696,10 +696,10 @@ function NextBestAction({ liveHome, campaignId, brief }: { liveHome: CampaignLiv
       : hasText && hasImage && !hasVideo
         ? { text: "الحملة جاهزة بصرياً. حوّلها إلى فيديو قصير مناسب لريلز وتيك توك.", label: "أنشئ فيديو", to: "/dashboard/generate-video" as const, prompt: brief.videoPrompt }
         : { text: "ابدأ بأول أصل للحملة حتى يتحول البيت من خطة إلى مخرجات جاهزة.", label: "اكتب نصاً يبيع", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt };
-  return <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-bold text-foreground">{action.text}</p><Button asChild size="sm" className="mt-3 h-8 text-xs"><Link to={action.to} search={(action.to === "/dashboard/edit-image" ? { campaignId, smart: true } : { campaignId, smart: true }) as never}>{action.label}</Link></Button></div>;
+  return <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-bold text-foreground">{action.text}</p><Button asChild size="sm" className="mt-3 h-8 text-xs"><Link to={action.to} search={campaignExecutionSearch({ ...executionContext, campaignId }, action.prompt) as never}>{action.label}</Link></Button></div>;
 }
 
-function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, updated }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean; updated?: boolean }) {
+function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, updated, executionContext }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean; updated?: boolean; executionContext: CampaignExecutionContext }) {
   const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/edit-image" : "/dashboard/generate-video";
   const Icon = kind === "text" ? FileText : kind === "image" ? ImageIcon : Clapperboard;
   const isVideo = kind === "video";
@@ -725,7 +725,7 @@ function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, update
           {updated && <div className="mt-1 inline-flex rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">تم تحديث {title} بنجاح</div>}
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{textItem?.result ? textItem.result.slice(0, 100) : imageItem?.prompt || video?.prompt || "ابدأ من هذه الفتحة لإكمال الحملة."}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {video?.result_url && complete ? <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-xs"><a href={video.result_url} target="_blank" rel="noreferrer"><PlayCircle className="h-3.5 w-3.5" /> {buttonLabel}</a></Button> : <Button asChild size="sm" variant={complete ? "outline" : "default"} className="h-8 text-xs"><Link to={route} search={{ campaignId, smart: true } as never}>{buttonLabel}</Link></Button>}
+            {video?.result_url && complete ? <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-xs"><a href={video.result_url} target="_blank" rel="noreferrer"><PlayCircle className="h-3.5 w-3.5" /> {buttonLabel}</a></Button> : <Button asChild size="sm" variant={complete ? "outline" : "default"} className="h-8 text-xs"><Link to={route} search={campaignExecutionSearch({ ...executionContext, campaignId }, prompt) as never}>{buttonLabel}</Link></Button>}
           </div>
         </div>
       </div>
