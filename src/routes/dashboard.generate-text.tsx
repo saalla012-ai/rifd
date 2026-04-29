@@ -70,7 +70,7 @@ function GenerateTextPage() {
       if (!session) throw new Error("سجّل الدخول أولاً");
 
       const out = await generateText({
-        data: { prompt: topic, templateTitle: template.title, templateId: template.id, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId },
+        data: { prompt: topic, templateTitle: template.title, templateId: template.id, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setResult(out.result);
@@ -127,7 +127,7 @@ function GenerateTextPage() {
         </div>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.campaignId} loading={campaignContext.loading} error={campaignContext.error} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -232,12 +232,12 @@ function GenerateTextPage() {
           {result && (
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined } as never}>
                   <ImageIcon className="h-3.5 w-3.5" /> صمّم صورة لهذا النص
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined } as never}>
                   <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من النص
                 </Link>
               </Button>
