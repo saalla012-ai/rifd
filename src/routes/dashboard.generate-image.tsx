@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { Image as ImageIcon, Loader2, Zap, Crown, Download, LayoutGrid, Megaphone, Clapperboard, RotateCcw, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -12,11 +12,13 @@ import { generateImage } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
+import type { CampaignPack } from "@/server/campaign-packs";
 
-type ImgSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignPackId?: string };
+type ImgSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-image")({
   head: () => ({ meta: [{ title: "صمّم صورة إعلان — رِفد" }] }),
@@ -24,6 +26,7 @@ export const Route = createFileRoute("/dashboard/generate-image")({
     __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
   }),
   component: GenerateImagePage,
@@ -33,6 +36,7 @@ function GenerateImagePage() {
   const { profile } = useAuth();
   const { data: credits, loading: creditsLoading, refresh: refreshCredits } = useCreditsSummary();
   const search = useSearch({ from: "/dashboard/generate-image" });
+  const campaignContext = useCampaignContext({ campaignId: search.campaignId, campaignPackId: search.campaignPackId });
   const initial = search.template && IMAGE_PROMPTS.some((p) => p.id === search.template)
     ? search.template
     : IMAGE_PROMPTS[0].id;
@@ -50,6 +54,10 @@ function GenerateImagePage() {
   const memorySignals = getMemorySignals(profile).slice(0, 4);
   const proAllowed = credits?.imageProAllowed ?? true;
 
+  useEffect(() => {
+    if (!search.prompt && campaignContext.campaign?.image_prompt) setPrompt(campaignContext.campaign.image_prompt);
+  }, [campaignContext.campaign?.image_prompt, search.prompt]);
+
   const go = async () => {
     if (!prompt.trim()) { toast.error("اكتب وصف الصورة أولاً"); return; }
     if (quality === "pro" && !proAllowed) {
@@ -62,7 +70,7 @@ function GenerateImagePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("سجّل الدخول أولاً");
       const out = await generateImage({
-        data: { prompt, templateTitle: template.title, templateId: template.id, quality, campaignPackId: search.campaignPackId },
+        data: { prompt, templateTitle: template.title, templateId: template.id, quality, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setImageUrl(out.url);
@@ -112,6 +120,8 @@ function GenerateImagePage() {
           )}
         </div>
       </div>
+
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.campaignId} loading={campaignContext.loading} error={campaignContext.error} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -229,14 +239,14 @@ function GenerateImagePage() {
                 <RotateCcw className="h-3.5 w-3.5" /> جرّب نسخة أخرى
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-video" search={{ prompt, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-video" search={{ prompt, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
                   <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من الصورة
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to={search.campaignPackId ? "/dashboard/campaign-studio" : "/dashboard/library"}>
-                  {search.campaignPackId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
-                  {search.campaignPackId ? "العودة للحملة" : "افتح المكتبة"}
+                <Link to={campaignContext.campaignId ? "/dashboard/campaign-studio" : "/dashboard/library"} search={campaignContext.campaignId ? { campaignId: campaignContext.campaignId } as never : undefined}>
+                  {campaignContext.campaignId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  {campaignContext.campaignId ? "العودة للاستوديو" : "افتح المكتبة"}
                 </Link>
               </Button>
             </div>
@@ -256,5 +266,20 @@ function GenerateImagePage() {
         reason={quotaDialog.reason}
       />
     </DashboardShell>
+  );
+}
+
+function CampaignContextBar({ campaign, campaignId, loading, error }: { campaign: CampaignPack | null; campaignId?: string; loading: boolean; error: string | null }) {
+  if (!campaignId) return null;
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
+      <div className="min-w-0 text-sm">
+        <p className="font-extrabold text-primary">{loading ? "جاري تحميل سياق الحملة…" : campaign ? `مرتبطة بحملة: ${campaign.product || "حملة محفوظة"}` : "الأداة تعمل بدون سياق حملة"}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaign ? `${campaign.goal} · ${campaign.channel}` : error ?? "يمكنك المتابعة بشكل طبيعي."}</p>
+      </div>
+      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
+        <Link to="/dashboard/campaign-studio" search={{ campaignId } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
+      </Button>
+    </div>
   );
 }
