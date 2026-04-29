@@ -41,7 +41,7 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
 ];
 
 const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
-const PLAN_PROGRESS = 80;
+const PLAN_PROGRESS = 90;
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -148,6 +148,7 @@ function CampaignStudioPage() {
     { label: "الصورة", done: Boolean(productImagePath), hint: productImagePath ? "مرتبطة بالحملة" : "ارفع صورة المنتج" },
   ];
   const nextReadinessStep = readinessChecks.find((check) => !check.done)?.hint ?? "الحملة جاهزة للانتقال إلى أدوات التنفيذ";
+  const readyForExecution = readinessChecks.every((check) => check.done);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -309,7 +310,7 @@ function CampaignStudioPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
-              <p className="mt-1 text-xs text-muted-foreground">اكتملت طبقة جاهزية الحملة، وبدأ توجيه الخطوة التالية داخل الكانفاس.</p>
+              <p className="mt-1 text-xs text-muted-foreground">اكتملت طبقة التوجيه، وبدأ ضبط وجهات التنفيذ حسب جاهزية الحملة.</p>
             </div>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
           </div>
@@ -396,9 +397,9 @@ function CampaignStudioPage() {
               اختر الوجهة المناسبة؛ سيتم حفظ الموجز وتمريره للأداة حتى يبقى كل مخرج جزءاً من نفس الحملة.
             </p>
             <div className="mt-4 space-y-3">
-              <OutputStep icon={Wand2} title="اكتب نصاً يبيع" desc="منشور، CTA، ونسخة واتساب من نفس الموجز" to="/dashboard/generate-text" payload={textPrompt} saving={saving} onOpen={openOutputTool} />
-              <OutputStep icon={ImageIcon} title="صمّم صورة إعلان" desc="بوستر أو صورة منتج متوافقة مع زاوية الحملة" to="/dashboard/generate-image" payload={imagePrompt} saving={saving} onOpen={openOutputTool} />
-              <OutputStep icon={Clapperboard} title="أنشئ فيديو قصير" desc="فكرة فيديو جاهزة مرتبطة بالهدف والقناة" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} onOpen={openOutputTool} />
+              <OutputStep icon={Wand2} title="اكتب نصاً يبيع" desc="منشور، CTA، ونسخة واتساب من نفس الموجز" to="/dashboard/generate-text" payload={textPrompt} saving={saving} ready={readyForExecution} onOpen={openOutputTool} />
+              <OutputStep icon={ImageIcon} title="صمّم صورة إعلان" desc="بوستر أو صورة منتج متوافقة مع زاوية الحملة" to="/dashboard/generate-image" payload={imagePrompt} saving={saving} ready={readyForExecution} onOpen={openOutputTool} />
+              <OutputStep icon={Clapperboard} title="أنشئ فيديو قصير" desc="فكرة فيديو جاهزة مرتبطة بالهدف والقناة" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} ready={readyForExecution} onOpen={openOutputTool} />
             </div>
           </section>
 
