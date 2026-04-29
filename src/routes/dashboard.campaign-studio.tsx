@@ -340,6 +340,8 @@ function CampaignStudioPage() {
             <CampaignField id="campaign-offer" label="العرض / السبب" value={offer} onChange={setOffer} placeholder="مثلاً: خصم 20% لأول 48 ساعة أو إطلاق مجموعة جديدة" />
           </div>
 
+          <ProductImageUploader preview={productImagePreview} path={productImagePath} uploading={uploadingImage} onUpload={uploadProductImage} onClear={clearProductImage} />
+
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -358,6 +360,8 @@ function CampaignStudioPage() {
         </section>
 
         <aside className="space-y-5">
+          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} />
+
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-extrabold">وجهات التنفيذ</h2>
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
