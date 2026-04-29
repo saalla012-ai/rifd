@@ -451,7 +451,7 @@ function ProductImageUploader({ preview, path, uploading, onUpload, onClear }: {
   );
 }
 
-function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number }) {
+function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress, checks }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number; checks: Array<{ label: string; done: boolean; hint: string }> }) {
   return (
     <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
       <div className="border-b border-border bg-primary/5 p-5">
@@ -478,6 +478,17 @@ function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, 
             <p><span className="font-bold text-foreground">الصورة:</span> {hasImage ? "مرتبطة بالحملة" : "بانتظار الرفع"}</p>
           </div>
         </article>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {checks.map((check) => (
+            <div key={check.label} className={cn("rounded-lg border px-3 py-2 text-xs", check.done ? "border-primary/20 bg-primary/5" : "border-border bg-background")}> 
+              <div className="flex items-center gap-2 font-extrabold text-foreground">
+                <CheckCircle2 className={cn("h-3.5 w-3.5", check.done ? "text-primary" : "text-muted-foreground")} />
+                {check.label}
+              </div>
+              <p className="mt-1 line-clamp-1 text-muted-foreground">{check.hint}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
