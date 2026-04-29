@@ -112,6 +112,7 @@ export type Database = {
       }
       campaign_packs: {
         Row: {
+          ab_variants: Json
           audience: string
           brief: string
           channel: string
@@ -122,6 +123,7 @@ export type Database = {
           offer: string
           product: string
           product_image_path: string | null
+          publishing_calendar: Json
           status: string
           text_prompt: string
           updated_at: string
@@ -129,6 +131,7 @@ export type Database = {
           video_prompt: string
         }
         Insert: {
+          ab_variants?: Json
           audience?: string
           brief?: string
           channel?: string
@@ -139,6 +142,7 @@ export type Database = {
           offer?: string
           product?: string
           product_image_path?: string | null
+          publishing_calendar?: Json
           status?: string
           text_prompt?: string
           updated_at?: string
@@ -146,6 +150,7 @@ export type Database = {
           video_prompt?: string
         }
         Update: {
+          ab_variants?: Json
           audience?: string
           brief?: string
           channel?: string
@@ -156,6 +161,7 @@ export type Database = {
           offer?: string
           product?: string
           product_image_path?: string | null
+          publishing_calendar?: Json
           status?: string
           text_prompt?: string
           updated_at?: string
