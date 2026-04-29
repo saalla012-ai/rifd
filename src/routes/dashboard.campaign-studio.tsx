@@ -1,560 +1,523 @@
-import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Archive, ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, FolderKanban, Image as ImageIcon, LayoutTemplate, Loader2, Megaphone, Save, Upload, Wand2, X } from "lucide-react";
+import { Check, ChevronDown, Image as ImageIcon, Loader2, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { archiveCampaignPack, listCampaignPacks, saveCampaignPack, type CampaignPack } from "@/server/campaign-packs";
+import { generateCampaignBrief, saveCampaignPack, type CampaignBrief, type CampaignPack } from "@/server/campaign-packs";
 
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
-type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
-type CampaignSearch = {
-  __lovable_token?: string;
-  product?: string;
-  audience?: string;
-  offer?: string;
-  goal?: CampaignGoal;
-  channel?: CampaignChannel;
-  productImagePath?: string;
-};
-type OutputToolRoute = "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video";
+type DbChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
+type StudioChannel = DbChannel | "email" | "all";
+type CampaignSearch = { __lovable_token?: string };
+type Option = { value: string; label: string; description?: string };
 
-const GOALS: Array<{ value: CampaignGoal; label: string; angle: string }> = [
-  { value: "launch", label: "إطلاق منتج", angle: "تركيز على التشويق، المشكلة، والتحوّل بعد استخدام المنتج" },
-  { value: "clearance", label: "تصفية مخزون", angle: "إلحاح واضح، قيمة رقمية، وسبب شراء سريع قبل نفاد الكمية" },
-  { value: "upsell", label: "رفع قيمة السلة", angle: "اقتراح إضافة ذكية تجعل الطلب أكبر بدون ضغط على العميل" },
-  { value: "leads", label: "جمع عملاء محتملين", angle: "عرض سبب مقنع يخلّي العميل يترك بياناته أو يتواصل الآن" },
-  { value: "competitive", label: "منافسة مباشرة", angle: "إبراز الفرق العملي بين عرضك والبدائل بدون ادعاءات مبالغ فيها" },
-  { value: "winback", label: "استرجاع عميل", angle: "تذكير العملاء السابقين بسبب العودة والثقة المتراكمة" },
+const GENERATED_IMAGES_BUCKET = "generated-images";
+
+const GOALS: Array<{ value: CampaignGoal; title: string; prompt: string }> = [
+  { value: "launch", title: "إطلاق منتج", prompt: "عندك منتج جديد؟" },
+  { value: "clearance", title: "تصفية المخزون", prompt: "مخزونك الراكد يحتاج حركة؟" },
+  { value: "upsell", title: "زيادة قيمة السلة", prompt: "تبي ترفع قيمة طلب الزبون؟" },
+  { value: "leads", title: "بناء قاعدة عملاء", prompt: "تبي تجمع عملاء جدد؟" },
+  { value: "competitive", title: "مواجهة المنافسين", prompt: "تبي تثبت للزبون إنك الأفضل؟" },
+  { value: "winback", title: "إعادة الاستهداف", prompt: "تبي تسترجع عملاءك القدامى؟" },
 ];
 
-const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }> = [
-  { value: "instagram", label: "Instagram", output: "منشور + Story + Reel" },
-  { value: "snapchat", label: "Snapchat", output: "سنابة قصيرة + CTA واتساب" },
-  { value: "tiktok", label: "TikTok", output: "Hook سريع + فيديو عمودي" },
-  { value: "whatsapp", label: "WhatsApp", output: "رسالة قائمة بث مختصرة" },
+const AUDIENCES: Option[] = [
+  { value: "luxury_lovers", label: "عشاق الفخامة", description: "يبحثون عن التميز والحصرية" },
+  { value: "busy_moms", label: "الأمهات العمليات", description: "يبحثون عن الحلول السريعة والسهلة" },
+  { value: "tech_youth", label: "الشباب التقني", description: "مهتمون بأحدث التقنيات والعروض" },
+  { value: "bargain_hunters", label: "عشاق الصفقات", description: "ينتظرون أقوى العروض وأفضل قيمة" },
+  { value: "early_adopters", label: "المتبنون الأوائل", description: "أول من يجرّب منتجك الجديد" },
+  { value: "gift_givers", label: "عملاء المناسبات والهدايا", description: "يدورون على هدية رايقة ومميزة" },
 ];
 
-const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
-const PLAN_PROGRESS = 100;
+const OFFERS: Option[] = [
+  { value: "pct_30", label: "خصم 30%" },
+  { value: "bogo", label: "اشترِ 2 واحصل على 1" },
+  { value: "free_shipping", label: "توصيل مجاني" },
+  { value: "bundle", label: "باقة حصرية" },
+  { value: "gift", label: "هدية مع الطلب" },
+];
 
-const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
-  launch: {
-    hook: "منتج جديد يستحق أول نظرة — صمّم لحظة اكتشاف لا تُنسى.",
-    cta: "اطلبه الآن قبل نفاد أول دفعة",
-    visual: "صورة منتج Hero بخلفية نظيفة، إضاءة فاخرة، مساحة واضحة للنص والسعر",
-    video: "لقطة كشف تدريجي للمنتج، حركة كاميرا بطيئة، ظهور الفائدة الرئيسية ثم CTA في النهاية",
-  },
-  clearance: {
-    hook: "العرض الأقصر عادة هو الأكثر قراراً — اجعل القيمة واضحة من أول ثانية.",
-    cta: "احجز عرضك اليوم",
-    visual: "بوستر عرض محدود مع رقم الخصم كبيراً وتباين واضح بين المنتج والسعر",
-    video: "فيديو عمودي سريع يبدأ بالخصم، يمرّ على المنتج، ثم ينتهي بعدّاد بصري وCTA",
-  },
-  upsell: {
-    hook: "خلّ الطلب يصير أذكى: إضافة بسيطة ترفع قيمة السلة وتزيد رضا العميل.",
-    cta: "أضفها لطلبك الآن",
-    visual: "تصميم Bundle يوضح المنتج الأساسي والإضافة المقترحة مع فائدة مباشرة",
-    video: "لقطة قبل وبعد للطلب، تظهر الإضافة كاختيار منطقي وسهل مع CTA سريع",
-  },
-  leads: {
-    hook: "لا تطلب الشراء مباشرة؛ اعطِ العميل سبباً واضحاً يفتح معه المحادثة.",
-    cta: "اكتب لنا ونعطيك الأنسب",
-    visual: "تصميم بسيط يبرز سؤال العميل وسبب التواصل مع مساحة واضحة للواتساب",
-    video: "فيديو قصير يبدأ بسؤال شائع، يقدّم وعداً واضحاً، وينتهي بدعوة للتواصل",
-  },
-  competitive: {
-    hook: "العميل يقارن دائماً؛ اكسب المقارنة بفائدة ملموسة لا بكلام عام.",
-    cta: "شوف الفرق بنفسك",
-    visual: "مقارنة نظيفة بين المنتج والبدائل مع إبراز نقطة قوة واحدة قابلة للتصديق",
-    video: "مشهد مقارنة سريع يوضح الفرق في الاستخدام أو القيمة بدون هجوم مباشر",
-  },
-  winback: {
-    hook: "العميل الذي اشترى مرة يحتاج سبباً واضحاً ليعود مرة ثانية.",
-    cta: "ارجع للطلب بميزة خاصة",
-    visual: "تصميم ثقة يبرز التقييمات أو الأكثر طلباً مع منتج واضح",
-    video: "فيديو تذكيري يبدأ بمشكلة مألوفة، يعرض المنتج كحل، وينتهي برسالة شخصية للعودة",
-  },
-};
+const CHANNELS: Array<Option & { value: StudioChannel }> = [
+  { value: "instagram", label: "انستقرام" },
+  { value: "snapchat", label: "سناب شات" },
+  { value: "tiktok", label: "تيك توك" },
+  { value: "whatsapp", label: "واتساب" },
+  { value: "email", label: "البريد الإلكتروني" },
+  { value: "all", label: "كل القنوات" },
+];
+
+const OCCASIONS: Option[] = [
+  { value: "ramadan", label: "رمضان" },
+  { value: "eid", label: "العيد" },
+  { value: "national_day", label: "اليوم الوطني" },
+  { value: "back_to_school", label: "العودة للمدارس" },
+  { value: "year_end", label: "نهاية السنة" },
+  { value: "none", label: "بدون مناسبة" },
+];
+
+const CUSTOMER_STAGES: Option[] = [
+  { value: "new", label: "عملاء جدد أول مرة يسمعون عنا" },
+  { value: "considering", label: "عملاء مهتمين بس مترددين" },
+  { value: "loyal", label: "عملاء أوفياء نحب نكافئهم" },
+  { value: "lost", label: "عملاء فقدناهم ونبيهم يرجعون" },
+];
 
 export const Route = createFileRoute("/dashboard/campaign-studio")({
-  head: () => ({ meta: [{ title: "استوديو الحملات — رِفد" }] }),
+  head: () => ({ meta: [{ title: "استوديو الحملات الاستراتيجي — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): CampaignSearch => ({
     __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
-    product: typeof s.product === "string" ? s.product.slice(0, 500) : undefined,
-    audience: typeof s.audience === "string" ? s.audience.slice(0, 500) : undefined,
-    offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
-    goal: ["launch", "clearance", "upsell", "leads", "competitive", "winback"].includes(String(s.goal)) ? (s.goal as CampaignGoal) : undefined,
-    channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as CampaignChannel) : undefined,
-    productImagePath: typeof s.productImagePath === "string" ? s.productImagePath.slice(0, 1000) : undefined,
   }),
   component: CampaignStudioPage,
 });
 
 function CampaignStudioPage() {
-  const navigate = useNavigate();
   const search = useSearch({ from: "/dashboard/campaign-studio" });
-  const loadPacksFn = useServerFn(listCampaignPacks);
   const savePackFn = useServerFn(saveCampaignPack);
-  const archivePackFn = useServerFn(archiveCampaignPack);
-  const [goal, setGoal] = useState<CampaignGoal>(search.goal ?? "launch");
-  const [channel, setChannel] = useState<CampaignChannel>(search.channel ?? "instagram");
-  const [product, setProduct] = useState(search.product ?? "");
-  const [audience, setAudience] = useState(search.audience ?? "");
-  const [offer, setOffer] = useState(search.offer ?? "");
-  const [productImagePath, setProductImagePath] = useState<string | null>(search.productImagePath ?? null);
+  const generateBriefFn = useServerFn(generateCampaignBrief);
+  const previewRef = useRef<HTMLElement | null>(null);
+  const [goal, setGoal] = useState<CampaignGoal | null>(null);
+  const [product, setProduct] = useState("");
+  const [audience, setAudience] = useState(AUDIENCES[0].value);
+  const [offer, setOffer] = useState(OFFERS[0].value);
+  const [channel, setChannel] = useState<StudioChannel>("instagram");
+  const [occasion, setOccasion] = useState(OCCASIONS[5].value);
+  const [customerStage, setCustomerStage] = useState(CUSTOMER_STAGES[0].value);
+  const [activePackId, setActivePackId] = useState<string | undefined>();
+  const [productImagePath, setProductImagePath] = useState<string | null>(null);
   const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [activePackId, setActivePackId] = useState<string | undefined>();
-  const [packs, setPacks] = useState<CampaignPack[]>([]);
-  const [loadingPacks, setLoadingPacks] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [brief, setBrief] = useState<CampaignBrief | null>(null);
 
-  useEffect(() => {
-    if (search.goal) setGoal(search.goal);
-    if (search.channel) setChannel(search.channel);
-    if (search.product !== undefined) setProduct(search.product);
-    if (search.audience !== undefined) setAudience(search.audience);
-    if (search.offer !== undefined) setOffer(search.offer);
-    if (search.productImagePath !== undefined) setProductImagePath(search.productImagePath);
-  }, [search.audience, search.channel, search.goal, search.offer, search.product, search.productImagePath]);
+  const selectedGoal = GOALS.find((item) => item.value === goal) ?? null;
+  const audienceOption = findOption(AUDIENCES, audience);
+  const offerOption = findOption(OFFERS, offer);
+  const channelOption = findOption(CHANNELS, channel);
+  const occasionOption = findOption(OCCASIONS, occasion);
+  const stageOption = findOption(CUSTOMER_STAGES, customerStage);
+  const dbChannel = toDbChannel(channel);
 
-  const selectedGoal = GOALS.find((item) => item.value === goal) ?? GOALS[0];
-  const selectedChannel = CHANNELS.find((item) => item.value === channel) ?? CHANNELS[0];
-  const strategy = goalCopy[goal];
-
-  const campaignBrief = useMemo(() => {
-    const productLine = product.trim() || "[اسم المنتج / الخدمة]";
-    const audienceLine = audience.trim() || "[الجمهور المستهدف]";
-    const offerLine = offer.trim() || "[العرض أو السبب التجاري]";
-    return `حملة ${selectedGoal.label} لقناة ${selectedChannel.label}\n\nالمنتج: ${productLine}\nالجمهور: ${audienceLine}\nالعرض/السبب: ${offerLine}\n\nزاوية الحملة: ${selectedGoal.angle}\nHook: ${strategy.hook}\nCTA: ${strategy.cta}`;
-  }, [audience, offer, product, selectedChannel.label, selectedGoal.angle, selectedGoal.label, strategy.cta, strategy.hook]);
-
-  const textPrompt = `اكتب محتوى حملة ${selectedGoal.label} لقناة ${selectedChannel.label}.\n${campaignBrief}\n\nالمطلوب: عنوان قصير، نص أساسي، 3 صيغ CTA، ونسخة واتساب مختصرة.`;
-  const imagePrompt = `${strategy.visual}. المنتج: ${product.trim() || "منتج متجر إلكتروني"}. الجمهور: ${audience.trim() || "عملاء سعوديون"}. الهدف: ${selectedGoal.label}.`;
-  const videoPrompt = `${strategy.video}. المنتج: ${product.trim() || "منتج متجر إلكتروني"}. القناة: ${selectedChannel.label}. اجعل الفيديو مناسباً لـ${selectedChannel.output}.`;
-
-  const progressItems = [goal, channel, product.trim(), audience.trim(), offer.trim(), productImagePath, activePackId];
-  const campaignProgress = Math.round((progressItems.filter(Boolean).length / progressItems.length) * 100);
-  const readinessChecks = [
-    { label: "هدف الحملة", done: Boolean(goal), hint: selectedGoal.label },
-    { label: "المنتج", done: Boolean(product.trim()), hint: product.trim() || "اكتب المنتج بوضوح" },
-    { label: "الجمهور", done: Boolean(audience.trim()), hint: audience.trim() || "حدّد من تبيع له" },
-    { label: "العرض", done: Boolean(offer.trim()), hint: offer.trim() || "أضف سبباً للشراء الآن" },
-    { label: "الصورة", done: Boolean(productImagePath), hint: productImagePath ? "مرتبطة بالحملة" : "ارفع صورة المنتج" },
-  ];
-  const nextReadinessStep = readinessChecks.find((check) => !check.done)?.hint ?? "الحملة جاهزة للانتقال إلى أدوات التنفيذ";
-  const readyForExecution = readinessChecks.every((check) => check.done);
-
-  const authHeaders = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("سجّل الدخول أولاً لحفظ الحملات");
-    return { Authorization: `Bearer ${session.access_token}` };
-  };
-
-  const loadPacks = async () => {
-    setLoadingPacks(true);
-    try {
-      const headers = await authHeaders();
-      const out = await loadPacksFn({ data: { status: "active", limit: 12 }, headers });
-      setPacks(out.packs);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "فشل تحميل حزم الحملات");
-    } finally {
-      setLoadingPacks(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadPacks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const draftBrief = useMemo(() => {
+    return [
+      selectedGoal ? `الهدف: ${selectedGoal.title}` : "الهدف: لم يتم اختياره بعد",
+      `المنتج: ${product.trim() || "اسم المنتج غير مكتمل"}`,
+      `الجمهور: ${audienceOption.label}`,
+      `العرض: ${offerOption.label}`,
+      `القناة: ${channelOption.label}`,
+      `المناسبة: ${occasionOption.label}`,
+      `مرحلة العميل: ${stageOption.label}`,
+    ].join("\n");
+  }, [audienceOption.label, channelOption.label, occasionOption.label, offerOption.label, product, selectedGoal, stageOption.label]);
 
   useEffect(() => {
     return () => {
-      if (productImagePreview) URL.revokeObjectURL(productImagePreview);
+      if (productImagePreview?.startsWith("blob:")) URL.revokeObjectURL(productImagePreview);
     };
   }, [productImagePreview]);
 
-  useEffect(() => {
-    if (!productImagePath || productImagePreview) return;
-    let cancelled = false;
-    void supabase.storage
-      .from(CAMPAIGN_PRODUCT_IMAGES_BUCKET)
-      .createSignedUrl(productImagePath, 60 * 30)
-      .then(({ data, error }) => {
-        if (!cancelled && !error && data?.signedUrl) setProductImagePreview(data.signedUrl);
-      });
-    return () => { cancelled = true; };
-  }, [productImagePath, productImagePreview]);
-
-  const copyBrief = async () => {
-    await navigator.clipboard.writeText(campaignBrief);
-    toast.success("تم نسخ موجز الحملة");
+  const authHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("سجّل الدخول أولاً عشان تحفظ حملتك");
+    return { Authorization: `Bearer ${session.access_token}` };
   };
 
-  const uploadProductImage = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("ارفع صورة منتج بصيغة صورة فقط");
+  const saveDraft = async (imagePath = productImagePath): Promise<CampaignPack> => {
+    if (!goal) throw new Error("اختر هدف الحملة أولاً");
+    const headers = await authHeaders();
+    const out = await savePackFn({
+      data: {
+        id: activePackId,
+        product,
+        audience: audienceOption.label,
+        offer: offerOption.label,
+        goal,
+        channel: dbChannel,
+        status: "draft",
+        brief: draftBrief,
+        textPrompt: "",
+        imagePrompt: "",
+        videoPrompt: "",
+        productImagePath: imagePath,
+      },
+      headers,
+    });
+    setActivePackId(out.pack.id);
+    return out.pack;
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!goal) {
+      toast.error("اختر هدف الحملة قبل رفع الصورة");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("حجم الصورة يجب ألا يتجاوز 5MB");
+    if (!file.type.startsWith("image/")) {
+      toast.error("ارفع ملف صورة فقط");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("حجم الصورة كبير، خلّها أقل من 8MB");
       return;
     }
 
     setUploadingImage(true);
-    const previewUrl = URL.createObjectURL(file);
-    setProductImagePreview(previewUrl);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("سجّل الدخول أولاً لرفع صورة المنتج");
-      const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const path = `${user.id}/campaigns/${activePackId ?? "draft"}-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from(CAMPAIGN_PRODUCT_IMAGES_BUCKET).upload(path, file, { upsert: true, contentType: file.type });
+      if (!user) throw new Error("سجّل الدخول أولاً عشان ترفع الصورة");
+      const draft = activePackId ? null : await saveDraft(null);
+      const campaignId = activePackId ?? draft?.id;
+      if (!campaignId) throw new Error("تعذر تجهيز مسودة الحملة");
+      const webp = await fileToWebp(file);
+      const previewUrl = URL.createObjectURL(webp);
+      setProductImagePreview((current) => {
+        if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
+        return previewUrl;
+      });
+      const path = `${user.id}/campaigns/${campaignId}/product-image.webp`;
+      const { error } = await supabase.storage.from(GENERATED_IMAGES_BUCKET).upload(path, webp, {
+        upsert: true,
+        contentType: "image/webp",
+      });
       if (error) throw error;
       setProductImagePath(path);
-      toast.success("تم رفع صورة المنتج وربطها بالحملة");
-    } catch (e) {
-      URL.revokeObjectURL(previewUrl);
-      setProductImagePreview(null);
-      toast.error(e instanceof Error ? e.message : "فشل رفع صورة المنتج");
+      await saveDraft(path);
+      toast.success("تم ربط صورة المنتج بالكانفاس");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "تعذر رفع صورة المنتج");
     } finally {
       setUploadingImage(false);
     }
   };
 
-  const clearProductImage = () => {
-    if (productImagePreview) URL.revokeObjectURL(productImagePreview);
-    setProductImagePreview(null);
+  const clearImage = async () => {
     setProductImagePath(null);
+    setProductImagePreview((current) => {
+      if (current?.startsWith("blob:")) URL.revokeObjectURL(current);
+      return null;
+    });
+    if (activePackId && goal) await saveDraft(null).catch(() => undefined);
   };
 
-  const saveCurrentPack = async (status: "draft" | "generated" = "draft"): Promise<CampaignPack | null> => {
-    setSaving(true);
+  const buildCampaign = async () => {
+    if (!goal) return;
+    setGenerating(true);
+    setBrief(null);
+    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     try {
       const headers = await authHeaders();
-      const out = await savePackFn({
-        data: { id: activePackId, product, audience, offer, goal, channel, status, brief: campaignBrief, textPrompt, imagePrompt, videoPrompt, productImagePath },
+      const out = await generateBriefFn({
+        data: {
+          campaignId: activePackId,
+          product,
+          audience,
+          audienceLabel: audienceOption.label,
+          offer,
+          offerLabel: offerOption.label,
+          goal,
+          channel,
+          channelLabel: channelOption.label,
+          occasion: occasionOption.label,
+          customerStage: stageOption.label,
+          productImagePath,
+        },
         headers,
       });
+      setBrief(out.brief);
       setActivePackId(out.pack.id);
-      setPacks((current) => [out.pack, ...current.filter((pack) => pack.id !== out.pack.id)].slice(0, 12));
-      toast.success(status === "generated" ? "تم حفظ الحملة كحزمة جاهزة" : "تم حفظ مسودة الحملة");
-      return out.pack;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "فشل حفظ الحملة");
-      return null;
+      toast.success("جهزت خطة الحملة");
+      window.setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "تعذر بناء خطة الحملة");
     } finally {
-      setSaving(false);
-    }
-  };
-
-  const openOutputTool = async (to: OutputToolRoute, payload: string) => {
-    const packId = (await saveCurrentPack("generated"))?.id;
-    if (!packId) return;
-    await navigate({ to, search: { __lovable_token: search.__lovable_token, prompt: payload, campaignPackId: packId } });
-  };
-
-  const applyPack = (pack: CampaignPack) => {
-    setActivePackId(pack.id);
-    setGoal(pack.goal);
-    setChannel(pack.channel);
-    setProduct(pack.product);
-    setAudience(pack.audience);
-    setOffer(pack.offer);
-    setProductImagePath(pack.product_image_path);
-    setProductImagePreview(null);
-    toast.success("تم فتح حزمة الحملة");
-  };
-
-  const archivePack = async (pack: CampaignPack) => {
-    try {
-      const headers = await authHeaders();
-      await archivePackFn({ data: { id: pack.id }, headers });
-      setPacks((current) => current.filter((item) => item.id !== pack.id));
-      if (activePackId === pack.id) setActivePackId(undefined);
-      toast.success("تمت أرشفة الحملة");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "فشل أرشفة الحملة");
+      setGenerating(false);
     }
   };
 
   return (
     <DashboardShell>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Megaphone className="h-3.5 w-3.5" /> استوديو الحملات
-          </div>
-          <h1 className="text-2xl font-extrabold">ابنِ حملة تبيع من هدف واحد وصورة منتج واضحة</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">
-            رتّب الهدف والجمهور والعرض، اربط صورة المنتج، ثم انقل نفس الزاوية إلى النص والصورة والفيديو بدون تشتّت.
+      <div className="mx-auto max-w-7xl" dir="rtl">
+        <header className="mb-5">
+          <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">استوديو حملات استراتيجي</Badge>
+          <h1 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">ابنِ حملة واضحة قبل ما تبدأ التنفيذ</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
+            اختر الهدف، ارفع صورة المنتج، وحدد الجمهور والعرض. رِفد يحوّلها لخطة حملة جاهزة للنص والصورة والفيديو.
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => void saveCurrentPack("draft")} disabled={saving} className="gap-1">
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} حفظ مسودة
-          </Button>
-          <Button asChild variant="outline" size="sm" className="gap-1">
-              <Link to="/dashboard/templates"><LayoutTemplate className="h-3.5 w-3.5" /> ابدأ من قالب</Link>
-          </Button>
-        </div>
-      </div>
+        </header>
 
-        <div className="mt-5 rounded-xl border border-border bg-card p-4 shadow-soft">
-          <div className="flex items-center justify-between gap-3">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(360px,2fr)] lg:items-start">
+          <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
+            <div className="border-b border-border pb-4">
+              <p className="text-xs font-bold text-primary">منطقة البناء</p>
+              <h2 className="mt-1 text-lg font-extrabold">ابدأ من القرار التجاري</h2>
+            </div>
+
             <div>
-              <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
-              <p className="mt-1 text-xs text-muted-foreground">اكتملت مراجعة استوديو الحملات تقنياً وتسويقياً وتجاربياً.</p>
+              <Label className="text-sm font-extrabold">هدف الحملة</Label>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {GOALS.map((item) => {
+                  const selected = goal === item.value;
+                  return (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => setGoal(item.value)}
+                      className={cn(
+                        "min-h-28 rounded-lg border p-3 text-right transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        selected ? "border-transparent bg-campaign-gold text-campaign-gold-foreground shadow-gold" : "border-border bg-background hover:bg-secondary/70",
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-extrabold">{item.title}</span>
+                        {selected && <Check className="h-4 w-4" />}
+                      </div>
+                      <p className={cn("mt-2 text-xs leading-6", selected ? "text-campaign-gold-foreground/80" : "text-muted-foreground")}>{item.prompt}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
-          </div>
-          <Progress value={PLAN_PROGRESS} className="mt-3 h-2" />
-          <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-bold leading-6 text-primary">
-            جاهز للاستخدام: البناء، المعاينة، رفع صورة المنتج، الحفظ، ووجهات التنفيذ تعمل ضمن نفس مسار الحملة.
-          </div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-4">
-          {[
-            "اختر الهدف",
-            "ارفع صورة المنتج",
-            "اكتب عرضاً واضحاً",
-            "انتقل لأداة التنفيذ",
-          ].map((step, index) => (
-            <div key={step} className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground shadow-soft">
-              <span className="ms-1 text-primary">{index + 1}</span>
-              {step}
-            </div>
-          ))}
-          </div>
-        </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px] xl:grid-cols-[minmax(0,1fr)_430px]">
-        <section className="space-y-5 rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
-          <div className="flex flex-col gap-1 border-b border-border pb-4">
-            <p className="text-xs font-bold text-primary">منطقة البناء</p>
-            <h2 className="text-lg font-extrabold">ابنِ الزاوية من الهدف إلى الموجز</h2>
-          </div>
-          <div>
-            <Label>هدف الحملة</Label>
-            <div className="mt-2 grid gap-2 sm:grid-cols-2">
-              {GOALS.map((item) => (
-                <button key={item.value} type="button" onClick={() => setGoal(item.value)} className={cn("rounded-lg border p-4 text-right transition-colors", goal === item.value ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/70")}>
-                  <div className="flex items-center gap-2 font-extrabold">
-                    <CheckCircle2 className={cn("h-4 w-4", goal === item.value ? "text-primary" : "text-muted-foreground")} />
-                    {item.label}
-                  </div>
-                  <p className="mt-2 text-xs leading-6 text-muted-foreground">{item.angle}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label>القناة الأساسية</Label>
-            <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-4">
-              {CHANNELS.map((item) => (
-                <button key={item.value} type="button" onClick={() => setChannel(item.value)} className={cn("min-h-20 rounded-lg border px-3 py-3 text-center text-xs transition-colors", channel === item.value ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-secondary/70")}>
-                  <div className="font-extrabold">{item.label}</div>
-                  <div className="mt-1 text-[11px] leading-5 text-muted-foreground">{item.output}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            <CampaignField id="campaign-product" label="المنتج" value={product} onChange={setProduct} placeholder="مثلاً: عطر شرقي فاخر 100مل بثبات عالٍ" />
-            <CampaignField id="campaign-audience" label="الجمهور" value={audience} onChange={setAudience} placeholder="مثلاً: نساء 25-40 يبحثن عن هدية راقية" />
-            <CampaignField id="campaign-offer" label="العرض / السبب" value={offer} onChange={setOffer} placeholder="مثلاً: خصم 20% لأول 48 ساعة أو إطلاق مجموعة جديدة" />
-          </div>
-
-          <ProductImageUploader preview={productImagePreview} path={productImagePath} uploading={uploadingImage} onUpload={uploadProductImage} onClear={clearProductImage} />
-
-          <div className="rounded-lg border border-gold/30 bg-gold/5 p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
               <div>
-                <p className="text-sm font-extrabold">موجز الحملة الجاهز</p>
-                <p className="mt-1 text-xs text-muted-foreground">هذا هو السياق الذي سيقود النص والصورة والفيديو بدون تشتيت.</p>
+                <Label htmlFor="campaign-product-name" className="font-extrabold">اسم منتجك</Label>
+                <Input
+                  id="campaign-product-name"
+                  value={product}
+                  onChange={(event) => setProduct(event.target.value.slice(0, 500))}
+                  className="mt-2 h-11 bg-background text-right"
+                  placeholder="مثلاً: عطر شرقي فاخر 100مل"
+                />
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={copyBrief} className="gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
-                <Button type="button" size="sm" onClick={() => void saveCurrentPack("generated")} disabled={saving} className="gap-1 gradient-primary text-primary-foreground shadow-elegant">
-                  {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FolderKanban className="h-3.5 w-3.5" />} حفظ الموجز
-                </Button>
+              <ProductImageBox preview={productImagePreview} disabled={!goal || uploadingImage} uploading={uploadingImage} onUpload={handleImageUpload} onClear={clearImage} hasImage={Boolean(productImagePath || productImagePreview)} />
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <SmartCombobox label="الجمهور المستهدف" value={audience} options={AUDIENCES} onChange={setAudience} />
+              <SmartCombobox label="العرض" value={offer} options={OFFERS} onChange={setOffer} />
+              <SmartCombobox label="قناة النشر" value={channel} options={CHANNELS} onChange={(value) => setChannel(value as StudioChannel)} />
+              <SmartCombobox label="مناسبة الحملة" value={occasion} options={OCCASIONS} onChange={setOccasion} />
+              <div className="md:col-span-2">
+                <SmartCombobox label="مرحلة العميل" value={customerStage} options={CUSTOMER_STAGES} onChange={setCustomerStage} />
               </div>
             </div>
-            <pre className="mt-4 whitespace-pre-wrap rounded-lg border border-border bg-background p-4 text-right font-sans text-sm leading-7 text-foreground">{campaignBrief}</pre>
-          </div>
-        </section>
 
-        <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} checks={readinessChecks} nextStep={nextReadinessStep} />
-
-          <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
-            <h2 className="font-extrabold">وجهات التنفيذ</h2>
-            <p className="mt-1 text-xs leading-6 text-muted-foreground">
-              اختر الوجهة المناسبة؛ سيتم حفظ الموجز وتمريره للأداة حتى يبقى كل مخرج جزءاً من نفس الحملة.
-            </p>
-            <div className="mt-4 space-y-3">
-              <OutputStep icon={Wand2} title="اكتب نصاً يبيع" desc="منشور، CTA، ونسخة واتساب من نفس الموجز" to="/dashboard/generate-text" payload={textPrompt} saving={saving} ready={readyForExecution} onOpen={openOutputTool} />
-              <OutputStep icon={ImageIcon} title="صمّم صورة إعلان" desc="بوستر أو صورة منتج متوافقة مع زاوية الحملة" to="/dashboard/generate-image" payload={imagePrompt} saving={saving} ready={readyForExecution} onOpen={openOutputTool} />
-              <OutputStep icon={Clapperboard} title="أنشئ فيديو قصير" desc="فكرة فيديو جاهزة مرتبطة بالهدف والقناة" to="/dashboard/generate-video" payload={videoPrompt} saving={saving} ready={readyForExecution} onOpen={openOutputTool} />
-            </div>
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => void buildCampaign()}
+              disabled={!goal || generating}
+              className="h-12 w-full gap-2 text-base font-extrabold shadow-elegant"
+            >
+              {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+              ابنِ لي خطّة الحملة
+            </Button>
           </section>
 
-          <SavedPacksSection packs={packs} loading={loadingPacks} activePackId={activePackId} onOpen={applyPack} onArchive={(pack) => void archivePack(pack)} />
-
-          <section className="rounded-xl border border-primary/20 bg-primary/5 p-5 shadow-soft">
-            <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h2 className="font-extrabold">خريطة نشر مختصرة</h2></div>
-            <ol className="mt-4 space-y-3 text-sm leading-7">
-              <li className="rounded-lg bg-background/70 p-3"><strong>اليوم 1:</strong> نص بيع + صورة إعلان لاختبار الزاوية.</li>
-              <li className="rounded-lg bg-background/70 p-3"><strong>اليوم 2:</strong> فيديو قصير بنفس الرسالة لزيادة الثقة.</li>
-              <li className="rounded-lg bg-background/70 p-3"><strong>اليوم 3:</strong> رسالة واتساب مختصرة للمهتمين أو العملاء السابقين.</li>
-            </ol>
-          </section>
-        </aside>
+          <MagicCanvas
+            refEl={previewRef}
+            goal={selectedGoal?.title ?? "اختر هدف الحملة"}
+            product={product}
+            audience={audienceOption.label}
+            offer={offerOption.label}
+            channel={channelOption.label}
+            imagePreview={productImagePreview}
+            generating={generating}
+            brief={brief}
+          />
+        </div>
       </div>
     </DashboardShell>
   );
 }
 
-function CampaignField({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
+function ProductImageBox({ preview, disabled, uploading, hasImage, onUpload, onClear }: { preview: string | null; disabled: boolean; uploading: boolean; hasImage: boolean; onUpload: (file: File) => Promise<void>; onClear: () => void | Promise<void> }) {
   return (
     <div>
-      <Label htmlFor={id}>{label}</Label>
-      <Textarea id={id} value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 min-h-28" maxLength={500} placeholder={placeholder} />
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor="campaign-product-image" className="font-extrabold">صورة المنتج</Label>
+        {hasImage && <Button type="button" variant="ghost" size="sm" onClick={() => void onClear()} className="h-7 px-2 text-xs"><X className="h-3.5 w-3.5" /> إزالة</Button>}
+      </div>
+      <label className={cn("mt-2 flex min-h-28 cursor-pointer items-center gap-3 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-3 transition-colors hover:bg-primary/10", disabled && "cursor-not-allowed opacity-60")} htmlFor="campaign-product-image">
+        <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-background">
+          {preview ? <img src={preview} alt="معاينة صورة المنتج" className="h-full w-full object-cover" /> : <ImageIcon className="h-7 w-7 text-muted-foreground" />}
+        </span>
+        <span className="min-w-0 text-sm">
+          <span className="block font-extrabold">{uploading ? "جاري تجهيز الصورة…" : "ارفع صورة"}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">تتحول تلقائياً إلى WebP وتظهر هنا فوراً.</span>
+        </span>
+        {uploading ? <Loader2 className="me-auto h-4 w-4 animate-spin text-primary" /> : <Upload className="me-auto h-4 w-4 text-primary" />}
+        <input id="campaign-product-image" type="file" accept="image/*" className="sr-only" disabled={disabled} onChange={(event) => { const file = event.target.files?.[0]; if (file) void onUpload(file); event.currentTarget.value = ""; }} />
+      </label>
     </div>
   );
 }
 
-function ProductImageUploader({ preview, path, uploading, onUpload, onClear }: { preview: string | null; path: string | null; uploading: boolean; onUpload: (file: File) => Promise<void>; onClear: () => void }) {
+function SmartCombobox({ label, value, options, onChange }: { label: string; value: string; options: Option[]; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const selected = findOption(options, value);
   return (
-    <section className="rounded-lg border border-border bg-background p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <Label htmlFor="campaign-product-image">صورة المنتج</Label>
-          <p className="mt-1 text-xs leading-6 text-muted-foreground">ارفع صورة واضحة حتى تتحول المعاينة إلى إعلان أقرب للمنتج الحقيقي.</p>
-        </div>
-        {path && <Button type="button" variant="ghost" size="sm" onClick={onClear} className="w-fit gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> إزالة الصورة</Button>}
-      </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-        <div className="flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-card">
-          {preview ? <img src={preview} alt="معاينة صورة المنتج" className="h-full w-full object-cover" /> : <ImageIcon className="h-8 w-8 text-muted-foreground" />}
-        </div>
-        <label htmlFor="campaign-product-image" className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4 text-center transition-colors hover:bg-primary/10">
-          {uploading ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Upload className="h-6 w-6 text-primary" />}
-          <span className="mt-2 text-sm font-extrabold">{uploading ? "جاري رفع الصورة…" : "اختر صورة المنتج"}</span>
-          <span className="mt-1 text-xs leading-6 text-muted-foreground">PNG أو JPG حتى 5MB. الصورة تبقى محفوظة داخل مساحة حملاتك.</span>
-          <input id="campaign-product-image" type="file" accept="image/*" className="sr-only" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void onUpload(file); event.currentTarget.value = ""; }} />
-        </label>
-      </div>
-    </section>
+    <div>
+      <Label className="font-extrabold">{label}</Label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button type="button" variant="outline" className="mt-2 h-auto min-h-12 w-full justify-between gap-3 bg-background px-3 py-2 text-right font-bold">
+            <span className="min-w-0">
+              <span className="block truncate">{selected.label}</span>
+              {selected.description && <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">{selected.description}</span>}
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[min(92vw,420px)] p-0" align="start">
+          <Command dir="rtl">
+            <CommandInput placeholder="ابحث…" className="text-right" />
+            <CommandList>
+              <CommandEmpty>ما لقينا خيار مطابق.</CommandEmpty>
+              <CommandGroup>
+                {options.map((option) => (
+                  <CommandItem key={option.value} value={`${option.label} ${option.description ?? ""}`} onSelect={() => { onChange(option.value); setOpen(false); }} className="items-start justify-between gap-3 text-right">
+                    <span>
+                      <span className="block font-bold">{option.label}</span>
+                      {option.description && <span className="mt-1 block text-xs text-muted-foreground">{option.description}</span>}
+                    </span>
+                    {option.value === value && <Check className="mt-1 h-4 w-4 text-primary" />}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
-function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress, checks, nextStep }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number; checks: Array<{ label: string; done: boolean; hint: string }>; nextStep: string }) {
+function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePreview, generating, brief }: { refEl: React.MutableRefObject<HTMLElement | null>; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
-      <div className="border-b border-border bg-primary/5 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-extrabold">المعاينة الحية</h2>
-          <span className="rounded-full bg-background px-3 py-1 text-xs font-extrabold text-primary">جاهزية الحملة {progress}%</span>
+    <aside ref={refEl} className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+      <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
+        <div className="border-b border-border bg-primary/5 p-4">
+          <p className="text-xs font-bold text-primary">The Magic Canvas</p>
+          <h2 className="mt-1 text-lg font-extrabold">المعاينة الحية</h2>
         </div>
-        <p className="mt-1 text-xs leading-6 text-muted-foreground">كانفاس سريع يوضح جاهزية هذه الحملة وكيف ستظهر زاوية البيع قبل الانتقال للتنفيذ.</p>
-      </div>
-      <div className="p-5">
-        <article className="overflow-hidden rounded-lg border border-border bg-background">
-          <div className="relative aspect-[4/5] bg-secondary">
-            {imagePreview ? <img src={imagePreview} alt="صورة المنتج داخل كانفاس الحملة" className="h-full w-full object-cover" /> : <div className="flex h-full flex-col items-center justify-center p-6 text-center text-muted-foreground"><ImageIcon className="h-10 w-10" /><p className="mt-3 text-sm font-bold">ارفع صورة المنتج ليظهر الإعلان بشكل أقرب للحقيقة</p></div>}
-            <div className="absolute inset-x-0 bottom-0 bg-background/90 p-4 backdrop-blur">
-              <p className="text-xs font-bold text-primary">{goalLabel} · {channelLabel}</p>
-              <h3 className="mt-1 line-clamp-2 text-lg font-extrabold">{product.trim() || "اسم المنتج يظهر هنا"}</h3>
-              <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">{hook}</p>
-            </div>
-          </div>
-          <div className="grid gap-2 p-4 text-xs leading-6 text-muted-foreground">
-            <p><span className="font-bold text-foreground">الجمهور:</span> {audience.trim() || "حدّد من سيشتري ولماذا"}</p>
-            <p><span className="font-bold text-foreground">العرض:</span> {offer.trim() || "اكتب سبباً واضحاً للتحرك الآن"}</p>
-            <p><span className="font-bold text-foreground">CTA:</span> {cta}</p>
-            <p><span className="font-bold text-foreground">الصورة:</span> {hasImage ? "مرتبطة بالحملة" : "بانتظار الرفع"}</p>
-          </div>
-        </article>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {checks.map((check) => (
-            <div key={check.label} className={cn("rounded-lg border px-3 py-2 text-xs", check.done ? "border-primary/20 bg-primary/5" : "border-border bg-background")}>
-              <div className="flex items-center gap-2 font-extrabold text-foreground">
-                <CheckCircle2 className={cn("h-3.5 w-3.5", check.done ? "text-primary" : "text-muted-foreground")} />
-                {check.label}
-              </div>
-              <p className="mt-1 line-clamp-1 text-muted-foreground">{check.hint}</p>
-            </div>
-          ))}
+        <div className="p-4">
+          {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
         </div>
-        <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs leading-6">
-          <p className="font-extrabold text-primary">الخطوة التالية</p>
-          <p className="mt-1 text-foreground">{nextStep}</p>
-        </div>
-      </div>
-    </section>
+      </section>
+    </aside>
   );
 }
 
-function SavedPacksSection({ packs, loading, activePackId, onOpen, onArchive }: { packs: CampaignPack[]; loading: boolean; activePackId?: string; onOpen: (pack: CampaignPack) => void; onArchive: (pack: CampaignPack) => void }) {
+function InitialPreview({ goal, product, audience, offer, channel, imagePreview }: { goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-center gap-2"><FolderKanban className="h-4 w-4 text-primary" /><h2 className="font-extrabold">موجزات الحملات المحفوظة</h2></div>
-      {loading ? (
-        <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
-      ) : packs.length === 0 ? (
-        <p className="mt-4 rounded-lg border border-dashed border-border p-4 text-center text-xs leading-6 text-muted-foreground">لا توجد موجزات محفوظة بعد.</p>
-      ) : (
-        <div className="mt-4 space-y-2">
-          {packs.map((pack) => (
-            <article key={pack.id} className={cn("rounded-lg border p-3", activePackId === pack.id ? "border-primary bg-primary/5" : "border-border bg-background")}>
-              <button type="button" onClick={() => onOpen(pack)} className="w-full text-right">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-sm font-extrabold">{pack.product || "حملة بدون اسم"}</span>
-                  <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">{pack.status === "generated" ? "جاهزة" : "مسودة"}</span>
-                </div>
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{pack.brief}</p>
-              </button>
-              <div className="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
-                <span className="text-[10px] text-muted-foreground">{new Date(pack.updated_at).toLocaleDateString("ar-SA")}</span>
-                <Button type="button" variant="ghost" size="sm" onClick={() => onArchive(pack)} className="h-7 gap-1 text-muted-foreground"><Archive className="h-3 w-3" /> أرشفة</Button>
-              </div>
-            </article>
-          ))}
+    <article className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="relative aspect-[4/5] bg-secondary">
+        {imagePreview ? <img src={imagePreview} alt="صورة المنتج في معاينة الحملة" className="h-full w-full object-cover" /> : <div className="flex h-full flex-col items-center justify-center p-6 text-center text-muted-foreground"><ImageIcon className="h-10 w-10" /><p className="mt-3 text-sm font-bold">صورة المنتج تظهر هنا</p></div>}
+        <div className="absolute inset-x-0 bottom-0 bg-background/92 p-4 backdrop-blur">
+          <p className="text-xs font-bold text-primary">{goal} · {channel}</p>
+          <h3 className="mt-1 line-clamp-2 text-lg font-extrabold">{product.trim() || "اسم المنتج"}</h3>
         </div>
-      )}
-    </section>
+      </div>
+      <div className="grid gap-2 p-4 text-sm leading-7">
+        <p><span className="font-extrabold">الجمهور:</span> <span className="text-muted-foreground">{audience}</span></p>
+        <p><span className="font-extrabold">العرض:</span> <span className="text-muted-foreground">{offer}</span></p>
+      </div>
+    </article>
   );
 }
 
-function OutputStep({ icon: Icon, title, desc, to, payload, saving, ready, onOpen }: { icon: typeof Wand2; title: string; desc: string; to: OutputToolRoute; payload: string; saving: boolean; ready: boolean; onOpen: (to: OutputToolRoute, payload: string) => Promise<void> }) {
-  const copy = async () => {
-    await navigator.clipboard.writeText(payload);
-    toast.success(`تم نسخ ${title}`);
-  };
-
+function CanvasSkeleton() {
   return (
-    <div className="rounded-lg border border-border bg-background p-4">
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="h-5 w-5" /></div>
-        <div className="min-w-0 flex-1"><p className="font-extrabold">{title}</p><p className="mt-1 text-xs text-muted-foreground">{desc}</p></div>
-        <span className={cn("shrink-0 rounded-full px-2 py-1 text-[10px] font-extrabold", ready ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground")}>{ready ? "جاهز" : "ناقص"}</span>
-      </div>
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <Button type="button" variant="outline" size="sm" onClick={copy} className="flex-1 gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
-        <Button type="button" size="sm" disabled={saving} onClick={() => void onOpen(to, payload)} className="flex-1 gradient-primary text-primary-foreground shadow-elegant">
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>انتقل للأداة <ArrowLeft className="h-3.5 w-3.5" /></>}
-        </Button>
+    <div className="space-y-4">
+      <Skeleton className="aspect-[4/5] w-full" />
+      <div className="space-y-2 rounded-lg border border-border p-4">
+        <Skeleton className="h-5 w-2/3" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-9 w-32" />
       </div>
     </div>
   );
+}
+
+function CampaignHouse({ brief, imagePreview }: { brief: CampaignBrief; imagePreview: string | null }) {
+  return (
+    <div className="space-y-4">
+      <article className="overflow-hidden rounded-lg border border-border bg-background">
+        {imagePreview && <img src={imagePreview} alt="صورة المنتج في بيت الحملة" className="aspect-video w-full object-cover" />}
+        <div className="p-4">
+          <Badge className="bg-campaign-gold text-campaign-gold-foreground">بيت الحملة</Badge>
+          <h3 className="mt-3 text-xl font-extrabold">{brief.campaignName}</h3>
+          <div className="mt-4 space-y-3 text-sm leading-7">
+            <InfoLine label="الوعد الأساسي" value={brief.corePromise} />
+            <InfoLine label="الرسالة التسويقية" value={brief.marketingMessage} />
+            <InfoLine label="Hook" value={brief.hook} />
+            <InfoLine label="CTA" value={brief.cta} />
+          </div>
+        </div>
+      </article>
+      <section>
+        <h3 className="font-extrabold">مخرجات الحملة</h3>
+        <div className="mt-3 grid gap-3">
+          <DestinationSlot icon="✍️" title="نفذ النص" desc="سيتم فتح أداة النصوص، والإطار الإرشادي جاهز بناءً على خطتك." />
+          <DestinationSlot icon="🎨" title="نفذ الصورة" desc="سيتم فتح أداة الصور، مع وصف جاهز للإعلان البصري المناسب." />
+          <DestinationSlot icon="🎬" title="نفذ الفيديو" desc="سيتم فتح أداة الفيديو، مع فكرة إعلان فيديو مصممة لحملتك." />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return <p><span className="font-extrabold text-foreground">{label}: </span><span className="text-muted-foreground">{value}</span></p>;
+}
+
+function DestinationSlot({ icon, title, desc }: { icon: string; title: string; desc: string }) {
+  return (
+    <a href="#" onClick={(event) => event.preventDefault()} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-secondary/60">
+      <span className="text-2xl" aria-hidden="true">{icon}</span>
+      <span>
+        <span className="block font-extrabold">{title}</span>
+        <span className="mt-1 block text-xs leading-6 text-muted-foreground">{desc}</span>
+      </span>
+    </a>
+  );
+}
+
+function findOption<T extends Option>(options: T[], value: string): T {
+  return options.find((option) => option.value === value) ?? options[0];
+}
+
+function toDbChannel(channel: StudioChannel): DbChannel {
+  return ["instagram", "snapchat", "tiktok", "whatsapp"].includes(channel) ? (channel as DbChannel) : "instagram";
+}
+
+async function fileToWebp(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  const maxSize = 1600;
+  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("تعذر تجهيز الصورة داخل المتصفح");
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("تعذر تحويل الصورة إلى WebP"));
+    }, "image/webp", 0.86);
+  });
 }
