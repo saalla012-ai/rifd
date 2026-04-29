@@ -113,6 +113,7 @@ function CampaignStudioPage() {
   const previewRef = useRef<HTMLElement | null>(null);
   const [goal, setGoal] = useState<CampaignGoal | null>(search.goal ?? null);
   const [product, setProduct] = useState(search.product ?? "");
+  const [sector, setSector] = useState(SECTORS[7].value);
   const [audience, setAudience] = useState(search.audience ?? AUDIENCES[0].value);
   const [offer, setOffer] = useState(search.offer ?? OFFERS[0].value);
   const [channel, setChannel] = useState<StudioChannel>(search.channel ?? "instagram");
@@ -126,6 +127,7 @@ function CampaignStudioPage() {
   const [brief, setBrief] = useState<CampaignBrief | null>(null);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? null;
+  const sectorOption = findOption(SECTORS, sector);
   const audienceOption = findOption(AUDIENCES, audience);
   const offerOption = findOption(OFFERS, offer);
   const channelOption = findOption(CHANNELS, channel);
@@ -137,12 +139,13 @@ function CampaignStudioPage() {
       { label: "هدف الحملة", done: Boolean(goal) },
       { label: "اسم المنتج", done: product.trim().length >= 2 },
       { label: "صورة المنتج", done: Boolean(productImagePath || productImagePreview) },
+      { label: "القطاع", done: Boolean(sector) },
       { label: "الجمهور", done: Boolean(audience) },
       { label: "العرض", done: Boolean(offer) },
       { label: "القناة", done: Boolean(channel) },
       { label: "مرحلة العميل", done: Boolean(customerStage) },
     ],
-    [audience, channel, customerStage, goal, offer, product, productImagePath, productImagePreview],
+    [audience, channel, customerStage, goal, offer, product, productImagePath, productImagePreview, sector],
   );
   const planProgress = Math.round((planProgressItems.filter((item) => item.done).length / planProgressItems.length) * 100);
 
@@ -150,13 +153,14 @@ function CampaignStudioPage() {
     return [
       selectedGoal ? `الهدف: ${selectedGoal.title}` : "الهدف: لم يتم اختياره بعد",
       `المنتج: ${product.trim() || "اسم المنتج غير مكتمل"}`,
+      `قطاع المتجر: ${sectorOption.label}`,
       `الجمهور: ${audienceOption.label}`,
       `العرض: ${offerOption.label}`,
       `القناة: ${channelOption.label}`,
       `المناسبة: ${occasionOption.label}`,
       `مرحلة العميل: ${stageOption.label}`,
     ].join("\n");
-  }, [audienceOption.label, channelOption.label, occasionOption.label, offerOption.label, product, selectedGoal, stageOption.label]);
+  }, [audienceOption.label, channelOption.label, occasionOption.label, offerOption.label, product, sectorOption.label, selectedGoal, stageOption.label]);
 
   useEffect(() => {
     return () => {
