@@ -481,7 +481,7 @@ function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, 
         </article>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {checks.map((check) => (
-            <div key={check.label} className={cn("rounded-lg border px-3 py-2 text-xs", check.done ? "border-primary/20 bg-primary/5" : "border-border bg-background")}> 
+            <div key={check.label} className={cn("rounded-lg border px-3 py-2 text-xs", check.done ? "border-primary/20 bg-primary/5" : "border-border bg-background")}>
               <div className="flex items-center gap-2 font-extrabold text-foreground">
                 <CheckCircle2 className={cn("h-3.5 w-3.5", check.done ? "text-primary" : "text-muted-foreground")} />
                 {check.label}
@@ -489,6 +489,10 @@ function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, 
               <p className="mt-1 line-clamp-1 text-muted-foreground">{check.hint}</p>
             </div>
           ))}
+        </div>
+        <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs leading-6">
+          <p className="font-extrabold text-primary">الخطوة التالية</p>
+          <p className="mt-1 text-foreground">{nextStep}</p>
         </div>
       </div>
     </section>
