@@ -77,3 +77,37 @@ export function campaignEditPreset(campaign: CampaignPack) {
   if (campaign.goal === "clearance") return "add-text";
   return "enhance";
 }
+
+function buildCampaignContextLines(context: CampaignExecutionContext, campaign: CampaignPack | null | undefined, goal: string) {
+  return [
+    `المنتج: ${context.productName ?? campaign?.product ?? "غير محدد"}`,
+    context.sector ? `قطاع المتجر: ${context.sector}` : "",
+    goal ? `هدف الحملة: ${goal}` : "",
+    context.audience ? `الجمهور: ${context.audience}` : "",
+    context.offer ? `العرض: ${context.offer}` : "",
+    context.channel ? `القناة: ${context.channel}` : "",
+    context.occasion ? `المناسبة: ${context.occasion}` : "",
+    context.customerStage ? `مرحلة العميل: ${context.customerStage}` : "",
+    campaign?.brief ? `ملخص الحملة:\n${campaign.brief}` : "",
+  ].filter(Boolean);
+}
+
+function textDirection(context: CampaignExecutionContext) {
+  const lines = [];
+  if (context.audience?.includes("الفخامة")) lines.push("اكتب بأسلوب فاخر وانتقائي بدون مبالغة.");
+  if (context.occasion?.includes("رمضان")) lines.push("اجعل الصياغة مناسبة لروح رمضان والهدية والكرم.");
+  if (context.customerStage?.includes("جدد")) lines.push("عرّف بالقيمة بسرعة واطلب إجراء بسيطاً.");
+  return lines.join(" ");
+}
+
+function imageDirection(context: CampaignExecutionContext) {
+  if (context.goal === "clearance") return "استخدم إحساس عرض نهاية الموسم: السعر/العرض واضح والمنتج بطل الصورة.";
+  if (context.audience?.includes("الفخامة")) return "اتجاه بصري فاخر: خامات راقية، إضاءة ناعمة، ومساحة عربية نظيفة للنص.";
+  return "اجعل الأسلوب مناسباً للقناة والجمهور مع أولوية وضوح المنتج.";
+}
+
+function videoDirection(context: CampaignExecutionContext) {
+  if (context.channel?.toLowerCase().includes("tiktok")) return "فيديو عمودي 9:16، إيقاع سريع، حركة أول ثانية، وموسيقى ترند خفيفة مناسبة للإعلان.";
+  if (context.channel?.includes("واتساب") || context.channel?.toLowerCase().includes("whatsapp")) return "فيديو قصير مباشر يمكن إرساله في واتساب: عرض واضح وCTA سريع.";
+  return "اختر أسلوب فيديو قصير مناسب للقناة، بإيقاع إعلاني واضح وموسيقى خفيفة.";
+}
