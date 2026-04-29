@@ -67,7 +67,7 @@ export const PLAN_CATALOG = [
     yearlyPriceSar: 0,
     monthlyCredits: 150,
     dailyTextCap: 10,
-    dailyImageCap: 2,
+    dailyImageCap: 7,
     imageProAllowed: false,
     videoFastAllowed: true,
     videoQualityAllowed: false,
