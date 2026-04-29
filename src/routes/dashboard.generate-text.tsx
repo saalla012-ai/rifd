@@ -18,20 +18,17 @@ import { CampaignContextBar } from "@/components/campaign-context-bar";
 import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
-import { campaignSmartPrompt, campaignTextTemplate } from "@/lib/campaign-smart-context";
+import { campaignContextSummary, campaignSmartPromptFromContext, campaignTextTemplate, parseCampaignExecutionSearch, resolveCampaignExecutionContext, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
 import { track } from "@/lib/analytics/posthog";
 
-type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string; smart?: boolean };
+type TextSearch = CampaignExecutionContext & { __lovable_token?: string; template?: string };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "اكتب نصاً يبيع — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): TextSearch => ({
     __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     template: typeof s.template === "string" ? s.template : undefined,
-    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
-    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
-    campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
-    smart: s.smart === true || s.smart === "true" ? true : undefined,
+    ...parseCampaignExecutionSearch(s),
   }),
   component: GenerateTextPage,
 });
@@ -57,8 +54,10 @@ function GenerateTextPage() {
   const memorySignals = getMemorySignals(profile).slice(0, 4);
 
   useEffect(() => {
-    if (!campaignContext.campaign || search.prompt) return;
-    setTopic(search.smart ? campaignSmartPrompt(campaignContext.campaign, "text") : campaignContext.campaign.text_prompt);
+    if (!campaignContext.campaign && !search.smart) return;
+    if (search.prompt && !search.smart) return;
+    const context = resolveCampaignExecutionContext(campaignContext.campaign, search);
+    setTopic(search.smart ? campaignSmartPromptFromContext(context, "text", campaignContext.campaign) : campaignContext.campaign?.text_prompt ?? search.prompt ?? "");
     if (search.smart) setTemplateId(campaignTextTemplate(campaignContext.campaign));
   }, [campaignContext.campaign, search.prompt, search.smart]);
 
@@ -131,7 +130,7 @@ function GenerateTextPage() {
         </div>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolveCampaignExecutionContext(campaignContext.campaign, search))} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
