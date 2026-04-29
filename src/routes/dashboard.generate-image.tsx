@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
-import { campaignContextSummary, campaignImageTemplate, campaignSmartPromptFromContext, parseCampaignExecutionSearch, resolveCampaignExecutionContext, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
+import { campaignContextSummary, campaignExecutionSearch, campaignImageTemplate, campaignSmartPromptFromContext, parseCampaignExecutionSearch, resolveCampaignExecutionContext, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
 import { track } from "@/lib/analytics/posthog";
 
 type ImgSearch = CampaignExecutionContext & { __lovable_token?: string; template?: string };
@@ -53,11 +53,13 @@ function GenerateImagePage() {
   const memorySignals = getMemorySignals(profile).slice(0, 4);
   const proAllowed = credits?.imageProAllowed ?? true;
 
+  const resolvedCampaignContext = resolveCampaignExecutionContext(campaignContext.campaign, search);
+
   useEffect(() => {
     if (!campaignContext.campaign && !search.smart) return;
     if (search.prompt && !search.smart) return;
     const context = resolveCampaignExecutionContext(campaignContext.campaign, search);
-    setPrompt(search.smart ? campaignSmartPromptFromContext(context, "image", campaignContext.campaign) : campaignContext.campaign?.image_prompt ?? search.prompt ?? "");
+    setPrompt((search.smart ? campaignSmartPromptFromContext(context, "image", campaignContext.campaign) : campaignContext.campaign?.image_prompt ?? search.prompt ?? "").slice(0, 1500));
     if (search.smart && campaignContext.campaign) setTemplateId(campaignImageTemplate(campaignContext.campaign));
   }, [campaignContext.campaign, search.prompt, search.smart]);
 
@@ -124,7 +126,7 @@ function GenerateImagePage() {
         </div>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolveCampaignExecutionContext(campaignContext.campaign, search))} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolvedCampaignContext)} context={resolvedCampaignContext} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -242,7 +244,7 @@ function GenerateImagePage() {
                 <RotateCcw className="h-3.5 w-3.5" /> جرّب نسخة أخرى
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-video" search={{ prompt, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined } as never}>
+                <Link to="/dashboard/generate-video" search={campaignExecutionSearch({ ...resolvedCampaignContext, campaignId: campaignContext.campaignId ?? search.campaignId, campaignPackId: search.campaignPackId }, prompt) as never}>
                   <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من الصورة
                 </Link>
               </Button>
