@@ -342,6 +342,18 @@ function GenerateVideoPage() {
     }
   }, [campaignContext.campaign, internalMediumTestMode, search.prompt, search.smart]);
 
+  useEffect(() => {
+    const path = campaignContext.campaign?.product_image_path;
+    if (!search.smart || !path || productImageUrl) return;
+    supabase.storage
+      .from("campaign-product-images")
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (data?.signedUrl) setProductImageUrl(data.signedUrl);
+      })
+      .catch(() => undefined);
+  }, [campaignContext.campaign?.product_image_path, productImageUrl, search.smart]);
+
   const downloadLatestVideo = async () => {
     if (!latestResult) return;
     setDownloadingVideo(true);
