@@ -253,6 +253,32 @@ export const saveCampaignPack = createServerFn({ method: "POST" })
     return { pack: mapPack(row as CampaignPackRow) };
   });
 
+export const getCampaignLiveHome = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ campaignId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ liveHome: CampaignLiveHome }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    const [{ data: generations, error: genError }, { data: videos, error: videoError }] = await Promise.all([
+      supabase.from("generations").select("id, type, prompt, result, metadata, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(100),
+      supabase.from("video_jobs").select("id, status, result_url, prompt, metadata, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
+    ]);
+    if (genError) throw new Error(`فشل تحميل مخرجات الحملة: ${genError.message}`);
+    if (videoError) throw new Error(`فشل تحميل فيديوهات الحملة: ${videoError.message}`);
+
+    const scopedGenerations = ((generations ?? []) as Array<{ id: string; type: string; prompt: string; result: string | null; metadata: unknown; created_at: string }>).filter((item) => getCampaignMetaId(item.metadata) === data.campaignId);
+    const text = scopedGenerations.find((item) => item.type === "text" && item.result)?.result ? scopedGenerations.find((item) => item.type === "text" && item.result)! : null;
+    const image = scopedGenerations.find((item) => (item.type === "image" || item.type === "image_enhance") && item.result)?.result ? scopedGenerations.find((item) => (item.type === "image" || item.type === "image_enhance") && item.result)! : null;
+    const video = ((videos ?? []) as Array<{ id: string; status: string; result_url: string | null; prompt: string; metadata: unknown; created_at: string }>).find((job) => getCampaignMetaId(job.metadata) === data.campaignId) ?? null;
+
+    return {
+      liveHome: {
+        text: text ? { id: text.id, result: text.result ?? "", prompt: text.prompt, created_at: text.created_at } : null,
+        image: image ? { id: image.id, url: image.result ?? "", prompt: image.prompt, created_at: image.created_at } : null,
+        video: video ? { id: video.id, status: video.status, result_url: video.result_url, prompt: video.prompt, created_at: video.created_at } : null,
+      },
+    };
+  });
+
 export const generateCampaignBrief = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => generateBriefSchema.parse(input))
