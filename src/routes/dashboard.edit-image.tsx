@@ -292,7 +292,7 @@ function EditImagePage() {
                 >
                   <X className="h-4 w-4" />
                 </button>
-                <div className="absolute bottom-0 left-0 right-0 truncate bg-gradient-to-t from-black/60 to-transparent p-2 text-xs text-white">
+                <div className="absolute bottom-0 left-0 right-0 truncate bg-gradient-to-t from-foreground/60 to-transparent p-2 text-xs text-background">
                   {originalName}
                 </div>
               </div>
