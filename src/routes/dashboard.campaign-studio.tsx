@@ -606,7 +606,7 @@ function CampaignCompletion({ liveHome, loading }: { liveHome: CampaignLiveHome 
 }
 
 function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean }) {
-  const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/generate-image" : "/dashboard/generate-video";
+  const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/edit-image" : "/dashboard/generate-video";
   const Icon = kind === "text" ? FileText : kind === "image" ? ImageIcon : Clapperboard;
   const isVideo = kind === "video";
   const video = isVideo ? (item as CampaignLiveHome["video"] | null) : null;
