@@ -49,6 +49,17 @@ const AUDIENCES: Option[] = [
   { value: "gift_givers", label: "عملاء المناسبات والهدايا", description: "يدورون على هدية رايقة ومميزة" },
 ];
 
+const SECTORS: Option[] = [
+  { value: "perfumes", label: "عطور", description: "لغة فخامة، ثبات، وإهداء" },
+  { value: "abayas", label: "عبايات وأزياء", description: "أناقة يومية ومناسبات" },
+  { value: "coffee_sweets", label: "قهوة وحلويات", description: "ضيافة، مزاج، ولمّة" },
+  { value: "gifts", label: "هدايا", description: "مناسبات وخيارات جاهزة" },
+  { value: "electronics", label: "إلكترونيات", description: "منفعة، سرعة، وضمان" },
+  { value: "personal_care", label: "عناية شخصية", description: "نتيجة ملموسة وثقة" },
+  { value: "home_decor", label: "منزل وديكور", description: "راحة، ذوق، وتحسين المكان" },
+  { value: "general", label: "متجر عام", description: "صياغة مرنة لأي منتج" },
+];
+
 const OFFERS: Option[] = [
   { value: "pct_30", label: "خصم 30%" },
   { value: "bogo", label: "اشترِ 2 واحصل على 1" },
@@ -102,6 +113,7 @@ function CampaignStudioPage() {
   const previewRef = useRef<HTMLElement | null>(null);
   const [goal, setGoal] = useState<CampaignGoal | null>(search.goal ?? null);
   const [product, setProduct] = useState(search.product ?? "");
+  const [sector, setSector] = useState(SECTORS[7].value);
   const [audience, setAudience] = useState(search.audience ?? AUDIENCES[0].value);
   const [offer, setOffer] = useState(search.offer ?? OFFERS[0].value);
   const [channel, setChannel] = useState<StudioChannel>(search.channel ?? "instagram");
@@ -115,6 +127,7 @@ function CampaignStudioPage() {
   const [brief, setBrief] = useState<CampaignBrief | null>(null);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? null;
+  const sectorOption = findOption(SECTORS, sector);
   const audienceOption = findOption(AUDIENCES, audience);
   const offerOption = findOption(OFFERS, offer);
   const channelOption = findOption(CHANNELS, channel);
@@ -126,12 +139,13 @@ function CampaignStudioPage() {
       { label: "هدف الحملة", done: Boolean(goal) },
       { label: "اسم المنتج", done: product.trim().length >= 2 },
       { label: "صورة المنتج", done: Boolean(productImagePath || productImagePreview) },
+      { label: "القطاع", done: Boolean(sector) },
       { label: "الجمهور", done: Boolean(audience) },
       { label: "العرض", done: Boolean(offer) },
       { label: "القناة", done: Boolean(channel) },
       { label: "مرحلة العميل", done: Boolean(customerStage) },
     ],
-    [audience, channel, customerStage, goal, offer, product, productImagePath, productImagePreview],
+    [audience, channel, customerStage, goal, offer, product, productImagePath, productImagePreview, sector],
   );
   const planProgress = Math.round((planProgressItems.filter((item) => item.done).length / planProgressItems.length) * 100);
 
@@ -139,13 +153,14 @@ function CampaignStudioPage() {
     return [
       selectedGoal ? `الهدف: ${selectedGoal.title}` : "الهدف: لم يتم اختياره بعد",
       `المنتج: ${product.trim() || "اسم المنتج غير مكتمل"}`,
+      `قطاع المتجر: ${sectorOption.label}`,
       `الجمهور: ${audienceOption.label}`,
       `العرض: ${offerOption.label}`,
       `القناة: ${channelOption.label}`,
       `المناسبة: ${occasionOption.label}`,
       `مرحلة العميل: ${stageOption.label}`,
     ].join("\n");
-  }, [audienceOption.label, channelOption.label, occasionOption.label, offerOption.label, product, selectedGoal, stageOption.label]);
+  }, [audienceOption.label, channelOption.label, occasionOption.label, offerOption.label, product, sectorOption.label, selectedGoal, stageOption.label]);
 
   useEffect(() => {
     return () => {
@@ -246,6 +261,8 @@ function CampaignStudioPage() {
         data: {
           campaignId: activePackId,
           product,
+          sector,
+          sectorLabel: sectorOption.label,
           audience,
           audienceLabel: audienceOption.label,
           offer,
@@ -282,7 +299,7 @@ function CampaignStudioPage() {
         </header>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(360px,2fr)] lg:items-start">
-          <section className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
+          <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-soft sm:p-5">
             <div className="border-b border-border pb-4">
               <p className="text-xs font-bold text-primary">منطقة البناء</p>
               <h2 className="mt-1 text-lg font-extrabold">ابدأ من القرار التجاري</h2>
@@ -348,6 +365,7 @@ function CampaignStudioPage() {
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
+              <SmartCombobox label="قطاع متجرك" value={sector} options={SECTORS} onChange={setSector} />
               <SmartCombobox label="الجمهور المستهدف" value={audience} options={AUDIENCES} onChange={setAudience} />
               <SmartCombobox label="العرض" value={offer} options={OFFERS} onChange={setOffer} />
               <SmartCombobox label="قناة النشر" value={channel} options={CHANNELS} onChange={(value) => setChannel(value as StudioChannel)} />
