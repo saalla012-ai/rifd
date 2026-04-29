@@ -332,10 +332,10 @@ function CampaignStudioPage() {
             <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">استوديو حملات استراتيجي</Badge>
             <div className="min-w-40 rounded-lg border border-border bg-card px-3 py-2 shadow-soft">
               <div className="flex items-center justify-between gap-3 text-xs font-extrabold">
-                <span className="text-muted-foreground">تقدّم الحزمة الثانية</span>
-                <span className="text-primary">{PACKAGE_TWO_PROGRESS}%</span>
+                <span className="text-muted-foreground">جاهزية مركز الحملات</span>
+                <span className="text-primary">{CAMPAIGN_CENTER_PROGRESS}%</span>
               </div>
-              <Progress value={PACKAGE_TWO_PROGRESS} className="mt-2 h-1.5" />
+              <Progress value={CAMPAIGN_CENTER_PROGRESS} className="mt-2 h-1.5" />
             </div>
           </div>
           <h1 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">ابنِ حملة واضحة قبل ما تبدأ التنفيذ</h1>
@@ -443,6 +443,8 @@ function CampaignStudioPage() {
             imagePreview={productImagePreview}
             generating={generating}
             brief={brief}
+            liveHome={liveHome}
+            loadingLiveHome={loadingLiveHome}
             campaignId={activePackId}
           />
         </div>
