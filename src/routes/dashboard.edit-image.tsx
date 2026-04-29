@@ -13,7 +13,6 @@ import {
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { editImage } from "@/server/ai-functions";
@@ -103,7 +102,6 @@ function EditImagePage() {
   const [originalDataUrl, setOriginalDataUrl] = useState<string | null>(null);
   const [originalName, setOriginalName] = useState<string>("");
   const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
-  const [customPrompt, setCustomPrompt] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -183,11 +181,7 @@ function EditImagePage() {
       toast.error("ارفع صورة أولاً");
       return;
     }
-    const finalPrompt = customPrompt.trim() || preset.prompt;
-    if (!finalPrompt) {
-      toast.error("اختر قالباً أو اكتب وصف تعديل");
-      return;
-    }
+    const finalPrompt = preset.prompt;
 
     setLoading(true);
     setResultUrl(null);
@@ -201,8 +195,8 @@ function EditImagePage() {
         data: {
           imageDataUrl: originalDataUrl,
           prompt: finalPrompt,
-          templateTitle: customPrompt.trim() ? "تعديل مخصص" : preset.label,
-          templateId: customPrompt.trim() ? "custom-edit" : preset.id,
+          templateTitle: preset.label,
+          templateId: preset.id,
           campaignId: campaignContext.campaignId ?? campaignContext.requestedCampaignId,
           campaignPackId: campaignContext.campaignId || campaignContext.requestedCampaignId ? search.campaignPackId : undefined,
         },
