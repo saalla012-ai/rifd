@@ -26,7 +26,7 @@ type Generation = {
   template: string | null;
   is_favorite: boolean;
   created_at: string;
-  metadata: { template_title?: string; campaign_pack_id?: string; campaign_product?: string; campaign_goal?: string; campaign_channel?: string } | null;
+    metadata: { template_title?: string; campaignId?: string; campaignPackId?: string; campaign_pack_id?: string; campaign_product?: string; campaign_goal?: string; campaign_channel?: string } | null;
 };
 
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
@@ -153,8 +153,8 @@ function LibraryPage() {
   const textCount = items.filter((item) => item.type === "text").length;
   const imageCount = items.filter((item) => item.type === "image" || item.type === "image_enhance").length;
   const favoriteCount = items.filter((item) => item.is_favorite).length;
-  const campaignItemCount = items.filter((item) => item.metadata?.campaign_pack_id).length
-    + videoJobs.filter((job) => (job.metadata as { campaign_pack_id?: string } | null)?.campaign_pack_id).length;
+  const campaignGroups = buildCampaignGroups(items, videoJobs);
+  const campaignItemCount = campaignGroups.reduce((total, group) => total + group.text + group.image + group.video, 0);
   const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
   const hasVisibleItems = filter === "video"
     ? videoJobs.length > 0
@@ -200,6 +200,28 @@ function LibraryPage() {
           </button>
         ))}
       </div>
+
+      {campaignGroups.length > 0 && filter === "all" && (
+        <section className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 shadow-soft">
+          <div className="flex items-center gap-2">
+            <FolderKanban className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-extrabold">مخرجات الحملات المجمعة</h2>
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {campaignGroups.map((group) => (
+              <article key={group.id} className="rounded-lg border border-border bg-card p-3">
+                <p className="line-clamp-1 text-sm font-extrabold">{group.name}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{group.goal || "هدف"} · {group.channel || "قناة"}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
+                  <span className="rounded-full bg-secondary px-2 py-1">{group.text} نص</span>
+                  <span className="rounded-full bg-secondary px-2 py-1">{group.image} صورة</span>
+                  <span className="rounded-full bg-secondary px-2 py-1">{group.video} فيديو</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {loading ? (
         <div className="mt-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -267,6 +289,35 @@ function LibraryPage() {
       )}
     </DashboardShell>
   );
+}
+
+function campaignKey(metadata: unknown) {
+  const meta = (metadata as Generation["metadata"] | null) ?? null;
+  return meta?.campaignId ?? meta?.campaignPackId ?? meta?.campaign_pack_id ?? "";
+}
+
+function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
+  const groups = new Map<string, { id: string; name: string; goal?: string; channel?: string; text: number; image: number; video: number }>();
+  const ensure = (id: string, metadata: Generation["metadata"] | Record<string, unknown> | null) => {
+    const meta = metadata ?? {};
+    const name = typeof meta.campaign_product === "string" && meta.campaign_product ? meta.campaign_product : "حملة محفوظة";
+    if (!groups.has(id)) groups.set(id, { id, name, goal: typeof meta.campaign_goal === "string" ? meta.campaign_goal : undefined, channel: typeof meta.campaign_channel === "string" ? meta.campaign_channel : undefined, text: 0, image: 0, video: 0 });
+    return groups.get(id)!;
+  };
+  for (const item of items) {
+    const id = campaignKey(item.metadata);
+    if (!id) continue;
+    const group = ensure(id, item.metadata);
+    if (item.type === "text") group.text += 1;
+    else group.image += 1;
+  }
+  for (const job of videoJobs) {
+    const metadata = (job.metadata as Record<string, unknown> | null) ?? null;
+    const id = campaignKey(metadata);
+    if (!id) continue;
+    ensure(id, metadata).video += 1;
+  }
+  return Array.from(groups.values());
 }
 
 function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob[]; refreshingJobId: string | null; onRefresh: (jobId: string) => void }) {
