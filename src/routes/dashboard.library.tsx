@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw, FolderKanban } from "lucide-react";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw, FolderKanban, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -15,6 +15,9 @@ const ACTIVE_VIDEO_STATUSES = new Set(["pending", "processing"]);
 
 export const Route = createFileRoute("/dashboard/library")({
   head: () => ({ meta: [{ title: "مكتبة محتواك الجاهز — رِفد" }] }),
+  validateSearch: (s: Record<string, unknown>): { campaignId?: string } => ({
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
+  }),
   component: LibraryPage,
 });
 
@@ -40,6 +43,7 @@ const VIDEO_STATUS_LABEL: Record<string, string> = {
 };
 
 function LibraryPage() {
+  const search = useSearch({ from: "/dashboard/library" });
   const { user, loading: authLoading } = useAuth();
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
@@ -141,7 +145,9 @@ function LibraryPage() {
     return () => window.clearInterval(id);
   }, [authLoading, user, videoJobs, refreshVideoJobFn]);
 
-  const filtered = items.filter((i) => {
+  const scopedItems = search.campaignId ? items.filter((item) => campaignKey(item.metadata) === search.campaignId) : items;
+  const scopedVideoJobs = search.campaignId ? videoJobs.filter((job) => campaignKey((job.metadata as Record<string, unknown> | null) ?? null) === search.campaignId) : videoJobs;
+  const filtered = scopedItems.filter((i) => {
     if (filter === "all") return true;
     if (filter === "fav") return i.is_favorite;
     if (filter === "video") return false;
@@ -150,16 +156,17 @@ function LibraryPage() {
     return true;
   });
 
-  const textCount = items.filter((item) => item.type === "text").length;
-  const imageCount = items.filter((item) => item.type === "image" || item.type === "image_enhance").length;
-  const favoriteCount = items.filter((item) => item.is_favorite).length;
+  const textCount = scopedItems.filter((item) => item.type === "text").length;
+  const imageCount = scopedItems.filter((item) => item.type === "image" || item.type === "image_enhance").length;
+  const favoriteCount = scopedItems.filter((item) => item.is_favorite).length;
   const campaignGroups = buildCampaignGroups(items, videoJobs);
+  const visibleCampaignGroups = search.campaignId ? campaignGroups.filter((group) => group.id === search.campaignId) : campaignGroups;
   const campaignItemCount = campaignGroups.reduce((total, group) => total + group.text + group.image + group.video, 0);
   const completedCampaignCount = campaignGroups.filter((group) => group.completedSlots === 3).length;
-  const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
+  const shouldShowVideoSection = scopedVideoJobs.length > 0 && (filter === "all" || filter === "video");
   const hasVisibleItems = filter === "video"
-    ? videoJobs.length > 0
-    : filtered.length > 0 || (filter === "all" && videoJobs.length > 0);
+    ? scopedVideoJobs.length > 0
+    : filtered.length > 0 || (filter === "all" && scopedVideoJobs.length > 0);
 
   return (
     <DashboardShell>
