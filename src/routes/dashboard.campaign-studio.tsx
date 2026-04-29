@@ -169,12 +169,49 @@ function CampaignStudioPage() {
     toast.success("تم نسخ موجز الحملة");
   };
 
+  const uploadProductImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("ارفع صورة منتج بصيغة صورة فقط");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب ألا يتجاوز 5MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    const previewUrl = URL.createObjectURL(file);
+    setProductImagePreview(previewUrl);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("سجّل الدخول أولاً لرفع صورة المنتج");
+      const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `${user.id}/campaigns/${activePackId ?? "draft"}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from(CAMPAIGN_PRODUCT_IMAGES_BUCKET).upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      setProductImagePath(path);
+      toast.success("تم رفع صورة المنتج وربطها بالحملة");
+    } catch (e) {
+      URL.revokeObjectURL(previewUrl);
+      setProductImagePreview(null);
+      toast.error(e instanceof Error ? e.message : "فشل رفع صورة المنتج");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const clearProductImage = () => {
+    if (productImagePreview) URL.revokeObjectURL(productImagePreview);
+    setProductImagePreview(null);
+    setProductImagePath(null);
+  };
+
   const saveCurrentPack = async (status: "draft" | "generated" = "draft"): Promise<CampaignPack | null> => {
     setSaving(true);
     try {
       const headers = await authHeaders();
       const out = await savePackFn({
-        data: { id: activePackId, product, audience, offer, goal, channel, status, brief: campaignBrief, textPrompt, imagePrompt, videoPrompt },
+        data: { id: activePackId, product, audience, offer, goal, channel, status, brief: campaignBrief, textPrompt, imagePrompt, videoPrompt, productImagePath },
         headers,
       });
       setActivePackId(out.pack.id);
@@ -202,6 +239,8 @@ function CampaignStudioPage() {
     setProduct(pack.product);
     setAudience(pack.audience);
     setOffer(pack.offer);
+    setProductImagePath(pack.product_image_path);
+    setProductImagePreview(null);
     toast.success("تم فتح حزمة الحملة");
   };
 
