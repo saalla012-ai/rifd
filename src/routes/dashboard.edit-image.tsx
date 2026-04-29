@@ -229,7 +229,7 @@ function EditImagePage() {
   const returnToStudio = () => {
     const id = campaignContext.campaignId ?? campaignContext.requestedCampaignId;
     if (!id) return;
-    void navigate({ to: "/dashboard/campaign-studio", search: { campaignId: id, focus: "house" } as never });
+    void navigate({ to: "/dashboard/campaign-studio", search: { campaignId: id, focus: "house", updatedAsset: "image" } as never });
   };
 
   return (
