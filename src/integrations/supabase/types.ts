@@ -121,6 +121,7 @@ export type Database = {
           image_prompt: string
           offer: string
           product: string
+          product_image_path: string | null
           status: string
           text_prompt: string
           updated_at: string
@@ -137,6 +138,7 @@ export type Database = {
           image_prompt?: string
           offer?: string
           product?: string
+          product_image_path?: string | null
           status?: string
           text_prompt?: string
           updated_at?: string
@@ -153,6 +155,7 @@ export type Database = {
           image_prompt?: string
           offer?: string
           product?: string
+          product_image_path?: string | null
           status?: string
           text_prompt?: string
           updated_at?: string

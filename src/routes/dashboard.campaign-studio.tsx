@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { archiveCampaignPack, listCampaignPacks, saveCampaignPack, type CampaignPack } from "@/server/campaign-packs";
 
-type CampaignGoal = "launch" | "offer" | "seasonal" | "retention";
+type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
 type CampaignSearch = {
   product?: string;
@@ -24,9 +24,11 @@ type OutputToolRoute = "/dashboard/generate-text" | "/dashboard/generate-image" 
 
 const GOALS: Array<{ value: CampaignGoal; label: string; angle: string }> = [
   { value: "launch", label: "إطلاق منتج", angle: "تركيز على التشويق، المشكلة، والتحوّل بعد استخدام المنتج" },
-  { value: "offer", label: "عرض محدود", angle: "إلحاح واضح، قيمة رقمية، وCTA مباشر للطلب" },
-  { value: "seasonal", label: "موسم / مناسبة", angle: "ربط المنتج بسياق محلي ومشهد استخدام قابل للتخيّل" },
-  { value: "retention", label: "إعادة تنشيط", angle: "تذكير العملاء السابقين بسبب الشراء والثقة المتراكمة" },
+  { value: "clearance", label: "تصفية مخزون", angle: "إلحاح واضح، قيمة رقمية، وسبب شراء سريع قبل نفاد الكمية" },
+  { value: "upsell", label: "رفع قيمة السلة", angle: "اقتراح إضافة ذكية تجعل الطلب أكبر بدون ضغط على العميل" },
+  { value: "leads", label: "جمع عملاء محتملين", angle: "عرض سبب مقنع يخلّي العميل يترك بياناته أو يتواصل الآن" },
+  { value: "competitive", label: "منافسة مباشرة", angle: "إبراز الفرق العملي بين عرضك والبدائل بدون ادعاءات مبالغ فيها" },
+  { value: "winback", label: "استرجاع عميل", angle: "تذكير العملاء السابقين بسبب العودة والثقة المتراكمة" },
 ];
 
 const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }> = [
@@ -43,19 +45,31 @@ const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string
     visual: "صورة منتج Hero بخلفية نظيفة، إضاءة فاخرة، مساحة واضحة للنص والسعر",
     video: "لقطة كشف تدريجي للمنتج، حركة كاميرا بطيئة، ظهور الفائدة الرئيسية ثم CTA في النهاية",
   },
-  offer: {
+  clearance: {
     hook: "العرض الأقصر عادة هو الأكثر قراراً — اجعل القيمة واضحة من أول ثانية.",
     cta: "احجز عرضك اليوم",
     visual: "بوستر عرض محدود مع رقم الخصم كبيراً وتباين واضح بين المنتج والسعر",
     video: "فيديو عمودي سريع يبدأ بالخصم، يمرّ على المنتج، ثم ينتهي بعدّاد بصري وCTA",
   },
-  seasonal: {
-    hook: "اربط المنتج بالمناسبة حتى يشعر العميل أن الشراء في وقته الصحيح.",
-    cta: "جهّز طلبك للمناسبة",
-    visual: "مشهد موسمي سعودي بتفاصيل ذهبية وخضراء، المنتج في مركز التكوين",
-    video: "مشهد استخدام داخل المناسبة، انتقالات ناعمة، نص قصير يربط المنتج بالهدية أو التجهيز",
+  upsell: {
+    hook: "خلّ الطلب يصير أذكى: إضافة بسيطة ترفع قيمة السلة وتزيد رضا العميل.",
+    cta: "أضفها لطلبك الآن",
+    visual: "تصميم Bundle يوضح المنتج الأساسي والإضافة المقترحة مع فائدة مباشرة",
+    video: "لقطة قبل وبعد للطلب، تظهر الإضافة كاختيار منطقي وسهل مع CTA سريع",
   },
-  retention: {
+  leads: {
+    hook: "لا تطلب الشراء مباشرة؛ اعطِ العميل سبباً واضحاً يفتح معه المحادثة.",
+    cta: "اكتب لنا ونعطيك الأنسب",
+    visual: "تصميم بسيط يبرز سؤال العميل وسبب التواصل مع مساحة واضحة للواتساب",
+    video: "فيديو قصير يبدأ بسؤال شائع، يقدّم وعداً واضحاً، وينتهي بدعوة للتواصل",
+  },
+  competitive: {
+    hook: "العميل يقارن دائماً؛ اكسب المقارنة بفائدة ملموسة لا بكلام عام.",
+    cta: "شوف الفرق بنفسك",
+    visual: "مقارنة نظيفة بين المنتج والبدائل مع إبراز نقطة قوة واحدة قابلة للتصديق",
+    video: "مشهد مقارنة سريع يوضح الفرق في الاستخدام أو القيمة بدون هجوم مباشر",
+  },
+  winback: {
     hook: "العميل الذي اشترى مرة يحتاج سبباً واضحاً ليعود مرة ثانية.",
     cta: "ارجع للطلب بميزة خاصة",
     visual: "تصميم ثقة يبرز التقييمات أو الأكثر طلباً مع منتج واضح",
@@ -69,7 +83,7 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     product: typeof s.product === "string" ? s.product.slice(0, 500) : undefined,
     audience: typeof s.audience === "string" ? s.audience.slice(0, 500) : undefined,
     offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
-    goal: ["launch", "offer", "seasonal", "retention"].includes(String(s.goal)) ? (s.goal as CampaignGoal) : undefined,
+    goal: ["launch", "clearance", "upsell", "leads", "competitive", "winback"].includes(String(s.goal)) ? (s.goal as CampaignGoal) : undefined,
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as CampaignChannel) : undefined,
   }),
   component: CampaignStudioPage,

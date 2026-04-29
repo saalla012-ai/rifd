@@ -6,7 +6,7 @@ import { assertAdmin, type DbClient } from "@/server/admin-auth";
 import type { Database } from "@/integrations/supabase/types";
 
 type CampaignPackRow = Database["public"]["Tables"]["campaign_packs"]["Row"];
-type CampaignGoal = "launch" | "offer" | "seasonal" | "retention";
+type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
 type CampaignStatus = "draft" | "generated" | "archived";
 
@@ -23,6 +23,7 @@ export type CampaignPack = {
   text_prompt: string;
   image_prompt: string;
   video_prompt: string;
+  product_image_path: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -37,13 +38,14 @@ const packSchema = z.object({
   product: z.string().max(500).default(""),
   audience: z.string().max(500).default(""),
   offer: z.string().max(500).default(""),
-  goal: z.enum(["launch", "offer", "seasonal", "retention"]),
+  goal: z.enum(["launch", "clearance", "upsell", "leads", "competitive", "winback"]),
   channel: z.enum(["instagram", "snapchat", "tiktok", "whatsapp"]),
   status: z.enum(["draft", "generated", "archived"]).default("draft"),
   brief: z.string().max(5000),
   textPrompt: z.string().max(5000),
   imagePrompt: z.string().max(3000),
   videoPrompt: z.string().max(3000),
+  productImagePath: z.string().max(1000).nullable().optional(),
 });
 
 const listSchema = z.object({
@@ -97,6 +99,7 @@ export const saveCampaignPack = createServerFn({ method: "POST" })
       text_prompt: data.textPrompt,
       image_prompt: data.imagePrompt,
       video_prompt: data.videoPrompt,
+      product_image_path: data.productImagePath ?? null,
     };
 
     const table = supabase.from("campaign_packs");
