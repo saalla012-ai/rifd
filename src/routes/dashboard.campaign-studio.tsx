@@ -40,6 +40,8 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
   { value: "whatsapp", label: "WhatsApp", output: "رسالة قائمة بث مختصرة" },
 ];
 
+const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
+
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
     hook: "منتج جديد يستحق أول نظرة — صمّم لحظة اكتشاف لا تُنسى.",
@@ -87,6 +89,7 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
     goal: ["launch", "clearance", "upsell", "leads", "competitive", "winback"].includes(String(s.goal)) ? (s.goal as CampaignGoal) : undefined,
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as CampaignChannel) : undefined,
+    productImagePath: typeof s.productImagePath === "string" ? s.productImagePath.slice(0, 1000) : undefined,
   }),
   component: CampaignStudioPage,
 });
