@@ -11,6 +11,8 @@ type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" 
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
 type CampaignStudioChannel = CampaignChannel | "email" | "all";
 type CampaignStatus = "draft" | "generated" | "archived";
+export type CampaignAbVariant = { style: string; icon: string; hook: string; message: string; cta: string };
+export type PublishingCalendarDay = { day: number; label: string; channel: string; contentType: string; message: string; goal: string };
 
 export type CampaignPack = {
   id: string;
@@ -25,6 +27,8 @@ export type CampaignPack = {
   text_prompt: string;
   image_prompt: string;
   video_prompt: string;
+  ab_variants: CampaignAbVariant[];
+  publishing_calendar: PublishingCalendarDay[];
   product_image_path: string | null;
   created_at: string;
   updated_at: string;
@@ -40,11 +44,16 @@ export type CampaignBrief = {
   textPrompt: string;
   imagePrompt: string;
   videoPrompt: string;
+  abVariants: CampaignAbVariant[];
+  publishingCalendar: PublishingCalendarDay[];
 };
 
 export type AdminCampaignPack = CampaignPack & {
   user_email: string | null;
   user_store: string | null;
+  output_counts: { text: number; image: number; video: number };
+  completion_percent: number;
+  last_output_at: string | null;
 };
 
 const goals = ["launch", "clearance", "upsell", "leads", "competitive", "winback"] as const;
@@ -63,6 +72,8 @@ const packSchema = z.object({
   textPrompt: z.string().max(5000),
   imagePrompt: z.string().max(3000),
   videoPrompt: z.string().max(3000),
+  abVariants: z.array(z.object({ style: z.string().max(80), icon: z.string().max(12), hook: z.string().max(180), message: z.string().max(320), cta: z.string().max(80) })).max(3).default([]),
+  publishingCalendar: z.array(z.object({ day: z.number().int().min(1).max(7), label: z.string().max(40), channel: z.string().max(80), contentType: z.string().max(120), message: z.string().max(420), goal: z.string().max(120) })).max(7).default([]),
   productImagePath: z.string().max(1000).nullable().optional(),
 });
 
@@ -93,6 +104,8 @@ const briefSchema = z.object({
   textPrompt: z.string().min(10).max(5000),
   imagePrompt: z.string().min(10).max(3000),
   videoPrompt: z.string().min(10).max(3000),
+  abVariants: z.array(z.object({ style: z.string().min(2).max(80), icon: z.string().min(1).max(12), hook: z.string().min(3).max(180), message: z.string().min(8).max(320), cta: z.string().min(2).max(80) })).length(3),
+  publishingCalendar: z.array(z.object({ day: z.number().int().min(1).max(7), label: z.string().min(2).max(40), channel: z.string().min(2).max(80), contentType: z.string().min(2).max(120), message: z.string().min(8).max(420), goal: z.string().min(2).max(120) })).length(7),
 });
 
 const listSchema = z.object({
@@ -110,6 +123,12 @@ const contextSchema = z.object({
   campaignPackId: z.string().uuid().optional(),
 });
 
+export type CampaignLiveHome = {
+  text: { id: string; result: string; prompt: string; created_at: string } | null;
+  image: { id: string; url: string; prompt: string; created_at: string } | null;
+  video: { id: string; status: string; result_url: string | null; prompt: string; created_at: string } | null;
+};
+
 const goalAngles: Record<CampaignGoal, string> = {
   launch: "الفضول + أول تجربة",
   clearance: "الفرصة الأخيرة",
@@ -119,8 +138,18 @@ const goalAngles: Record<CampaignGoal, string> = {
   winback: "اشتقنا لك + عرض حصري",
 };
 
-function mapPack(row: CampaignPackRow): CampaignPack {
-  return row as CampaignPack;
+function mapPack(row: CampaignPackRow | Record<string, unknown>): CampaignPack {
+  const pack = row as CampaignPackRow & { ab_variants?: unknown; publishing_calendar?: unknown };
+  return {
+    ...(pack as CampaignPack),
+    ab_variants: Array.isArray(pack.ab_variants) ? (pack.ab_variants as CampaignAbVariant[]) : [],
+    publishing_calendar: Array.isArray(pack.publishing_calendar) ? (pack.publishing_calendar as PublishingCalendarDay[]) : [],
+  };
+}
+
+function getCampaignMetaId(metadata: unknown) {
+  const meta = (metadata as { campaignId?: unknown; campaignPackId?: unknown; campaign_pack_id?: unknown } | null) ?? null;
+  return typeof meta?.campaignId === "string" ? meta.campaignId : typeof meta?.campaignPackId === "string" ? meta.campaignPackId : typeof meta?.campaign_pack_id === "string" ? meta.campaign_pack_id : "";
 }
 
 function toDbChannel(channel: CampaignStudioChannel): CampaignChannel {
@@ -183,7 +212,7 @@ export const getCampaignContext = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabase
       .from("campaign_packs")
-      .select("id, product, audience, offer, goal, channel, status, brief, text_prompt, image_prompt, video_prompt, product_image_path, created_at, updated_at, user_id")
+      .select("id, product, audience, offer, goal, channel, status, brief, text_prompt, image_prompt, video_prompt, ab_variants, publishing_calendar, product_image_path, created_at, updated_at, user_id")
       .eq("id", id)
       .eq("user_id", userId)
       .maybeSingle();
@@ -209,6 +238,8 @@ export const saveCampaignPack = createServerFn({ method: "POST" })
       text_prompt: data.textPrompt,
       image_prompt: data.imagePrompt,
       video_prompt: data.videoPrompt,
+      ab_variants: data.abVariants,
+      publishing_calendar: data.publishingCalendar,
       product_image_path: data.productImagePath ?? null,
     };
 
@@ -220,6 +251,32 @@ export const saveCampaignPack = createServerFn({ method: "POST" })
     const { data: row, error } = await query;
     if (error || !row) throw new Error(`فشل حفظ حزمة الحملة: ${error?.message ?? "استجابة فارغة"}`);
     return { pack: mapPack(row as CampaignPackRow) };
+  });
+
+export const getCampaignLiveHome = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ campaignId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ liveHome: CampaignLiveHome }> => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    const [{ data: generations, error: genError }, { data: videos, error: videoError }] = await Promise.all([
+      supabase.from("generations").select("id, type, prompt, result, metadata, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(100),
+      supabase.from("video_jobs").select("id, status, result_url, prompt, metadata, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
+    ]);
+    if (genError) throw new Error(`فشل تحميل مخرجات الحملة: ${genError.message}`);
+    if (videoError) throw new Error(`فشل تحميل فيديوهات الحملة: ${videoError.message}`);
+
+    const scopedGenerations = ((generations ?? []) as Array<{ id: string; type: string; prompt: string; result: string | null; metadata: unknown; created_at: string }>).filter((item) => getCampaignMetaId(item.metadata) === data.campaignId);
+    const text = scopedGenerations.find((item) => item.type === "text" && item.result)?.result ? scopedGenerations.find((item) => item.type === "text" && item.result)! : null;
+    const image = scopedGenerations.find((item) => (item.type === "image" || item.type === "image_enhance") && item.result)?.result ? scopedGenerations.find((item) => (item.type === "image" || item.type === "image_enhance") && item.result)! : null;
+    const video = ((videos ?? []) as Array<{ id: string; status: string; result_url: string | null; prompt: string; metadata: unknown; created_at: string }>).find((job) => getCampaignMetaId(job.metadata) === data.campaignId) ?? null;
+
+    return {
+      liveHome: {
+        text: text ? { id: text.id, result: text.result ?? "", prompt: text.prompt, created_at: text.created_at } : null,
+        image: image ? { id: image.id, url: image.result ?? "", prompt: image.prompt, created_at: image.created_at } : null,
+        video: video ? { id: video.id, status: video.status, result_url: video.result_url, prompt: video.prompt, created_at: video.created_at } : null,
+      },
+    };
   });
 
 export const generateCampaignBrief = createServerFn({ method: "POST" })
@@ -245,8 +302,20 @@ export const generateCampaignBrief = createServerFn({ method: "POST" })
             textPrompt: { type: "string" },
             imagePrompt: { type: "string" },
             videoPrompt: { type: "string" },
+            abVariants: {
+              type: "array",
+              minItems: 3,
+              maxItems: 3,
+              items: { type: "object", properties: { style: { type: "string" }, icon: { type: "string" }, hook: { type: "string" }, message: { type: "string" }, cta: { type: "string" } }, required: ["style", "icon", "hook", "message", "cta"] },
+            },
+            publishingCalendar: {
+              type: "array",
+              minItems: 7,
+              maxItems: 7,
+              items: { type: "object", properties: { day: { type: "number" }, label: { type: "string" }, channel: { type: "string" }, contentType: { type: "string" }, message: { type: "string" }, goal: { type: "string" } }, required: ["day", "label", "channel", "contentType", "message", "goal"] },
+            },
           },
-          required: ["campaignName", "corePromise", "marketingMessage", "hook", "cta", "strategyAngle", "textPrompt", "imagePrompt", "videoPrompt"],
+          required: ["campaignName", "corePromise", "marketingMessage", "hook", "cta", "strategyAngle", "textPrompt", "imagePrompt", "videoPrompt", "abVariants", "publishingCalendar"],
         },
       },
       messages: [
@@ -267,7 +336,7 @@ export const generateCampaignBrief = createServerFn({ method: "POST" })
             `قناة النشر: ${data.channelLabel || data.channel}`,
             `مناسبة الحملة: ${data.occasion}`,
             `مرحلة العميل: ${data.customerStage}`,
-            "المطلوب: اسم حملة، وعد أساسي، رسالة تسويقية، خطّاف افتتاحي، دعوة إجراء، توجيه جاهز لأداة النص، توجيه جاهز لأداة الصورة، وتوجيه جاهز لأداة الفيديو. اجعل المخرجات سهلة التنفيذ داخل أدوات النص والصورة والفيديو.",
+            "المطلوب: اسم حملة، وعد أساسي، رسالة تسويقية، خطّاف افتتاحي، دعوة إجراء، توجيه جاهز لأداة النص، توجيه جاهز لأداة الصورة، وتوجيه جاهز لأداة الفيديو، 3 نسخ A/B مختلفة قابلة للاستخدام، وتقويم نشر 7 أيام. اجعل كل المخرجات عملية وآمنة وتناسب تاجر سعودي.",
           ].join("\n"),
         },
       ],
@@ -287,6 +356,8 @@ export const generateCampaignBrief = createServerFn({ method: "POST" })
       text_prompt: trimTo(brief.textPrompt, 5000),
       image_prompt: trimTo(brief.imagePrompt, 3000),
       video_prompt: trimTo(brief.videoPrompt, 3000),
+      ab_variants: brief.abVariants,
+      publishing_calendar: brief.publishingCalendar,
       product_image_path: data.productImagePath ?? null,
     };
 
@@ -337,6 +408,32 @@ export const listAdminCampaignPacks = createServerFn({ method: "POST" })
       ? await supabaseAdmin.from("profiles").select("id, email, store_name").in("id", userIds)
       : { data: [] as Array<{ id: string; email: string | null; store_name: string | null }> };
     const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+    const packIds = new Set(packs.map((pack) => pack.id));
+    const outputCounts = new Map<string, { text: number; image: number; video: number; last: string | null }>();
+    const ensureCounts = (id: string) => {
+      if (!outputCounts.has(id)) outputCounts.set(id, { text: 0, image: 0, video: 0, last: null });
+      return outputCounts.get(id)!;
+    };
+
+    const [{ data: generationRows }, { data: videoRows }] = await Promise.all([
+      supabaseAdmin.from("generations").select("type, metadata, created_at").order("created_at", { ascending: false }).limit(1000),
+      supabaseAdmin.from("video_jobs").select("metadata, created_at").order("created_at", { ascending: false }).limit(1000),
+    ]);
+    for (const item of (generationRows ?? []) as Array<{ type: string; metadata: unknown; created_at: string }>) {
+      const id = getCampaignMetaId(item.metadata);
+      if (!packIds.has(id)) continue;
+      const counts = ensureCounts(id);
+      if (item.type === "text") counts.text += 1;
+      else counts.image += 1;
+      if (!counts.last || item.created_at > counts.last) counts.last = item.created_at;
+    }
+    for (const item of (videoRows ?? []) as Array<{ metadata: unknown; created_at: string }>) {
+      const id = getCampaignMetaId(item.metadata);
+      if (!packIds.has(id)) continue;
+      const counts = ensureCounts(id);
+      counts.video += 1;
+      if (!counts.last || item.created_at > counts.last) counts.last = item.created_at;
+    }
 
     const stats = packs.reduce(
       (acc, pack) => {
@@ -351,7 +448,9 @@ export const listAdminCampaignPacks = createServerFn({ method: "POST" })
       stats,
       packs: packs.map((pack): AdminCampaignPack => {
         const profile = profileMap.get(pack.user_id);
-        return { ...pack, user_email: profile?.email ?? null, user_store: profile?.store_name ?? null };
+        const counts = outputCounts.get(pack.id) ?? { text: 0, image: 0, video: 0, last: null };
+        const done = Number(counts.text > 0) + Number(counts.image > 0) + Number(counts.video > 0);
+        return { ...pack, user_email: profile?.email ?? null, user_store: profile?.store_name ?? null, output_counts: { text: counts.text, image: counts.image, video: counts.video }, completion_percent: Math.round((done / 3) * 100), last_output_at: counts.last };
       }),
     };
   });

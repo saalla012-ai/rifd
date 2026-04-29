@@ -127,7 +127,8 @@ function AdminCampaignPacksPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className={cn(STATUS_TONE[pack.status] ?? "bg-muted")}>{STATUS_LABEL[pack.status] ?? pack.status}</Badge>
                     <span className="text-xs font-bold text-primary">{pack.channel}</span>
-                    <span className="text-xs text-muted-foreground">{fmtDate(pack.updated_at)}</span>
+                    <span className="text-xs text-muted-foreground">{fmtDate(pack.last_output_at ?? pack.updated_at)}</span>
+                    <Badge variant="outline">{pack.completion_percent}% مكتملة</Badge>
                   </div>
                   <h2 className="mt-2 line-clamp-1 font-extrabold">{pack.product || "حملة بدون اسم"}</h2>
                   <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">{pack.brief}</p>
@@ -138,8 +139,17 @@ function AdminCampaignPacksPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs lg:grid-cols-1">
+                  <div className="grid grid-cols-3 gap-1 rounded-lg border border-border bg-background p-2 text-center">
+                    <MiniCount label="نص" value={pack.output_counts.text} />
+                    <MiniCount label="صورة" value={pack.output_counts.image} />
+                    <MiniCount label="فيديو" value={pack.output_counts.video} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-background p-2 text-center">
+                    <MiniCount label="A/B" value={pack.ab_variants.length} />
+                    <MiniCount label="أيام" value={pack.publishing_calendar.length} />
+                  </div>
                   <Button asChild variant="outline" size="sm" className="gap-1">
-                    <Link to="/dashboard/campaign-studio" search={{ product: pack.product, audience: pack.audience, offer: pack.offer, goal: pack.goal, channel: pack.channel }}><FolderKanban className="h-3.5 w-3.5" /> فتح</Link>
+                    <Link to="/dashboard/campaign-studio" search={{ campaignId: pack.id } as never}><FolderKanban className="h-3.5 w-3.5" /> فتح</Link>
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(pack.brief); toast.success("تم نسخ الموجز"); }} className="gap-1">
                     <Copy className="h-3.5 w-3.5" /> نسخ الموجز
@@ -161,4 +171,8 @@ function StatCard({ label, value, tone }: { label: string; value: string; tone?:
       <p className={cn("mt-1 text-2xl font-extrabold tabular-nums", tone === "success" && "text-success")}>{value}</p>
     </div>
   );
+}
+
+function MiniCount({ label, value }: { label: string; value: number }) {
+  return <div><p className="text-sm font-extrabold tabular-nums">{fmt(value)}</p><p className="text-[10px] text-muted-foreground">{label}</p></div>;
 }

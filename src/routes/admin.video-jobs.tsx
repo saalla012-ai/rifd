@@ -55,7 +55,12 @@ function providerAttempts(metadata: AdminVideoJob["metadata"]) {
 }
 
 function jobMeta(metadata: AdminVideoJob["metadata"]) {
-  return (metadata as { provider_mode?: string; manual_required?: boolean; provider_status?: string; failover_halted?: boolean } | null) ?? {};
+  return (metadata as { provider_mode?: string; manual_required?: boolean; provider_status?: string; failover_halted?: boolean; campaignId?: string; campaignPackId?: string; campaign_pack_id?: string; campaign_product?: string; campaign_channel?: string } | null) ?? {};
+}
+
+function campaignIdFromJob(job: AdminVideoJob) {
+  const meta = jobMeta(job.metadata);
+  return meta.campaignId ?? meta.campaignPackId ?? meta.campaign_pack_id;
 }
 
 function providerModeLabel(mode?: string, manualRequired?: boolean) {
@@ -104,7 +109,7 @@ function AdminVideoJobsPage() {
   const filtered = rows.filter((row) => {
     if (!search.trim()) return true;
     const s = search.toLowerCase();
-    return row.user_email?.toLowerCase().includes(s) || row.user_store?.toLowerCase().includes(s) || row.id.toLowerCase().includes(s) || row.prompt.toLowerCase().includes(s);
+    return row.user_email?.toLowerCase().includes(s) || row.user_store?.toLowerCase().includes(s) || row.id.toLowerCase().includes(s) || row.prompt.toLowerCase().includes(s) || jobMeta(row.metadata).campaign_product?.toLowerCase().includes(s);
   });
 
   return (
@@ -183,11 +188,17 @@ function AdminVideoJobsPage() {
                     {jobMeta(job.metadata).failover_halted && <Badge className="bg-warning/20 text-warning-foreground">تم إيقاف البدائل بعد إنشاء مهمة خارجية</Badge>}
                     {job.result_url && <Badge className="bg-success/15 text-success">رابط النتيجة محفوظ</Badge>}
                     {job.storage_path && <Badge className="bg-primary/10 text-primary">مؤرشف داخلياً</Badge>}
+                    {campaignIdFromJob(job) && <Badge className="bg-primary/10 text-primary">مرتبط بحملة: {jobMeta(job.metadata).campaign_product || "حملة محفوظة"}</Badge>}
                   </div>
                   <ProviderAttemptsPanel attempts={providerAttempts(job.metadata)} />
                   {job.result_url && (
                     <Button type="button" variant="outline" size="sm" className="mt-3" asChild>
                       <a href={job.result_url} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> فتح الفيديو الناتج</a>
+                    </Button>
+                  )}
+                  {campaignIdFromJob(job) && (
+                    <Button type="button" variant="outline" size="sm" className="mt-3 me-2" asChild>
+                      <Link to="/dashboard/campaign-studio" search={{ campaignId: campaignIdFromJob(job) } as never}><FolderKanban className="h-4 w-4" /> فتح الحملة</Link>
                     </Button>
                   )}
                   {job.status === "processing" && Boolean(jobMeta(job.metadata).manual_required) && (

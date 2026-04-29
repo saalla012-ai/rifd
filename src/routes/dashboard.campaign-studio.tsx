@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, ChevronDown, Image as ImageIcon, Loader2, Sparkles, Upload, X } from "lucide-react";
+import { CalendarDays, Check, CheckCircle2, ChevronDown, Clapperboard, Copy, FileText, Image as ImageIcon, Loader2, PlayCircle, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
-import { generateCampaignBrief, saveCampaignPack, type CampaignBrief, type CampaignPack } from "@/server/campaign-packs";
+import { generateCampaignBrief, getCampaignLiveHome, saveCampaignPack, type CampaignBrief, type CampaignLiveHome, type CampaignPack } from "@/server/campaign-packs";
 
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
 type DbChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
@@ -32,7 +32,7 @@ type CampaignSearch = {
 type Option = { value: string; label: string; description?: string };
 
 const GENERATED_IMAGES_BUCKET = "generated-images";
-const PACKAGE_TWO_PROGRESS = 100;
+const CAMPAIGN_CENTER_PROGRESS = 100;
 
 const GOALS: Array<{ value: CampaignGoal; title: string; prompt: string }> = [
   { value: "launch", title: "إطلاق منتج", prompt: "عندك منتج جديد؟" },
@@ -115,6 +115,7 @@ function CampaignStudioPage() {
   const campaignContext = useCampaignContext({ campaignId: search.campaignId });
   const savePackFn = useServerFn(saveCampaignPack);
   const generateBriefFn = useServerFn(generateCampaignBrief);
+  const getLiveHomeFn = useServerFn(getCampaignLiveHome);
   const previewRef = useRef<HTMLElement | null>(null);
   const [goal, setGoal] = useState<CampaignGoal | null>(search.goal ?? null);
   const [product, setProduct] = useState(search.product ?? "");
@@ -130,6 +131,8 @@ function CampaignStudioPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [brief, setBrief] = useState<CampaignBrief | null>(null);
+  const [liveHome, setLiveHome] = useState<CampaignLiveHome | null>(null);
+  const [loadingLiveHome, setLoadingLiveHome] = useState(false);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? null;
   const sectorOption = findOption(SECTORS, sector);
@@ -185,6 +188,21 @@ function CampaignStudioPage() {
     setProductImagePath(pack.product_image_path);
     setBrief(briefFromPack(pack));
   }, [campaignContext.campaign]);
+
+  useEffect(() => {
+    if (!activePackId) {
+      setLiveHome(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingLiveHome(true);
+    void authHeaders()
+      .then((headers) => getLiveHomeFn({ data: { campaignId: activePackId }, headers }))
+      .then((out) => { if (!cancelled) setLiveHome(out.liveHome); })
+      .catch(() => { if (!cancelled) setLiveHome(null); })
+      .finally(() => { if (!cancelled) setLoadingLiveHome(false); });
+    return () => { cancelled = true; };
+  }, [activePackId, getLiveHomeFn]);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -313,10 +331,10 @@ function CampaignStudioPage() {
             <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">استوديو حملات استراتيجي</Badge>
             <div className="min-w-40 rounded-lg border border-border bg-card px-3 py-2 shadow-soft">
               <div className="flex items-center justify-between gap-3 text-xs font-extrabold">
-                <span className="text-muted-foreground">تقدّم الحزمة الثانية</span>
-                <span className="text-primary">{PACKAGE_TWO_PROGRESS}%</span>
+                <span className="text-muted-foreground">جاهزية مركز الحملات</span>
+                <span className="text-primary">{CAMPAIGN_CENTER_PROGRESS}%</span>
               </div>
-              <Progress value={PACKAGE_TWO_PROGRESS} className="mt-2 h-1.5" />
+              <Progress value={CAMPAIGN_CENTER_PROGRESS} className="mt-2 h-1.5" />
             </div>
           </div>
           <h1 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">ابنِ حملة واضحة قبل ما تبدأ التنفيذ</h1>
@@ -424,6 +442,8 @@ function CampaignStudioPage() {
             imagePreview={productImagePreview}
             generating={generating}
             brief={brief}
+            liveHome={liveHome}
+            loadingLiveHome={loadingLiveHome}
             campaignId={activePackId}
           />
         </div>
@@ -494,7 +514,7 @@ function SmartCombobox({ label, value, options, onChange }: { label: string; val
   );
 }
 
-function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePreview, generating, brief, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; campaignId?: string }) {
+function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePreview, generating, brief, liveHome, loadingLiveHome, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; campaignId?: string }) {
   return (
     <aside ref={refEl} className="space-y-4 lg:sticky lg:top-6 lg:self-start">
       <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
@@ -503,7 +523,7 @@ function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePrev
           <h2 className="mt-1 text-lg font-extrabold">المعاينة الحية</h2>
         </div>
         <div className="p-4">
-            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
+            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} liveHome={liveHome} loadingLiveHome={loadingLiveHome} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
         </div>
       </section>
     </aside>
@@ -542,7 +562,7 @@ function CanvasSkeleton() {
   );
 }
 
-function CampaignHouse({ brief, imagePreview, campaignId }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string }) {
+function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveHome }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean }) {
   return (
     <div className="space-y-4">
       <article className="overflow-hidden rounded-lg border border-border bg-background">
@@ -559,13 +579,18 @@ function CampaignHouse({ brief, imagePreview, campaignId }: { brief: CampaignBri
         </div>
       </article>
       <section>
-        <h3 className="font-extrabold">مخرجات الحملة</h3>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="font-extrabold">بيت الحملة الحي</h3>
+          <CampaignCompletion liveHome={liveHome} loading={loadingLiveHome} />
+        </div>
         <div className="mt-3 grid gap-3">
-          <DestinationSlot icon="✍️" title="نفذ النص" desc="افتح أداة النصوص والبرومبت جاهز بناءً على خطتك." to="/dashboard/generate-text" prompt={brief.textPrompt} campaignId={campaignId} />
-          <DestinationSlot icon="🎨" title="نفذ الصورة" desc="افتح أداة الصور مع وصف إعلان بصري مناسب للحملة." to="/dashboard/generate-image" prompt={brief.imagePrompt} campaignId={campaignId} />
-          <DestinationSlot icon="🎬" title="نفذ الفيديو" desc="افتح أداة الفيديو مع فكرة إعلان قصيرة مصممة لحملتك." to="/dashboard/generate-video" prompt={brief.videoPrompt} campaignId={campaignId} />
+          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} />
+          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} />
+          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} />
         </div>
       </section>
+      <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} />
+      <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} />
     </div>
   );
 }
@@ -574,16 +599,57 @@ function InfoLine({ label, value }: { label: string; value: string }) {
   return <p><span className="font-extrabold text-foreground">{label}: </span><span className="text-muted-foreground">{value}</span></p>;
 }
 
-function DestinationSlot({ icon, title, desc, to, prompt, campaignId }: { icon: string; title: string; desc: string; to: "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video"; prompt: string; campaignId?: string }) {
+function CampaignCompletion({ liveHome, loading }: { liveHome: CampaignLiveHome | null; loading: boolean }) {
+  const done = Number(Boolean(liveHome?.text)) + Number(Boolean(liveHome?.image)) + Number(Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url));
+  const percent = Math.round((done / 3) * 100);
+  return <Badge variant="outline" className="bg-background text-xs">{loading ? "يتم التحديث…" : `${done}/3 · ${percent}%`}</Badge>;
+}
+
+function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean }) {
+  const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/generate-image" : "/dashboard/generate-video";
+  const Icon = kind === "text" ? FileText : kind === "image" ? ImageIcon : Clapperboard;
+  const isVideo = kind === "video";
+  const video = isVideo ? (item as CampaignLiveHome["video"] | null) : null;
+  const complete = kind === "video" ? Boolean(video?.status === "completed" && video.result_url) : Boolean(item);
+  const active = Boolean(video && ["pending", "processing"].includes(video.status));
+  const failed = Boolean(video && ["failed", "refunded", "cancelled"].includes(video.status));
+  const buttonLabel = complete ? (kind === "video" ? "مشاهدة" : "عرض/تعديل") : kind === "text" ? "اكتب نصاً يبيع" : kind === "image" ? "صمّم صورة إعلان" : "أنشئ فيديو قصير";
+  const textItem = kind === "text" ? (item as CampaignLiveHome["text"] | null) : null;
+  const imageItem = kind === "image" ? (item as CampaignLiveHome["image"] | null) : null;
+
   return (
-    <Link to={to} search={{ prompt, campaignId } as never} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-secondary/60">
-      <span className="text-2xl" aria-hidden="true">{icon}</span>
-      <span>
-        <span className="block font-extrabold">{title}</span>
-        <span className="mt-1 block text-xs leading-6 text-muted-foreground">{desc}</span>
-      </span>
-    </Link>
+    <article className="rounded-lg border border-border bg-card p-3">
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary/10 text-primary">
+          {imageItem?.url ? <img src={imageItem.url} alt="صورة مصغرة من الحملة" className="h-full w-full object-cover" /> : active ? <Loader2 className="h-4 w-4 animate-spin" /> : complete ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Icon className="h-4 w-4" />}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-extrabold">{title}</h4>
+            <span className={cn("text-[11px] font-bold", complete ? "text-success" : active ? "text-warning-foreground" : failed ? "text-destructive" : "text-muted-foreground")}>{loading ? "تحميل" : complete ? "مكتمل" : active ? "قيد المعالجة" : failed ? "يحتاج إعادة" : "لم يُنفذ بعد"}</span>
+          </div>
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{textItem?.result ? textItem.result.slice(0, 100) : imageItem?.prompt || video?.prompt || "ابدأ من هذه الفتحة لإكمال الحملة."}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {video?.result_url && complete ? <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-xs"><a href={video.result_url} target="_blank" rel="noreferrer"><PlayCircle className="h-3.5 w-3.5" /> {buttonLabel}</a></Button> : <Button asChild size="sm" variant={complete ? "outline" : "default"} className="h-8 text-xs"><Link to={route} search={{ prompt, campaignId } as never}>{buttonLabel}</Link></Button>}
+          </div>
+        </div>
+      </div>
+    </article>
   );
+}
+
+function AbVariantsSection({ variants, campaignId }: { variants: CampaignBrief["abVariants"]; campaignId?: string }) {
+  if (!variants.length) return <EmptyCampaignUpgrade label="أعد بناء الخطة لتوليد نسخ A/B جاهزة للتجربة." />;
+  return <section className="rounded-lg border border-border bg-background p-4"><h3 className="font-extrabold">اختر أقوى رسالة تسويقية</h3><div className="mt-3 grid gap-3">{variants.map((v, index) => { const text = `${v.hook}\n${v.message}\n${v.cta}`; return <article key={`${v.style}-${index}`} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><p className="font-extrabold"><span aria-hidden="true">{v.icon}</span> {v.style}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(text); toast.success("تم نسخ النسخة"); }}><Copy className="h-3.5 w-3.5" /></Button></div><p className="mt-2 text-sm font-bold leading-6">{v.hook}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{v.message}</p><Button asChild size="sm" variant="outline" className="mt-3 h-8 text-xs"><Link to="/dashboard/generate-text" search={{ prompt: text, campaignId } as never}>استخدمها في النص</Link></Button></article>; })}</div></section>;
+}
+
+function PublishingCalendarSection({ days, campaignId }: { days: CampaignBrief["publishingCalendar"]; campaignId?: string }) {
+  if (!days.length) return <EmptyCampaignUpgrade label="أعد بناء الخطة لتوليد تقويم نشر 7 أيام." />;
+  return <section className="rounded-lg border border-border bg-background p-4"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h3 className="font-extrabold">تقويم نشر 7 أيام</h3></div><div className="mt-3 grid gap-3 sm:grid-cols-2">{days.map((day) => <article key={day.day} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><Badge variant="outline">اليوم {day.day} · {day.label}</Badge><span className="text-[11px] font-bold text-primary">{day.channel}</span></div><p className="mt-2 text-sm font-extrabold">{day.contentType}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{day.message}</p><p className="mt-2 text-[11px] font-bold text-muted-foreground">الهدف: {day.goal}</p><div className="mt-3 flex flex-wrap gap-2"><Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { void navigator.clipboard.writeText(day.message); toast.success("تم نسخ رسالة اليوم"); }}><Copy className="h-3.5 w-3.5" /> نسخ</Button><Button asChild size="sm" variant="outline" className="h-8 text-xs"><Link to="/dashboard/generate-text" search={{ prompt: `${day.contentType}\n${day.message}\nالهدف: ${day.goal}`, campaignId } as never}>حوّلها لمحتوى</Link></Button></div></article>)}</div></section>;
+}
+
+function EmptyCampaignUpgrade({ label }: { label: string }) {
+  return <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3 text-xs leading-6 text-muted-foreground">{label}</div>;
 }
 
 function briefFromPack(pack: CampaignPack): CampaignBrief {
@@ -597,6 +663,8 @@ function briefFromPack(pack: CampaignPack): CampaignBrief {
     textPrompt: pack.text_prompt,
     imagePrompt: pack.image_prompt,
     videoPrompt: pack.video_prompt,
+    abVariants: pack.ab_variants ?? [],
+    publishingCalendar: pack.publishing_calendar ?? [],
   };
 }
 
