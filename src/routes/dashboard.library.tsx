@@ -258,7 +258,7 @@ function LibraryPage() {
                 </button>
               </div>
               <div className="mt-3">
-                {g.metadata?.campaign_pack_id && (
+                {campaignKey(g.metadata) && (
                   <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[11px] leading-5 text-primary">
                     من حملة: {g.metadata.campaign_product || "حملة محفوظة"} · {g.metadata.campaign_channel || "قناة"}
                   </div>
@@ -305,11 +305,11 @@ function campaignKey(metadata: unknown) {
 }
 
 function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
-  const groups = new Map<string, { id: string; name: string; goal?: string; channel?: string; text: number; image: number; video: number; completedSlots: number; completionPercent: number }>();
+  const groups = new Map<string, { id: string; name: string; goal?: string; channel?: string; text: number; image: number; video: number; completedVideo: number; completedSlots: number; completionPercent: number }>();
   const ensure = (id: string, metadata: Generation["metadata"] | Record<string, unknown> | null) => {
     const meta = metadata ?? {};
     const name = typeof meta.campaign_product === "string" && meta.campaign_product ? meta.campaign_product : "حملة محفوظة";
-    if (!groups.has(id)) groups.set(id, { id, name, goal: typeof meta.campaign_goal === "string" ? meta.campaign_goal : undefined, channel: typeof meta.campaign_channel === "string" ? meta.campaign_channel : undefined, text: 0, image: 0, video: 0, completedSlots: 0, completionPercent: 0 });
+    if (!groups.has(id)) groups.set(id, { id, name, goal: typeof meta.campaign_goal === "string" ? meta.campaign_goal : undefined, channel: typeof meta.campaign_channel === "string" ? meta.campaign_channel : undefined, text: 0, image: 0, video: 0, completedVideo: 0, completedSlots: 0, completionPercent: 0 });
     return groups.get(id)!;
   };
   for (const item of items) {
@@ -323,10 +323,12 @@ function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
     const metadata = (job.metadata as Record<string, unknown> | null) ?? null;
     const id = campaignKey(metadata);
     if (!id) continue;
-    ensure(id, metadata).video += 1;
+    const group = ensure(id, metadata);
+    group.video += 1;
+    if (job.status === "completed" && job.result_url) group.completedVideo += 1;
   }
   return Array.from(groups.values()).map((group) => {
-    const completedSlots = Number(group.text > 0) + Number(group.image > 0) + Number(group.video > 0);
+    const completedSlots = Number(group.text > 0) + Number(group.image > 0) + Number(group.completedVideo > 0);
     return { ...group, completedSlots, completionPercent: Math.round((completedSlots / 3) * 100) };
   });
 }
