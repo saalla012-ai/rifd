@@ -666,8 +666,8 @@ function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveH
       </section>
       <NextBestAction liveHome={liveHome} campaignId={campaignId} brief={brief} executionContext={executionContext} />
       <div className="rounded-lg border border-dashed border-primary/25 bg-primary/5 p-3 text-sm font-extrabold text-primary">📊 قريبًا: تابع أداء حملاتك بعد النشر</div>
-      <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} />
-      <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} />
+      <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} executionContext={executionContext} />
+      <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} executionContext={executionContext} />
     </div>
   );
 }
@@ -700,7 +700,7 @@ function NextBestAction({ liveHome, campaignId, brief, executionContext }: { liv
 }
 
 function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, updated, executionContext }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean; updated?: boolean; executionContext: CampaignExecutionContext }) {
-  const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/edit-image" : "/dashboard/generate-video";
+  const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/generate-image" : "/dashboard/generate-video";
   const Icon = kind === "text" ? FileText : kind === "image" ? ImageIcon : Clapperboard;
   const isVideo = kind === "video";
   const video = isVideo ? (item as CampaignLiveHome["video"] | null) : null;
@@ -733,14 +733,14 @@ function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, update
   );
 }
 
-function AbVariantsSection({ variants, campaignId }: { variants: CampaignBrief["abVariants"]; campaignId?: string }) {
+function AbVariantsSection({ variants, campaignId, executionContext }: { variants: CampaignBrief["abVariants"]; campaignId?: string; executionContext: CampaignExecutionContext }) {
   if (!variants.length) return <EmptyCampaignUpgrade label="أعد بناء الخطة لتوليد نسخ A/B جاهزة للتجربة." />;
-  return <section className="rounded-lg border border-border bg-background p-4"><h3 className="font-extrabold">اختر أقوى رسالة تسويقية</h3><div className="mt-3 grid gap-3">{variants.map((v, index) => { const text = `${v.hook}\n${v.message}\n${v.cta}`; return <article key={`${v.style}-${index}`} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><p className="font-extrabold"><span aria-hidden="true">{v.icon}</span> {v.style}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(text); toast.success("تم نسخ النسخة"); }}><Copy className="h-3.5 w-3.5" /></Button></div><p className="mt-2 text-sm font-bold leading-6">{v.hook}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{v.message}</p><Button asChild size="sm" variant="outline" className="mt-3 h-8 text-xs"><Link to="/dashboard/generate-text" search={{ prompt: text, campaignId } as never}>استخدمها في النص</Link></Button></article>; })}</div></section>;
+  return <section className="rounded-lg border border-border bg-background p-4"><h3 className="font-extrabold">اختر أقوى رسالة تسويقية</h3><div className="mt-3 grid gap-3">{variants.map((v, index) => { const text = `${v.hook}\n${v.message}\n${v.cta}`; return <article key={`${v.style}-${index}`} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><p className="font-extrabold"><span aria-hidden="true">{v.icon}</span> {v.style}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(text); toast.success("تم نسخ النسخة"); }}><Copy className="h-3.5 w-3.5" /></Button></div><p className="mt-2 text-sm font-bold leading-6">{v.hook}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{v.message}</p><Button asChild size="sm" variant="outline" className="mt-3 h-8 text-xs"><Link to="/dashboard/generate-text" search={campaignExecutionSearch({ ...executionContext, campaignId }, text) as never}>استخدمها في النص</Link></Button></article>; })}</div></section>;
 }
 
-function PublishingCalendarSection({ days, campaignId }: { days: CampaignBrief["publishingCalendar"]; campaignId?: string }) {
+function PublishingCalendarSection({ days, campaignId, executionContext }: { days: CampaignBrief["publishingCalendar"]; campaignId?: string; executionContext: CampaignExecutionContext }) {
   if (!days.length) return <EmptyCampaignUpgrade label="أعد بناء الخطة لتوليد تقويم نشر 7 أيام." />;
-  return <section className="rounded-lg border border-border bg-background p-4"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h3 className="font-extrabold">تقويم نشر 7 أيام</h3></div><div className="mt-3 grid gap-3 sm:grid-cols-2">{days.map((day) => <article key={day.day} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><Badge variant="outline">اليوم {day.day} · {day.label}</Badge><span className="text-[11px] font-bold text-primary">{day.channel}</span></div><p className="mt-2 text-sm font-extrabold">{day.contentType}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{day.message}</p><p className="mt-2 text-[11px] font-bold text-muted-foreground">الهدف: {day.goal}</p><div className="mt-3 flex flex-wrap gap-2"><Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { void navigator.clipboard.writeText(day.message); toast.success("تم نسخ رسالة اليوم"); }}><Copy className="h-3.5 w-3.5" /> نسخ</Button><Button asChild size="sm" variant="outline" className="h-8 text-xs"><Link to="/dashboard/generate-text" search={{ prompt: `${day.contentType}\n${day.message}\nالهدف: ${day.goal}`, campaignId } as never}>حوّلها لمحتوى</Link></Button></div></article>)}</div></section>;
+  return <section className="rounded-lg border border-border bg-background p-4"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h3 className="font-extrabold">تقويم نشر 7 أيام</h3></div><div className="mt-3 grid gap-3 sm:grid-cols-2">{days.map((day) => { const text = `${day.contentType}\n${day.message}\nالهدف: ${day.goal}`; return <article key={day.day} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><Badge variant="outline">اليوم {day.day} · {day.label}</Badge><span className="text-[11px] font-bold text-primary">{day.channel}</span></div><p className="mt-2 text-sm font-extrabold">{day.contentType}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{day.message}</p><p className="mt-2 text-[11px] font-bold text-muted-foreground">الهدف: {day.goal}</p><div className="mt-3 flex flex-wrap gap-2"><Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { void navigator.clipboard.writeText(day.message); toast.success("تم نسخ رسالة اليوم"); }}><Copy className="h-3.5 w-3.5" /> نسخ</Button><Button asChild size="sm" variant="outline" className="h-8 text-xs"><Link to="/dashboard/generate-text" search={campaignExecutionSearch({ ...executionContext, campaignId, channel: day.channel }, text) as never}>حوّلها لمحتوى</Link></Button></div></article>; })}</div></section>;
 }
 
 function EmptyCampaignUpgrade({ label }: { label: string }) {

@@ -108,6 +108,7 @@ function EditImagePage() {
     open: boolean;
     reason?: string;
   }>({ open: false });
+  const resolvedCampaignContext = resolveCampaignExecutionContext(campaignContext.campaign, search);
 
   const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
 
@@ -230,7 +231,7 @@ function EditImagePage() {
 
   return (
     <DashboardShell>
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolveCampaignExecutionContext(campaignContext.campaign, search))} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolvedCampaignContext)} context={resolvedCampaignContext} />
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold">حسّن صورة منتجك بدل إعادة التصوير</h1>
