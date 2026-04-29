@@ -164,6 +164,12 @@ function CampaignStudioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (productImagePreview) URL.revokeObjectURL(productImagePreview);
+    };
+  }, [productImagePreview]);
+
   const copyBrief = async () => {
     await navigator.clipboard.writeText(campaignBrief);
     toast.success("تم نسخ موجز الحملة");
@@ -261,11 +267,11 @@ function CampaignStudioPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Megaphone className="h-3.5 w-3.5" /> مركز قيادة الحملة
+            <Megaphone className="h-3.5 w-3.5" /> استوديو الحملات
           </div>
-          <h1 className="text-2xl font-extrabold">ابنِ موجز حملة واضحاً ثم انتقل للتنفيذ</h1>
+          <h1 className="text-2xl font-extrabold">ابنِ حملة تبيع من هدف واحد وصورة منتج واضحة</h1>
           <p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">
-            هذه الصفحة لا تولّد كل شيء داخلها؛ دورها ترتيب الهدف والزاوية والقناة، ثم توجيهك إلى أداة النص أو الصورة أو الفيديو.
+            رتّب الهدف والجمهور والعرض، اربط صورة المنتج، ثم انقل نفس الزاوية إلى النص والصورة والفيديو بدون تشتّت.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -278,11 +284,17 @@ function CampaignStudioPage() {
         </div>
       </div>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-4">
+        <div className="mt-5 rounded-xl border border-border bg-card p-4 shadow-soft">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-extrabold">تقدم بناء الحملة</p>
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{campaignProgress}%</span>
+          </div>
+          <Progress value={campaignProgress} className="mt-3 h-2" />
+          <div className="mt-4 grid gap-2 sm:grid-cols-4">
           {[
             "اختر الهدف",
-            "اكتب موجز الحملة",
-            "احفظ السياق",
+            "ارفع صورة المنتج",
+            "اكتب عرضاً واضحاً",
             "انتقل لأداة التنفيذ",
           ].map((step, index) => (
             <div key={step} className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground shadow-soft">
@@ -290,6 +302,7 @@ function CampaignStudioPage() {
               {step}
             </div>
           ))}
+          </div>
         </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px]">
