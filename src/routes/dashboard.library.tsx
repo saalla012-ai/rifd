@@ -233,7 +233,10 @@ function LibraryPage() {
                   <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-xs font-black text-primary">{group.completedSlots}/3</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{group.goal || "هدف"} · {group.channel || "قناة"}</p>
-                {occasionLabel(group) && <p className="mt-2 inline-flex rounded-full bg-secondary px-2 py-1 text-[11px] font-bold">{occasionLabel(group)}</p>}
+                {(() => {
+                  const label = occasionLabel(group);
+                  return label ? <p className="mt-2 inline-flex rounded-full bg-secondary px-2 py-1 text-[11px] font-bold">{label}</p> : null;
+                })()}
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
                   <span className="rounded-full bg-secondary px-2 py-1">{group.text} نص</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.image} صورة</span>
