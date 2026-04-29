@@ -179,18 +179,20 @@ const videoInputSchema = z.object({
   productImageUrl: z.string().url().optional().or(z.literal("")),
   selectedPersonaId: z.string().trim().max(80).optional().or(z.literal("")),
   selectedTemplateId: z.string().trim().max(100).optional().or(z.literal("")),
+  campaignId: z.string().uuid().optional(),
   campaignPackId: z.string().uuid().optional(),
   source: z.enum(["medium-test"]).optional(),
   mediumTestSampleId: z.string().trim().max(40).optional().or(z.literal("")),
   mediumTestTemplateId: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
-async function assertCampaignPackOwner(db: DbClient, userId: string, campaignPackId?: string) {
-  if (!campaignPackId) return null;
+async function assertCampaignPackOwner(db: DbClient, userId: string, campaignId?: string, campaignPackId?: string) {
+  const id = campaignId ?? campaignPackId;
+  if (!id) return null;
   const { data, error } = await db
     .from("campaign_packs")
     .select("id, product, goal, channel")
-    .eq("id", campaignPackId)
+    .eq("id", id)
     .eq("user_id", userId)
     .maybeSingle();
   if (error || !data) throw new Error("حزمة الحملة غير موجودة أو لا تملك صلاحية استخدامها");
@@ -199,7 +201,7 @@ async function assertCampaignPackOwner(db: DbClient, userId: string, campaignPac
 
 function campaignMetadata(pack: Awaited<ReturnType<typeof assertCampaignPackOwner>>) {
   return pack
-    ? { source: "campaign_studio", campaign_pack_id: pack.id, campaign_product: pack.product, campaign_goal: pack.goal, campaign_channel: pack.channel }
+    ? { source: "campaign_studio", campaignId: pack.id, campaignPackId: pack.id, campaign_pack_id: pack.id, campaign_product: pack.product, campaign_goal: pack.goal, campaign_channel: pack.channel }
     : { source: "dashboard_generate_video" };
 }
 
@@ -705,7 +707,7 @@ export const generateVideo = createServerFn({ method: "POST" })
       assertProductImagePolicy(profile?.plan, data);
       const processingCount = await countProcessingJobs(userId);
       if (processingCount >= PROCESSING_LIMIT_PER_USER) throw new Error("too_many_processing_video_jobs");
-      const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
+      const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignId, data.campaignPackId);
       const baseMetadata = campaignMetadata(campaignPack);
       const selectedTemplateId = assertLaunchTemplatePolicy(data.selectedTemplateId, data.source, data.mediumTestTemplateId, data.mediumTestSampleId, data.quality, data.durationSeconds, data.aspectRatio, data.selectedPersonaId, data.prompt, data.startingFrameUrl);
       await assertNoActiveMediumTestSampleJob(userId, data);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { Wand2, Copy, Check, Loader2, Star, LayoutGrid, Megaphone, Image as ImageIcon, Clapperboard, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -15,10 +15,12 @@ import { generateText } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
+import type { CampaignPack } from "@/server/campaign-packs";
 
-type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignPackId?: string };
+type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "اكتب نصاً يبيع — رِفد" }] }),
@@ -26,6 +28,7 @@ export const Route = createFileRoute("/dashboard/generate-text")({
     __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
   }),
   component: GenerateTextPage,
@@ -34,6 +37,7 @@ export const Route = createFileRoute("/dashboard/generate-text")({
 function GenerateTextPage() {
   const { profile } = useAuth();
   const search = useSearch({ from: "/dashboard/generate-text" });
+  const campaignContext = useCampaignContext({ campaignId: search.campaignId, campaignPackId: search.campaignPackId });
   const initial = search.template && TEXT_PROMPTS.some((p) => p.id === search.template)
     ? search.template
     : TEXT_PROMPTS[0].id;
@@ -50,6 +54,10 @@ function GenerateTextPage() {
   const smartSuggestions = getSmartPromptSuggestions(profile, "text");
   const memorySignals = getMemorySignals(profile).slice(0, 4);
 
+  useEffect(() => {
+    if (!search.prompt && campaignContext.campaign?.text_prompt) setTopic(campaignContext.campaign.text_prompt);
+  }, [campaignContext.campaign?.text_prompt, search.prompt]);
+
   const generate = async () => {
     if (!topic.trim()) {
       toast.error("اكتب الموضوع/التفاصيل أولاً");
@@ -62,7 +70,7 @@ function GenerateTextPage() {
       if (!session) throw new Error("سجّل الدخول أولاً");
 
       const out = await generateText({
-        data: { prompt: topic, templateTitle: template.title, templateId: template.id, campaignPackId: search.campaignPackId },
+        data: { prompt: topic, templateTitle: template.title, templateId: template.id, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setResult(out.result);
@@ -118,6 +126,8 @@ function GenerateTextPage() {
           )}
         </div>
       </div>
+
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.campaignId} loading={campaignContext.loading} error={campaignContext.error} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -222,19 +232,19 @@ function GenerateTextPage() {
           {result && (
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
                   <ImageIcon className="h-3.5 w-3.5" /> صمّم صورة لهذا النص
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
                   <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من النص
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to={search.campaignPackId ? "/dashboard/campaign-studio" : "/dashboard/library"}>
-                  {search.campaignPackId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
-                  {search.campaignPackId ? "العودة للحملة" : "افتح المكتبة"}
+                <Link to={campaignContext.campaignId ? "/dashboard/campaign-studio" : "/dashboard/library"} search={campaignContext.campaignId ? { campaignId: campaignContext.campaignId } as never : undefined}>
+                  {campaignContext.campaignId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  {campaignContext.campaignId ? "العودة للاستوديو" : "افتح المكتبة"}
                 </Link>
               </Button>
             </div>
@@ -254,5 +264,20 @@ function GenerateTextPage() {
         reason={quotaDialog.reason}
       />
     </DashboardShell>
+  );
+}
+
+function CampaignContextBar({ campaign, campaignId, loading, error }: { campaign: CampaignPack | null; campaignId?: string; loading: boolean; error: string | null }) {
+  if (!campaignId) return null;
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
+      <div className="min-w-0 text-sm">
+        <p className="font-extrabold text-primary">{loading ? "جاري تحميل سياق الحملة…" : campaign ? `مرتبطة بحملة: ${campaign.product || "حملة محفوظة"}` : "الأداة تعمل بدون سياق حملة"}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaign ? `${campaign.goal} · ${campaign.channel}` : error ?? "يمكنك المتابعة بشكل طبيعي."}</p>
+      </div>
+      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
+        <Link to="/dashboard/campaign-studio" search={{ campaignId } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
+      </Button>
+    </div>
   );
 }

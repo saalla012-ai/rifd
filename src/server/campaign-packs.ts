@@ -105,6 +105,11 @@ const adminListSchema = z.object({
   limit: z.number().int().min(1).max(300).default(150),
 });
 
+const contextSchema = z.object({
+  campaignId: z.string().uuid().optional(),
+  campaignPackId: z.string().uuid().optional(),
+});
+
 const goalAngles: Record<CampaignGoal, string> = {
   launch: "الفضول + أول تجربة",
   clearance: "الفرصة الأخيرة",
@@ -166,6 +171,25 @@ export const listCampaignPacks = createServerFn({ method: "POST" })
     const { data: rows, error } = await query;
     if (error) throw new Error(`فشل تحميل حزم الحملات: ${error.message}`);
     return { packs: ((rows ?? []) as CampaignPackRow[]).map(mapPack) };
+  });
+
+export const getCampaignContext = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => contextSchema.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as { supabase: DbClient; userId: string };
+    const id = data.campaignId ?? data.campaignPackId;
+    if (!id) return { campaign: null };
+
+    const { data: row, error } = await supabase
+      .from("campaign_packs")
+      .select("id, product, audience, offer, goal, channel, status, brief, text_prompt, image_prompt, video_prompt, product_image_path, created_at, updated_at, user_id")
+      .eq("id", id)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error || !row) return { campaign: null };
+    return { campaign: mapPack(row as CampaignPackRow) };
   });
 
 export const saveCampaignPack = createServerFn({ method: "POST" })

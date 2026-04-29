@@ -27,7 +27,7 @@ import {
 } from "./credits";
 
 type DbClient = SupabaseClient<Database>;
-type CampaignMeta = { campaignPackId?: string };
+type CampaignMeta = { campaignId?: string; campaignPackId?: string };
 
 function currentMonth(): string {
   return currentRiyadhMonth();
@@ -42,12 +42,13 @@ async function loadProfile(db: DbClient, userId: string) {
   return profile;
 }
 
-async function assertCampaignPackOwner(db: DbClient, userId: string, campaignPackId?: string) {
-  if (!campaignPackId) return null;
+async function assertCampaignPackOwner(db: DbClient, userId: string, campaignId?: string, campaignPackId?: string) {
+  const id = campaignId ?? campaignPackId;
+  if (!id) return null;
   const { data, error } = await db
     .from("campaign_packs")
     .select("id, product, goal, channel")
-    .eq("id", campaignPackId)
+    .eq("id", id)
     .eq("user_id", userId)
     .maybeSingle();
   if (error || !data) throw new Error("حزمة الحملة غير موجودة أو لا تملك صلاحية استخدامها");
@@ -56,7 +57,7 @@ async function assertCampaignPackOwner(db: DbClient, userId: string, campaignPac
 
 function campaignMetadata(pack: Awaited<ReturnType<typeof assertCampaignPackOwner>>): CampaignMeta & Record<string, unknown> {
   return pack
-    ? { campaign_pack_id: pack.id, campaign_product: pack.product, campaign_goal: pack.goal, campaign_channel: pack.channel }
+    ? { campaignId: pack.id, campaignPackId: pack.id, campaign_pack_id: pack.id, campaign_product: pack.product, campaign_goal: pack.goal, campaign_channel: pack.channel }
     : {};
 }
 
@@ -103,9 +104,10 @@ function creditError(e: unknown): Error {
 export const generateText = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { prompt: string; templateTitle: string; templateId: string; campaignPackId?: string }) => {
+    (input: { prompt: string; templateTitle: string; templateId: string; campaignId?: string; campaignPackId?: string }) => {
       if (!input.prompt?.trim()) throw new Error("الموضوع مطلوب");
       if (input.prompt.length > 2000) throw new Error("الموضوع طويل جداً");
+      if (input.campaignId && !/^[0-9a-f-]{36}$/i.test(input.campaignId)) throw new Error("معرّف الحملة غير صحيح");
       if (input.campaignPackId && !/^[0-9a-f-]{36}$/i.test(input.campaignPackId)) throw new Error("معرّف الحملة غير صحيح");
       return input;
     }
@@ -122,7 +124,7 @@ export const generateText = createServerFn({ method: "POST" })
     }
 
     const profile = await loadProfile(supabase, userId);
-    const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
+    const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignId, data.campaignPackId);
     const ctx: StoreContext = profile ?? {};
     const system = buildTextSystemPrompt(ctx, data.templateTitle);
 
@@ -188,11 +190,13 @@ export const generateImage = createServerFn({ method: "POST" })
       templateTitle: string;
       templateId: string;
       quality: "flash" | "pro";
+      campaignId?: string;
       campaignPackId?: string;
     }) => {
       if (!input.prompt?.trim()) throw new Error("وصف الصورة مطلوب");
       if (input.prompt.length > 1500) throw new Error("الوصف طويل جداً");
       if (!["flash", "pro"].includes(input.quality)) throw new Error("جودة غير صحيحة");
+      if (input.campaignId && !/^[0-9a-f-]{36}$/i.test(input.campaignId)) throw new Error("معرّف الحملة غير صحيح");
       if (input.campaignPackId && !/^[0-9a-f-]{36}$/i.test(input.campaignPackId)) throw new Error("معرّف الحملة غير صحيح");
       return input;
     }
@@ -214,7 +218,7 @@ export const generateImage = createServerFn({ method: "POST" })
 
     try {
       const profile = await loadProfile(supabase, userId);
-      const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignPackId);
+      const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignId, data.campaignPackId);
       const ctx: StoreContext = profile ?? {};
       const fullPrompt = buildImagePrompt(ctx, data.prompt, data.templateTitle);
 

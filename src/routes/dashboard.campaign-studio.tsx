@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, ChevronDown, Image as ImageIcon, Loader2, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { generateCampaignBrief, saveCampaignPack, type CampaignBrief, type CampaignPack } from "@/server/campaign-packs";
 
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
@@ -26,6 +27,7 @@ type CampaignSearch = {
   offer?: string;
   goal?: CampaignGoal;
   channel?: DbChannel;
+  campaignId?: string;
 };
 type Option = { value: string; label: string; description?: string };
 
@@ -103,12 +105,14 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
     goal: GOALS.some((goal) => goal.value === s.goal) ? (s.goal as CampaignGoal) : undefined,
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as DbChannel) : undefined,
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
   }),
   component: CampaignStudioPage,
 });
 
 function CampaignStudioPage() {
   const search = useSearch({ from: "/dashboard/campaign-studio" });
+  const campaignContext = useCampaignContext({ campaignId: search.campaignId });
   const savePackFn = useServerFn(saveCampaignPack);
   const generateBriefFn = useServerFn(generateCampaignBrief);
   const previewRef = useRef<HTMLElement | null>(null);
@@ -168,6 +172,19 @@ function CampaignStudioPage() {
       if (productImagePreview?.startsWith("blob:")) URL.revokeObjectURL(productImagePreview);
     };
   }, [productImagePreview]);
+
+  useEffect(() => {
+    if (!campaignContext.campaign) return;
+    const pack = campaignContext.campaign;
+    setActivePackId(pack.id);
+    setGoal(pack.goal);
+    setProduct(pack.product);
+    setAudience(pack.audience || AUDIENCES[0].value);
+    setOffer(pack.offer || OFFERS[0].value);
+    setChannel(pack.channel);
+    setProductImagePath(pack.product_image_path);
+    setBrief(briefFromPack(pack));
+  }, [campaignContext.campaign]);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -407,6 +424,7 @@ function CampaignStudioPage() {
             imagePreview={productImagePreview}
             generating={generating}
             brief={brief}
+            campaignId={activePackId}
           />
         </div>
       </div>
@@ -476,7 +494,7 @@ function SmartCombobox({ label, value, options, onChange }: { label: string; val
   );
 }
 
-function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePreview, generating, brief }: { refEl: MutableRefObject<HTMLElement | null>; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null }) {
+function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePreview, generating, brief, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; campaignId?: string }) {
   return (
     <aside ref={refEl} className="space-y-4 lg:sticky lg:top-6 lg:self-start">
       <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
@@ -485,7 +503,7 @@ function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePrev
           <h2 className="mt-1 text-lg font-extrabold">المعاينة الحية</h2>
         </div>
         <div className="p-4">
-          {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
+            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
         </div>
       </section>
     </aside>
@@ -524,7 +542,7 @@ function CanvasSkeleton() {
   );
 }
 
-function CampaignHouse({ brief, imagePreview }: { brief: CampaignBrief; imagePreview: string | null }) {
+function CampaignHouse({ brief, imagePreview, campaignId }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string }) {
   return (
     <div className="space-y-4">
       <article className="overflow-hidden rounded-lg border border-border bg-background">
@@ -543,9 +561,9 @@ function CampaignHouse({ brief, imagePreview }: { brief: CampaignBrief; imagePre
       <section>
         <h3 className="font-extrabold">مخرجات الحملة</h3>
         <div className="mt-3 grid gap-3">
-          <DestinationSlot icon="✍️" title="نفذ النص" desc="سيتم فتح أداة النصوص، والإطار الإرشادي جاهز بناءً على خطتك." />
-          <DestinationSlot icon="🎨" title="نفذ الصورة" desc="سيتم فتح أداة الصور، مع وصف جاهز للإعلان البصري المناسب." />
-          <DestinationSlot icon="🎬" title="نفذ الفيديو" desc="سيتم فتح أداة الفيديو، مع فكرة إعلان فيديو مصممة لحملتك." />
+          <DestinationSlot icon="✍️" title="نفذ النص" desc="افتح أداة النصوص والبرومبت جاهز بناءً على خطتك." to="/dashboard/generate-text" prompt={brief.textPrompt} campaignId={campaignId} />
+          <DestinationSlot icon="🎨" title="نفذ الصورة" desc="افتح أداة الصور مع وصف إعلان بصري مناسب للحملة." to="/dashboard/generate-image" prompt={brief.imagePrompt} campaignId={campaignId} />
+          <DestinationSlot icon="🎬" title="نفذ الفيديو" desc="افتح أداة الفيديو مع فكرة إعلان قصيرة مصممة لحملتك." to="/dashboard/generate-video" prompt={brief.videoPrompt} campaignId={campaignId} />
         </div>
       </section>
     </div>
@@ -556,16 +574,34 @@ function InfoLine({ label, value }: { label: string; value: string }) {
   return <p><span className="font-extrabold text-foreground">{label}: </span><span className="text-muted-foreground">{value}</span></p>;
 }
 
-function DestinationSlot({ icon, title, desc }: { icon: string; title: string; desc: string }) {
+function DestinationSlot({ icon, title, desc, to, prompt, campaignId }: { icon: string; title: string; desc: string; to: "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video"; prompt: string; campaignId?: string }) {
   return (
-    <a href="#" onClick={(event) => event.preventDefault()} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-secondary/60">
+    <Link to={to} search={{ prompt, campaignId } as never} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-secondary/60">
       <span className="text-2xl" aria-hidden="true">{icon}</span>
       <span>
         <span className="block font-extrabold">{title}</span>
         <span className="mt-1 block text-xs leading-6 text-muted-foreground">{desc}</span>
       </span>
-    </a>
+    </Link>
   );
+}
+
+function briefFromPack(pack: CampaignPack): CampaignBrief {
+  return {
+    campaignName: pack.product || "حملة محفوظة",
+    corePromise: firstBriefValue(pack.brief, "الوعد الأساسي") || pack.offer || "عرض واضح ومقنع",
+    marketingMessage: firstBriefValue(pack.brief, "الرسالة التسويقية") || pack.brief || "رسالة حملة جاهزة للتنفيذ.",
+    hook: firstBriefValue(pack.brief, "الخطّاف") || "ابدأ بقوة واجذب انتباه العميل من أول ثانية.",
+    cta: firstBriefValue(pack.brief, "دعوة الإجراء") || "اطلب الآن",
+    strategyAngle: firstBriefValue(pack.brief, "الزاوية") || pack.goal,
+    textPrompt: pack.text_prompt,
+    imagePrompt: pack.image_prompt,
+    videoPrompt: pack.video_prompt,
+  };
+}
+
+function firstBriefValue(brief: string, label: string) {
+  return brief.split("\n").find((line) => line.startsWith(`${label}:`))?.split(":").slice(1).join(":").trim() ?? "";
 }
 
 function findOption<T extends Option>(options: T[], value: string): T {
