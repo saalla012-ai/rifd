@@ -53,6 +53,44 @@ function formatNum(n: number) {
   return n.toLocaleString("ar-SA");
 }
 
+function campaignDoneCount(liveHome: CampaignLiveHome | null) {
+  return Number(Boolean(liveHome?.text)) + Number(Boolean(liveHome?.image)) + Number(Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url));
+}
+
+function goalLabel(goal: CampaignPack["goal"]) {
+  const labels: Record<CampaignPack["goal"], string> = {
+    launch: "إطلاق منتج",
+    clearance: "تصفية مخزون",
+    upsell: "زيادة قيمة السلة",
+    leads: "بناء عملاء",
+    competitive: "مواجهة المنافسين",
+    winback: "إعادة الاستهداف",
+  };
+  return labels[goal] ?? "هدف حملة";
+}
+
+function campaignHint(liveHome: CampaignLiveHome | null) {
+  const done = campaignDoneCount(liveHome);
+  if (done === 3) return "جاهزة للنشر!";
+  if (liveHome?.image && !liveHome.text) return "الصورة جاهزة، اكتب النص المطابق لها";
+  if (liveHome?.text && !liveHome.image) return "النص جاهز. صمّم صورة إعلان توقف التمرير";
+  if (liveHome?.text && liveHome.image) return "ينقصها فيديو قصير مناسب لريلز وتيك توك";
+  return "ابدأ بأول أصل للحملة من الاستوديو";
+}
+
+function GenericEmptyState({ title, description, actionLabel, actionTo }: { title: string; description: string; actionLabel: string; actionTo: "/dashboard/campaign-studio" }) {
+  return (
+    <div className="mt-4 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-6 text-center">
+      <Sparkles className="mx-auto h-8 w-8 text-primary" />
+      <h3 className="mt-3 text-lg font-extrabold text-foreground">{title}</h3>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-muted-foreground">{description}</p>
+      <Button asChild className="mt-4 gradient-primary text-primary-foreground">
+        <Link to={actionTo}>{actionLabel}</Link>
+      </Button>
+    </div>
+  );
+}
+
 function DashboardPage() {
   const { user, profile } = useAuth();
   const { data: creditsSummary } = useCreditsSummary({ enabled: Boolean(user?.id) });
