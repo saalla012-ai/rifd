@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarDays, Check, CheckCircle2, ChevronDown, Clapperboard, Copy, FileText, Image as ImageIcon, Loader2, PlayCircle, Sparkles, Upload, X } from "lucide-react";
@@ -28,6 +28,7 @@ type CampaignSearch = {
   goal?: CampaignGoal;
   channel?: DbChannel;
   campaignId?: string;
+  focus?: "house";
 };
 type Option = { value: string; label: string; description?: string };
 
@@ -106,6 +107,7 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     goal: GOALS.some((goal) => goal.value === s.goal) ? (s.goal as CampaignGoal) : undefined,
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as DbChannel) : undefined,
     campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
+    focus: s.focus === "house" ? "house" : undefined,
   }),
   component: CampaignStudioPage,
 });
@@ -117,6 +119,7 @@ function CampaignStudioPage() {
   const generateBriefFn = useServerFn(generateCampaignBrief);
   const getLiveHomeFn = useServerFn(getCampaignLiveHome);
   const previewRef = useRef<HTMLElement | null>(null);
+  const liveSnapshotRef = useRef<{ text: boolean; image: boolean; video: boolean } | null>(null);
   const [goal, setGoal] = useState<CampaignGoal | null>(search.goal ?? null);
   const [product, setProduct] = useState(search.product ?? "");
   const [sector, setSector] = useState(SECTORS[7].value);
@@ -133,6 +136,9 @@ function CampaignStudioPage() {
   const [brief, setBrief] = useState<CampaignBrief | null>(null);
   const [liveHome, setLiveHome] = useState<CampaignLiveHome | null>(null);
   const [loadingLiveHome, setLoadingLiveHome] = useState(false);
+  const [highlightHouse, setHighlightHouse] = useState(false);
+  const [updatedKinds, setUpdatedKinds] = useState<Array<"text" | "image" | "video">>([]);
+  const [returnBanner, setReturnBanner] = useState(false);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? null;
   const sectorOption = findOption(SECTORS, sector);
@@ -189,20 +195,56 @@ function CampaignStudioPage() {
     setBrief(briefFromPack(pack));
   }, [campaignContext.campaign]);
 
-  useEffect(() => {
+  const refreshLiveHome = useCallback(async (showTransition = false) => {
     if (!activePackId) {
       setLiveHome(null);
+      liveSnapshotRef.current = null;
       return;
     }
-    let cancelled = false;
     setLoadingLiveHome(true);
-    void authHeaders()
-      .then((headers) => getLiveHomeFn({ data: { campaignId: activePackId }, headers }))
-      .then((out) => { if (!cancelled) setLiveHome(out.liveHome); })
-      .catch(() => { if (!cancelled) setLiveHome(null); })
-      .finally(() => { if (!cancelled) setLoadingLiveHome(false); });
-    return () => { cancelled = true; };
+    try {
+      const headers = await authHeaders();
+      const out = await getLiveHomeFn({ data: { campaignId: activePackId }, headers });
+      const next = liveSnapshot(out.liveHome);
+      const prev = liveSnapshotRef.current;
+      const changed: Array<"text" | "image" | "video"> = prev && showTransition
+        ? (["text", "image", "video"] as const).filter((kind) => !prev[kind] && next[kind])
+        : [];
+      liveSnapshotRef.current = next;
+      setLiveHome(out.liveHome);
+      if (changed.length > 0) {
+        setUpdatedKinds(changed);
+        setReturnBanner(true);
+        window.setTimeout(() => setUpdatedKinds([]), 3200);
+        window.setTimeout(() => setReturnBanner(false), 4200);
+      }
+    } catch {
+      setLiveHome(null);
+    } finally {
+      setLoadingLiveHome(false);
+    }
   }, [activePackId, getLiveHomeFn]);
+
+  useEffect(() => { void refreshLiveHome(false); }, [refreshLiveHome]);
+
+  useEffect(() => {
+    const onFocus = () => void refreshLiveHome(true);
+    const onVisibility = () => { if (document.visibilityState === "visible") void refreshLiveHome(true); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [refreshLiveHome]);
+
+  useEffect(() => {
+    if (search.focus !== "house") return;
+    window.setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    setHighlightHouse(true);
+    const id = window.setTimeout(() => setHighlightHouse(false), 2600);
+    return () => window.clearTimeout(id);
+  }, [search.focus, activePackId]);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
