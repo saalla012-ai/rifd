@@ -13,9 +13,11 @@ export type CampaignExecutionContext = {
   customerStage?: string;
   goal?: CampaignPack["goal"] | string;
   productName?: string;
+  productImagePath?: string;
+  productImageUrl?: string;
 };
 
-const executionKeys = ["campaignId", "campaignPackId", "prompt", "sector", "audience", "offer", "channel", "occasion", "customerStage", "goal", "productName"] as const;
+const executionKeys = ["campaignId", "campaignPackId", "prompt", "sector", "audience", "offer", "channel", "occasion", "customerStage", "goal", "productName", "productImagePath", "productImageUrl"] as const;
 
 const goalLabel: Record<CampaignPack["goal"], string> = {
   launch: "إطلاق منتج",
@@ -30,9 +32,11 @@ export function campaignSmartPromptFromContext(context: CampaignExecutionContext
   const goal = context.goal ? goalLabel[context.goal as CampaignPack["goal"]] ?? context.goal : campaign?.goal ? goalLabel[campaign.goal] : "";
   const base = buildCampaignContextLines(context, campaign, goal).join("\n");
 
-  if (kind === "text") return [base, context.prompt || campaign?.text_prompt, textDirection(context), "اكتب نصاً يبيع بصياغة سعودية واضحة: هوك، فائدة، عرض، ودعوة إجراء مباشرة."].filter(Boolean).join("\n\n");
-  if (kind === "image") return [base, context.prompt || campaign?.image_prompt, imageDirection(context), "صمّم صورة إعلان للمنتج: المنتج واضح، مساحة للنص العربي، العرض ظاهر بدون مبالغة، ومناسبة للقناة المختارة."].filter(Boolean).join("\n\n");
-  return [base, context.prompt || campaign?.video_prompt, videoDirection(context), "حوّلها إلى فيديو قصير: أول ثانيتين تشد الانتباه، المنتج واضح، حركة بسيطة، ونهاية بدعوة إجراء."].filter(Boolean).join("\n\n");
+  const imageNote = hasCampaignProductImage(context, campaign) ? "صورة المنتج مرفقة كمرجع بصري؛ حافظ على نفس المنتج ولا تفترض مواصفات غير ظاهرة." : "";
+
+  if (kind === "text") return [base, imageNote, context.prompt || campaign?.text_prompt, textDirection(context), "اكتب نصاً يبيع بصياغة سعودية واضحة: هوك، فائدة، عرض، ودعوة إجراء مباشرة."].filter(Boolean).join("\n\n");
+  if (kind === "image") return [base, imageNote, context.prompt || campaign?.image_prompt, imageDirection(context), "صمّم صورة إعلان للمنتج: المنتج واضح، مساحة للنص العربي، العرض ظاهر بدون مبالغة، ومناسبة للقناة المختارة."].filter(Boolean).join("\n\n");
+  return [base, imageNote, context.prompt || campaign?.video_prompt, videoDirection(context), "حوّلها إلى فيديو قصير: أول ثانيتين تشد الانتباه، المنتج واضح، حركة بسيطة، ونهاية بدعوة إجراء."].filter(Boolean).join("\n\n");
 }
 
 export function resolveCampaignExecutionContext(campaign?: CampaignPack | null, search: CampaignExecutionContext = {}): CampaignExecutionContext {
@@ -44,6 +48,8 @@ export function resolveCampaignExecutionContext(campaign?: CampaignPack | null, 
     offer: search.offer ?? campaign?.offer,
     channel: search.channel ?? campaign?.channel,
     goal: search.goal ?? campaign?.goal,
+    productImagePath: search.productImagePath ?? campaign?.product_image_path ?? undefined,
+    productImageUrl: search.productImageUrl,
   };
 }
 
@@ -61,7 +67,11 @@ export function campaignExecutionSearch(context: CampaignExecutionContext, promp
 }
 
 export function hasCampaignExecutionContext(context: CampaignExecutionContext) {
-  return Boolean(context.campaignId || context.campaignPackId || context.productName || context.audience || context.offer || context.channel || context.goal || context.sector || context.occasion || context.customerStage);
+  return Boolean(context.campaignId || context.campaignPackId || context.productName || context.audience || context.offer || context.channel || context.goal || context.sector || context.occasion || context.customerStage || context.productImagePath || context.productImageUrl);
+}
+
+export function hasCampaignProductImage(context: CampaignExecutionContext, campaign?: CampaignPack | null) {
+  return Boolean(context.productImagePath || context.productImageUrl || campaign?.product_image_path);
 }
 
 export function campaignContextSummary(context: CampaignExecutionContext) {
