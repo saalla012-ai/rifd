@@ -42,7 +42,11 @@ function getUsage(json: any): AIUsage {
   };
 }
 
-async function postChatCompletion(body: Record<string, unknown>) {
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function postChatCompletion(body: Record<string, unknown>, attempt = 0): Promise<any> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) {
     throw new AIError("LOVABLE_API_KEY is not configured", 500, "unknown");
@@ -58,7 +62,11 @@ async function postChatCompletion(body: Record<string, unknown>) {
   });
 
   if (res.status === 429) {
-    throw new AIError("تم تجاوز الحد المسموح حالياً، حاول بعد لحظات", 429, "rate_limited");
+    if (attempt < 2) {
+      await wait(900 * (attempt + 1));
+      return postChatCompletion(body, attempt + 1);
+    }
+    throw new AIError("الخدمة مشغولة الآن، لم تُحتسب المحاولة. جرّب مرة أخرى بعد دقيقة", 429, "rate_limited");
   }
   if (res.status === 402) {
     throw new AIError("نفد رصيد الـAI في المنصة. يرجى التواصل مع الدعم", 402, "payment_required");
