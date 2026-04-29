@@ -11,12 +11,12 @@ import { cn } from "@/lib/utils";
 import { generateImage } from "@/server/ai-functions";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotaExceededDialog, isQuotaError } from "@/components/quota-exceeded-dialog";
+import { CampaignContextBar } from "@/components/campaign-context-bar";
 import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
-import type { CampaignPack } from "@/server/campaign-packs";
 
 type ImgSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string };
 
@@ -269,17 +269,3 @@ function GenerateImagePage() {
   );
 }
 
-function CampaignContextBar({ campaign, campaignId, loading, error }: { campaign: CampaignPack | null; campaignId?: string; loading: boolean; error: string | null }) {
-  if (!campaignId) return null;
-  return (
-    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
-      <div className="min-w-0 text-sm">
-        <p className="font-extrabold text-primary">{loading ? "جاري تحميل سياق الحملة…" : campaign ? `مرتبطة بحملة: ${campaign.product || "حملة محفوظة"}` : "الأداة تعمل بدون سياق حملة"}</p>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaign ? `${campaign.goal} · ${campaign.channel}` : error ?? "يمكنك المتابعة بشكل طبيعي."}</p>
-      </div>
-      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
-        <Link to="/dashboard/campaign-studio" search={{ campaignId } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
-      </Button>
-    </div>
-  );
-}
