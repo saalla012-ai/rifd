@@ -7,7 +7,6 @@ import {
   Download,
   X,
   Image as ImageIcon,
-  Megaphone,
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
