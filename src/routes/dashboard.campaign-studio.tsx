@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, ChevronDown, Image as ImageIcon, Loader2, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { generateCampaignBrief, saveCampaignPack, type CampaignBrief, type CampaignPack } from "@/server/campaign-packs";
 
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
@@ -26,6 +27,7 @@ type CampaignSearch = {
   offer?: string;
   goal?: CampaignGoal;
   channel?: DbChannel;
+  campaignId?: string;
 };
 type Option = { value: string; label: string; description?: string };
 
@@ -103,12 +105,14 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
     goal: GOALS.some((goal) => goal.value === s.goal) ? (s.goal as CampaignGoal) : undefined,
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as DbChannel) : undefined,
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
   }),
   component: CampaignStudioPage,
 });
 
 function CampaignStudioPage() {
   const search = useSearch({ from: "/dashboard/campaign-studio" });
+  const campaignContext = useCampaignContext({ campaignId: search.campaignId });
   const savePackFn = useServerFn(saveCampaignPack);
   const generateBriefFn = useServerFn(generateCampaignBrief);
   const previewRef = useRef<HTMLElement | null>(null);
@@ -168,6 +172,19 @@ function CampaignStudioPage() {
       if (productImagePreview?.startsWith("blob:")) URL.revokeObjectURL(productImagePreview);
     };
   }, [productImagePreview]);
+
+  useEffect(() => {
+    if (!campaignContext.campaign) return;
+    const pack = campaignContext.campaign;
+    setActivePackId(pack.id);
+    setGoal(pack.goal);
+    setProduct(pack.product);
+    setAudience(pack.audience || AUDIENCES[0].value);
+    setOffer(pack.offer || OFFERS[0].value);
+    setChannel(pack.channel);
+    setProductImagePath(pack.product_image_path);
+    setBrief(briefFromPack(pack));
+  }, [campaignContext.campaign]);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -407,6 +424,7 @@ function CampaignStudioPage() {
             imagePreview={productImagePreview}
             generating={generating}
             brief={brief}
+            campaignId={activePackId}
           />
         </div>
       </div>
