@@ -187,7 +187,7 @@ function LibraryPage() {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: videoJobs.length, icon: Clapperboard }, { label: "حملات مكتملة", value: completedCampaignCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
+        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: scopedVideoJobs.length, icon: Clapperboard }, { label: "حملات مكتملة", value: completedCampaignCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
           const Icon = stat.icon;
           return <div key={stat.label} className="rounded-lg border border-border bg-card p-3 shadow-soft"><Icon className="h-4 w-4 text-primary" /><div className="mt-2 text-lg font-extrabold">{stat.value.toLocaleString("ar-SA")}</div><div className="text-xs text-muted-foreground">{stat.label}</div></div>;
         })}
