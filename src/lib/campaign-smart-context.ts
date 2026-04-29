@@ -57,10 +57,15 @@ export function parseCampaignExecutionSearch(s: Record<string, unknown>): Campai
 }
 
 export function campaignExecutionSearch(context: CampaignExecutionContext, prompt?: string): CampaignExecutionContext {
-  return Object.fromEntries(Object.entries({ ...context, prompt, smart: true }).filter(([, value]) => value !== undefined && value !== "")) as CampaignExecutionContext;
+  return Object.fromEntries(Object.entries({ ...context, prompt: prompt ?? context.prompt, smart: true }).filter(([, value]) => value !== undefined && value !== "")) as CampaignExecutionContext;
+}
+
+export function hasCampaignExecutionContext(context: CampaignExecutionContext) {
+  return Boolean(context.campaignId || context.campaignPackId || context.productName || context.audience || context.offer || context.channel || context.goal || context.sector || context.occasion || context.customerStage);
 }
 
 export function campaignContextSummary(context: CampaignExecutionContext) {
+  if (!hasCampaignExecutionContext(context)) return "";
   return [
     context.productName ? `📢 حملة: ${context.productName}` : "📢 حملة محفوظة",
     context.goal ? `🎯 ${goalLabel[context.goal as CampaignPack["goal"]] ?? context.goal}` : "",
