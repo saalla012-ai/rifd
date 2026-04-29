@@ -476,6 +476,9 @@ function CampaignStudioPage() {
 
           <MagicCanvas
             refEl={previewRef}
+            highlight={highlightHouse}
+            updatedKinds={updatedKinds}
+            returnBanner={returnBanner}
             goal={selectedGoal?.title ?? "اختر هدف الحملة"}
             product={product}
             audience={audienceOption.label}
@@ -556,16 +559,17 @@ function SmartCombobox({ label, value, options, onChange }: { label: string; val
   );
 }
 
-function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePreview, generating, brief, liveHome, loadingLiveHome, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; campaignId?: string }) {
+function MagicCanvas({ refEl, highlight, updatedKinds, returnBanner, goal, product, audience, offer, channel, imagePreview, generating, brief, liveHome, loadingLiveHome, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; highlight: boolean; updatedKinds: Array<"text" | "image" | "video">; returnBanner: boolean; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; campaignId?: string }) {
   return (
     <aside ref={refEl} className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-      <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
+      <section className={cn("overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft transition-all duration-700", highlight && "ring-4 ring-primary/20 ring-offset-2 ring-offset-background")}>
         <div className="border-b border-border bg-primary/5 p-4">
           <p className="text-xs font-bold text-primary">كانفاس الحملة</p>
           <h2 className="mt-1 text-lg font-extrabold">المعاينة الحية</h2>
         </div>
         <div className="p-4">
-            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} liveHome={liveHome} loadingLiveHome={loadingLiveHome} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
+            {returnBanner && <div className="mb-3 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-xs font-bold text-success">أهلاً بعودتك! تم تحديث مخرجات حملتك.</div>}
+            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} liveHome={liveHome} loadingLiveHome={loadingLiveHome} updatedKinds={updatedKinds} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
         </div>
       </section>
     </aside>
@@ -604,7 +608,7 @@ function CanvasSkeleton() {
   );
 }
 
-function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveHome }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean }) {
+function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveHome, updatedKinds }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; updatedKinds: Array<"text" | "image" | "video"> }) {
   return (
     <div className="space-y-4">
       <article className="overflow-hidden rounded-lg border border-border bg-background">
@@ -626,11 +630,13 @@ function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveH
           <CampaignCompletion liveHome={liveHome} loading={loadingLiveHome} />
         </div>
         <div className="mt-3 grid gap-3">
-          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} />
-          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} />
-          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} />
+          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("text")} />
+          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("image")} />
+          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("video")} />
         </div>
       </section>
+      <NextBestAction liveHome={liveHome} campaignId={campaignId} brief={brief} />
+      <div className="rounded-lg border border-dashed border-primary/25 bg-primary/5 p-3 text-sm font-extrabold text-primary">📊 قريبًا: تابع أداء حملاتك بعد النشر</div>
       <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} />
       <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} />
     </div>
