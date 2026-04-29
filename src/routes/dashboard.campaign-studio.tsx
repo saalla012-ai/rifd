@@ -105,6 +105,9 @@ function CampaignStudioPage() {
   const [product, setProduct] = useState(search.product ?? "");
   const [audience, setAudience] = useState(search.audience ?? "");
   const [offer, setOffer] = useState(search.offer ?? "");
+  const [productImagePath, setProductImagePath] = useState<string | null>(search.productImagePath ?? null);
+  const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [activePackId, setActivePackId] = useState<string | undefined>();
   const [packs, setPacks] = useState<CampaignPack[]>([]);
   const [loadingPacks, setLoadingPacks] = useState(true);
@@ -116,7 +119,8 @@ function CampaignStudioPage() {
     if (search.product !== undefined) setProduct(search.product);
     if (search.audience !== undefined) setAudience(search.audience);
     if (search.offer !== undefined) setOffer(search.offer);
-  }, [search.audience, search.channel, search.goal, search.offer, search.product]);
+    if (search.productImagePath !== undefined) setProductImagePath(search.productImagePath);
+  }, [search.audience, search.channel, search.goal, search.offer, search.product, search.productImagePath]);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? GOALS[0];
   const selectedChannel = CHANNELS.find((item) => item.value === channel) ?? CHANNELS[0];
@@ -132,6 +136,9 @@ function CampaignStudioPage() {
   const textPrompt = `اكتب محتوى حملة ${selectedGoal.label} لقناة ${selectedChannel.label}.\n${campaignBrief}\n\nالمطلوب: عنوان قصير، نص أساسي، 3 صيغ CTA، ونسخة واتساب مختصرة.`;
   const imagePrompt = `${strategy.visual}. المنتج: ${product.trim() || "منتج متجر إلكتروني"}. الجمهور: ${audience.trim() || "عملاء سعوديون"}. الهدف: ${selectedGoal.label}.`;
   const videoPrompt = `${strategy.video}. المنتج: ${product.trim() || "منتج متجر إلكتروني"}. القناة: ${selectedChannel.label}. اجعل الفيديو مناسباً لـ${selectedChannel.output}.`;
+
+  const progressItems = [goal, channel, product.trim(), audience.trim(), offer.trim(), productImagePath, activePackId];
+  const campaignProgress = Math.round((progressItems.filter(Boolean).length / progressItems.length) * 100);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
