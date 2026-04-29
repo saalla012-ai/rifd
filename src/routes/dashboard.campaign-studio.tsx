@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, ChevronDown, Image as ImageIcon, Loader2, Sparkles, Upload, X } from "lucide-react";
+import { Check, ChevronDown, Image as ImageIcon, Loader2, Sparkles, Upload, Video, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +47,17 @@ const AUDIENCES: Option[] = [
   { value: "bargain_hunters", label: "عشاق الصفقات", description: "ينتظرون أقوى العروض وأفضل قيمة" },
   { value: "early_adopters", label: "المتبنون الأوائل", description: "أول من يجرّب منتجك الجديد" },
   { value: "gift_givers", label: "عملاء المناسبات والهدايا", description: "يدورون على هدية رايقة ومميزة" },
+];
+
+const SECTORS: Option[] = [
+  { value: "perfumes", label: "عطور", description: "لغة فخامة، ثبات، وإهداء" },
+  { value: "abayas", label: "عبايات وأزياء", description: "أناقة يومية ومناسبات" },
+  { value: "coffee_sweets", label: "قهوة وحلويات", description: "ضيافة، مزاج، ولمّة" },
+  { value: "gifts", label: "هدايا", description: "مناسبات وخيارات جاهزة" },
+  { value: "electronics", label: "إلكترونيات", description: "منفعة، سرعة، وضمان" },
+  { value: "personal_care", label: "عناية شخصية", description: "نتيجة ملموسة وثقة" },
+  { value: "home_decor", label: "منزل وديكور", description: "راحة، ذوق، وتحسين المكان" },
+  { value: "general", label: "متجر عام", description: "صياغة مرنة لأي منتج" },
 ];
 
 const OFFERS: Option[] = [
