@@ -124,18 +124,7 @@ function BillingPage() {
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer_sa");
   const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    if (!user) return;
-    void loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  useEffect(() => {
-    if (profile?.store_name) setStoreName(profile.store_name);
-    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
-  }, [profile]);
-
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     const [settingsRes, seatsRes, reqRes] = await Promise.all([
       supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
@@ -153,7 +142,17 @@ function BillingPage() {
     setSeatsTaken(seatsRes.count ?? 0);
     setRequests((reqRes.data as RequestRow[] | null) ?? []);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    void loadAll();
+  }, [user, loadAll]);
+
+  useEffect(() => {
+    if (profile?.store_name) setStoreName(profile.store_name);
+    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
+  }, [profile]);
 
   const seatsTotal = settings?.founding_total_seats ?? 1000;
   const seatsLeft = Math.max(0, seatsTotal - seatsTaken);
