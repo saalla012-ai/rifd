@@ -30,6 +30,7 @@ type CampaignSearch = {
 type Option = { value: string; label: string; description?: string };
 
 const GENERATED_IMAGES_BUCKET = "generated-images";
+const MVP_PROGRESS = 100;
 
 const GOALS: Array<{ value: CampaignGoal; title: string; prompt: string }> = [
   { value: "launch", title: "إطلاق منتج", prompt: "عندك منتج جديد؟" },
@@ -291,7 +292,16 @@ function CampaignStudioPage() {
     <DashboardShell>
       <div className="mx-auto max-w-7xl" dir="rtl">
         <header className="mb-5">
-          <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">استوديو حملات استراتيجي</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">استوديو حملات استراتيجي</Badge>
+            <div className="min-w-40 rounded-lg border border-border bg-card px-3 py-2 shadow-soft">
+              <div className="flex items-center justify-between gap-3 text-xs font-extrabold">
+                <span className="text-muted-foreground">تقدّم الخطة المعتمدة</span>
+                <span className="text-primary">{MVP_PROGRESS}%</span>
+              </div>
+              <Progress value={MVP_PROGRESS} className="mt-2 h-1.5" />
+            </div>
+          </div>
           <h1 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">ابنِ حملة واضحة قبل ما تبدأ التنفيذ</h1>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
             اختر الهدف، ارفع صورة المنتج، وحدد الجمهور والعرض. رِفد يحوّلها لخطة حملة جاهزة للنص والصورة والفيديو.
