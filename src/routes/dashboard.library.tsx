@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw, FolderKanban } from "lucide-react";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { Star, Copy, Trash2, Image as ImageIcon, FileText, Loader2, Clapperboard, RefreshCw, FolderKanban, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -15,6 +15,9 @@ const ACTIVE_VIDEO_STATUSES = new Set(["pending", "processing"]);
 
 export const Route = createFileRoute("/dashboard/library")({
   head: () => ({ meta: [{ title: "مكتبة محتواك الجاهز — رِفد" }] }),
+  validateSearch: (s: Record<string, unknown>): { campaignId?: string } => ({
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
+  }),
   component: LibraryPage,
 });
 
@@ -40,6 +43,7 @@ const VIDEO_STATUS_LABEL: Record<string, string> = {
 };
 
 function LibraryPage() {
+  const search = useSearch({ from: "/dashboard/library" });
   const { user, loading: authLoading } = useAuth();
   const listVideoJobsFn = useServerFn(listVideoJobs);
   const refreshVideoJobFn = useServerFn(refreshVideoJob);
@@ -141,7 +145,9 @@ function LibraryPage() {
     return () => window.clearInterval(id);
   }, [authLoading, user, videoJobs, refreshVideoJobFn]);
 
-  const filtered = items.filter((i) => {
+  const scopedItems = search.campaignId ? items.filter((item) => campaignKey(item.metadata) === search.campaignId) : items;
+  const scopedVideoJobs = search.campaignId ? videoJobs.filter((job) => campaignKey((job.metadata as Record<string, unknown> | null) ?? null) === search.campaignId) : videoJobs;
+  const filtered = scopedItems.filter((i) => {
     if (filter === "all") return true;
     if (filter === "fav") return i.is_favorite;
     if (filter === "video") return false;
@@ -150,16 +156,17 @@ function LibraryPage() {
     return true;
   });
 
-  const textCount = items.filter((item) => item.type === "text").length;
-  const imageCount = items.filter((item) => item.type === "image" || item.type === "image_enhance").length;
-  const favoriteCount = items.filter((item) => item.is_favorite).length;
+  const textCount = scopedItems.filter((item) => item.type === "text").length;
+  const imageCount = scopedItems.filter((item) => item.type === "image" || item.type === "image_enhance").length;
+  const favoriteCount = scopedItems.filter((item) => item.is_favorite).length;
   const campaignGroups = buildCampaignGroups(items, videoJobs);
+  const visibleCampaignGroups = search.campaignId ? campaignGroups.filter((group) => group.id === search.campaignId) : campaignGroups;
   const campaignItemCount = campaignGroups.reduce((total, group) => total + group.text + group.image + group.video, 0);
-  const completedCampaignCount = campaignGroups.filter((group) => group.completedSlots === 3).length;
-  const shouldShowVideoSection = videoJobs.length > 0 && (filter === "all" || filter === "video");
+  const completedCampaignCount = visibleCampaignGroups.filter((group) => group.completedSlots === 3).length;
+  const shouldShowVideoSection = scopedVideoJobs.length > 0 && (filter === "all" || filter === "video");
   const hasVisibleItems = filter === "video"
-    ? videoJobs.length > 0
-    : filtered.length > 0 || (filter === "all" && videoJobs.length > 0);
+    ? scopedVideoJobs.length > 0
+    : filtered.length > 0 || (filter === "all" && scopedVideoJobs.length > 0);
 
   return (
     <DashboardShell>
@@ -169,11 +176,18 @@ function LibraryPage() {
           <h1 className="mt-1 text-2xl font-extrabold">مكتبة محتواك الجاهز</h1>
           <p className="mt-1 text-sm text-muted-foreground">كل نص وصورة وفيديو وحملة محفوظة في مكان واحد، مع إبراز ما اخترته للمفضلة.</p>
         </div>
-        <div className="text-xs text-muted-foreground">{items.length + videoJobs.length} أصل جاهز • {campaignItemCount} أصل مرتبط بحملة</div>
+        <div className="flex flex-col items-end gap-2 text-xs text-muted-foreground">
+          <span>{scopedItems.length + scopedVideoJobs.length} أصل جاهز • {campaignItemCount} أصل مرتبط بحملة</span>
+          {search.campaignId && (
+            <Button asChild size="sm" className="h-8 gap-1 text-xs">
+              <Link to="/dashboard/campaign-studio" search={{ campaignId: search.campaignId, focus: "house" } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: videoJobs.length, icon: Clapperboard }, { label: "حملات مكتملة", value: completedCampaignCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
+        {[{ label: "نصوص", value: textCount, icon: FileText }, { label: "صور", value: imageCount, icon: ImageIcon }, { label: "فيديوهات", value: scopedVideoJobs.length, icon: Clapperboard }, { label: "حملات مكتملة", value: completedCampaignCount, icon: FolderKanban }, { label: "مفضلة", value: favoriteCount, icon: Star }].map((stat) => {
           const Icon = stat.icon;
           return <div key={stat.label} className="rounded-lg border border-border bg-card p-3 shadow-soft"><Icon className="h-4 w-4 text-primary" /><div className="mt-2 text-lg font-extrabold">{stat.value.toLocaleString("ar-SA")}</div><div className="text-xs text-muted-foreground">{stat.label}</div></div>;
         })}
@@ -202,14 +216,14 @@ function LibraryPage() {
         ))}
       </div>
 
-      {campaignGroups.length > 0 && filter === "all" && (
+      {visibleCampaignGroups.length > 0 && filter === "all" && (
         <section className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 shadow-soft">
           <div className="flex items-center gap-2">
             <FolderKanban className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-extrabold">حملاتك</h2>
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {campaignGroups.map((group) => (
+            {visibleCampaignGroups.map((group) => (
               <article key={group.id} className="rounded-lg border border-border bg-card p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -219,6 +233,7 @@ function LibraryPage() {
                   <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-xs font-black text-primary">{group.completedSlots}/3</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{group.goal || "هدف"} · {group.channel || "قناة"}</p>
+                {occasionLabel(group) && <p className="mt-2 inline-flex rounded-full bg-secondary px-2 py-1 text-[11px] font-bold">{occasionLabel(group)}</p>}
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
                   <span className="rounded-full bg-secondary px-2 py-1">{group.text} نص</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.image} صورة</span>
@@ -228,8 +243,9 @@ function LibraryPage() {
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`اكتمال الحملة ${group.completionPercent}%`}>
                   <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${group.completionPercent}%` }} />
                 </div>
+                {group.completedSlots === 3 && <p className="mt-2 text-xs font-bold text-success">حملة مكتملة بـ 3 أصول</p>}
                 <Button asChild size="sm" variant="outline" className="mt-3 h-8 w-full text-xs">
-                  <Link to="/dashboard/campaign-studio" search={{ campaignId: group.id } as never}>فتح بيت الحملة</Link>
+                  <Link to="/dashboard/campaign-studio" search={{ campaignId: group.id, focus: "house" } as never}>فتح بيت الحملة</Link>
                 </Button>
               </article>
             ))}
@@ -242,15 +258,15 @@ function LibraryPage() {
       ) : !hasVisibleItems ? (
         <div className="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
           <FolderKanban className="mx-auto mb-3 h-8 w-8 text-primary" />
-          <p className="font-bold text-foreground">لا توجد أصول جاهزة بعد.</p>
-          <p className="mt-1">ابدأ من مركز قيادة الحملة حتى تنتج نصاً يبيع، صورة إعلان، أو فيديو قصير ضمن نفس السياق.</p>
+          <p className="font-bold text-foreground">{search.campaignId ? "لم تُنشئ أصولاً لهذه الحملة بعد." : "مكتبتك تنتظر أول أصل جاهز."}</p>
+          <p className="mt-1">{search.campaignId ? "ارجع لبيت الحملة وابدأ بالنص أو الصورة." : "ابدأ من مركز قيادة الحملة حتى تنتج نصاً يبيع، صورة إعلان، أو فيديو قصير ضمن نفس السياق."}</p>
           <Button asChild className="mt-4 gradient-primary text-primary-foreground">
-            <Link to="/dashboard/campaign-studio">ابدأ من مركز قيادة الحملة</Link>
+            <Link to="/dashboard/campaign-studio" search={search.campaignId ? { campaignId: search.campaignId, focus: "house" } as never : undefined}>{search.campaignId ? "العودة للاستوديو" : "ابدأ من مركز قيادة الحملة"}</Link>
           </Button>
         </div>
       ) : (
         <>
-        {shouldShowVideoSection && <VideoJobsSection jobs={videoJobs} refreshingJobId={refreshingJobId} onRefresh={refreshVideo} />}
+        {shouldShowVideoSection && <VideoJobsSection jobs={scopedVideoJobs} refreshingJobId={refreshingJobId} onRefresh={refreshVideo} />}
         {filter !== "video" && <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((g) => (
             <article key={g.id} className="rounded-xl border border-border bg-card p-4 shadow-soft">
@@ -337,6 +353,16 @@ function buildCampaignGroups(items: Generation[], videoJobs: VideoJob[]) {
     const completedSlots = Number(group.text > 0) + Number(group.image > 0) + Number(group.completedVideo > 0);
     return { ...group, completedSlots, completionPercent: Math.round((completedSlots / 3) * 100) };
   });
+}
+
+function occasionLabel(group: { name: string; goal?: string; channel?: string }) {
+  const text = `${group.name} ${group.goal ?? ""} ${group.channel ?? ""}`;
+  if (/رمضان/.test(text)) return "🌙 رمضان";
+  if (/اليوم الوطني|وطني/.test(text)) return "🇸🇦 اليوم الوطني";
+  if (/العيد|عيد/.test(text)) return "🎁 العيد";
+  if (/العودة للمدارس|مدارس|مدرس/.test(text)) return "🎒 العودة للمدارس";
+  if (/نهاية السنة|آخر السنة|نهاية الموسم/.test(text)) return "✨ نهاية السنة";
+  return "";
 }
 
 function VideoJobsSection({ jobs, refreshingJobId, onRefresh }: { jobs: VideoJob[]; refreshingJobId: string | null; onRefresh: (jobId: string) => void }) {

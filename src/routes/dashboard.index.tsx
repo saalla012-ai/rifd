@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -21,6 +22,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemoryCoverage, getWeeklyRecommendation } from "@/lib/memory-insights";
 import { PLAN_BY_ID, type PlanId } from "@/lib/plan-catalog";
+import { getCampaignLiveHome, listCampaignPacks, type CampaignLiveHome, type CampaignPack } from "@/server/campaign-packs";
 
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({ meta: [{ title: "لوحة التحكم — رِفد" }] }),
@@ -42,14 +44,61 @@ type RecentItem = {
   metadata: { template_title?: string } | null;
 };
 
+type ActiveCampaign = {
+  pack: CampaignPack;
+  liveHome: CampaignLiveHome | null;
+};
+
 function formatNum(n: number) {
   return n.toLocaleString("ar-SA");
+}
+
+function campaignDoneCount(liveHome: CampaignLiveHome | null) {
+  return Number(Boolean(liveHome?.text)) + Number(Boolean(liveHome?.image)) + Number(Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url));
+}
+
+function goalLabel(goal: CampaignPack["goal"]) {
+  const labels: Record<CampaignPack["goal"], string> = {
+    launch: "إطلاق منتج",
+    clearance: "تصفية مخزون",
+    upsell: "زيادة قيمة السلة",
+    leads: "بناء عملاء",
+    competitive: "مواجهة المنافسين",
+    winback: "إعادة الاستهداف",
+  };
+  return labels[goal] ?? "هدف حملة";
+}
+
+function campaignHint(liveHome: CampaignLiveHome | null) {
+  const done = campaignDoneCount(liveHome);
+  if (done === 3) return "جاهزة للنشر!";
+  if (liveHome?.image && !liveHome.text) return "الصورة جاهزة، اكتب النص المطابق لها";
+  if (liveHome?.text && !liveHome.image) return "النص جاهز. صمّم صورة إعلان توقف التمرير";
+  if (liveHome?.text && liveHome.image) return "ينقصها فيديو قصير مناسب لريلز وتيك توك";
+  return "ابدأ بأول أصل للحملة من الاستوديو";
+}
+
+function GenericEmptyState({ title, description, actionLabel, actionTo }: { title: string; description: string; actionLabel: string; actionTo: "/dashboard/campaign-studio" }) {
+  return (
+    <div className="mt-4 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-6 text-center">
+      <Sparkles className="mx-auto h-8 w-8 text-primary" />
+      <h3 className="mt-3 text-lg font-extrabold text-foreground">{title}</h3>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-muted-foreground">{description}</p>
+      <Button asChild className="mt-4 gradient-primary text-primary-foreground">
+        <Link to={actionTo}>{actionLabel}</Link>
+      </Button>
+    </div>
+  );
 }
 
 function DashboardPage() {
   const { user, profile } = useAuth();
   const { data: creditsSummary } = useCreditsSummary({ enabled: Boolean(user?.id) });
+  const listCampaignPacksFn = useServerFn(listCampaignPacks);
+  const getCampaignLiveHomeFn = useServerFn(getCampaignLiveHome);
   const [recent, setRecent] = useState<RecentItem[]>([]);
+  const [activeCampaigns, setActiveCampaigns] = useState<ActiveCampaign[]>([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(false);
   const userId = user?.id;
 
   useEffect(() => {
@@ -68,6 +117,32 @@ function DashboardPage() {
       cancelled = true;
     };
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    setLoadingCampaigns(true);
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const headers = { Authorization: `Bearer ${session.access_token}` };
+      const { packs } = await listCampaignPacksFn({ data: { status: "active", limit: 3 }, headers });
+      const campaigns = await Promise.all(
+        packs.map(async (pack) => {
+          try {
+            const out = await getCampaignLiveHomeFn({ data: { campaignId: pack.id }, headers });
+            return { pack, liveHome: out.liveHome };
+          } catch {
+            return { pack, liveHome: null };
+          }
+        }),
+      );
+      if (!cancelled) setActiveCampaigns(campaigns);
+    })()
+      .catch(() => { if (!cancelled) setActiveCampaigns([]); })
+      .finally(() => { if (!cancelled) setLoadingCampaigns(false); });
+    return () => { cancelled = true; };
+  }, [getCampaignLiveHomeFn, listCampaignPacksFn, userId]);
 
   const plan = (profile?.plan ?? "free") as PlanId;
   const planInfo = PLAN_BY_ID[plan] ?? PLAN_BY_ID.free;
@@ -188,6 +263,53 @@ function DashboardPage() {
           </div>
         </section>
 
+        <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-extrabold">
+                <Megaphone className="h-5 w-5 text-primary" />
+                حملاتك النشطة
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">تابع آخر الحملات من بيت واحد وانتقل للأصل الناقص مباشرة.</p>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/dashboard/campaign-studio">ابدأ حملتك الأولى</Link>
+            </Button>
+          </div>
+          {loadingCampaigns ? (
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {[1, 2, 3].map((item) => <div key={item} className="h-32 animate-pulse rounded-lg bg-secondary/60" />)}
+            </div>
+          ) : activeCampaigns.length === 0 ? (
+            <GenericEmptyState
+              title="جاهز تطلق حملة تبيع اليوم؟"
+              description="ابدأ من هدفك التجاري، ورِفد يحوّله إلى نص، صورة، وفيديو."
+              actionLabel="ابدأ حملتك الأولى"
+              actionTo="/dashboard/campaign-studio"
+            />
+          ) : (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {activeCampaigns.map(({ pack, liveHome }) => {
+                const done = campaignDoneCount(liveHome);
+                const percent = Math.round((done / 3) * 100);
+                return (
+                  <Link key={pack.id} to="/dashboard/campaign-studio" search={{ campaignId: pack.id, focus: "house" } as never} className="rounded-lg border border-border bg-background p-4 transition hover:border-primary/40 hover:bg-primary/5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="line-clamp-1 font-extrabold">{pack.product || "حملة محفوظة"}</h3>
+                        <p className="mt-1 text-xs text-muted-foreground">{goalLabel(pack.goal)} · {pack.channel}</p>
+                      </div>
+                      <Badge variant="outline" className="shrink-0 bg-card">{done}/3</Badge>
+                    </div>
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} /></div>
+                    <p className="mt-3 text-xs font-bold text-primary">{campaignHint(liveHome)}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
           <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="flex items-center gap-2 text-lg font-extrabold">
@@ -195,9 +317,12 @@ function DashboardPage() {
               آخر ما أنشأته
             </h2>
             {recent.length === 0 ? (
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                ابدأ من استوديو الحملات ليظهر هنا أول أصل تسويقي جاهز لإعادة الاستخدام.
-              </p>
+              <GenericEmptyState
+                title="أول أصل ينتظرك"
+                description="ابدأ من استوديو الحملات ليظهر هنا أول نص أو صورة جاهزة لإعادة الاستخدام."
+                actionLabel="ابدأ من الاستوديو"
+                actionTo="/dashboard/campaign-studio"
+              />
             ) : (
               <ul className="mt-3 divide-y divide-border">
                 {recent.map((item) => (

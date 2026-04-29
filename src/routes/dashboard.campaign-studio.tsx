@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarDays, Check, CheckCircle2, ChevronDown, Clapperboard, Copy, FileText, Image as ImageIcon, Loader2, PlayCircle, Sparkles, Upload, X } from "lucide-react";
@@ -28,6 +28,8 @@ type CampaignSearch = {
   goal?: CampaignGoal;
   channel?: DbChannel;
   campaignId?: string;
+  focus?: "house";
+  updatedAsset?: "text" | "image" | "video";
 };
 type Option = { value: string; label: string; description?: string };
 
@@ -106,6 +108,8 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     goal: GOALS.some((goal) => goal.value === s.goal) ? (s.goal as CampaignGoal) : undefined,
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as DbChannel) : undefined,
     campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
+    focus: s.focus === "house" ? "house" : undefined,
+    updatedAsset: ["text", "image", "video"].includes(String(s.updatedAsset)) ? (s.updatedAsset as "text" | "image" | "video") : undefined,
   }),
   component: CampaignStudioPage,
 });
@@ -117,6 +121,7 @@ function CampaignStudioPage() {
   const generateBriefFn = useServerFn(generateCampaignBrief);
   const getLiveHomeFn = useServerFn(getCampaignLiveHome);
   const previewRef = useRef<HTMLElement | null>(null);
+  const liveSnapshotRef = useRef<{ text: boolean; image: boolean; video: boolean } | null>(null);
   const [goal, setGoal] = useState<CampaignGoal | null>(search.goal ?? null);
   const [product, setProduct] = useState(search.product ?? "");
   const [sector, setSector] = useState(SECTORS[7].value);
@@ -133,6 +138,9 @@ function CampaignStudioPage() {
   const [brief, setBrief] = useState<CampaignBrief | null>(null);
   const [liveHome, setLiveHome] = useState<CampaignLiveHome | null>(null);
   const [loadingLiveHome, setLoadingLiveHome] = useState(false);
+  const [highlightHouse, setHighlightHouse] = useState(false);
+  const [updatedKinds, setUpdatedKinds] = useState<Array<"text" | "image" | "video">>([]);
+  const [returnBanner, setReturnBanner] = useState(false);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? null;
   const sectorOption = findOption(SECTORS, sector);
@@ -189,20 +197,70 @@ function CampaignStudioPage() {
     setBrief(briefFromPack(pack));
   }, [campaignContext.campaign]);
 
-  useEffect(() => {
+  const refreshLiveHome = useCallback(async (showTransition = false) => {
     if (!activePackId) {
       setLiveHome(null);
+      liveSnapshotRef.current = null;
       return;
     }
-    let cancelled = false;
     setLoadingLiveHome(true);
-    void authHeaders()
-      .then((headers) => getLiveHomeFn({ data: { campaignId: activePackId }, headers }))
-      .then((out) => { if (!cancelled) setLiveHome(out.liveHome); })
-      .catch(() => { if (!cancelled) setLiveHome(null); })
-      .finally(() => { if (!cancelled) setLoadingLiveHome(false); });
-    return () => { cancelled = true; };
+    try {
+      const headers = await authHeaders();
+      const out = await getLiveHomeFn({ data: { campaignId: activePackId }, headers });
+      const next = liveSnapshot(out.liveHome);
+      const prev = liveSnapshotRef.current;
+      const changed: Array<"text" | "image" | "video"> = prev && showTransition
+        ? (["text", "image", "video"] as const).filter((kind) => !prev[kind] && next[kind])
+        : [];
+      liveSnapshotRef.current = next;
+      setLiveHome(out.liveHome);
+      if (changed.length > 0) {
+        setUpdatedKinds(changed);
+        setReturnBanner(true);
+        window.setTimeout(() => setUpdatedKinds([]), 3200);
+        window.setTimeout(() => setReturnBanner(false), 4200);
+      }
+    } catch {
+      setLiveHome(null);
+    } finally {
+      setLoadingLiveHome(false);
+    }
   }, [activePackId, getLiveHomeFn]);
+
+  useEffect(() => { void refreshLiveHome(false); }, [refreshLiveHome]);
+
+  useEffect(() => {
+    const onFocus = () => void refreshLiveHome(true);
+    const onVisibility = () => { if (document.visibilityState === "visible") void refreshLiveHome(true); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [refreshLiveHome]);
+
+  useEffect(() => {
+    if (search.focus !== "house") return;
+    window.setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    setHighlightHouse(true);
+    const id = window.setTimeout(() => setHighlightHouse(false), 2600);
+    return () => window.clearTimeout(id);
+  }, [search.focus, activePackId]);
+
+  useEffect(() => {
+    if (!search.updatedAsset || loadingLiveHome) return;
+    const snapshot = liveSnapshot(liveHome);
+    if (!snapshot[search.updatedAsset]) return;
+    setUpdatedKinds([search.updatedAsset]);
+    setReturnBanner(true);
+    const pulseId = window.setTimeout(() => setUpdatedKinds([]), 3200);
+    const bannerId = window.setTimeout(() => setReturnBanner(false), 4200);
+    return () => {
+      window.clearTimeout(pulseId);
+      window.clearTimeout(bannerId);
+    };
+  }, [liveHome, loadingLiveHome, search.updatedAsset]);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -434,6 +492,9 @@ function CampaignStudioPage() {
 
           <MagicCanvas
             refEl={previewRef}
+            highlight={highlightHouse}
+            updatedKinds={updatedKinds}
+            returnBanner={returnBanner}
             goal={selectedGoal?.title ?? "اختر هدف الحملة"}
             product={product}
             audience={audienceOption.label}
@@ -514,16 +575,17 @@ function SmartCombobox({ label, value, options, onChange }: { label: string; val
   );
 }
 
-function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePreview, generating, brief, liveHome, loadingLiveHome, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; campaignId?: string }) {
+function MagicCanvas({ refEl, highlight, updatedKinds, returnBanner, goal, product, audience, offer, channel, imagePreview, generating, brief, liveHome, loadingLiveHome, campaignId }: { refEl: MutableRefObject<HTMLElement | null>; highlight: boolean; updatedKinds: Array<"text" | "image" | "video">; returnBanner: boolean; goal: string; product: string; audience: string; offer: string; channel: string; imagePreview: string | null; generating: boolean; brief: CampaignBrief | null; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; campaignId?: string }) {
   return (
     <aside ref={refEl} className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-      <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
+      <section className={cn("overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft transition-all duration-700", highlight && "ring-4 ring-primary/20 ring-offset-2 ring-offset-background")}>
         <div className="border-b border-border bg-primary/5 p-4">
           <p className="text-xs font-bold text-primary">كانفاس الحملة</p>
           <h2 className="mt-1 text-lg font-extrabold">المعاينة الحية</h2>
         </div>
         <div className="p-4">
-            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} liveHome={liveHome} loadingLiveHome={loadingLiveHome} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
+            {returnBanner && <div className="mb-3 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-xs font-bold text-success">أهلاً بعودتك! تم تحديث مخرجات حملتك.</div>}
+            {generating ? <CanvasSkeleton /> : brief ? <CampaignHouse brief={brief} imagePreview={imagePreview} campaignId={campaignId} liveHome={liveHome} loadingLiveHome={loadingLiveHome} updatedKinds={updatedKinds} /> : <InitialPreview goal={goal} product={product} audience={audience} offer={offer} channel={channel} imagePreview={imagePreview} />}
         </div>
       </section>
     </aside>
@@ -562,7 +624,7 @@ function CanvasSkeleton() {
   );
 }
 
-function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveHome }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean }) {
+function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveHome, updatedKinds }: { brief: CampaignBrief; imagePreview: string | null; campaignId?: string; liveHome: CampaignLiveHome | null; loadingLiveHome: boolean; updatedKinds: Array<"text" | "image" | "video"> }) {
   return (
     <div className="space-y-4">
       <article className="overflow-hidden rounded-lg border border-border bg-background">
@@ -584,11 +646,13 @@ function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveH
           <CampaignCompletion liveHome={liveHome} loading={loadingLiveHome} />
         </div>
         <div className="mt-3 grid gap-3">
-          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} />
-          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} />
-          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} />
+          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("text")} />
+          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("image")} />
+          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} updated={updatedKinds.includes("video")} />
         </div>
       </section>
+      <NextBestAction liveHome={liveHome} campaignId={campaignId} brief={brief} />
+      <div className="rounded-lg border border-dashed border-primary/25 bg-primary/5 p-3 text-sm font-extrabold text-primary">📊 قريبًا: تابع أداء حملاتك بعد النشر</div>
       <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} />
       <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} />
     </div>
@@ -605,7 +669,24 @@ function CampaignCompletion({ liveHome, loading }: { liveHome: CampaignLiveHome 
   return <Badge variant="outline" className="bg-background text-xs">{loading ? "يتم التحديث…" : `${done}/3 · ${percent}%`}</Badge>;
 }
 
-function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean }) {
+function NextBestAction({ liveHome, campaignId, brief }: { liveHome: CampaignLiveHome | null; campaignId?: string; brief: CampaignBrief }) {
+  const hasText = Boolean(liveHome?.text);
+  const hasImage = Boolean(liveHome?.image);
+  const hasVideo = Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url);
+  if (hasText && hasImage && hasVideo) {
+    return <div className="rounded-lg border border-success/20 bg-success/10 p-3 text-sm font-bold text-success">حملتك مكتملة. راجع كل الأصول في المكتبة أو ابدأ حملة جديدة.</div>;
+  }
+  const action = hasImage && !hasText
+    ? { text: "الآن وقد أصبحت الصورة جاهزة، هل تود كتابة نص إعلاني يطابقها؟", label: "اكتب نصاً", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt }
+    : hasText && !hasImage
+      ? { text: "النص جاهز. حوّله الآن إلى صورة إعلان توقف التمرير.", label: "صمّم صورة", to: "/dashboard/edit-image" as const, prompt: brief.imagePrompt }
+      : hasText && hasImage && !hasVideo
+        ? { text: "الحملة جاهزة بصرياً. حوّلها إلى فيديو قصير مناسب لريلز وتيك توك.", label: "أنشئ فيديو", to: "/dashboard/generate-video" as const, prompt: brief.videoPrompt }
+        : { text: "ابدأ بأول أصل للحملة حتى يتحول البيت من خطة إلى مخرجات جاهزة.", label: "اكتب نصاً يبيع", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt };
+  return <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-bold text-foreground">{action.text}</p><Button asChild size="sm" className="mt-3 h-8 text-xs"><Link to={action.to} search={{ prompt: action.prompt, campaignId } as never}>{action.label}</Link></Button></div>;
+}
+
+function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, updated }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean; updated?: boolean }) {
   const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/edit-image" : "/dashboard/generate-video";
   const Icon = kind === "text" ? FileText : kind === "image" ? ImageIcon : Clapperboard;
   const isVideo = kind === "video";
@@ -618,7 +699,7 @@ function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { ki
   const imageItem = kind === "image" ? (item as CampaignLiveHome["image"] | null) : null;
 
   return (
-    <article className="rounded-lg border border-border bg-card p-3">
+    <article className={cn("rounded-lg border border-border bg-card p-3 transition-all duration-500", updated && "border-success/60 ring-4 ring-success/15")}>
       <div className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary/10 text-primary">
           {imageItem?.url ? <img src={imageItem.url} alt="صورة مصغرة من الحملة" className="h-full w-full object-cover" /> : active ? <Loader2 className="h-4 w-4 animate-spin" /> : complete ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Icon className="h-4 w-4" />}
@@ -628,6 +709,7 @@ function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { ki
             <h4 className="font-extrabold">{title}</h4>
             <span className={cn("text-[11px] font-bold", complete ? "text-success" : active ? "text-warning-foreground" : failed ? "text-destructive" : "text-muted-foreground")}>{loading ? "تحميل" : complete ? "مكتمل" : active ? "قيد المعالجة" : failed ? "يحتاج إعادة" : "لم يُنفذ بعد"}</span>
           </div>
+          {updated && <div className="mt-1 inline-flex rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">تم تحديث {title} بنجاح</div>}
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{textItem?.result ? textItem.result.slice(0, 100) : imageItem?.prompt || video?.prompt || "ابدأ من هذه الفتحة لإكمال الحملة."}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {video?.result_url && complete ? <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-xs"><a href={video.result_url} target="_blank" rel="noreferrer"><PlayCircle className="h-3.5 w-3.5" /> {buttonLabel}</a></Button> : <Button asChild size="sm" variant={complete ? "outline" : "default"} className="h-8 text-xs"><Link to={route} search={{ prompt, campaignId } as never}>{buttonLabel}</Link></Button>}
@@ -674,6 +756,14 @@ function firstBriefValue(brief: string, label: string) {
 
 function findOption<T extends Option>(options: T[], value: string): T {
   return options.find((option) => option.value === value) ?? options[0];
+}
+
+function liveSnapshot(liveHome: CampaignLiveHome | null) {
+  return {
+    text: Boolean(liveHome?.text),
+    image: Boolean(liveHome?.image),
+    video: Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url),
+  };
 }
 
 function toDbChannel(channel: StudioChannel): DbChannel {
