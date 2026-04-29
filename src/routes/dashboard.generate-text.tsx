@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
+import type { CampaignPack } from "@/server/campaign-packs";
 
 type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string };
 
@@ -231,19 +232,19 @@ function GenerateTextPage() {
           {result && (
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
                   <ImageIcon className="h-3.5 w-3.5" /> صمّم صورة لهذا النص
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignPackId: search.campaignPackId } as never}>
+                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: search.campaignPackId } as never}>
                   <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من النص
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to={search.campaignPackId ? "/dashboard/campaign-studio" : "/dashboard/library"}>
-                  {search.campaignPackId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
-                  {search.campaignPackId ? "العودة للحملة" : "افتح المكتبة"}
+                <Link to={campaignContext.campaignId ? "/dashboard/campaign-studio" : "/dashboard/library"} search={campaignContext.campaignId ? { campaignId: campaignContext.campaignId } as never : undefined}>
+                  {campaignContext.campaignId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
+                  {campaignContext.campaignId ? "العودة للاستوديو" : "افتح المكتبة"}
                 </Link>
               </Button>
             </div>
@@ -263,5 +264,20 @@ function GenerateTextPage() {
         reason={quotaDialog.reason}
       />
     </DashboardShell>
+  );
+}
+
+function CampaignContextBar({ campaign, campaignId, loading, error }: { campaign: CampaignPack | null; campaignId?: string; loading: boolean; error: string | null }) {
+  if (!campaignId) return null;
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
+      <div className="min-w-0 text-sm">
+        <p className="font-extrabold text-primary">{loading ? "جاري تحميل سياق الحملة…" : campaign ? `مرتبطة بحملة: ${campaign.product || "حملة محفوظة"}` : "الأداة تعمل بدون سياق حملة"}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaign ? `${campaign.goal} · ${campaign.channel}` : error ?? "يمكنك المتابعة بشكل طبيعي."}</p>
+      </div>
+      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
+        <Link to="/dashboard/campaign-studio" search={{ campaignId } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
+      </Button>
+    </div>
   );
 }
