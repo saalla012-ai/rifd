@@ -31,7 +31,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "باقات رِفد الجديدة: نصوص وصور بسقوف يومية، ونقاط فيديو واضحة لتوليد إعلانات قصيرة، مع ضمان 14 يوم وفوترة شفافة.",
+          "باقات رِفد الجديدة: قدرات نمو للمتاجر، ونقاط فيديو واضحة لتوليد إعلانات قصيرة، مع ضمان 14 يوم وفوترة شفافة.",
       },
       { property: "og:title", content: "أسعار رِفد — نصوص وصور + نقاط فيديو" },
       {
@@ -54,6 +54,13 @@ export const Route = createFileRoute("/pricing")({
 function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
   const estimatedFastVideos = Math.floor(plan.monthlyCredits / videoCreditCost("fast", 5));
   const estimatedAdVideos = Math.floor(plan.monthlyCredits / videoCreditCost("lite", 8));
+  const growthCapability: Record<string, string> = {
+    free: "تجربة للنصوص والصور وبناء أول ذاكرة متجر",
+    starter: "استخدام يومي مناسب للانطلاق وصناعة محتوى منتظم",
+    growth: "استخدام يومي أعلى للمتاجر النشطة مع صور Pro",
+    pro: "تشغيل متقدم للمتجر الجاد مع فيديو احترافي",
+    business: "سعة موسعة للفرق وتعدد الحملات",
+  };
   const usageLabel: Record<string, string> = {
     free: "فيديو محدود للتجربة حسب الرصيد",
     starter: "استخدام فيديو محدود حسب الرصيد",
@@ -62,11 +69,11 @@ function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
     business: "بدون حد عملي داخل الرصيد",
   };
   return [
-    `${formatPlanNumber(plan.dailyTextCap)} نص يومياً`,
-    `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
+    growthCapability[plan.id],
+    plan.imageProAllowed ? "صور Pro للحملات التي تحتاج مظهراً أقوى" : "صور أساسية واضحة لبداية المتجر",
     `${usageLabel[plan.id]}: حتى ${formatPlanNumber(estimatedFastVideos)} سريع أو ${formatPlanNumber(estimatedAdVideos)} إعلاني شهرياً تقريباً`,
     plan.videoQualityAllowed ? "سريع وإعلاني واحترافي حسب النقاط" : "سريع وإعلاني حسب النقاط",
-    plan.id === "free" ? "فيديو بعلامة Rifd المائية" : "بدون علامة مائية، مع إلزام صورة المنتج لجودة إعلان أعلى",
+    plan.id === "free" ? "فيديو بعلامة رِفد المائية" : "بدون علامة مائية، مع إلزام صورة المنتج لجودة إعلان أعلى",
     "نقاط الباقة لا ترحل بعد 30 يوم؛ نقاط الشحن الإضافية منفصلة",
   ];
 }
@@ -78,7 +85,7 @@ const FAQS = [
   },
   {
     q: "هل النصوص والصور تخصم من نقاط الفيديو؟",
-    a: "لا. النصوص والصور لا تخصم نقاط فيديو، لكنها محمية بسقوف يومية لمنع إساءة الاستخدام وحماية جودة الخدمة.",
+    a: "لا. النصوص والصور لا تخصم نقاط فيديو. تفاصيل الاستخدام اليومية تظهر داخل لوحة التحكم بصياغة تشغيلية لحماية جودة الخدمة.",
   },
   {
     q: "ماذا يحدث إذا انتهت نقاط الفيديو؟",
