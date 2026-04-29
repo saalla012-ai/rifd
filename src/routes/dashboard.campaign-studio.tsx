@@ -580,12 +580,18 @@ function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveH
         </div>
       </article>
       <section>
-        <h3 className="font-extrabold">مخرجات الحملة</h3>
-        <div className="mt-3 grid gap-3">
-          <DestinationSlot icon="✍️" title="نفذ النص" desc="افتح أداة النصوص والبرومبت جاهز بناءً على خطتك." to="/dashboard/generate-text" prompt={brief.textPrompt} campaignId={campaignId} />
-          <DestinationSlot icon="🎨" title="نفذ الصورة" desc="افتح أداة الصور مع وصف إعلان بصري مناسب للحملة." to="/dashboard/generate-image" prompt={brief.imagePrompt} campaignId={campaignId} />
-          <DestinationSlot icon="🎬" title="نفذ الفيديو" desc="افتح أداة الفيديو مع فكرة إعلان قصيرة مصممة لحملتك." to="/dashboard/generate-video" prompt={brief.videoPrompt} campaignId={campaignId} />
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="font-extrabold">بيت الحملة الحي</h3>
+          <CampaignCompletion liveHome={liveHome} loading={loadingLiveHome} />
         </div>
+        <div className="mt-3 grid gap-3">
+          <LiveOutputSlot kind="text" title="النص" prompt={brief.textPrompt} campaignId={campaignId} item={liveHome?.text ?? null} loading={loadingLiveHome} />
+          <LiveOutputSlot kind="image" title="الصورة" prompt={brief.imagePrompt} campaignId={campaignId} item={liveHome?.image ?? null} loading={loadingLiveHome} />
+          <LiveOutputSlot kind="video" title="الفيديو" prompt={brief.videoPrompt} campaignId={campaignId} item={liveHome?.video ?? null} loading={loadingLiveHome} />
+        </div>
+      </section>
+      <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} />
+      <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} />
       </section>
     </div>
   );
