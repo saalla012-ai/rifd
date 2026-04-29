@@ -41,6 +41,7 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
 ];
 
 const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
+const PLAN_PROGRESS = 45;
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -298,10 +299,10 @@ function CampaignStudioPage() {
 
         <div className="mt-5 rounded-xl border border-border bg-card p-4 shadow-soft">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-extrabold">نسبة التقدم من الخطة</p>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{campaignProgress}%</span>
+            <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
           </div>
-          <Progress value={campaignProgress} className="mt-3 h-2" />
+          <Progress value={PLAN_PROGRESS} className="mt-3 h-2" />
           <div className="mt-4 grid gap-2 sm:grid-cols-4">
           {[
             "اختر الهدف",
