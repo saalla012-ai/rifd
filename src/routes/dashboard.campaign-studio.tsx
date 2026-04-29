@@ -600,16 +600,57 @@ function InfoLine({ label, value }: { label: string; value: string }) {
   return <p><span className="font-extrabold text-foreground">{label}: </span><span className="text-muted-foreground">{value}</span></p>;
 }
 
-function DestinationSlot({ icon, title, desc, to, prompt, campaignId }: { icon: string; title: string; desc: string; to: "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video"; prompt: string; campaignId?: string }) {
+function CampaignCompletion({ liveHome, loading }: { liveHome: CampaignLiveHome | null; loading: boolean }) {
+  const done = Number(Boolean(liveHome?.text)) + Number(Boolean(liveHome?.image)) + Number(Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url));
+  const percent = Math.round((done / 3) * 100);
+  return <Badge variant="outline" className="bg-background text-xs">{loading ? "يتم التحديث…" : `${done}/3 · ${percent}%`}</Badge>;
+}
+
+function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean }) {
+  const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/generate-image" : "/dashboard/generate-video";
+  const Icon = kind === "text" ? FileText : kind === "image" ? ImageIcon : Clapperboard;
+  const isVideo = kind === "video";
+  const video = isVideo ? (item as CampaignLiveHome["video"] | null) : null;
+  const complete = kind === "video" ? Boolean(video?.status === "completed" && video.result_url) : Boolean(item);
+  const active = Boolean(video && ["pending", "processing"].includes(video.status));
+  const failed = Boolean(video && ["failed", "refunded", "cancelled"].includes(video.status));
+  const buttonLabel = complete ? (kind === "video" ? "مشاهدة" : "عرض/تعديل") : kind === "text" ? "اكتب نصاً يبيع" : kind === "image" ? "صمّم صورة إعلان" : "أنشئ فيديو قصير";
+  const textItem = kind === "text" ? (item as CampaignLiveHome["text"] | null) : null;
+  const imageItem = kind === "image" ? (item as CampaignLiveHome["image"] | null) : null;
+
   return (
-    <Link to={to} search={{ prompt, campaignId } as never} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-secondary/60">
-      <span className="text-2xl" aria-hidden="true">{icon}</span>
-      <span>
-        <span className="block font-extrabold">{title}</span>
-        <span className="mt-1 block text-xs leading-6 text-muted-foreground">{desc}</span>
-      </span>
-    </Link>
+    <article className="rounded-lg border border-border bg-card p-3">
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary/10 text-primary">
+          {imageItem?.url ? <img src={imageItem.url} alt="صورة مصغرة من الحملة" className="h-full w-full object-cover" /> : active ? <Loader2 className="h-4 w-4 animate-spin" /> : complete ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Icon className="h-4 w-4" />}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-extrabold">{title}</h4>
+            <span className={cn("text-[11px] font-bold", complete ? "text-success" : active ? "text-warning-foreground" : failed ? "text-destructive" : "text-muted-foreground")}>{loading ? "تحميل" : complete ? "مكتمل" : active ? "قيد المعالجة" : failed ? "يحتاج إعادة" : "لم يُنفذ بعد"}</span>
+          </div>
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{textItem?.result ? textItem.result.slice(0, 100) : imageItem?.prompt || video?.prompt || "ابدأ من هذه الفتحة لإكمال الحملة."}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {video?.result_url && complete ? <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-xs"><a href={video.result_url} target="_blank" rel="noreferrer"><PlayCircle className="h-3.5 w-3.5" /> {buttonLabel}</a></Button> : <Button asChild size="sm" variant={complete ? "outline" : "default"} className="h-8 text-xs"><Link to={route} search={{ prompt, campaignId } as never}>{buttonLabel}</Link></Button>}
+          </div>
+        </div>
+      </div>
+    </article>
   );
+}
+
+function AbVariantsSection({ variants, campaignId }: { variants: CampaignBrief["abVariants"]; campaignId?: string }) {
+  if (!variants.length) return <EmptyCampaignUpgrade label="أعد بناء الخطة لتوليد نسخ A/B جاهزة للتجربة." />;
+  return <section className="rounded-lg border border-border bg-background p-4"><h3 className="font-extrabold">اختر أقوى رسالة تسويقية</h3><div className="mt-3 grid gap-3">{variants.map((v, index) => { const text = `${v.hook}\n${v.message}\n${v.cta}`; return <article key={`${v.style}-${index}`} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><p className="font-extrabold"><span aria-hidden="true">{v.icon}</span> {v.style}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(text); toast.success("تم نسخ النسخة"); }}><Copy className="h-3.5 w-3.5" /></Button></div><p className="mt-2 text-sm font-bold leading-6">{v.hook}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{v.message}</p><Button asChild size="sm" variant="outline" className="mt-3 h-8 text-xs"><Link to="/dashboard/generate-text" search={{ prompt: text, campaignId } as never}>استخدمها في النص</Link></Button></article>; })}</div></section>;
+}
+
+function PublishingCalendarSection({ days, campaignId }: { days: CampaignBrief["publishingCalendar"]; campaignId?: string }) {
+  if (!days.length) return <EmptyCampaignUpgrade label="أعد بناء الخطة لتوليد تقويم نشر 7 أيام." />;
+  return <section className="rounded-lg border border-border bg-background p-4"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h3 className="font-extrabold">تقويم نشر 7 أيام</h3></div><div className="mt-3 grid gap-3 sm:grid-cols-2">{days.map((day) => <article key={day.day} className="rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><Badge variant="outline">اليوم {day.day} · {day.label}</Badge><span className="text-[11px] font-bold text-primary">{day.channel}</span></div><p className="mt-2 text-sm font-extrabold">{day.contentType}</p><p className="mt-1 text-xs leading-6 text-muted-foreground">{day.message}</p><p className="mt-2 text-[11px] font-bold text-muted-foreground">الهدف: {day.goal}</p><div className="mt-3 flex flex-wrap gap-2"><Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { void navigator.clipboard.writeText(day.message); toast.success("تم نسخ رسالة اليوم"); }}><Copy className="h-3.5 w-3.5" /> نسخ</Button><Button asChild size="sm" variant="outline" className="h-8 text-xs"><Link to="/dashboard/generate-text" search={{ prompt: `${day.contentType}\n${day.message}\nالهدف: ${day.goal}`, campaignId } as never}>حوّلها لمحتوى</Link></Button></div></article>)}</div></section>;
+}
+
+function EmptyCampaignUpgrade({ label }: { label: string }) {
+  return <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3 text-xs leading-6 text-muted-foreground">{label}</div>;
 }
 
 function briefFromPack(pack: CampaignPack): CampaignBrief {
