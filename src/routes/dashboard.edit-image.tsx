@@ -22,9 +22,10 @@ import {
   isQuotaError,
 } from "@/components/quota-exceeded-dialog";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
-import { campaignEditPreset } from "@/lib/campaign-smart-context";
+import { CampaignContextBar } from "@/components/campaign-context-bar";
+import { campaignContextSummary, campaignEditPresetFromContext, parseCampaignExecutionSearch, resolveCampaignExecutionContext, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
 
-type EditImageSearch = { campaignId?: string; campaignPackId?: string; prompt?: string; smart?: boolean };
+type EditImageSearch = CampaignExecutionContext;
 
 export const Route = createFileRoute("/dashboard/edit-image")({
   head: () => ({
@@ -38,10 +39,7 @@ export const Route = createFileRoute("/dashboard/edit-image")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>): EditImageSearch => ({
-    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
-    campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
-    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
-    smart: s.smart === true || s.smart === "true" ? true : undefined,
+    ...parseCampaignExecutionSearch(s),
   }),
   component: EditImagePage,
 });
@@ -115,7 +113,7 @@ function EditImagePage() {
   const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
 
   useEffect(() => {
-    if (search.smart && campaignContext.campaign) setPresetId(campaignEditPreset(campaignContext.campaign));
+    if (search.smart) setPresetId(campaignEditPresetFromContext(search, campaignContext.campaign));
   }, [campaignContext.campaign, search.smart]);
 
   useEffect(() => {
@@ -233,19 +231,7 @@ function EditImagePage() {
 
   return (
     <DashboardShell>
-      {campaignContext.requestedCampaignId && (
-        <div className="mb-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
-          <div className="min-w-0 text-sm">
-            <p className="flex items-center gap-2 font-extrabold text-primary">
-              <Megaphone className="h-4 w-4" /> أنت الآن تحسّن صورة منتج لحملة: {campaignContext.loading ? "جاري التحميل…" : campaignContext.campaign?.product || "حملة محفوظة"}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaignContext.error ?? "سيتم ربط الصورة المعدّلة ببيت الحملة والمكتبة تلقائياً."}</p>
-          </div>
-          <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
-            <Link to="/dashboard/campaign-studio" search={{ campaignId: campaignContext.requestedCampaignId, focus: "house" } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
-          </Button>
-        </div>
-      )}
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolveCampaignExecutionContext(campaignContext.campaign, search))} />
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold">حسّن صورة منتجك بدل إعادة التصوير</h1>
