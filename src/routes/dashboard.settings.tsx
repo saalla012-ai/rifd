@@ -38,12 +38,11 @@ function SettingsPage() {
 
   const save = async () => {
     if (!user) return;
-    // رقم الواتساب مطلوب دائماً (لا يمكن مسحه)
-    if (!whatsapp.trim() || !validateSaudiPhone(whatsapp)) {
+    if (whatsapp.trim() && !validateSaudiPhone(whatsapp)) {
       toast.error(SAUDI_PHONE_ERROR);
       return;
     }
-    const normalizedWhatsapp = normalizeSaudiPhone(whatsapp)!;
+    const normalizedWhatsapp = whatsapp.trim() ? normalizeSaudiPhone(whatsapp) : null;
     setSaving(true);
     try {
       const { error } = await supabase
@@ -75,9 +74,10 @@ function SettingsPage() {
 
   return (
     <DashboardShell>
-      <h1 className="text-2xl font-extrabold">الإعدادات</h1>
+      <p className="text-xs font-bold text-primary">المرحلة 5 من الخطة · التقدم 100%</p>
+      <h1 className="mt-1 text-2xl font-extrabold">إعدادات حسابك</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        أدر معلومات حسابك وتفضيلاتك
+        أدر بياناتك الأساسية. واتساب اختياري للحساب، ويُطلب فقط عند طلب اشتراك أو متابعة تنبيه مهم.
       </p>
 
       <div className="mt-6 max-w-2xl space-y-4">
@@ -112,7 +112,7 @@ function SettingsPage() {
             </div>
             <div>
               <Label htmlFor="whatsapp">
-                رقم واتساب <span className="text-destructive">*</span>
+                رقم واتساب <span className="text-muted-foreground">(اختياري)</span>
               </Label>
               <Input
                 id="whatsapp"
@@ -123,10 +123,9 @@ function SettingsPage() {
                 placeholder={SAUDI_PHONE_PLACEHOLDER}
                 maxLength={20}
                 inputMode="tel"
-                required
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                رقم جوال سعودي يبدأ بـ 5 — مطلوب لتفعيل الاشتراك والتنبيهات المهمة
+                يساعدنا في التواصل عند طلب الاشتراك والتنبيهات المهمة، وليس شرطاً لدخول لوحة التحكم.
               </p>
             </div>
           </div>

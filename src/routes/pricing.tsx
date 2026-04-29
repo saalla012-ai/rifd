@@ -31,7 +31,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "باقات رِفد الجديدة: نصوص وصور بسقوف يومية، ونقاط فيديو واضحة لتوليد إعلانات قصيرة، مع ضمان 14 يوم وفوترة شفافة.",
+          "باقات رِفد الجديدة: قدرات نمو للمتاجر، ونقاط فيديو واضحة لتوليد إعلانات قصيرة، مع ضمان 14 يوم وفوترة شفافة.",
       },
       { property: "og:title", content: "أسعار رِفد — نصوص وصور + نقاط فيديو" },
       {
@@ -54,6 +54,13 @@ export const Route = createFileRoute("/pricing")({
 function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
   const estimatedFastVideos = Math.floor(plan.monthlyCredits / videoCreditCost("fast", 5));
   const estimatedAdVideos = Math.floor(plan.monthlyCredits / videoCreditCost("lite", 8));
+  const growthCapability: Record<string, string> = {
+    free: "تجربة للنصوص والصور وبناء أول ذاكرة متجر",
+    starter: "استخدام يومي مناسب للانطلاق وصناعة محتوى منتظم",
+    growth: "استخدام يومي أعلى للمتاجر النشطة مع صور Pro",
+    pro: "تشغيل متقدم للمتجر الجاد مع فيديو احترافي",
+    business: "سعة موسعة للفرق وتعدد الحملات",
+  };
   const usageLabel: Record<string, string> = {
     free: "فيديو محدود للتجربة حسب الرصيد",
     starter: "استخدام فيديو محدود حسب الرصيد",
@@ -62,11 +69,11 @@ function planFeatures(plan: (typeof PLAN_CATALOG)[number]) {
     business: "بدون حد عملي داخل الرصيد",
   };
   return [
-    `${formatPlanNumber(plan.dailyTextCap)} نص يومياً`,
-    `${formatPlanNumber(plan.dailyImageCap)} صورة يومياً${plan.imageProAllowed ? " تشمل Pro" : " — Flash فقط"}`,
+    growthCapability[plan.id],
+    plan.imageProAllowed ? "صور Pro للحملات التي تحتاج مظهراً أقوى" : "صور أساسية واضحة لبداية المتجر",
     `${usageLabel[plan.id]}: حتى ${formatPlanNumber(estimatedFastVideos)} سريع أو ${formatPlanNumber(estimatedAdVideos)} إعلاني شهرياً تقريباً`,
     plan.videoQualityAllowed ? "سريع وإعلاني واحترافي حسب النقاط" : "سريع وإعلاني حسب النقاط",
-    plan.id === "free" ? "فيديو بعلامة Rifd المائية" : "بدون علامة مائية، مع إلزام صورة المنتج لجودة إعلان أعلى",
+    plan.id === "free" ? "فيديو بعلامة رِفد المائية" : "بدون علامة مائية، مع إلزام صورة المنتج لجودة إعلان أعلى",
     "نقاط الباقة لا ترحل بعد 30 يوم؛ نقاط الشحن الإضافية منفصلة",
   ];
 }
@@ -78,7 +85,7 @@ const FAQS = [
   },
   {
     q: "هل النصوص والصور تخصم من نقاط الفيديو؟",
-    a: "لا. النصوص والصور لا تخصم نقاط فيديو، لكنها محمية بسقوف يومية لمنع إساءة الاستخدام وحماية جودة الخدمة.",
+    a: "لا. النصوص والصور لا تخصم نقاط فيديو. تفاصيل الاستخدام اليومية تظهر داخل لوحة التحكم بصياغة تشغيلية لحماية جودة الخدمة.",
   },
   {
     q: "ماذا يحدث إذا انتهت نقاط الفيديو؟",
@@ -124,10 +131,10 @@ function PricingPage() {
             <Film className="h-3.5 w-3.5" /> نظام جديد: نقاط للفيديو فقط
           </div>
           <h1 className="mx-auto mt-4 min-h-[5.75rem] max-w-3xl text-3xl font-extrabold leading-[1.28] sm:min-h-[7.75rem] sm:text-5xl sm:leading-[1.18]">
-            نصوص وصور يومية، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
+            قدرات نمو لمتجرك، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
           </h1>
           <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
-            اختر باقتك حسب رصيد نقاط الفيديو. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
+            اختر قدرة النمو المناسبة لمتجرك. النصوص والصور جزء من تشغيلك اليومي داخل المنتج، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
           </p>
 
           <div className="mx-auto mt-5 grid max-w-3xl gap-2 text-right sm:grid-cols-3">
@@ -278,7 +285,7 @@ function PricingPage() {
             <div className="rounded-2xl border border-border bg-card p-5">
               <Star className="h-6 w-6 text-success" />
               <h2 className="mt-3 font-extrabold">فرق واضح بين المجاني والمدفوع</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">المجاني للتجربة بعلامة Rifd، والمدفوع لفيديوهات نظيفة مع صورة منتج إلزامية لنتائج أقرب للإعلان الحقيقي.</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">المجاني للتجربة بعلامة رِفد، والمدفوع لفيديوهات نظيفة مع صورة منتج إلزامية لنتائج أقرب للإعلان الحقيقي.</p>
             </div>
           </div>
 

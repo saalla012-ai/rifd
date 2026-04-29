@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -54,6 +54,29 @@ const PLAN_LABELS: Record<PlanId, string> = Object.fromEntries(Object.entries(PL
 
 const FUTURE_INCREASE_PCT = 30;
 
+const PLAN_PURCHASE_GUIDE: Record<PaidPlanId, { fit: string; capability: string; focus: string }> = {
+  starter: {
+    fit: "للانطلاق المنظم",
+    capability: "تشغيل يومي مناسب لبداية متجر يبني حضوره",
+    focus: "فيديو سريع، نصوص بيع، وصور أساسية للحملات الخفيفة",
+  },
+  growth: {
+    fit: "للمتاجر النشطة",
+    capability: "سعة أعلى لحملات منتظمة مع صور Pro عند الحاجة",
+    focus: "أفضل توازن بين تكلفة التشغيل وكثافة المحتوى",
+  },
+  pro: {
+    fit: "للإعلانات الجادة",
+    capability: "تشغيل متقدم مع فيديو احترافي وصور Pro",
+    focus: "مناسب للعروض المتكررة وإطلاق المنتجات المدفوعة",
+  },
+  business: {
+    fit: "للفرق وتعدد الحملات",
+    capability: "سعة موسعة للمتاجر والفرق التي تعمل على أكثر من حملة",
+    focus: "تنظيم إنتاج متواصل مع مرونة أعلى للنمو",
+  },
+};
+
 const STATUS_META: Record<
   string,
   { label: string; tone: "warning" | "info" | "success" | "danger" | "muted"; icon: typeof Clock }
@@ -101,18 +124,7 @@ function BillingPage() {
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer_sa");
   const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    if (!user) return;
-    void loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  useEffect(() => {
-    if (profile?.store_name) setStoreName(profile.store_name);
-    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
-  }, [profile]);
-
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     const [settingsRes, seatsRes, reqRes] = await Promise.all([
       supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
@@ -130,7 +142,17 @@ function BillingPage() {
     setSeatsTaken(seatsRes.count ?? 0);
     setRequests((reqRes.data as RequestRow[] | null) ?? []);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    void loadAll();
+  }, [user, loadAll]);
+
+  useEffect(() => {
+    if (profile?.store_name) setStoreName(profile.store_name);
+    if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
+  }, [profile]);
 
   const seatsTotal = settings?.founding_total_seats ?? 1000;
   const seatsLeft = Math.max(0, seatsTotal - seatsTaken);
@@ -138,6 +160,7 @@ function BillingPage() {
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
   const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
   const selected = PLAN_BY_ID[plan];
+  const selectedGuide = PLAN_PURCHASE_GUIDE[plan];
   const price = billingCycle === "yearly" ? selected.yearlyPriceSar : selected.monthlyPriceSar;
   const futurePrice = Math.round(price * (1 + increasePct / 100));
   const selectedFastVideos = estimateVideoCount(selected.monthlyCredits, "fast", 5);
@@ -216,8 +239,9 @@ function BillingPage() {
     <DashboardShell>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold">الفواتير والاشتراك</h1>
-          <p className="mt-1 text-sm text-muted-foreground">اختر باقة نقاط الفيديو المناسبة، والنصوص والصور تبقى ضمن سقوف يومية.</p>
+          <p className="text-xs font-bold text-primary">المرحلة 5 من الخطة · التقدم 99%</p>
+          <h1 className="mt-1 text-2xl font-extrabold">اختر قدرة النمو المناسبة لمتجرك</h1>
+          <p className="mt-1 text-sm text-muted-foreground">الباقات هنا قدرات تشغيل للحملات: نقاط فيديو واضحة، صور Pro عند الحاجة، واستخدام يومي للنصوص والصور دون تحويلها إلى أرقام بيع.</p>
         </div>
         <Button asChild variant="outline">
           <Link to="/pricing">عرض صفحة الأسعار</Link>
@@ -248,7 +272,7 @@ function BillingPage() {
           <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2">
             <div className="mb-5 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold">طلب الاشتراك</h2>
+              <h2 className="text-lg font-bold">اختر قدرة التشغيل</h2>
             </div>
 
             <div className="mb-5">
@@ -269,7 +293,8 @@ function BillingPage() {
                   </div>
                   <div className="mt-2 text-2xl font-extrabold">{p.monthlyPriceSar} <span className="text-xs font-normal text-muted-foreground">ر.س</span></div>
                   <div className="mt-1 text-xs text-primary">{formatPlanNumber(p.monthlyCredits)} نقطة فيديو</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{p.tagline}</div>
+                  <div className="mt-1 text-[11px] font-semibold text-foreground">{PLAN_PURCHASE_GUIDE[p.id as PaidPlanId].fit}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{PLAN_PURCHASE_GUIDE[p.id as PaidPlanId].capability}</div>
                 </button>
               ))}
             </div>
@@ -319,6 +344,7 @@ function BillingPage() {
                   <p className="mt-1 text-xs text-muted-foreground">
                     تقريباً {formatPlanNumber(selectedFastVideos)} فيديو سريع أو {selected.videoQualityAllowed ? `${formatPlanNumber(selectedQualityVideos)} فيديو احترافي` : "الاحترافي غير متاح"} — الفيديو محكوم بالنقاط.
                   </p>
+                  <p className="mt-2 text-xs font-medium text-foreground">{selectedGuide.focus}</p>
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
                   </p>
