@@ -15,6 +15,8 @@ export type CampaignExecutionContext = {
   productName?: string;
 };
 
+const executionKeys = ["campaignId", "campaignPackId", "prompt", "sector", "audience", "offer", "channel", "occasion", "customerStage", "goal", "productName"] as const;
+
 const goalLabel: Record<CampaignPack["goal"], string> = {
   launch: "إطلاق منتج",
   clearance: "تصفية المخزون",
@@ -47,6 +49,28 @@ export function resolveCampaignExecutionContext(campaign?: CampaignPack | null, 
     channel: search.channel ?? campaign?.channel,
     goal: search.goal ?? campaign?.goal,
   };
+}
+
+export function parseCampaignExecutionSearch(s: Record<string, unknown>): CampaignExecutionContext {
+  const out: CampaignExecutionContext = { smart: s.smart === true || s.smart === "true" ? true : undefined };
+  for (const key of executionKeys) {
+    const value = s[key];
+    if (typeof value === "string" && value.trim()) out[key] = value.slice(0, key === "prompt" ? 5000 : 500) as never;
+  }
+  return out;
+}
+
+export function campaignExecutionSearch(context: CampaignExecutionContext, prompt?: string): CampaignExecutionContext {
+  return Object.fromEntries(Object.entries({ ...context, prompt, smart: true }).filter(([, value]) => value !== undefined && value !== "")) as CampaignExecutionContext;
+}
+
+export function campaignContextSummary(context: CampaignExecutionContext) {
+  return [
+    context.productName ? `📢 حملة: ${context.productName}` : "📢 حملة محفوظة",
+    context.goal ? `🎯 ${goalLabel[context.goal as CampaignPack["goal"]] ?? context.goal}` : "",
+    context.audience ? `👥 ${context.audience}` : "",
+    context.offer ? `🏷️ ${context.offer}` : "",
+  ].filter(Boolean).join(" | ");
 }
 
 export function campaignTextTemplate(campaign: CampaignPack) {
