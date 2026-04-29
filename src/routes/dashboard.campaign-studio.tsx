@@ -259,7 +259,7 @@ function CampaignStudioPage() {
   const openOutputTool = async (to: OutputToolRoute, payload: string) => {
     const packId = (await saveCurrentPack("generated"))?.id;
     if (!packId) return;
-    await navigate({ to, search: { prompt: payload, campaignPackId: packId } });
+    await navigate({ to, search: { __lovable_token: search.__lovable_token, prompt: payload, campaignPackId: packId } });
   };
 
   const applyPack = (pack: CampaignPack) => {
