@@ -102,6 +102,14 @@ export function campaignEditPreset(campaign: CampaignPack) {
   return "enhance";
 }
 
+export function campaignEditPresetFromContext(context: CampaignExecutionContext, campaign?: CampaignPack | null) {
+  const resolved = resolveCampaignExecutionContext(campaign, context);
+  if (resolved.goal === "launch" || resolved.audience?.includes("الفخامة")) return "luxury-bg";
+  if (resolved.goal === "clearance") return "add-text";
+  if (resolved.channel?.includes("انستقرام") || resolved.channel?.includes("سناب") || resolved.channel === "instagram" || resolved.channel === "snapchat") return "instagram-square";
+  return "enhance";
+}
+
 function buildCampaignContextLines(context: CampaignExecutionContext, campaign: CampaignPack | null | undefined, goal: string) {
   return [
     `المنتج: ${context.productName ?? campaign?.product ?? "غير محدد"}`,
