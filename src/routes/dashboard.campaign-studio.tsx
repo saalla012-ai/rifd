@@ -691,7 +691,7 @@ function NextBestAction({ liveHome, campaignId, brief, executionContext }: { liv
     return <div className="rounded-lg border border-success/20 bg-success/10 p-3 text-sm font-bold text-success">حملتك مكتملة. راجع كل الأصول في المكتبة أو ابدأ حملة جديدة.</div>;
   }
   const action = hasImage && !hasText
-    ? { text: "الآن وقد أصبحت الصورة جاهزة، هل تود كتابة نص إعلاني يطابقها؟", label: "اكتب نصاً", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt }
+    ? { text: "الآن وقد أصبحت الصورة جاهزة، اكتب نصاً يبيع يطابقها.", label: "اكتب نصاً يبيع", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt }
     : hasText && !hasImage
       ? { text: "النص جاهز. صمّم صورة إعلان تكمل نفس الرسالة والعرض.", label: "صمّم صورة إعلان", to: "/dashboard/generate-image" as const, prompt: brief.imagePrompt }
       : hasText && hasImage && !hasVideo
