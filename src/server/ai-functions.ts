@@ -345,7 +345,17 @@ export const editImage = createServerFn({ method: "POST" })
       const brandHint = ctx.brand_color
         ? ` Use brand accent color ${ctx.brand_color} where appropriate.`
         : "";
-      const fullPrompt = `${data.prompt}. Maintain photorealistic quality, clean composition, professional e-commerce look.${brandHint}`;
+      const fullPrompt = [
+        data.prompt,
+        "Edit the provided product photo with strict commercial product-photography quality.",
+        "Preserve the exact product identity: do not change its shape, material, buttons, logos, labels, colors, proportions, or important details.",
+        "Keep the product sharp, realistic, and clearly visible. Do not add random objects, fake packaging, extra products, people, hands, or distracting decorations.",
+        "If the request is a white background, use a clean pure white e-commerce background with natural shadow only.",
+        "If the request is a luxury or lifestyle background, make it photorealistic, tasteful, and suitable for a Saudi e-commerce store without exaggeration.",
+        "If Arabic text is requested, use short clear Arabic text, place it away from the product, and keep it readable without covering the item.",
+        "Final image must look ready for an ad or product page, with clean composition, balanced lighting, and no visual artifacts.",
+        brandHint.trim(),
+      ].filter(Boolean).join(" ");
       const model = "google/gemini-3.1-flash-image-preview";
 
       let editedDataUrl: string;
