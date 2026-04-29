@@ -16,9 +16,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
+import { campaignImageTemplate, campaignSmartPrompt } from "@/lib/campaign-smart-context";
 import { track } from "@/lib/analytics/posthog";
 
-type ImgSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string };
+type ImgSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string; smart?: boolean };
 
 export const Route = createFileRoute("/dashboard/generate-image")({
   head: () => ({ meta: [{ title: "صمّم صورة إعلان — رِفد" }] }),
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/dashboard/generate-image")({
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
+    smart: s.smart === true || s.smart === "true" ? true : undefined,
   }),
   component: GenerateImagePage,
 });
@@ -55,8 +57,10 @@ function GenerateImagePage() {
   const proAllowed = credits?.imageProAllowed ?? true;
 
   useEffect(() => {
-    if (!search.prompt && campaignContext.campaign?.image_prompt) setPrompt(campaignContext.campaign.image_prompt);
-  }, [campaignContext.campaign?.image_prompt, search.prompt]);
+    if (!campaignContext.campaign || search.prompt) return;
+    setPrompt(search.smart ? campaignSmartPrompt(campaignContext.campaign, "image") : campaignContext.campaign.image_prompt);
+    if (search.smart) setTemplateId(campaignImageTemplate(campaignContext.campaign));
+  }, [campaignContext.campaign, search.prompt, search.smart]);
 
   const go = async () => {
     if (!prompt.trim()) { toast.error("اكتب وصف الصورة أولاً"); return; }
@@ -125,7 +129,7 @@ function GenerateImagePage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اضبط نوع الإعلان ووصفه البصري</div>
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">{search.smart && campaignContext.campaign ? "1) جهّزنا صورة الإعلان من اختيارات الحملة" : "1) اضبط نوع الإعلان ووصفه البصري"}</div>
           <div>
             <Label>نموذج التوليد</Label>
             <div className="mt-2 grid grid-cols-2 gap-2">
