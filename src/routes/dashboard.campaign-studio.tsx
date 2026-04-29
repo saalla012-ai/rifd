@@ -202,7 +202,6 @@ function CampaignStudioPage() {
       .catch(() => { if (!cancelled) setLiveHome(null); })
       .finally(() => { if (!cancelled) setLoadingLiveHome(false); });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePackId, getLiveHomeFn]);
 
   const authHeaders = async () => {
