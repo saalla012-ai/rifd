@@ -347,7 +347,12 @@ function GenerateVideoPage() {
   }, [campaignContext.campaign, internalMediumTestMode, search.prompt, search.smart]);
 
   useEffect(() => {
-    const path = campaignContext.campaign?.product_image_path;
+    const directUrl = resolvedCampaignContext.productImageUrl?.trim();
+    if (directUrl && !productImageUrl) {
+      setProductImageUrl(directUrl);
+      return;
+    }
+    const path = resolvedCampaignContext.productImagePath;
     if (!search.smart || !path || productImageUrl) return;
     supabase.storage
       .from("campaign-product-images")
@@ -356,7 +361,7 @@ function GenerateVideoPage() {
         if (data?.signedUrl) setProductImageUrl(data.signedUrl);
       })
       .catch(() => undefined);
-  }, [campaignContext.campaign?.product_image_path, productImageUrl, search.smart]);
+  }, [productImageUrl, resolvedCampaignContext.productImagePath, resolvedCampaignContext.productImageUrl, search.smart]);
 
   const downloadLatestVideo = async () => {
     if (!latestResult) return;
@@ -581,7 +586,7 @@ function GenerateVideoPage() {
 
           <div className="grid gap-3 md:grid-cols-2">
             <ImageInputCard label="صورة الشخص المتحدث" value={internalMediumTestMode ? absoluteAssetUrl(canonicalGenerationPersona.image) : speakerImageUrl} uploading={uploadingInput === "speaker"} disabled={internalMediumTestMode} onFile={(file: File | undefined) => void uploadInputImage("speaker", file)} onUrl={setSpeakerImageUrl} />
-            <ImageInputCard label={isPaidPlan || mediumTestProductImageRequired ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
+            <ImageInputCard label={(resolvedCampaignContext.productImagePath || resolvedCampaignContext.productImageUrl) ? "صورة المنتج من بيت الحملة" : isPaidPlan || mediumTestProductImageRequired ? "صورة المنتج — مطلوبة" : "صورة المنتج"} value={productImageUrl} uploading={uploadingInput === "product"} onFile={(file: File | undefined) => void uploadInputImage("product", file)} onUrl={setProductImageUrl} />
           </div>
             {productImageRequired && <p className="text-xs font-bold text-destructive">{mediumTestProductImageRequired ? "هذه عينة اختبار متوسط تتطلب صورة منتج؛ تشغيلها بدون صورة سيجعل نتيجة الالتزام غير صالحة." : "ارفع صورة المنتج قبل إنشاء الفيديو؛ هذا يحافظ على وضوح المنتج ويقلل النتائج العامة."}</p>}
 
