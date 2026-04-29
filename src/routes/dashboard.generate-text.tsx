@@ -104,7 +104,7 @@ function GenerateTextPage() {
           <p className="text-xs font-black text-primary">اكتب نصاً يبيع</p>
           <h1 className="mt-1 text-2xl font-extrabold">حوّل موجز الحملة إلى كلام يدفع للشراء</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">اختر قالباً، أضف تفاصيل العرض، واستلم نصاً واضحاً للمتجر أو الإعلان أو واتساب.</p>
-          {search.campaignPackId && (
+          {campaignContext.campaignId && (
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
               <Megaphone className="h-3.5 w-3.5" /> هذا النص جزء من حملة محفوظة
             </div>
