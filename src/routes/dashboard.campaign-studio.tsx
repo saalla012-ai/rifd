@@ -31,7 +31,7 @@ type CampaignSearch = {
 };
 type Option = { value: string; label: string; description?: string };
 
-const GENERATED_IMAGES_BUCKET = "generated-images";
+const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
 const CAMPAIGN_CENTER_PROGRESS = 100;
 
 const GOALS: Array<{ value: CampaignGoal; title: string; prompt: string }> = [
@@ -262,7 +262,7 @@ function CampaignStudioPage() {
         return previewUrl;
       });
       const path = `${user.id}/campaigns/${campaignId}/product-image.webp`;
-      const { error } = await supabase.storage.from(GENERATED_IMAGES_BUCKET).upload(path, webp, {
+      const { error } = await supabase.storage.from(CAMPAIGN_PRODUCT_IMAGES_BUCKET).upload(path, webp, {
         upsert: true,
         contentType: "image/webp",
       });
