@@ -408,6 +408,32 @@ export const listAdminCampaignPacks = createServerFn({ method: "POST" })
       ? await supabaseAdmin.from("profiles").select("id, email, store_name").in("id", userIds)
       : { data: [] as Array<{ id: string; email: string | null; store_name: string | null }> };
     const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+    const packIds = new Set(packs.map((pack) => pack.id));
+    const outputCounts = new Map<string, { text: number; image: number; video: number; last: string | null }>();
+    const ensureCounts = (id: string) => {
+      if (!outputCounts.has(id)) outputCounts.set(id, { text: 0, image: 0, video: 0, last: null });
+      return outputCounts.get(id)!;
+    };
+
+    const [{ data: generationRows }, { data: videoRows }] = await Promise.all([
+      supabaseAdmin.from("generations").select("type, metadata, created_at").order("created_at", { ascending: false }).limit(1000),
+      supabaseAdmin.from("video_jobs").select("metadata, created_at").order("created_at", { ascending: false }).limit(1000),
+    ]);
+    for (const item of (generationRows ?? []) as Array<{ type: string; metadata: unknown; created_at: string }>) {
+      const id = getCampaignMetaId(item.metadata);
+      if (!packIds.has(id)) continue;
+      const counts = ensureCounts(id);
+      if (item.type === "text") counts.text += 1;
+      else counts.image += 1;
+      if (!counts.last || item.created_at > counts.last) counts.last = item.created_at;
+    }
+    for (const item of (videoRows ?? []) as Array<{ metadata: unknown; created_at: string }>) {
+      const id = getCampaignMetaId(item.metadata);
+      if (!packIds.has(id)) continue;
+      const counts = ensureCounts(id);
+      counts.video += 1;
+      if (!counts.last || item.created_at > counts.last) counts.last = item.created_at;
+    }
 
     const stats = packs.reduce(
       (acc, pack) => {
@@ -422,7 +448,9 @@ export const listAdminCampaignPacks = createServerFn({ method: "POST" })
       stats,
       packs: packs.map((pack): AdminCampaignPack => {
         const profile = profileMap.get(pack.user_id);
-        return { ...pack, user_email: profile?.email ?? null, user_store: profile?.store_name ?? null };
+        const counts = outputCounts.get(pack.id) ?? { text: 0, image: 0, video: 0, last: null };
+        const done = Number(counts.text > 0) + Number(counts.image > 0) + Number(counts.video > 0);
+        return { ...pack, user_email: profile?.email ?? null, user_store: profile?.store_name ?? null, output_counts: { text: counts.text, image: counts.image, video: counts.video }, completion_percent: Math.round((done / 3) * 100), last_output_at: counts.last };
       }),
     };
   });
