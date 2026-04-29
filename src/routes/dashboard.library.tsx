@@ -206,18 +206,24 @@ function LibraryPage() {
         <section className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 shadow-soft">
           <div className="flex items-center gap-2">
             <FolderKanban className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-extrabold">مخرجات الحملات المجمعة</h2>
+            <h2 className="text-sm font-extrabold">حملاتك</h2>
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {campaignGroups.map((group) => (
               <article key={group.id} className="rounded-lg border border-border bg-card p-3">
-                <p className="line-clamp-1 text-sm font-extrabold">{group.name}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="line-clamp-1 text-sm font-extrabold">{group.name}</p>
+                    <p className="mt-1 text-xs font-bold text-primary">اكتملت {group.completedSlots}/3 · التقدم {group.completionPercent}%</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-xs font-black text-primary">{group.completedSlots}/3</span>
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">{group.goal || "هدف"} · {group.channel || "قناة"}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
                   <span className="rounded-full bg-secondary px-2 py-1">{group.text} نص</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.image} صورة</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.video} فيديو</span>
-                  <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">{group.completedSlots}/3 · {group.completionPercent}%</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">{group.completionPercent}%</span>
                 </div>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`اكتمال الحملة ${group.completionPercent}%`}>
                   <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${group.completionPercent}%` }} />
