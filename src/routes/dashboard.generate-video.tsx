@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
+import { campaignSmartPrompt, campaignVideoDefaults } from "@/lib/campaign-smart-context";
 import { videoTierDuration } from "@/lib/plan-catalog";
 import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, buildSaudiVideoMediumTestSample } from "@/lib/saudi-video-test";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
@@ -33,6 +34,7 @@ type VideoSearch = {
   quality?: VideoQuality;
   aspectRatio?: AspectRatio;
   selectedPersonaId?: string;
+  smart?: boolean;
   source?: "medium-test";
   mediumTestSampleId?: string;
   mediumTestTemplateId?: string;
@@ -109,6 +111,7 @@ export const Route = createFileRoute("/dashboard/generate-video")({
     quality: s.quality === "fast" || s.quality === "lite" || s.quality === "quality" ? s.quality : undefined,
     aspectRatio: s.aspectRatio === "9:16" || s.aspectRatio === "1:1" || s.aspectRatio === "16:9" ? s.aspectRatio : undefined,
     selectedPersonaId: typeof s.selectedPersonaId === "string" ? s.selectedPersonaId : undefined,
+    smart: s.smart === true || s.smart === "true" ? true : undefined,
     source: s.source === "medium-test" ? "medium-test" : undefined,
     mediumTestSampleId: typeof s.mediumTestSampleId === "string" ? s.mediumTestSampleId : undefined,
     mediumTestTemplateId: typeof s.mediumTestTemplateId === "string" ? s.mediumTestTemplateId : undefined,
@@ -330,8 +333,26 @@ function GenerateVideoPage() {
 
   useEffect(() => {
     if (internalMediumTestMode || search.prompt || !campaignContext.campaign?.video_prompt) return;
-    setPrompt(campaignContext.campaign.video_prompt);
-  }, [campaignContext.campaign?.video_prompt, internalMediumTestMode, search.prompt]);
+    setPrompt(search.smart ? campaignSmartPrompt(campaignContext.campaign, "video") : campaignContext.campaign.video_prompt);
+    if (search.smart) {
+      const defaults = campaignVideoDefaults(campaignContext.campaign);
+      setAspectRatio(defaults.aspectRatio);
+      setSelectedPersonaId(defaults.selectedPersonaId);
+      setSelectedTemplateId(defaults.templateId);
+    }
+  }, [campaignContext.campaign, internalMediumTestMode, search.prompt, search.smart]);
+
+  useEffect(() => {
+    const path = campaignContext.campaign?.product_image_path;
+    if (!search.smart || !path || productImageUrl) return;
+    supabase.storage
+      .from("campaign-product-images")
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (data?.signedUrl) setProductImageUrl(data.signedUrl);
+      })
+      .catch(() => undefined);
+  }, [campaignContext.campaign?.product_image_path, productImageUrl, search.smart]);
 
   const downloadLatestVideo = async () => {
     if (!latestResult) return;
@@ -412,7 +433,7 @@ function GenerateVideoPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) جهّز إعلان الفيديو قبل خصم النقاط</div>
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">{search.smart && campaignContext.campaign ? "1) جهّزنا الفيديو من اختيارات الحملة" : "1) جهّز إعلان الفيديو قبل خصم النقاط"}</div>
           <div>
             <Label>نوع الاستخدام</Label>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">

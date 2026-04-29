@@ -18,9 +18,10 @@ import { CampaignContextBar } from "@/components/campaign-context-bar";
 import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
+import { campaignSmartPrompt, campaignTextTemplate } from "@/lib/campaign-smart-context";
 import { track } from "@/lib/analytics/posthog";
 
-type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string };
+type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignId?: string; campaignPackId?: string; smart?: boolean };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "اكتب نصاً يبيع — رِفد" }] }),
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/dashboard/generate-text")({
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
+    smart: s.smart === true || s.smart === "true" ? true : undefined,
   }),
   component: GenerateTextPage,
 });
@@ -55,8 +57,10 @@ function GenerateTextPage() {
   const memorySignals = getMemorySignals(profile).slice(0, 4);
 
   useEffect(() => {
-    if (!search.prompt && campaignContext.campaign?.text_prompt) setTopic(campaignContext.campaign.text_prompt);
-  }, [campaignContext.campaign?.text_prompt, search.prompt]);
+    if (!campaignContext.campaign || search.prompt) return;
+    setTopic(search.smart ? campaignSmartPrompt(campaignContext.campaign, "text") : campaignContext.campaign.text_prompt);
+    if (search.smart) setTemplateId(campaignTextTemplate(campaignContext.campaign));
+  }, [campaignContext.campaign, search.prompt, search.smart]);
 
   const generate = async () => {
     if (!topic.trim()) {
@@ -131,7 +135,7 @@ function GenerateTextPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
-          <div className="mb-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">1) اختر القالب واكتب تفاصيل البيع</div>
+              <div className="mb-4 rounded-lg border border-primary/15 bg-primary/5 px-3 py-2 text-sm font-extrabold text-primary">{search.smart && campaignContext.campaign ? "1) جهّزنا النص من اختيارات الحملة" : "1) اختر القالب واكتب تفاصيل البيع"}</div>
           <div className="space-y-4">
             <div>
               <Label>اختر قالباً</Label>
