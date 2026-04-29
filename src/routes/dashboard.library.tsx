@@ -217,7 +217,14 @@ function LibraryPage() {
                   <span className="rounded-full bg-secondary px-2 py-1">{group.text} نص</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.image} صورة</span>
                   <span className="rounded-full bg-secondary px-2 py-1">{group.video} فيديو</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">{group.completedSlots}/3 · {group.completionPercent}%</span>
                 </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`اكتمال الحملة ${group.completionPercent}%`}>
+                  <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${group.completionPercent}%` }} />
+                </div>
+                <Button asChild size="sm" variant="outline" className="mt-3 h-8 w-full text-xs">
+                  <Link to="/dashboard/campaign-studio" search={{ campaignId: group.id } as never}>فتح بيت الحملة</Link>
+                </Button>
               </article>
             ))}
           </div>
