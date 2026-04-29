@@ -98,7 +98,7 @@ function GenerateImagePage() {
           <p className="text-xs font-black text-primary">صمّم صورة إعلان</p>
           <h1 className="mt-1 text-2xl font-extrabold">حوّل وصف العرض إلى صورة إعلان واضحة</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">ابدأ بصورة سريعة للمحتوى اليومي، أو استخدم Pro للإعلانات المهمة عند توفرها في باقتك.</p>
-          {search.campaignPackId && (
+          {campaignContext.campaignId && (
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
               <Megaphone className="h-3.5 w-3.5" /> هذه الصورة جزء من حملة محفوظة
             </div>
