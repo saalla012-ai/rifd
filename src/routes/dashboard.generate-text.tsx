@@ -18,7 +18,7 @@ import { CampaignContextBar } from "@/components/campaign-context-bar";
 import { useAuth } from "@/hooks/use-auth";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
-import { campaignContextSummary, campaignSmartPromptFromContext, campaignTextTemplate, parseCampaignExecutionSearch, resolveCampaignExecutionContext, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
+import { campaignContextSummary, campaignExecutionSearch, campaignSmartPromptFromContext, campaignTextTemplate, parseCampaignExecutionSearch, resolveCampaignExecutionContext, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
 import { track } from "@/lib/analytics/posthog";
 
 type TextSearch = CampaignExecutionContext & { __lovable_token?: string; template?: string };
@@ -53,11 +53,13 @@ function GenerateTextPage() {
   const smartSuggestions = getSmartPromptSuggestions(profile, "text");
   const memorySignals = getMemorySignals(profile).slice(0, 4);
 
+  const resolvedCampaignContext = resolveCampaignExecutionContext(campaignContext.campaign, search);
+
   useEffect(() => {
     if (!campaignContext.campaign && !search.smart) return;
     if (search.prompt && !search.smart) return;
     const context = resolveCampaignExecutionContext(campaignContext.campaign, search);
-    setTopic(search.smart ? campaignSmartPromptFromContext(context, "text", campaignContext.campaign) : campaignContext.campaign?.text_prompt ?? search.prompt ?? "");
+    setTopic((search.smart ? campaignSmartPromptFromContext(context, "text", campaignContext.campaign) : campaignContext.campaign?.text_prompt ?? search.prompt ?? "").slice(0, 2000));
     if (search.smart && campaignContext.campaign) setTemplateId(campaignTextTemplate(campaignContext.campaign));
   }, [campaignContext.campaign, search.prompt, search.smart]);
 
@@ -130,7 +132,7 @@ function GenerateTextPage() {
         </div>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolveCampaignExecutionContext(campaignContext.campaign, search))} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolvedCampaignContext)} context={resolvedCampaignContext} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
@@ -235,12 +237,12 @@ function GenerateTextPage() {
           {result && (
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-image" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined } as never}>
+                <Link to="/dashboard/generate-image" search={campaignExecutionSearch({ ...resolvedCampaignContext, campaignId: campaignContext.campaignId ?? search.campaignId, campaignPackId: search.campaignPackId }, result) as never}>
                   <ImageIcon className="h-3.5 w-3.5" /> صمّم صورة لهذا النص
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to="/dashboard/generate-video" search={{ prompt: result, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined } as never}>
+                <Link to="/dashboard/generate-video" search={campaignExecutionSearch({ ...resolvedCampaignContext, campaignId: campaignContext.campaignId ?? search.campaignId, campaignPackId: search.campaignPackId }, result) as never}>
                   <Clapperboard className="h-3.5 w-3.5" /> أنشئ فيديو من النص
                 </Link>
               </Button>
