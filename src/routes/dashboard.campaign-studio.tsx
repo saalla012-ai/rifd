@@ -161,7 +161,8 @@ function CampaignStudioPage() {
     customerStage: stageOption.label,
     goal: goal ?? undefined,
     productName: product.trim() || undefined,
-  }), [activePackId, audienceOption.label, channelOption.label, goal, occasionOption.label, offerOption.label, product, sectorOption.label, stageOption.label]);
+    productImagePath: productImagePath ?? undefined,
+  }), [activePackId, audienceOption.label, channelOption.label, goal, occasionOption.label, offerOption.label, product, productImagePath, sectorOption.label, stageOption.label]);
   const planProgressItems = useMemo(
     () => [
       { label: "هدف الحملة", done: Boolean(goal) },
