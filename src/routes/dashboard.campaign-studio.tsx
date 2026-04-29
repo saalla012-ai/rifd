@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Archive, ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, FolderKanban, Image as ImageIcon, LayoutTemplate, Loader2, Megaphone, Save, Wand2 } from "lucide-react";
+import { Archive, ArrowLeft, CalendarDays, CheckCircle2, Clapperboard, Copy, FolderKanban, Image as ImageIcon, LayoutTemplate, Loader2, Megaphone, Save, Upload, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ type CampaignSearch = {
   offer?: string;
   goal?: CampaignGoal;
   channel?: CampaignChannel;
+  productImagePath?: string;
 };
 type OutputToolRoute = "/dashboard/generate-text" | "/dashboard/generate-image" | "/dashboard/generate-video";
 
@@ -37,6 +39,8 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
   { value: "tiktok", label: "TikTok", output: "Hook سريع + فيديو عمودي" },
   { value: "whatsapp", label: "WhatsApp", output: "رسالة قائمة بث مختصرة" },
 ];
+
+const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -85,6 +89,7 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
     offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
     goal: ["launch", "clearance", "upsell", "leads", "competitive", "winback"].includes(String(s.goal)) ? (s.goal as CampaignGoal) : undefined,
     channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as CampaignChannel) : undefined,
+    productImagePath: typeof s.productImagePath === "string" ? s.productImagePath.slice(0, 1000) : undefined,
   }),
   component: CampaignStudioPage,
 });
@@ -100,6 +105,9 @@ function CampaignStudioPage() {
   const [product, setProduct] = useState(search.product ?? "");
   const [audience, setAudience] = useState(search.audience ?? "");
   const [offer, setOffer] = useState(search.offer ?? "");
+  const [productImagePath, setProductImagePath] = useState<string | null>(search.productImagePath ?? null);
+  const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [activePackId, setActivePackId] = useState<string | undefined>();
   const [packs, setPacks] = useState<CampaignPack[]>([]);
   const [loadingPacks, setLoadingPacks] = useState(true);
@@ -111,7 +119,8 @@ function CampaignStudioPage() {
     if (search.product !== undefined) setProduct(search.product);
     if (search.audience !== undefined) setAudience(search.audience);
     if (search.offer !== undefined) setOffer(search.offer);
-  }, [search.audience, search.channel, search.goal, search.offer, search.product]);
+    if (search.productImagePath !== undefined) setProductImagePath(search.productImagePath);
+  }, [search.audience, search.channel, search.goal, search.offer, search.product, search.productImagePath]);
 
   const selectedGoal = GOALS.find((item) => item.value === goal) ?? GOALS[0];
   const selectedChannel = CHANNELS.find((item) => item.value === channel) ?? CHANNELS[0];
@@ -127,6 +136,9 @@ function CampaignStudioPage() {
   const textPrompt = `اكتب محتوى حملة ${selectedGoal.label} لقناة ${selectedChannel.label}.\n${campaignBrief}\n\nالمطلوب: عنوان قصير، نص أساسي، 3 صيغ CTA، ونسخة واتساب مختصرة.`;
   const imagePrompt = `${strategy.visual}. المنتج: ${product.trim() || "منتج متجر إلكتروني"}. الجمهور: ${audience.trim() || "عملاء سعوديون"}. الهدف: ${selectedGoal.label}.`;
   const videoPrompt = `${strategy.video}. المنتج: ${product.trim() || "منتج متجر إلكتروني"}. القناة: ${selectedChannel.label}. اجعل الفيديو مناسباً لـ${selectedChannel.output}.`;
+
+  const progressItems = [goal, channel, product.trim(), audience.trim(), offer.trim(), productImagePath, activePackId];
+  const campaignProgress = Math.round((progressItems.filter(Boolean).length / progressItems.length) * 100);
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -152,9 +164,64 @@ function CampaignStudioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (productImagePreview) URL.revokeObjectURL(productImagePreview);
+    };
+  }, [productImagePreview]);
+
+  useEffect(() => {
+    if (!productImagePath || productImagePreview) return;
+    let cancelled = false;
+    void supabase.storage
+      .from(CAMPAIGN_PRODUCT_IMAGES_BUCKET)
+      .createSignedUrl(productImagePath, 60 * 30)
+      .then(({ data, error }) => {
+        if (!cancelled && !error && data?.signedUrl) setProductImagePreview(data.signedUrl);
+      });
+    return () => { cancelled = true; };
+  }, [productImagePath, productImagePreview]);
+
   const copyBrief = async () => {
     await navigator.clipboard.writeText(campaignBrief);
     toast.success("تم نسخ موجز الحملة");
+  };
+
+  const uploadProductImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("ارفع صورة منتج بصيغة صورة فقط");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب ألا يتجاوز 5MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    const previewUrl = URL.createObjectURL(file);
+    setProductImagePreview(previewUrl);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("سجّل الدخول أولاً لرفع صورة المنتج");
+      const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `${user.id}/campaigns/${activePackId ?? "draft"}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from(CAMPAIGN_PRODUCT_IMAGES_BUCKET).upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      setProductImagePath(path);
+      toast.success("تم رفع صورة المنتج وربطها بالحملة");
+    } catch (e) {
+      URL.revokeObjectURL(previewUrl);
+      setProductImagePreview(null);
+      toast.error(e instanceof Error ? e.message : "فشل رفع صورة المنتج");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const clearProductImage = () => {
+    if (productImagePreview) URL.revokeObjectURL(productImagePreview);
+    setProductImagePreview(null);
+    setProductImagePath(null);
   };
 
   const saveCurrentPack = async (status: "draft" | "generated" = "draft"): Promise<CampaignPack | null> => {
@@ -162,7 +229,7 @@ function CampaignStudioPage() {
     try {
       const headers = await authHeaders();
       const out = await savePackFn({
-        data: { id: activePackId, product, audience, offer, goal, channel, status, brief: campaignBrief, textPrompt, imagePrompt, videoPrompt },
+        data: { id: activePackId, product, audience, offer, goal, channel, status, brief: campaignBrief, textPrompt, imagePrompt, videoPrompt, productImagePath },
         headers,
       });
       setActivePackId(out.pack.id);
@@ -190,6 +257,8 @@ function CampaignStudioPage() {
     setProduct(pack.product);
     setAudience(pack.audience);
     setOffer(pack.offer);
+    setProductImagePath(pack.product_image_path);
+    setProductImagePreview(null);
     toast.success("تم فتح حزمة الحملة");
   };
 
@@ -210,11 +279,11 @@ function CampaignStudioPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Megaphone className="h-3.5 w-3.5" /> مركز قيادة الحملة
+            <Megaphone className="h-3.5 w-3.5" /> استوديو الحملات
           </div>
-          <h1 className="text-2xl font-extrabold">ابنِ موجز حملة واضحاً ثم انتقل للتنفيذ</h1>
+          <h1 className="text-2xl font-extrabold">ابنِ حملة تبيع من هدف واحد وصورة منتج واضحة</h1>
           <p className="mt-1 max-w-2xl text-sm leading-7 text-muted-foreground">
-            هذه الصفحة لا تولّد كل شيء داخلها؛ دورها ترتيب الهدف والزاوية والقناة، ثم توجيهك إلى أداة النص أو الصورة أو الفيديو.
+            رتّب الهدف والجمهور والعرض، اربط صورة المنتج، ثم انقل نفس الزاوية إلى النص والصورة والفيديو بدون تشتّت.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -227,11 +296,17 @@ function CampaignStudioPage() {
         </div>
       </div>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-4">
+        <div className="mt-5 rounded-xl border border-border bg-card p-4 shadow-soft">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-extrabold">نسبة التقدم من الخطة</p>
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{campaignProgress}%</span>
+          </div>
+          <Progress value={campaignProgress} className="mt-3 h-2" />
+          <div className="mt-4 grid gap-2 sm:grid-cols-4">
           {[
             "اختر الهدف",
-            "اكتب موجز الحملة",
-            "احفظ السياق",
+            "ارفع صورة المنتج",
+            "اكتب عرضاً واضحاً",
             "انتقل لأداة التنفيذ",
           ].map((step, index) => (
             <div key={step} className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground shadow-soft">
@@ -239,6 +314,7 @@ function CampaignStudioPage() {
               {step}
             </div>
           ))}
+          </div>
         </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px]">
@@ -276,6 +352,8 @@ function CampaignStudioPage() {
             <CampaignField id="campaign-offer" label="العرض / السبب" value={offer} onChange={setOffer} placeholder="مثلاً: خصم 20% لأول 48 ساعة أو إطلاق مجموعة جديدة" />
           </div>
 
+          <ProductImageUploader preview={productImagePreview} path={productImagePath} uploading={uploadingImage} onUpload={uploadProductImage} onClear={clearProductImage} />
+
           <div className="rounded-lg border border-gold/30 bg-gold/5 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -294,6 +372,8 @@ function CampaignStudioPage() {
         </section>
 
         <aside className="space-y-5">
+          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} />
+
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-extrabold">وجهات التنفيذ</h2>
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
@@ -328,6 +408,63 @@ function CampaignField({ id, label, value, onChange, placeholder }: { id: string
       <Label htmlFor={id}>{label}</Label>
       <Textarea id={id} value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 min-h-28" maxLength={500} placeholder={placeholder} />
     </div>
+  );
+}
+
+function ProductImageUploader({ preview, path, uploading, onUpload, onClear }: { preview: string | null; path: string | null; uploading: boolean; onUpload: (file: File) => Promise<void>; onClear: () => void }) {
+  return (
+    <section className="rounded-lg border border-border bg-background p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Label htmlFor="campaign-product-image">صورة المنتج</Label>
+          <p className="mt-1 text-xs leading-6 text-muted-foreground">ارفع صورة واضحة حتى تتحول المعاينة إلى إعلان أقرب للمنتج الحقيقي.</p>
+        </div>
+        {path && <Button type="button" variant="ghost" size="sm" onClick={onClear} className="w-fit gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> إزالة الصورة</Button>}
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-card">
+          {preview ? <img src={preview} alt="معاينة صورة المنتج" className="h-full w-full object-cover" /> : <ImageIcon className="h-8 w-8 text-muted-foreground" />}
+        </div>
+        <label htmlFor="campaign-product-image" className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4 text-center transition-colors hover:bg-primary/10">
+          {uploading ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Upload className="h-6 w-6 text-primary" />}
+          <span className="mt-2 text-sm font-extrabold">{uploading ? "جاري رفع الصورة…" : "اختر صورة المنتج"}</span>
+          <span className="mt-1 text-xs leading-6 text-muted-foreground">PNG أو JPG حتى 5MB. الصورة تبقى محفوظة داخل مساحة حملاتك.</span>
+          <input id="campaign-product-image" type="file" accept="image/*" className="sr-only" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void onUpload(file); event.currentTarget.value = ""; }} />
+        </label>
+      </div>
+    </section>
+  );
+}
+
+function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number }) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
+      <div className="border-b border-border bg-primary/5 p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-extrabold">المعاينة الحية</h2>
+          <span className="rounded-full bg-background px-3 py-1 text-xs font-extrabold text-primary">{progress}% جاهزة</span>
+        </div>
+        <p className="mt-1 text-xs leading-6 text-muted-foreground">كانفاس سريع يوضح تقدم الخطة وكيف ستظهر زاوية البيع قبل الانتقال للتنفيذ.</p>
+      </div>
+      <div className="p-5">
+        <article className="overflow-hidden rounded-lg border border-border bg-background">
+          <div className="relative aspect-[4/5] bg-secondary">
+            {imagePreview ? <img src={imagePreview} alt="صورة المنتج داخل كانفاس الحملة" className="h-full w-full object-cover" /> : <div className="flex h-full flex-col items-center justify-center p-6 text-center text-muted-foreground"><ImageIcon className="h-10 w-10" /><p className="mt-3 text-sm font-bold">ارفع صورة المنتج ليظهر الإعلان بشكل أقرب للحقيقة</p></div>}
+            <div className="absolute inset-x-0 bottom-0 bg-background/90 p-4 backdrop-blur">
+              <p className="text-xs font-bold text-primary">{goalLabel} · {channelLabel}</p>
+              <h3 className="mt-1 line-clamp-2 text-lg font-extrabold">{product.trim() || "اسم المنتج يظهر هنا"}</h3>
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">{hook}</p>
+            </div>
+          </div>
+          <div className="grid gap-2 p-4 text-xs leading-6 text-muted-foreground">
+            <p><span className="font-bold text-foreground">الجمهور:</span> {audience.trim() || "حدّد من سيشتري ولماذا"}</p>
+            <p><span className="font-bold text-foreground">العرض:</span> {offer.trim() || "اكتب سبباً واضحاً للتحرك الآن"}</p>
+            <p><span className="font-bold text-foreground">CTA:</span> {cta}</p>
+            <p><span className="font-bold text-foreground">الصورة:</span> {hasImage ? "مرتبطة بالحملة" : "بانتظار الرفع"}</p>
+          </div>
+        </article>
+      </div>
+    </section>
   );
 }
 
