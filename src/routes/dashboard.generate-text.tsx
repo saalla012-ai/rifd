@@ -242,7 +242,7 @@ function GenerateTextPage() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link to={campaignContext.campaignId ? "/dashboard/campaign-studio" : "/dashboard/library"} search={campaignContext.campaignId ? { campaignId: campaignContext.campaignId, focus: "house" } as never : undefined}>
+                <Link to={campaignContext.campaignId ? "/dashboard/campaign-studio" : "/dashboard/library"} search={campaignContext.campaignId ? { campaignId: campaignContext.campaignId, focus: "house", updatedAsset: "text" } as never : undefined}>
                   {campaignContext.campaignId ? <Megaphone className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />}
                   {campaignContext.campaignId ? "العودة للاستوديو" : "افتح المكتبة"}
                 </Link>
