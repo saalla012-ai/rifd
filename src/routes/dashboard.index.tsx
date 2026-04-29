@@ -317,9 +317,12 @@ function DashboardPage() {
               آخر ما أنشأته
             </h2>
             {recent.length === 0 ? (
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                ابدأ من استوديو الحملات ليظهر هنا أول أصل تسويقي جاهز لإعادة الاستخدام.
-              </p>
+              <GenericEmptyState
+                title="أول أصل ينتظرك"
+                description="ابدأ من استوديو الحملات ليظهر هنا أول نص أو صورة جاهزة لإعادة الاستخدام."
+                actionLabel="ابدأ من الاستوديو"
+                actionTo="/dashboard/campaign-studio"
+              />
             ) : (
               <ul className="mt-3 divide-y divide-border">
                 {recent.map((item) => (
