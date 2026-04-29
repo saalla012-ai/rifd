@@ -203,8 +203,8 @@ function EditImagePage() {
           prompt: finalPrompt,
           templateTitle: customPrompt.trim() ? "تعديل مخصص" : preset.label,
           templateId: customPrompt.trim() ? "custom-edit" : preset.id,
-          campaignId: campaignContext.campaignId,
-          campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined,
+          campaignId: campaignContext.campaignId ?? campaignContext.requestedCampaignId,
+          campaignPackId: campaignContext.campaignId || campaignContext.requestedCampaignId ? search.campaignPackId : undefined,
         },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -365,17 +365,24 @@ function EditImagePage() {
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
             <h3 className="font-bold">النتيجة</h3>
-            {resultUrl && (
-              <a
-                href={resultUrl}
-                download
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent"
-              >
-                <Download className="h-3 w-3" /> تحميل
-              </a>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {resultUrl && campaignContext.requestedCampaignId && (
+                <Button onClick={returnToStudio} size="sm" className="h-8 gap-1 text-xs">
+                  <ArrowLeft className="h-3.5 w-3.5" /> حفظ والعودة للاستوديو
+                </Button>
+              )}
+              {resultUrl && (
+                <a
+                  href={resultUrl}
+                  download
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-8 items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent"
+                >
+                  <Download className="h-3 w-3" /> تحميل
+                </a>
+              )}
+            </div>
           </div>
           <div className="mt-3 flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-secondary/30 text-sm text-muted-foreground">
             {resultUrl ? (
