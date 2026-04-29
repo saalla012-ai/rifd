@@ -18,7 +18,14 @@ import { generateCampaignBrief, saveCampaignPack, type CampaignBrief, type Campa
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
 type DbChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
 type StudioChannel = DbChannel | "email" | "all";
-type CampaignSearch = { __lovable_token?: string };
+type CampaignSearch = {
+  __lovable_token?: string;
+  product?: string;
+  audience?: string;
+  offer?: string;
+  goal?: CampaignGoal;
+  channel?: DbChannel;
+};
 type Option = { value: string; label: string; description?: string };
 
 const GENERATED_IMAGES_BUCKET = "generated-images";
@@ -78,6 +85,11 @@ export const Route = createFileRoute("/dashboard/campaign-studio")({
   head: () => ({ meta: [{ title: "استوديو الحملات الاستراتيجي — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): CampaignSearch => ({
     __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
+    product: typeof s.product === "string" ? s.product.slice(0, 500) : undefined,
+    audience: typeof s.audience === "string" ? s.audience.slice(0, 500) : undefined,
+    offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
+    goal: GOALS.some((goal) => goal.value === s.goal) ? (s.goal as CampaignGoal) : undefined,
+    channel: ["instagram", "snapchat", "tiktok", "whatsapp"].includes(String(s.channel)) ? (s.channel as DbChannel) : undefined,
   }),
   component: CampaignStudioPage,
 });
@@ -87,11 +99,11 @@ function CampaignStudioPage() {
   const savePackFn = useServerFn(saveCampaignPack);
   const generateBriefFn = useServerFn(generateCampaignBrief);
   const previewRef = useRef<HTMLElement | null>(null);
-  const [goal, setGoal] = useState<CampaignGoal | null>(null);
-  const [product, setProduct] = useState("");
-  const [audience, setAudience] = useState(AUDIENCES[0].value);
-  const [offer, setOffer] = useState(OFFERS[0].value);
-  const [channel, setChannel] = useState<StudioChannel>("instagram");
+  const [goal, setGoal] = useState<CampaignGoal | null>(search.goal ?? null);
+  const [product, setProduct] = useState(search.product ?? "");
+  const [audience, setAudience] = useState(search.audience ?? AUDIENCES[0].value);
+  const [offer, setOffer] = useState(search.offer ?? OFFERS[0].value);
+  const [channel, setChannel] = useState<StudioChannel>(search.channel ?? "instagram");
   const [occasion, setOccasion] = useState(OCCASIONS[5].value);
   const [customerStage, setCustomerStage] = useState(CUSTOMER_STAGES[0].value);
   const [activePackId, setActivePackId] = useState<string | undefined>();
