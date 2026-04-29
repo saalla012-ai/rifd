@@ -15,6 +15,7 @@ import { archiveCampaignPack, listCampaignPacks, saveCampaignPack, type Campaign
 type CampaignGoal = "launch" | "clearance" | "upsell" | "leads" | "competitive" | "winback";
 type CampaignChannel = "instagram" | "snapchat" | "tiktok" | "whatsapp";
 type CampaignSearch = {
+  __lovable_token?: string;
   product?: string;
   audience?: string;
   offer?: string;
@@ -85,6 +86,7 @@ const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string
 export const Route = createFileRoute("/dashboard/campaign-studio")({
   head: () => ({ meta: [{ title: "استوديو الحملات — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): CampaignSearch => ({
+    __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     product: typeof s.product === "string" ? s.product.slice(0, 500) : undefined,
     audience: typeof s.audience === "string" ? s.audience.slice(0, 500) : undefined,
     offer: typeof s.offer === "string" ? s.offer.slice(0, 500) : undefined,
