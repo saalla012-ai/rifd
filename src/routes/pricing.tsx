@@ -134,7 +134,7 @@ function PricingPage() {
             نصوص وصور يومية، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
           </h1>
           <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
-            اختر باقتك حسب رصيد نقاط الفيديو. النصوص والصور ضمن سقوف حماية يومية، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
+            اختر قدرة النمو المناسبة لمتجرك. النصوص والصور جزء من تشغيلك اليومي داخل المنتج، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
           </p>
 
           <div className="mx-auto mt-5 grid max-w-3xl gap-2 text-right sm:grid-cols-3">
@@ -285,7 +285,7 @@ function PricingPage() {
             <div className="rounded-2xl border border-border bg-card p-5">
               <Star className="h-6 w-6 text-success" />
               <h2 className="mt-3 font-extrabold">فرق واضح بين المجاني والمدفوع</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">المجاني للتجربة بعلامة Rifd، والمدفوع لفيديوهات نظيفة مع صورة منتج إلزامية لنتائج أقرب للإعلان الحقيقي.</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">المجاني للتجربة بعلامة رِفد، والمدفوع لفيديوهات نظيفة مع صورة منتج إلزامية لنتائج أقرب للإعلان الحقيقي.</p>
             </div>
           </div>
 
