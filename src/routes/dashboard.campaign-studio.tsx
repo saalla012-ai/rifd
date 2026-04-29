@@ -592,7 +592,6 @@ function CampaignHouse({ brief, imagePreview, campaignId, liveHome, loadingLiveH
       </section>
       <AbVariantsSection variants={brief.abVariants} campaignId={campaignId} />
       <PublishingCalendarSection days={brief.publishingCalendar} campaignId={campaignId} />
-      </section>
     </div>
   );
 }
