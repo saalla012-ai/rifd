@@ -131,7 +131,7 @@ function PricingPage() {
             <Film className="h-3.5 w-3.5" /> نظام جديد: نقاط للفيديو فقط
           </div>
           <h1 className="mx-auto mt-4 min-h-[5.75rem] max-w-3xl text-3xl font-extrabold leading-[1.28] sm:min-h-[7.75rem] sm:text-5xl sm:leading-[1.18]">
-            نصوص وصور يومية، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
+            قدرات نمو لمتجرك، <span className="text-gradient-primary">وفيديوهات بنقاط واضحة</span>
           </h1>
           <p className="mx-auto mt-3 min-h-[5.25rem] max-w-2xl text-sm leading-7 text-muted-foreground sm:min-h-[3.5rem] sm:text-base">
             اختر قدرة النمو المناسبة لمتجرك. النصوص والصور جزء من تشغيلك اليومي داخل المنتج، والفيديو يُحاسب فقط بنقاط شفافة: سريع بـ{videoCreditCost("fast", 5)}، إعلاني بـ{videoCreditCost("lite", 8)}، واحترافي بـ{videoCreditCost("quality", 8)} نقطة. نقاط الباقة لا ترحل بعد 30 يوم.
