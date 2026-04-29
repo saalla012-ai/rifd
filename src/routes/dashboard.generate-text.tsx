@@ -75,7 +75,7 @@ function GenerateTextPage() {
       if (!session) throw new Error("سجّل الدخول أولاً");
 
       const out = await generateText({
-        data: { prompt: topic, templateTitle: template.title, templateId: template.id, campaignId: campaignContext.campaignId, campaignPackId: campaignContext.campaignId ? search.campaignPackId : undefined },
+        data: { prompt: topic, templateTitle: template.title, templateId: template.id, campaignId: campaignContext.campaignId ?? search.campaignId, campaignPackId: search.campaignPackId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       setResult(out.result);
