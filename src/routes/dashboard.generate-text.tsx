@@ -58,7 +58,7 @@ function GenerateTextPage() {
     if (search.prompt && !search.smart) return;
     const context = resolveCampaignExecutionContext(campaignContext.campaign, search);
     setTopic(search.smart ? campaignSmartPromptFromContext(context, "text", campaignContext.campaign) : campaignContext.campaign?.text_prompt ?? search.prompt ?? "");
-    if (search.smart) setTemplateId(campaignTextTemplate(campaignContext.campaign));
+    if (search.smart && campaignContext.campaign) setTemplateId(campaignTextTemplate(campaignContext.campaign));
   }, [campaignContext.campaign, search.prompt, search.smart]);
 
   const generate = async () => {
