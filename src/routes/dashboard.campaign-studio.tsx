@@ -41,7 +41,7 @@ const CHANNELS: Array<{ value: CampaignChannel; label: string; output: string }>
 ];
 
 const CAMPAIGN_PRODUCT_IMAGES_BUCKET = "campaign-product-images";
-const PLAN_PROGRESS = 70;
+const PLAN_PROGRESS = 80;
 
 const goalCopy: Record<CampaignGoal, { hook: string; cta: string; visual: string; video: string }> = {
   launch: {
@@ -147,6 +147,7 @@ function CampaignStudioPage() {
     { label: "العرض", done: Boolean(offer.trim()), hint: offer.trim() || "أضف سبباً للشراء الآن" },
     { label: "الصورة", done: Boolean(productImagePath), hint: productImagePath ? "مرتبطة بالحملة" : "ارفع صورة المنتج" },
   ];
+  const nextReadinessStep = readinessChecks.find((check) => !check.done)?.hint ?? "الحملة جاهزة للانتقال إلى أدوات التنفيذ";
 
   const authHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -308,7 +309,7 @@ function CampaignStudioPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-extrabold">نسبة التقدم من الخطة المعتمدة</p>
-              <p className="mt-1 text-xs text-muted-foreground">اكتملت مراجعة الربط والتجاوب، وبدأت طبقة جاهزية الحملة داخل المعاينة.</p>
+              <p className="mt-1 text-xs text-muted-foreground">اكتملت طبقة جاهزية الحملة، وبدأ توجيه الخطوة التالية داخل الكانفاس.</p>
             </div>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">{PLAN_PROGRESS}%</span>
           </div>
@@ -387,7 +388,7 @@ function CampaignStudioPage() {
         </section>
 
         <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} checks={readinessChecks} />
+          <MagicCanvas product={product} audience={audience} offer={offer} goalLabel={selectedGoal.label} channelLabel={selectedChannel.label} hook={strategy.hook} cta={strategy.cta} imagePreview={productImagePreview} hasImage={Boolean(productImagePath)} progress={campaignProgress} checks={readinessChecks} nextStep={nextReadinessStep} />
 
           <section className="rounded-xl border border-border bg-card p-5 shadow-soft">
             <h2 className="font-extrabold">وجهات التنفيذ</h2>
@@ -451,7 +452,7 @@ function ProductImageUploader({ preview, path, uploading, onUpload, onClear }: {
   );
 }
 
-function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress, checks }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number; checks: Array<{ label: string; done: boolean; hint: string }> }) {
+function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, cta, imagePreview, hasImage, progress, checks, nextStep }: { product: string; audience: string; offer: string; goalLabel: string; channelLabel: string; hook: string; cta: string; imagePreview: string | null; hasImage: boolean; progress: number; checks: Array<{ label: string; done: boolean; hint: string }>; nextStep: string }) {
   return (
     <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
       <div className="border-b border-border bg-primary/5 p-5">
