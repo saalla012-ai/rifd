@@ -192,12 +192,14 @@ export const generateImage = createServerFn({ method: "POST" })
       quality: "flash" | "pro";
       campaignId?: string;
       campaignPackId?: string;
+      referenceImageUrl?: string;
     }) => {
       if (!input.prompt?.trim()) throw new Error("وصف الصورة مطلوب");
       if (input.prompt.length > 1500) throw new Error("الوصف طويل جداً");
       if (!["flash", "pro"].includes(input.quality)) throw new Error("جودة غير صحيحة");
       if (input.campaignId && !/^[0-9a-f-]{36}$/i.test(input.campaignId)) throw new Error("معرّف الحملة غير صحيح");
       if (input.campaignPackId && !/^[0-9a-f-]{36}$/i.test(input.campaignPackId)) throw new Error("معرّف الحملة غير صحيح");
+      if (input.referenceImageUrl && !/^https?:\/\//i.test(input.referenceImageUrl)) throw new Error("رابط صورة المنتج غير صحيح");
       return input;
     }
   )
@@ -220,7 +222,10 @@ export const generateImage = createServerFn({ method: "POST" })
       const profile = await loadProfile(supabase, userId);
       const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignId, data.campaignPackId);
       const ctx: StoreContext = profile ?? {};
-      const fullPrompt = buildImagePrompt(ctx, data.prompt, data.templateTitle);
+      const fullPrompt = [
+        buildImagePrompt(ctx, data.prompt, data.templateTitle),
+        data.referenceImageUrl ? "استخدم صورة المنتج المرفقة كمرجع بصري إلزامي: حافظ على هوية المنتج وشكله وألوانه وشعاراته وتفاصيله، وصمّم الإعلان حول نفس المنتج بدون استبداله أو اختراع منتج آخر." : "",
+      ].filter(Boolean).join("\n\n");
 
       const model =
         data.quality === "pro"
@@ -231,7 +236,7 @@ export const generateImage = createServerFn({ method: "POST" })
       try {
         const out = await chatComplete({
           model,
-          messages: [{ role: "user", content: fullPrompt }],
+          messages: [{ role: "user", content: data.referenceImageUrl ? [{ type: "text", text: fullPrompt }, { type: "image_url", image_url: { url: data.referenceImageUrl } }] : fullPrompt }],
           modalities: ["image", "text"],
         });
         imageDataUrl = out.images[0];
@@ -278,6 +283,7 @@ export const generateImage = createServerFn({ method: "POST" })
           source: campaignPack ? "campaign_studio" : "generate_image",
           quality: data.quality,
           storage_path: filename,
+          reference_image_url: data.referenceImageUrl ?? null,
           credits_charged: 0,
           billing_scope: "daily_image_quota",
           ...campaignMetadata(campaignPack),
