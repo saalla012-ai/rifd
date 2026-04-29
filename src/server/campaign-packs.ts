@@ -212,7 +212,7 @@ export const getCampaignContext = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabase
       .from("campaign_packs")
-      .select("id, product, audience, offer, goal, channel, status, brief, text_prompt, image_prompt, video_prompt, product_image_path, created_at, updated_at, user_id")
+      .select("id, product, audience, offer, goal, channel, status, brief, text_prompt, image_prompt, video_prompt, ab_variants, publishing_calendar, product_image_path, created_at, updated_at, user_id")
       .eq("id", id)
       .eq("user_id", userId)
       .maybeSingle();
@@ -238,6 +238,8 @@ export const saveCampaignPack = createServerFn({ method: "POST" })
       text_prompt: data.textPrompt,
       image_prompt: data.imagePrompt,
       video_prompt: data.videoPrompt,
+      ab_variants: data.abVariants,
+      publishing_calendar: data.publishingCalendar,
       product_image_path: data.productImagePath ?? null,
     };
 
@@ -274,8 +276,20 @@ export const generateCampaignBrief = createServerFn({ method: "POST" })
             textPrompt: { type: "string" },
             imagePrompt: { type: "string" },
             videoPrompt: { type: "string" },
+            abVariants: {
+              type: "array",
+              minItems: 3,
+              maxItems: 3,
+              items: { type: "object", properties: { style: { type: "string" }, icon: { type: "string" }, hook: { type: "string" }, message: { type: "string" }, cta: { type: "string" } }, required: ["style", "icon", "hook", "message", "cta"] },
+            },
+            publishingCalendar: {
+              type: "array",
+              minItems: 7,
+              maxItems: 7,
+              items: { type: "object", properties: { day: { type: "number" }, label: { type: "string" }, channel: { type: "string" }, contentType: { type: "string" }, message: { type: "string" }, goal: { type: "string" } }, required: ["day", "label", "channel", "contentType", "message", "goal"] },
+            },
           },
-          required: ["campaignName", "corePromise", "marketingMessage", "hook", "cta", "strategyAngle", "textPrompt", "imagePrompt", "videoPrompt"],
+          required: ["campaignName", "corePromise", "marketingMessage", "hook", "cta", "strategyAngle", "textPrompt", "imagePrompt", "videoPrompt", "abVariants", "publishingCalendar"],
         },
       },
       messages: [
@@ -296,7 +310,7 @@ export const generateCampaignBrief = createServerFn({ method: "POST" })
             `قناة النشر: ${data.channelLabel || data.channel}`,
             `مناسبة الحملة: ${data.occasion}`,
             `مرحلة العميل: ${data.customerStage}`,
-            "المطلوب: اسم حملة، وعد أساسي، رسالة تسويقية، خطّاف افتتاحي، دعوة إجراء، توجيه جاهز لأداة النص، توجيه جاهز لأداة الصورة، وتوجيه جاهز لأداة الفيديو. اجعل المخرجات سهلة التنفيذ داخل أدوات النص والصورة والفيديو.",
+            "المطلوب: اسم حملة، وعد أساسي، رسالة تسويقية، خطّاف افتتاحي، دعوة إجراء، توجيه جاهز لأداة النص، توجيه جاهز لأداة الصورة، وتوجيه جاهز لأداة الفيديو، 3 نسخ A/B مختلفة قابلة للاستخدام، وتقويم نشر 7 أيام. اجعل كل المخرجات عملية وآمنة وتناسب تاجر سعودي.",
           ].join("\n"),
         },
       ],
@@ -316,6 +330,8 @@ export const generateCampaignBrief = createServerFn({ method: "POST" })
       text_prompt: trimTo(brief.textPrompt, 5000),
       image_prompt: trimTo(brief.imagePrompt, 3000),
       video_prompt: trimTo(brief.videoPrompt, 3000),
+      ab_variants: brief.abVariants,
+      publishing_calendar: brief.publishingCalendar,
       product_image_path: data.productImagePath ?? null,
     };
 
