@@ -161,6 +161,7 @@ function GenerateVideoPage() {
   const [previewError, setPreviewError] = useState(false);
   const [downloadingVideo, setDownloadingVideo] = useState(false);
   const [quotaDialog, setQuotaDialog] = useState<{ open: boolean; reason?: string }>({ open: false });
+  const resolvedCampaignContext = resolveCampaignExecutionContext(campaignContext.campaign, search);
 
   const effectiveDurationSeconds = videoTierDuration(quality);
   const isPaidPlan = credits?.plan ? credits.plan !== "free" : false;
@@ -333,7 +334,7 @@ function GenerateVideoPage() {
     if (search.prompt && !search.smart) return;
     if (!campaignContext.campaign && !search.smart) return;
     const context = resolveCampaignExecutionContext(campaignContext.campaign, search);
-    setPrompt(search.smart ? campaignSmartPromptFromContext(context, "video", campaignContext.campaign) : campaignContext.campaign?.video_prompt ?? search.prompt ?? "");
+    setPrompt((search.smart ? campaignSmartPromptFromContext(context, "video", campaignContext.campaign) : campaignContext.campaign?.video_prompt ?? search.prompt ?? "").slice(0, 1800));
     if (search.smart) {
       if (context.channel?.toLowerCase().includes("tiktok") || context.channel?.includes("تيك")) setAspectRatio("9:16");
       if (campaignContext.campaign) {
@@ -432,7 +433,7 @@ function GenerateVideoPage() {
         </Button>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolveCampaignExecutionContext(campaignContext.campaign, search))} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolvedCampaignContext)} context={resolvedCampaignContext} />
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">
