@@ -443,9 +443,9 @@ function MagicCanvas({ product, audience, offer, goalLabel, channelLabel, hook, 
       <div className="border-b border-border bg-primary/5 p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-extrabold">المعاينة الحية</h2>
-          <span className="rounded-full bg-background px-3 py-1 text-xs font-extrabold text-primary">{progress}% جاهزة</span>
+          <span className="rounded-full bg-background px-3 py-1 text-xs font-extrabold text-primary">جاهزية الحملة {progress}%</span>
         </div>
-        <p className="mt-1 text-xs leading-6 text-muted-foreground">كانفاس سريع يوضح تقدم الخطة وكيف ستظهر زاوية البيع قبل الانتقال للتنفيذ.</p>
+        <p className="mt-1 text-xs leading-6 text-muted-foreground">كانفاس سريع يوضح جاهزية هذه الحملة وكيف ستظهر زاوية البيع قبل الانتقال للتنفيذ.</p>
       </div>
       <div className="p-5">
         <article className="overflow-hidden rounded-lg border border-border bg-background">
