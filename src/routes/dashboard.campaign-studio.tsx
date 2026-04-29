@@ -653,7 +653,24 @@ function CampaignCompletion({ liveHome, loading }: { liveHome: CampaignLiveHome 
   return <Badge variant="outline" className="bg-background text-xs">{loading ? "يتم التحديث…" : `${done}/3 · ${percent}%`}</Badge>;
 }
 
-function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean }) {
+function NextBestAction({ liveHome, campaignId, brief }: { liveHome: CampaignLiveHome | null; campaignId?: string; brief: CampaignBrief }) {
+  const hasText = Boolean(liveHome?.text);
+  const hasImage = Boolean(liveHome?.image);
+  const hasVideo = Boolean(liveHome?.video?.status === "completed" && liveHome.video.result_url);
+  if (hasText && hasImage && hasVideo) {
+    return <div className="rounded-lg border border-success/20 bg-success/10 p-3 text-sm font-bold text-success">حملتك مكتملة. راجع كل الأصول في المكتبة أو ابدأ حملة جديدة.</div>;
+  }
+  const action = hasImage && !hasText
+    ? { text: "الآن وقد أصبحت الصورة جاهزة، هل تود كتابة نص إعلاني يطابقها؟", label: "اكتب نصاً", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt }
+    : hasText && !hasImage
+      ? { text: "النص جاهز. حوّله الآن إلى صورة إعلان توقف التمرير.", label: "صمّم صورة", to: "/dashboard/edit-image" as const, prompt: brief.imagePrompt }
+      : hasText && hasImage && !hasVideo
+        ? { text: "الحملة جاهزة بصرياً. حوّلها إلى فيديو قصير مناسب لريلز وتيك توك.", label: "أنشئ فيديو", to: "/dashboard/generate-video" as const, prompt: brief.videoPrompt }
+        : { text: "ابدأ بأول أصل للحملة حتى يتحول البيت من خطة إلى مخرجات جاهزة.", label: "اكتب نصاً يبيع", to: "/dashboard/generate-text" as const, prompt: brief.textPrompt };
+  return <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm"><p className="font-bold text-foreground">{action.text}</p><Button asChild size="sm" className="mt-3 h-8 text-xs"><Link to={action.to} search={{ prompt: action.prompt, campaignId } as never}>{action.label}</Link></Button></div>;
+}
+
+function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading, updated }: { kind: "text" | "image" | "video"; title: string; prompt: string; campaignId?: string; item: CampaignLiveHome["text"] | CampaignLiveHome["image"] | CampaignLiveHome["video"] | null; loading: boolean; updated?: boolean }) {
   const route = kind === "text" ? "/dashboard/generate-text" : kind === "image" ? "/dashboard/edit-image" : "/dashboard/generate-video";
   const Icon = kind === "text" ? FileText : kind === "image" ? ImageIcon : Clapperboard;
   const isVideo = kind === "video";
@@ -666,7 +683,7 @@ function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { ki
   const imageItem = kind === "image" ? (item as CampaignLiveHome["image"] | null) : null;
 
   return (
-    <article className="rounded-lg border border-border bg-card p-3">
+    <article className={cn("rounded-lg border border-border bg-card p-3 transition-all duration-500", updated && "border-success/60 ring-4 ring-success/15")}>
       <div className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-primary/10 text-primary">
           {imageItem?.url ? <img src={imageItem.url} alt="صورة مصغرة من الحملة" className="h-full w-full object-cover" /> : active ? <Loader2 className="h-4 w-4 animate-spin" /> : complete ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Icon className="h-4 w-4" />}
@@ -676,6 +693,7 @@ function LiveOutputSlot({ kind, title, prompt, campaignId, item, loading }: { ki
             <h4 className="font-extrabold">{title}</h4>
             <span className={cn("text-[11px] font-bold", complete ? "text-success" : active ? "text-warning-foreground" : failed ? "text-destructive" : "text-muted-foreground")}>{loading ? "تحميل" : complete ? "مكتمل" : active ? "قيد المعالجة" : failed ? "يحتاج إعادة" : "لم يُنفذ بعد"}</span>
           </div>
+          {updated && <div className="mt-1 inline-flex rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">تم تحديث {title} بنجاح</div>}
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{textItem?.result ? textItem.result.slice(0, 100) : imageItem?.prompt || video?.prompt || "ابدأ من هذه الفتحة لإكمال الحملة."}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {video?.result_url && complete ? <Button asChild size="sm" variant="outline" className="h-8 gap-1 text-xs"><a href={video.result_url} target="_blank" rel="noreferrer"><PlayCircle className="h-3.5 w-3.5" /> {buttonLabel}</a></Button> : <Button asChild size="sm" variant={complete ? "outline" : "default"} className="h-8 text-xs"><Link to={route} search={{ prompt, campaignId } as never}>{buttonLabel}</Link></Button>}
