@@ -531,7 +531,7 @@ function SavedPacksSection({ packs, loading, activePackId, onOpen, onArchive }: 
   );
 }
 
-function OutputStep({ icon: Icon, title, desc, to, payload, saving, onOpen }: { icon: typeof Wand2; title: string; desc: string; to: OutputToolRoute; payload: string; saving: boolean; onOpen: (to: OutputToolRoute, payload: string) => Promise<void> }) {
+function OutputStep({ icon: Icon, title, desc, to, payload, saving, ready, onOpen }: { icon: typeof Wand2; title: string; desc: string; to: OutputToolRoute; payload: string; saving: boolean; ready: boolean; onOpen: (to: OutputToolRoute, payload: string) => Promise<void> }) {
   const copy = async () => {
     await navigator.clipboard.writeText(payload);
     toast.success(`تم نسخ ${title}`);
@@ -542,6 +542,7 @@ function OutputStep({ icon: Icon, title, desc, to, payload, saving, onOpen }: { 
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="h-5 w-5" /></div>
         <div className="min-w-0 flex-1"><p className="font-extrabold">{title}</p><p className="mt-1 text-xs text-muted-foreground">{desc}</p></div>
+        <span className={cn("shrink-0 rounded-full px-2 py-1 text-[10px] font-extrabold", ready ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground")}>{ready ? "جاهز" : "ناقص"}</span>
       </div>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Button type="button" variant="outline" size="sm" onClick={copy} className="flex-1 gap-1"><Copy className="h-3.5 w-3.5" /> نسخ</Button>
