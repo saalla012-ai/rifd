@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, Clapperboard, Coins, DollarSign, ExternalLink, Loader2, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import { AlertTriangle, Clapperboard, Coins, DollarSign, ExternalLink, FolderKanban, Loader2, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGuard, adminBeforeLoad } from "@/components/admin-guard";
 import { DashboardShell } from "@/components/dashboard-shell";
