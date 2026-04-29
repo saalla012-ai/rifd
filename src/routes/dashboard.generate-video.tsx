@@ -24,6 +24,7 @@ type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
 type VideoSearch = {
+  __lovable_token?: string;
   prompt?: string;
   campaignPackId?: string;
   quality?: VideoQuality;
@@ -98,6 +99,7 @@ async function imageUrlToDataUrl(value: string) {
 export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "أنشئ فيديو قصير — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
+    __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
     quality: s.quality === "fast" || s.quality === "lite" || s.quality === "quality" ? s.quality : undefined,

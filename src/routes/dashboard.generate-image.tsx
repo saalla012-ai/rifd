@@ -16,11 +16,12 @@ import { useCreditsSummary } from "@/hooks/use-credits-summary";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
 
-type ImgSearch = { template?: string; prompt?: string; campaignPackId?: string };
+type ImgSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-image")({
   head: () => ({ meta: [{ title: "صمّم صورة إعلان — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): ImgSearch => ({
+    __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,

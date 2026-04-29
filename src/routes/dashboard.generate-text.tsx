@@ -18,11 +18,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { getMemorySignals, getSmartPromptSuggestions } from "@/lib/memory-insights";
 import { track } from "@/lib/analytics/posthog";
 
-type TextSearch = { template?: string; prompt?: string; campaignPackId?: string };
+type TextSearch = { __lovable_token?: string; template?: string; prompt?: string; campaignPackId?: string };
 
 export const Route = createFileRoute("/dashboard/generate-text")({
   head: () => ({ meta: [{ title: "اكتب نصاً يبيع — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): TextSearch => ({
+    __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
     template: typeof s.template === "string" ? s.template : undefined,
     prompt: typeof s.prompt === "string" ? s.prompt : undefined,
     campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
