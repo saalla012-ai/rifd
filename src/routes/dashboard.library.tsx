@@ -162,7 +162,7 @@ function LibraryPage() {
   const campaignGroups = buildCampaignGroups(items, videoJobs);
   const visibleCampaignGroups = search.campaignId ? campaignGroups.filter((group) => group.id === search.campaignId) : campaignGroups;
   const campaignItemCount = campaignGroups.reduce((total, group) => total + group.text + group.image + group.video, 0);
-  const completedCampaignCount = campaignGroups.filter((group) => group.completedSlots === 3).length;
+  const completedCampaignCount = visibleCampaignGroups.filter((group) => group.completedSlots === 3).length;
   const shouldShowVideoSection = scopedVideoJobs.length > 0 && (filter === "all" || filter === "video");
   const hasVisibleItems = filter === "video"
     ? scopedVideoJobs.length > 0
