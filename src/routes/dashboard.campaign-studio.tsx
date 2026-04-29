@@ -664,6 +664,8 @@ function briefFromPack(pack: CampaignPack): CampaignBrief {
     textPrompt: pack.text_prompt,
     imagePrompt: pack.image_prompt,
     videoPrompt: pack.video_prompt,
+    abVariants: pack.ab_variants ?? [],
+    publishingCalendar: pack.publishing_calendar ?? [],
   };
 }
 
