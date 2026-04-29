@@ -260,7 +260,7 @@ function LibraryPage() {
               <div className="mt-3">
                 {campaignKey(g.metadata) && (
                   <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[11px] leading-5 text-primary">
-                    من حملة: {g.metadata.campaign_product || "حملة محفوظة"} · {g.metadata.campaign_channel || "قناة"}
+                    من حملة: {g.metadata?.campaign_product || "حملة محفوظة"} · {g.metadata?.campaign_channel || "قناة"}
                   </div>
                 )}
                 {g.type === "text" ? (
