@@ -10,6 +10,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -120,6 +121,19 @@ function CampaignStudioPage() {
   const occasionOption = findOption(OCCASIONS, occasion);
   const stageOption = findOption(CUSTOMER_STAGES, customerStage);
   const dbChannel = toDbChannel(channel);
+  const planProgressItems = useMemo(
+    () => [
+      { label: "هدف الحملة", done: Boolean(goal) },
+      { label: "اسم المنتج", done: product.trim().length >= 2 },
+      { label: "صورة المنتج", done: Boolean(productImagePath || productImagePreview) },
+      { label: "الجمهور", done: Boolean(audience) },
+      { label: "العرض", done: Boolean(offer) },
+      { label: "القناة", done: Boolean(channel) },
+      { label: "مرحلة العميل", done: Boolean(customerStage) },
+    ],
+    [audience, channel, customerStage, goal, offer, product, productImagePath, productImagePreview],
+  );
+  const planProgress = Math.round((planProgressItems.filter((item) => item.done).length / planProgressItems.length) * 100);
 
   const draftBrief = useMemo(() => {
     return [
@@ -274,6 +288,25 @@ function CampaignStudioPage() {
               <h2 className="mt-1 text-lg font-extrabold">ابدأ من القرار التجاري</h2>
             </div>
 
+            <section className="rounded-lg border border-border bg-background p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-extrabold">تقدّم الخطة</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">كل ما اكتملت المدخلات، صارت الخطة أدق وأسهل للتنفيذ.</p>
+                </div>
+                <Badge className="bg-primary text-primary-foreground">{planProgress}%</Badge>
+              </div>
+              <Progress value={planProgress} className="mt-3 h-2" />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {planProgressItems.map((item) => (
+                  <Badge key={item.label} variant="outline" className={cn("border-border bg-card text-xs", item.done && "border-primary/30 bg-primary/5 text-primary")}>
+                    {item.done && <Check className="h-3 w-3" />}
+                    {item.label}
+                  </Badge>
+                ))}
+              </div>
+            </section>
+
             <div>
               <Label className="text-sm font-extrabold">هدف الحملة</Label>
               <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -420,7 +453,7 @@ function MagicCanvas({ refEl, goal, product, audience, offer, channel, imagePrev
     <aside ref={refEl} className="space-y-4 lg:sticky lg:top-6 lg:self-start">
       <section className="overflow-hidden rounded-xl border border-primary/20 bg-card shadow-soft">
         <div className="border-b border-border bg-primary/5 p-4">
-          <p className="text-xs font-bold text-primary">The Magic Canvas</p>
+          <p className="text-xs font-bold text-primary">كانفاس الحملة</p>
           <h2 className="mt-1 text-lg font-extrabold">المعاينة الحية</h2>
         </div>
         <div className="p-4">
@@ -474,8 +507,8 @@ function CampaignHouse({ brief, imagePreview }: { brief: CampaignBrief; imagePre
           <div className="mt-4 space-y-3 text-sm leading-7">
             <InfoLine label="الوعد الأساسي" value={brief.corePromise} />
             <InfoLine label="الرسالة التسويقية" value={brief.marketingMessage} />
-            <InfoLine label="Hook" value={brief.hook} />
-            <InfoLine label="CTA" value={brief.cta} />
+            <InfoLine label="الخطّاف" value={brief.hook} />
+            <InfoLine label="دعوة الإجراء" value={brief.cta} />
           </div>
         </div>
       </article>
