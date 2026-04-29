@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { useCampaignContext } from "@/hooks/useCampaignContext";
 import { useCreditsSummary } from "@/hooks/use-credits-summary";
-import { campaignSmartPrompt, campaignVideoDefaults } from "@/lib/campaign-smart-context";
+import { campaignContextSummary, campaignSmartPromptFromContext, campaignVideoDefaults, parseCampaignExecutionSearch, resolveCampaignExecutionContext, type CampaignExecutionContext } from "@/lib/campaign-smart-context";
 import { videoTierDuration } from "@/lib/plan-catalog";
 import { SAUDI_VIDEO_LAUNCH_PROMPT_TEMPLATES, SAUDI_VIDEO_MEDIUM_TEST_TEMPLATE_IDS, SAUDI_VIDEO_PERSONAS, SAUDI_VIDEO_PROMPT_TEMPLATES, buildSaudiVideoMediumTestSample } from "@/lib/saudi-video-test";
 import personaMaleYoung from "@/assets/saudi-persona-male-young.jpg";
@@ -26,7 +26,7 @@ import personaRetailSeller from "@/assets/saudi-persona-retail-seller.jpg";
 type VideoQuality = "fast" | "lite" | "quality";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type VideoJob = Awaited<ReturnType<typeof listVideoJobs>>["jobs"][number];
-type VideoSearch = {
+type VideoSearch = CampaignExecutionContext & {
   __lovable_token?: string;
   prompt?: string;
   campaignId?: string;
@@ -105,13 +105,10 @@ export const Route = createFileRoute("/dashboard/generate-video")({
   head: () => ({ meta: [{ title: "أنشئ فيديو قصير — رِفد" }] }),
   validateSearch: (s: Record<string, unknown>): VideoSearch => ({
     __lovable_token: typeof s.__lovable_token === "string" ? s.__lovable_token : undefined,
-    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
-    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
-    campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
+    ...parseCampaignExecutionSearch(s),
     quality: s.quality === "fast" || s.quality === "lite" || s.quality === "quality" ? s.quality : undefined,
     aspectRatio: s.aspectRatio === "9:16" || s.aspectRatio === "1:1" || s.aspectRatio === "16:9" ? s.aspectRatio : undefined,
     selectedPersonaId: typeof s.selectedPersonaId === "string" ? s.selectedPersonaId : undefined,
-    smart: s.smart === true || s.smart === "true" ? true : undefined,
     source: s.source === "medium-test" ? "medium-test" : undefined,
     mediumTestSampleId: typeof s.mediumTestSampleId === "string" ? s.mediumTestSampleId : undefined,
     mediumTestTemplateId: typeof s.mediumTestTemplateId === "string" ? s.mediumTestTemplateId : undefined,
@@ -332,13 +329,19 @@ function GenerateVideoPage() {
   }, [internalMediumTestMode, mediumTestCanonicalSample]);
 
   useEffect(() => {
-    if (internalMediumTestMode || search.prompt || !campaignContext.campaign?.video_prompt) return;
-    setPrompt(search.smart ? campaignSmartPrompt(campaignContext.campaign, "video") : campaignContext.campaign.video_prompt);
+    if (internalMediumTestMode) return;
+    if (search.prompt && !search.smart) return;
+    if (!campaignContext.campaign && !search.smart) return;
+    const context = resolveCampaignExecutionContext(campaignContext.campaign, search);
+    setPrompt(search.smart ? campaignSmartPromptFromContext(context, "video", campaignContext.campaign) : campaignContext.campaign?.video_prompt ?? search.prompt ?? "");
     if (search.smart) {
-      const defaults = campaignVideoDefaults(campaignContext.campaign);
-      setAspectRatio(defaults.aspectRatio);
-      setSelectedPersonaId(defaults.selectedPersonaId);
-      setSelectedTemplateId(defaults.templateId);
+      if (context.channel?.toLowerCase().includes("tiktok") || context.channel?.includes("تيك")) setAspectRatio("9:16");
+      if (campaignContext.campaign) {
+        const defaults = campaignVideoDefaults(campaignContext.campaign);
+        setAspectRatio(defaults.aspectRatio);
+        setSelectedPersonaId(defaults.selectedPersonaId);
+        setSelectedTemplateId(defaults.templateId);
+      }
     }
   }, [campaignContext.campaign, internalMediumTestMode, search.prompt, search.smart]);
 
@@ -429,7 +432,7 @@ function GenerateVideoPage() {
         </Button>
       </div>
 
-      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} />
+      <CampaignContextBar campaign={campaignContext.campaign} campaignId={campaignContext.requestedCampaignId} loading={campaignContext.loading} error={campaignContext.error} summary={campaignContextSummary(resolveCampaignExecutionContext(campaignContext.campaign, search))} />
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-soft">

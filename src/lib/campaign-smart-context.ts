@@ -1,5 +1,22 @@
 import type { CampaignPack } from "@/server/campaign-packs";
 
+export type CampaignExecutionContext = {
+  campaignId?: string;
+  campaignPackId?: string;
+  prompt?: string;
+  smart?: boolean;
+  sector?: string;
+  audience?: string;
+  offer?: string;
+  channel?: string;
+  occasion?: string;
+  customerStage?: string;
+  goal?: CampaignPack["goal"] | string;
+  productName?: string;
+};
+
+const executionKeys = ["campaignId", "campaignPackId", "prompt", "sector", "audience", "offer", "channel", "occasion", "customerStage", "goal", "productName"] as const;
+
 const goalLabel: Record<CampaignPack["goal"], string> = {
   launch: "إطلاق منتج",
   clearance: "تصفية المخزون",
@@ -10,18 +27,50 @@ const goalLabel: Record<CampaignPack["goal"], string> = {
 };
 
 export function campaignSmartPrompt(campaign: CampaignPack, kind: "text" | "image" | "video") {
-  const base = [
-    `المنتج: ${campaign.product}`,
-    `هدف الحملة: ${goalLabel[campaign.goal]}`,
-    `الجمهور: ${campaign.audience}`,
-    `العرض: ${campaign.offer}`,
-    `القناة: ${campaign.channel}`,
-    campaign.brief ? `ملخص الحملة:\n${campaign.brief}` : "",
-  ].filter(Boolean).join("\n");
+  return campaignSmartPromptFromContext(resolveCampaignExecutionContext(campaign), kind, campaign);
+}
 
-  if (kind === "text") return [base, campaign.text_prompt, "اكتب نصاً يبيع بصياغة سعودية واضحة: هوك، فائدة، عرض، ودعوة إجراء مباشرة."].filter(Boolean).join("\n\n");
-  if (kind === "image") return [base, campaign.image_prompt, "صمّم صورة إعلان للمنتج: المنتج واضح، مساحة للنص العربي، العرض ظاهر بدون مبالغة، ومناسبة للقناة المختارة."].filter(Boolean).join("\n\n");
-  return [base, campaign.video_prompt, "حوّلها إلى فيديو قصير: أول ثانيتين تشد الانتباه، المنتج واضح، حركة بسيطة، ونهاية بدعوة إجراء."].filter(Boolean).join("\n\n");
+export function campaignSmartPromptFromContext(context: CampaignExecutionContext, kind: "text" | "image" | "video", campaign?: CampaignPack | null) {
+  const goal = context.goal ? goalLabel[context.goal as CampaignPack["goal"]] ?? context.goal : campaign?.goal ? goalLabel[campaign.goal] : "";
+  const base = buildCampaignContextLines(context, campaign, goal).join("\n");
+
+  if (kind === "text") return [base, context.prompt || campaign?.text_prompt, textDirection(context), "اكتب نصاً يبيع بصياغة سعودية واضحة: هوك، فائدة، عرض، ودعوة إجراء مباشرة."].filter(Boolean).join("\n\n");
+  if (kind === "image") return [base, context.prompt || campaign?.image_prompt, imageDirection(context), "صمّم صورة إعلان للمنتج: المنتج واضح، مساحة للنص العربي، العرض ظاهر بدون مبالغة، ومناسبة للقناة المختارة."].filter(Boolean).join("\n\n");
+  return [base, context.prompt || campaign?.video_prompt, videoDirection(context), "حوّلها إلى فيديو قصير: أول ثانيتين تشد الانتباه، المنتج واضح، حركة بسيطة، ونهاية بدعوة إجراء."].filter(Boolean).join("\n\n");
+}
+
+export function resolveCampaignExecutionContext(campaign?: CampaignPack | null, search: CampaignExecutionContext = {}): CampaignExecutionContext {
+  return {
+    ...search,
+    campaignId: search.campaignId ?? campaign?.id,
+    productName: search.productName ?? campaign?.product,
+    audience: search.audience ?? campaign?.audience,
+    offer: search.offer ?? campaign?.offer,
+    channel: search.channel ?? campaign?.channel,
+    goal: search.goal ?? campaign?.goal,
+  };
+}
+
+export function parseCampaignExecutionSearch(s: Record<string, unknown>): CampaignExecutionContext {
+  const out: CampaignExecutionContext = { smart: s.smart === true || s.smart === "true" ? true : undefined };
+  for (const key of executionKeys) {
+    const value = s[key];
+    if (typeof value === "string" && value.trim()) out[key] = value.slice(0, key === "prompt" ? 5000 : 500) as never;
+  }
+  return out;
+}
+
+export function campaignExecutionSearch(context: CampaignExecutionContext, prompt?: string): CampaignExecutionContext {
+  return Object.fromEntries(Object.entries({ ...context, prompt, smart: true }).filter(([, value]) => value !== undefined && value !== "")) as CampaignExecutionContext;
+}
+
+export function campaignContextSummary(context: CampaignExecutionContext) {
+  return [
+    context.productName ? `📢 حملة: ${context.productName}` : "📢 حملة محفوظة",
+    context.goal ? `🎯 ${goalLabel[context.goal as CampaignPack["goal"]] ?? context.goal}` : "",
+    context.audience ? `👥 ${context.audience}` : "",
+    context.offer ? `🏷️ ${context.offer}` : "",
+  ].filter(Boolean).join(" | ");
 }
 
 export function campaignTextTemplate(campaign: CampaignPack) {
@@ -51,4 +100,46 @@ export function campaignEditPreset(campaign: CampaignPack) {
   if (campaign.channel === "instagram" || campaign.channel === "snapchat") return "instagram-square";
   if (campaign.goal === "clearance") return "add-text";
   return "enhance";
+}
+
+export function campaignEditPresetFromContext(context: CampaignExecutionContext, campaign?: CampaignPack | null) {
+  const resolved = resolveCampaignExecutionContext(campaign, context);
+  if (resolved.goal === "launch" || resolved.audience?.includes("الفخامة")) return "luxury-bg";
+  if (resolved.goal === "clearance") return "add-text";
+  if (resolved.channel?.includes("انستقرام") || resolved.channel?.includes("سناب") || resolved.channel === "instagram" || resolved.channel === "snapchat") return "instagram-square";
+  return "enhance";
+}
+
+function buildCampaignContextLines(context: CampaignExecutionContext, campaign: CampaignPack | null | undefined, goal: string) {
+  return [
+    `المنتج: ${context.productName ?? campaign?.product ?? "غير محدد"}`,
+    context.sector ? `قطاع المتجر: ${context.sector}` : "",
+    goal ? `هدف الحملة: ${goal}` : "",
+    context.audience ? `الجمهور: ${context.audience}` : "",
+    context.offer ? `العرض: ${context.offer}` : "",
+    context.channel ? `القناة: ${context.channel}` : "",
+    context.occasion ? `المناسبة: ${context.occasion}` : "",
+    context.customerStage ? `مرحلة العميل: ${context.customerStage}` : "",
+    campaign?.brief ? `ملخص الحملة:\n${campaign.brief}` : "",
+  ].filter(Boolean);
+}
+
+function textDirection(context: CampaignExecutionContext) {
+  const lines = [];
+  if (context.audience?.includes("الفخامة")) lines.push("اكتب بأسلوب فاخر وانتقائي بدون مبالغة.");
+  if (context.occasion?.includes("رمضان")) lines.push("اجعل الصياغة مناسبة لروح رمضان والهدية والكرم.");
+  if (context.customerStage?.includes("جدد")) lines.push("عرّف بالقيمة بسرعة واطلب إجراء بسيطاً.");
+  return lines.join(" ");
+}
+
+function imageDirection(context: CampaignExecutionContext) {
+  if (context.goal === "clearance") return "استخدم إحساس عرض نهاية الموسم: السعر/العرض واضح والمنتج بطل الصورة.";
+  if (context.audience?.includes("الفخامة")) return "اتجاه بصري فاخر: خامات راقية، إضاءة ناعمة، ومساحة عربية نظيفة للنص.";
+  return "اجعل الأسلوب مناسباً للقناة والجمهور مع أولوية وضوح المنتج.";
+}
+
+function videoDirection(context: CampaignExecutionContext) {
+  if (context.channel?.toLowerCase().includes("tiktok")) return "فيديو عمودي 9:16، إيقاع سريع، حركة أول ثانية، وموسيقى ترند خفيفة مناسبة للإعلان.";
+  if (context.channel?.includes("واتساب") || context.channel?.toLowerCase().includes("whatsapp")) return "فيديو قصير مباشر يمكن إرساله في واتساب: عرض واضح وCTA سريع.";
+  return "اختر أسلوب فيديو قصير مناسب للقناة، بإيقاع إعلاني واضح وموسيقى خفيفة.";
 }
