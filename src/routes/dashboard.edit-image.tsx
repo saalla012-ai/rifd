@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { createFileRoute, Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import {
   Upload,
   Wand2,
@@ -7,6 +7,8 @@ import {
   Download,
   X,
   Image as ImageIcon,
+  Megaphone,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -20,6 +22,9 @@ import {
   QuotaExceededDialog,
   isQuotaError,
 } from "@/components/quota-exceeded-dialog";
+import { useCampaignContext } from "@/hooks/useCampaignContext";
+
+type EditImageSearch = { campaignId?: string; campaignPackId?: string; prompt?: string };
 
 export const Route = createFileRoute("/dashboard/edit-image")({
   head: () => ({
@@ -31,6 +36,11 @@ export const Route = createFileRoute("/dashboard/edit-image")({
           "ارفع صورة المنتج وحسّنها لإعلان أو صفحة متجر: خلفية أنظف، إضاءة أوضح، ونص عربي عند الحاجة.",
       },
     ],
+  }),
+  validateSearch: (s: Record<string, unknown>): EditImageSearch => ({
+    campaignId: typeof s.campaignId === "string" ? s.campaignId : undefined,
+    campaignPackId: typeof s.campaignPackId === "string" ? s.campaignPackId : undefined,
+    prompt: typeof s.prompt === "string" ? s.prompt : undefined,
   }),
   component: EditImagePage,
 });
@@ -84,11 +94,16 @@ const MAX_BYTES = 8 * 1024 * 1024; // 8MB قبل الترميز
 
 function EditImagePage() {
   const router = useRouter();
+  const navigate = useNavigate({ from: "/dashboard/edit-image" });
+  const search = useSearch({ from: "/dashboard/edit-image" });
+  const campaignContext = useCampaignContext({ campaignId: search.campaignId, campaignPackId: search.campaignPackId });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoLoadedPathRef = useRef<string | null>(null);
+  const userPickedImageRef = useRef(false);
   const [originalDataUrl, setOriginalDataUrl] = useState<string | null>(null);
   const [originalName, setOriginalName] = useState<string>("");
   const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
-  const [customPrompt, setCustomPrompt] = useState<string>("");
+  const [customPrompt, setCustomPrompt] = useState<string>(search.prompt ?? "");
   const [loading, setLoading] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -99,8 +114,40 @@ function EditImagePage() {
 
   const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
 
+  useEffect(() => {
+    const productImagePath = campaignContext.campaign?.product_image_path;
+    if (!productImagePath || userPickedImageRef.current || autoLoadedPathRef.current === productImagePath) return;
+
+    let alive = true;
+    autoLoadedPathRef.current = productImagePath;
+    supabase.storage
+      .from("campaign-product-images")
+      .createSignedUrl(productImagePath, 60 * 10)
+      .then(async ({ data, error }) => {
+        if (error || !data?.signedUrl) throw new Error(error?.message ?? "تعذر تحميل صورة المنتج");
+        const response = await fetch(data.signedUrl);
+        if (!response.ok) throw new Error("تعذر تحميل صورة المنتج");
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (!alive || userPickedImageRef.current) return;
+          setOriginalDataUrl(reader.result as string);
+          setOriginalName("صورة المنتج من الحملة");
+          setResultUrl(null);
+        };
+        reader.onerror = () => { throw new Error("تعذر قراءة صورة المنتج"); };
+        reader.readAsDataURL(blob);
+      })
+      .catch(() => {
+        if (alive) toast.error("تعذر تحميل صورة المنتج تلقائياً، يمكنك رفعها يدوياً");
+      });
+
+    return () => { alive = false; };
+  }, [campaignContext.campaign?.product_image_path]);
+
   const handleFile = (file: File | null | undefined) => {
     if (!file) return;
+    userPickedImageRef.current = true;
     if (!file.type.startsWith("image/")) {
       toast.error("الملف يجب أن يكون صورة");
       return;
@@ -156,6 +203,8 @@ function EditImagePage() {
           prompt: finalPrompt,
           templateTitle: customPrompt.trim() ? "تعديل مخصص" : preset.label,
           templateId: customPrompt.trim() ? "custom-edit" : preset.id,
+          campaignId: campaignContext.campaignId ?? campaignContext.requestedCampaignId,
+          campaignPackId: campaignContext.campaignId || campaignContext.requestedCampaignId ? search.campaignPackId : undefined,
         },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -176,8 +225,27 @@ function EditImagePage() {
     }
   };
 
+  const returnToStudio = () => {
+    const id = campaignContext.campaignId ?? campaignContext.requestedCampaignId;
+    if (!id) return;
+    void navigate({ to: "/dashboard/campaign-studio", search: { campaignId: id } as never });
+  };
+
   return (
     <DashboardShell>
+      {campaignContext.requestedCampaignId && (
+        <div className="mb-4 flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between" dir="rtl">
+          <div className="min-w-0 text-sm">
+            <p className="flex items-center gap-2 font-extrabold text-primary">
+              <Megaphone className="h-4 w-4" /> أنت الآن تحسّن صورة منتج لحملة: {campaignContext.loading ? "جاري التحميل…" : campaignContext.campaign?.product || "حملة محفوظة"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{campaignContext.error ?? "سيتم ربط الصورة المعدّلة ببيت الحملة والمكتبة تلقائياً."}</p>
+          </div>
+          <Button asChild variant="outline" size="sm" className="shrink-0 gap-1">
+            <Link to="/dashboard/campaign-studio" search={{ campaignId: campaignContext.requestedCampaignId } as never}><ArrowLeft className="h-3.5 w-3.5" /> العودة للاستوديو</Link>
+          </Button>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold">حسّن صورة منتجك بدل إعادة التصوير</h1>
@@ -297,17 +365,24 @@ function EditImagePage() {
         <div className="rounded-xl border border-border bg-card p-5 shadow-soft">
           <div className="flex items-center justify-between">
             <h3 className="font-bold">النتيجة</h3>
-            {resultUrl && (
-              <a
-                href={resultUrl}
-                download
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent"
-              >
-                <Download className="h-3 w-3" /> تحميل
-              </a>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {resultUrl && campaignContext.requestedCampaignId && (
+                <Button onClick={returnToStudio} size="sm" className="h-8 gap-1 text-xs">
+                  <ArrowLeft className="h-3.5 w-3.5" /> حفظ والعودة للاستوديو
+                </Button>
+              )}
+              {resultUrl && (
+                <a
+                  href={resultUrl}
+                  download
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-8 items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs hover:bg-accent"
+                >
+                  <Download className="h-3 w-3" /> تحميل
+                </a>
+              )}
+            </div>
           </div>
           <div className="mt-3 flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-secondary/30 text-sm text-muted-foreground">
             {resultUrl ? (

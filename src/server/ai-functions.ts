@@ -312,6 +312,8 @@ export const editImage = createServerFn({ method: "POST" })
       prompt: string;
       templateTitle: string;
       templateId: string;
+      campaignId?: string;
+      campaignPackId?: string;
     }) => {
       if (!input.imageDataUrl?.startsWith("data:image/")) {
         throw new Error("صيغة الصورة غير صحيحة");
@@ -321,6 +323,8 @@ export const editImage = createServerFn({ method: "POST" })
       }
       if (!input.prompt?.trim()) throw new Error("اكتب وصف التعديل");
       if (input.prompt.length > 1500) throw new Error("الوصف طويل جداً");
+      if (input.campaignId && !/^[0-9a-f-]{36}$/i.test(input.campaignId)) throw new Error("معرّف الحملة غير صحيح");
+      if (input.campaignPackId && !/^[0-9a-f-]{36}$/i.test(input.campaignPackId)) throw new Error("معرّف الحملة غير صحيح");
       return input;
     }
   )
@@ -336,6 +340,7 @@ export const editImage = createServerFn({ method: "POST" })
 
     try {
       const profile = await loadProfile(supabase, userId);
+      const campaignPack = await assertCampaignPackOwner(supabase, userId, data.campaignId, data.campaignPackId);
       const ctx: StoreContext = profile ?? {};
       const brandHint = ctx.brand_color
         ? ` Use brand accent color ${ctx.brand_color} where appropriate.`
@@ -396,9 +401,11 @@ export const editImage = createServerFn({ method: "POST" })
         _estimated_cost_usd: editCost,
         _metadata: {
           template_title: data.templateTitle,
+          source: campaignPack ? "campaign_studio_edit_image" : "edit_image",
           storage_path: filename,
           credits_charged: 0,
           billing_scope: "daily_image_quota",
+          ...campaignMetadata(campaignPack),
         },
       });
       if (insErr) {
