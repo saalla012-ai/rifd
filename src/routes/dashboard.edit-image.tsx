@@ -13,7 +13,6 @@ import {
 import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { editImage } from "@/server/ai-functions";
@@ -103,7 +102,6 @@ function EditImagePage() {
   const [originalDataUrl, setOriginalDataUrl] = useState<string | null>(null);
   const [originalName, setOriginalName] = useState<string>("");
   const [presetId, setPresetId] = useState<string>(PRESETS[0].id);
-  const [customPrompt, setCustomPrompt] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -183,11 +181,7 @@ function EditImagePage() {
       toast.error("ارفع صورة أولاً");
       return;
     }
-    const finalPrompt = customPrompt.trim() || preset.prompt;
-    if (!finalPrompt) {
-      toast.error("اختر قالباً أو اكتب وصف تعديل");
-      return;
-    }
+    const finalPrompt = preset.prompt;
 
     setLoading(true);
     setResultUrl(null);
@@ -201,8 +195,8 @@ function EditImagePage() {
         data: {
           imageDataUrl: originalDataUrl,
           prompt: finalPrompt,
-          templateTitle: customPrompt.trim() ? "تعديل مخصص" : preset.label,
-          templateId: customPrompt.trim() ? "custom-edit" : preset.id,
+          templateTitle: preset.label,
+          templateId: preset.id,
           campaignId: campaignContext.campaignId ?? campaignContext.requestedCampaignId,
           campaignPackId: campaignContext.campaignId || campaignContext.requestedCampaignId ? search.campaignPackId : undefined,
         },
@@ -308,7 +302,7 @@ function EditImagePage() {
           <div>
             <Label>نوع التحسين</Label>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              اختر تحسيناً واضحاً ومختبراً. الوصف اليدوي اختياري فقط لو عندك توجيه محدد.
+              اختر نوع التحسين المناسب لصورة المنتج.
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {PRESETS.map((p) => (
@@ -317,7 +311,7 @@ function EditImagePage() {
                   onClick={() => setPresetId(p.id)}
                   className={cn(
                     "rounded-lg border p-3 text-right text-sm transition-colors",
-                    presetId === p.id && !customPrompt.trim()
+                    presetId === p.id
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/40"
                   )}
@@ -329,23 +323,6 @@ function EditImagePage() {
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="custom-prompt">
-              أو اكتب التحسين المطلوب بنفسك (اختياري)
-            </Label>
-            <Textarea
-              id="custom-prompt"
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="مثلاً: اجعل الخلفية ذهبية فخمة، أضف ظلاً خفيفاً، واترك المنتج واضحاً بدون تغطية"
-              className="mt-1 min-h-20"
-              maxLength={1500}
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              لو كتبت هنا، سيُستخدم وصفك بدلاً من نوع التحسين المختار.
-            </p>
           </div>
 
           <Button
