@@ -66,11 +66,11 @@ const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "
 
 type OnboardingStage = "form" | "success";
 
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string) {
+function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  return Promise.race([
-    promise,
+  return Promise.race<T>([
+    Promise.resolve(promise),
     new Promise<T>((_, reject) => {
       timeoutId = setTimeout(() => reject(new Error(`${label}-timeout`)), timeoutMs);
     }),
