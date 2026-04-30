@@ -169,34 +169,50 @@ function OnboardingPage() {
       const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
       const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${trimmedStoreName}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
 
-      const out = await generateText({
-        data: {
-          prompt: promptText,
-          templateTitle: "منشور ترحيبي",
-          templateId: "onboarding-welcome",
-        },
-      });
+      const fallbackPost = `🌿 أهلاً بكم في ${trimmedStoreName}\nوجهتكم المختارة في ${productLabel} — تجربة مصممة خصيصاً لـ${audienceLabel}.\nاكتشف جديدنا اليوم واطلب بثقة. 💚\n\n#${trimmedStoreName.replace(/\s+/g, "_")} #تسوق_سعودي #${productLabel.replace(/\s+/g, "_")}`;
 
-      setResult(out.result);
+      let generatedText = fallbackPost;
+      try {
+        const out = (await Promise.race([
+          generateText({
+            data: {
+              prompt: promptText,
+              templateTitle: "منشور ترحيبي",
+              templateId: "onboarding-welcome",
+            },
+          }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("generate-timeout")), 25000),
+          ),
+        ])) as { result: string };
+        if (out?.result) generatedText = out.result;
+      } catch (genErr) {
+        console.warn("[onboarding] generateText fallback used", genErr);
+        toast.message("جهّزنا حزمة جاهزة لك بدون انتظار التوليد");
+      }
+
+      setResult(generatedText);
       setSuccessPack(
         buildSuccessPack({
           storeName: trimmedStoreName,
           productTypeLabel: productLabel,
           audienceLabel,
           tone,
-          primaryPost: out.result,
+          primaryPost: generatedText,
         }),
       );
       const { error: completeError } = await supabase
         .from("profiles")
         .update({ onboarded: true })
         .eq("id", user.id);
-      if (completeError) throw completeError;
+      if (completeError) {
+        console.warn("[onboarding] mark onboarded failed", completeError);
+      }
       setStage("success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       console.warn("[onboarding] failed", message);
-      toast.error("فشل إنشاء المحتوى");
+      toast.error("تعذّر إكمال الإعداد، حاول مرة أخرى");
     } finally {
       setGenerating(false);
     }
