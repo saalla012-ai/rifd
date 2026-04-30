@@ -95,7 +95,7 @@ export const recordConsent = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => recordConsentSchema.parse(data))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const userAgent = getRequestHeader("user-agent")?.slice(0, 500) ?? null;
+    const userAgent = getRequestHeader("user-agent")?.slice(0, 500);
     const consentText = CONSENT_TEXTS[data.consent_type];
 
     const { data: rpcData, error } = await supabase.rpc("record_consent", {
@@ -127,7 +127,7 @@ export const withdrawConsent = createServerFn({ method: "POST" })
 
     const { data: rpcData, error } = await supabase.rpc("withdraw_consent", {
       _consent_type: data.consent_type,
-      _reason: data.reason ?? null,
+      _reason: data.reason,
     });
 
     if (error) {
