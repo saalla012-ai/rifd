@@ -389,6 +389,7 @@ function OnboardingPage() {
                   ))}
                 </div>
               </div>
+              <ConsentDialog values={consents} onChange={handleConsentChange} disabled={generating} />
               <Button
                 onClick={finish}
                 disabled={!trimmedStoreName || generating}
