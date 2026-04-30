@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
 import { OnboardingSuccessPack } from "@/components/onboarding-success-pack";
+import { ConsentDialog, type ConsentDialogValues, type ConsentDialogKey } from "@/components/consent-dialog";
+import { recordConsent, type ConsentType } from "@/server/consent-functions";
 import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 
 export const Route = createFileRoute("/onboarding")({
