@@ -6,7 +6,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { ConsentSettings } from "@/components/consent-settings";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -148,29 +148,8 @@ function SettingsPage() {
           </Button>
         </div>
 
-        {/* الإشعارات (قريباً) */}
-        <div className="rounded-xl border border-border bg-card p-5 shadow-soft opacity-60">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-bold">الإشعارات</h3>
-            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground">
-              قريباً
-            </span>
-          </div>
-          <div className="space-y-3">
-            <label className="flex items-center justify-between text-sm">
-              <span>إشعارات البريد</span>
-              <Switch disabled />
-            </label>
-            <label className="flex items-center justify-between text-sm">
-              <span>تنبيهات اقتراب حدّ الباقة</span>
-              <Switch disabled />
-            </label>
-            <label className="flex items-center justify-between text-sm">
-              <span>عروض ترويجية</span>
-              <Switch disabled />
-            </label>
-          </div>
-        </div>
+        {/* إعدادات التواصل والتسويق (PDPL) */}
+        <ConsentSettings />
       </div>
     </DashboardShell>
   );

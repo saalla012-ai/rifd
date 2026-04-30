@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
 import { OnboardingSuccessPack } from "@/components/onboarding-success-pack";
+import { ConsentDialog, type ConsentDialogValues, type ConsentDialogKey } from "@/components/consent-dialog";
+import { recordConsent, type ConsentType } from "@/server/consent-functions";
 import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 
 export const Route = createFileRoute("/onboarding")({
@@ -74,7 +76,41 @@ function OnboardingPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
+  const [consents, setConsents] = useState<ConsentDialogValues>({
+    email: true,
+    whatsapp: false,
+    productUpdates: true,
+  });
   const trimmedStoreName = storeName.trim();
+
+  const handleConsentChange = (key: ConsentDialogKey, value: boolean) => {
+    setConsents((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const persistConsents = async (source: "onboarding") => {
+    const pairs: Array<{ type: ConsentType; given: boolean }> = [
+      { type: "marketing_email", given: consents.email },
+      { type: "marketing_whatsapp", given: consents.whatsapp },
+      { type: "product_updates", given: consents.productUpdates },
+    ];
+    const results = await Promise.allSettled(
+      pairs.map((p) =>
+        recordConsent({
+          data: {
+            consent_type: p.type,
+            consent_given: p.given,
+            source,
+            metadata: { onboarding_step: "final" },
+          },
+        }),
+      ),
+    );
+    const failed = results.filter((r) => r.status === "rejected");
+    if (failed.length > 0) {
+      console.warn("[onboarding] consent persist partial failure", failed);
+      toast.error("تعذّر حفظ بعض تفضيلات التواصل، تقدر تعدّلها من الإعدادات");
+    }
+  };
 
   const profilePayload = {
     email: user?.email ?? null,
@@ -126,6 +162,7 @@ function OnboardingPage() {
 
       if (error) throw error;
       track("onboarding_completed", { product_type: productType, audience });
+      await persistConsents("onboarding");
       await refreshProfile();
 
       const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
@@ -177,6 +214,7 @@ function OnboardingPage() {
         .upsert({ id: user.id, ...optionalOnboardingPayload, onboarded: true });
       if (error) throw error;
       track("onboarding_skipped_pack", { product_type: productType, audience });
+      await persistConsents("onboarding");
       await refreshProfile();
       void navigate({ to: "/dashboard" });
     } catch (err) {
@@ -351,6 +389,7 @@ function OnboardingPage() {
                   ))}
                 </div>
               </div>
+              <ConsentDialog values={consents} onChange={handleConsentChange} disabled={generating} />
               <Button
                 onClick={finish}
                 disabled={!trimmedStoreName || generating}
