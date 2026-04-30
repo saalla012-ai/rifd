@@ -340,7 +340,7 @@ function OnboardingPage() {
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
           {stage === "form" && (
-            <div className="space-y-4">
+            <div className={cn("space-y-4", generating && "pointer-events-none opacity-40")} aria-busy={generating}>
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
@@ -467,6 +467,20 @@ function OnboardingPage() {
               </div>
             </div>
           )}
+          {stage === "form" && generating && (
+            <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Loader2 className="h-7 w-7 animate-spin" />
+              </span>
+              <div>
+                <h3 className="text-lg font-extrabold">لا تغلق الصفحة — نجهّز أول حزمة بيع</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{loadingMessage}</p>
+              </div>
+              <Button type="button" variant="outline" onClick={() => void skipToDashboard()} className="h-10 font-bold">
+                الدخول للوحة بدون انتظار
+              </Button>
+            </div>
+          )}
           {stage === "success" && result && successPack && <OnboardingSuccessPack pack={successPack} />}
           {stage === "success" && (!result || !successPack) && (
             <div className="flex flex-col items-center gap-4 py-10 text-center">
@@ -483,12 +497,6 @@ function OnboardingPage() {
               >
                 ادخل إلى اللوحة
               </Button>
-            </div>
-          )}
-          {stage === "form" && generating && (
-            <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm font-bold text-primary">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              جاري حفظ بياناتك وتجهيز الحزمة... قد تستغرق حتى 25 ثانية
             </div>
           )}
         </div>
