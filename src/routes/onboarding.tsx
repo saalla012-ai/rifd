@@ -162,6 +162,7 @@ function OnboardingPage() {
 
       if (error) throw error;
       track("onboarding_completed", { product_type: productType, audience });
+      await persistConsents("onboarding");
       await refreshProfile();
 
       const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
@@ -213,6 +214,7 @@ function OnboardingPage() {
         .upsert({ id: user.id, ...optionalOnboardingPayload, onboarded: true });
       if (error) throw error;
       track("onboarding_skipped_pack", { product_type: productType, audience });
+      await persistConsents("onboarding");
       await refreshProfile();
       void navigate({ to: "/dashboard" });
     } catch (err) {
