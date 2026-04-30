@@ -170,6 +170,54 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_records: {
+        Row: {
+          consent_given: boolean
+          consent_text: string
+          consent_type: Database["public"]["Enums"]["consent_type"]
+          consent_version: string
+          created_at: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          source: Database["public"]["Enums"]["consent_source"]
+          user_agent: string | null
+          user_id: string
+          withdrawn_at: string | null
+          withdrawn_reason: string | null
+        }
+        Insert: {
+          consent_given: boolean
+          consent_text: string
+          consent_type: Database["public"]["Enums"]["consent_type"]
+          consent_version?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          source: Database["public"]["Enums"]["consent_source"]
+          user_agent?: string | null
+          user_id: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
+        }
+        Update: {
+          consent_given?: boolean
+          consent_text?: string
+          consent_type?: Database["public"]["Enums"]["consent_type"]
+          consent_version?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          source?: Database["public"]["Enums"]["consent_source"]
+          user_agent?: string | null
+          user_id?: string
+          withdrawn_at?: string | null
+          withdrawn_reason?: string | null
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
@@ -665,6 +713,7 @@ export type Database = {
           brand_color: string | null
           brand_personality: string | null
           compliance_notes: string | null
+          consent_last_updated_at: string | null
           created_at: string
           cta_style: string | null
           email: string | null
@@ -673,9 +722,13 @@ export type Database = {
           full_name: string | null
           high_margin_products: string[]
           id: string
+          marketing_email_opt_in: boolean
+          marketing_telegram_opt_in: boolean
+          marketing_whatsapp_opt_in: boolean
           onboarded: boolean
           plan: Database["public"]["Enums"]["user_plan"]
           product_type: string | null
+          product_updates_opt_in: boolean
           seasonal_priorities: string[]
           shipping_policy: string | null
           store_name: string | null
@@ -690,6 +743,7 @@ export type Database = {
           brand_color?: string | null
           brand_personality?: string | null
           compliance_notes?: string | null
+          consent_last_updated_at?: string | null
           created_at?: string
           cta_style?: string | null
           email?: string | null
@@ -698,9 +752,13 @@ export type Database = {
           full_name?: string | null
           high_margin_products?: string[]
           id: string
+          marketing_email_opt_in?: boolean
+          marketing_telegram_opt_in?: boolean
+          marketing_whatsapp_opt_in?: boolean
           onboarded?: boolean
           plan?: Database["public"]["Enums"]["user_plan"]
           product_type?: string | null
+          product_updates_opt_in?: boolean
           seasonal_priorities?: string[]
           shipping_policy?: string | null
           store_name?: string | null
@@ -715,6 +773,7 @@ export type Database = {
           brand_color?: string | null
           brand_personality?: string | null
           compliance_notes?: string | null
+          consent_last_updated_at?: string | null
           created_at?: string
           cta_style?: string | null
           email?: string | null
@@ -723,9 +782,13 @@ export type Database = {
           full_name?: string | null
           high_margin_products?: string[]
           id?: string
+          marketing_email_opt_in?: boolean
+          marketing_telegram_opt_in?: boolean
+          marketing_whatsapp_opt_in?: boolean
           onboarded?: boolean
           plan?: Database["public"]["Enums"]["user_plan"]
           product_type?: string | null
+          product_updates_opt_in?: boolean
           seasonal_priorities?: string[]
           shipping_policy?: string | null
           store_name?: string | null
@@ -1206,7 +1269,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_consent_stats: {
+        Row: {
+          active_consents: number | null
+          consent_type: Database["public"]["Enums"]["consent_type"] | null
+          denied_consents: number | null
+          first_consent_at: string | null
+          last_consent_at: string | null
+          total_users_decided: number | null
+          withdrawn_consents: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _ensure_user_credits: { Args: { _uid: string }; Returns: undefined }
@@ -1325,6 +1399,16 @@ export type Database = {
           whatsapp: string
         }[]
       }
+      get_user_consent_status: {
+        Args: { _consent_type?: Database["public"]["Enums"]["consent_type"] }
+        Returns: {
+          consent_given: boolean
+          consent_type: Database["public"]["Enums"]["consent_type"]
+          consent_version: string
+          last_updated: string
+          source: Database["public"]["Enums"]["consent_source"]
+        }[]
+      }
       get_user_credits_summary: {
         Args: never
         Returns: {
@@ -1342,6 +1426,13 @@ export type Database = {
           video_fast_allowed: boolean
           video_quality_allowed: boolean
         }[]
+      }
+      has_marketing_consent: {
+        Args: {
+          _consent_type: Database["public"]["Enums"]["consent_type"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -1403,6 +1494,18 @@ export type Database = {
           text_diff: number
           user_id: string
         }[]
+      }
+      record_consent: {
+        Args: {
+          _consent_given: boolean
+          _consent_text: string
+          _consent_type: Database["public"]["Enums"]["consent_type"]
+          _consent_version?: string
+          _metadata?: Json
+          _source?: Database["public"]["Enums"]["consent_source"]
+          _user_agent?: string
+        }
+        Returns: string
       }
       record_generation: {
         Args: {
@@ -1468,9 +1571,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      withdraw_consent: {
+        Args: {
+          _consent_type: Database["public"]["Enums"]["consent_type"]
+          _reason?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      consent_source:
+        | "onboarding"
+        | "settings"
+        | "subscription_form"
+        | "telegram_bot"
+        | "whatsapp_form"
+        | "admin_action"
+        | "api"
+      consent_type:
+        | "marketing_email"
+        | "marketing_whatsapp"
+        | "marketing_telegram"
+        | "marketing_sms"
+        | "product_updates"
+        | "newsletter"
       credit_source: "plan" | "topup"
       credit_txn_type:
         | "plan_grant"
@@ -1625,6 +1750,23 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      consent_source: [
+        "onboarding",
+        "settings",
+        "subscription_form",
+        "telegram_bot",
+        "whatsapp_form",
+        "admin_action",
+        "api",
+      ],
+      consent_type: [
+        "marketing_email",
+        "marketing_whatsapp",
+        "marketing_telegram",
+        "marketing_sms",
+        "product_updates",
+        "newsletter",
+      ],
       credit_source: ["plan", "topup"],
       credit_txn_type: [
         "plan_grant",
