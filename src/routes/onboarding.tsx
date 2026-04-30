@@ -169,15 +169,23 @@ function OnboardingPage() {
     }
 
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          ...profilePayload,
-          onboarded: false,
-        });
+      const saveResult = await withTimeout(
+        supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            ...profilePayload,
+            onboarded: false,
+          }),
+        10000,
+        "profile-save",
+      ).catch((saveError) => {
+        console.warn("[onboarding] profile save delayed", saveError);
+        toast.message("الحفظ تأخر قليلاً، سنكمل تجهيز الحزمة الآن");
+        return null;
+      });
 
-      if (error) throw error;
+      if (saveResult?.error) throw saveResult.error;
       track("onboarding_completed", { product_type: productType, audience });
       void persistConsents("onboarding");
       void refreshProfile();
