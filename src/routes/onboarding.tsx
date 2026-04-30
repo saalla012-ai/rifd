@@ -218,14 +218,24 @@ function OnboardingPage() {
           primaryPost: generatedText,
         }),
       );
-      const { error: completeError } = await supabase
-        .from("profiles")
-        .update({ onboarded: true })
-        .eq("id", user.id);
-      if (completeError) {
-        console.warn("[onboarding] mark onboarded failed", completeError);
-      }
       setStage("success");
+
+      const markComplete = async () => {
+        const { error: completeError } = await supabase
+          .from("profiles")
+          .update({ onboarded: true })
+          .eq("id", user.id);
+        if (completeError) {
+          console.warn("[onboarding] mark onboarded failed", completeError);
+        }
+      };
+
+      void withTimeout(markComplete(), 7000, "mark-onboarded").catch((completeError) => {
+        console.warn("[onboarding] mark onboarded delayed", completeError);
+      });
+      void refreshProfile().catch((refreshError) => {
+        console.warn("[onboarding] refresh after success failed", refreshError);
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       console.warn("[onboarding] failed", message);
