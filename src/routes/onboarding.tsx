@@ -162,6 +162,7 @@ function OnboardingPage() {
   const finish = async () => {
     if (!user) return;
     setGenerating(true);
+    setLoadingMessage("جاري حفظ بيانات المتجر...");
     const heroVariant = getRememberedAttribution("hero_hook");
     if (heroVariant) {
       void trackEvent("hero_hook", heroVariant, "submit");
@@ -178,8 +179,8 @@ function OnboardingPage() {
 
       if (error) throw error;
       track("onboarding_completed", { product_type: productType, audience });
-      await persistConsents("onboarding");
-      await refreshProfile();
+      void persistConsents("onboarding");
+      void refreshProfile();
 
       const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
       const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
@@ -189,7 +190,8 @@ function OnboardingPage() {
 
       let generatedText = fallbackPost;
       try {
-        const out = (await Promise.race([
+        setLoadingMessage("جاري بناء الحزمة البيعية... سنكمل تلقائياً إذا تأخر التوليد");
+        const out = await withTimeout(
           generateText({
             data: {
               prompt: promptText,
@@ -197,14 +199,13 @@ function OnboardingPage() {
               templateId: "onboarding-welcome",
             },
           }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("generate-timeout")), 25000),
-          ),
-        ])) as { result: string };
+          12000,
+          "generate",
+        );
         if (out?.result) generatedText = out.result;
       } catch (genErr) {
         console.warn("[onboarding] generateText fallback used", genErr);
-        toast.message("جهّزنا حزمة جاهزة لك بدون انتظار التوليد");
+        toast.message("جهّزنا حزمة فورية لك بدون انتظار التوليد");
       }
 
       setResult(generatedText);
