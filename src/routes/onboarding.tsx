@@ -64,16 +64,32 @@ const setupProof = [
 
 const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "فكرة صورة", "سكربت Reel"] as const;
 
+type OnboardingStage = "form" | "success";
+
+function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  return Promise.race<T>([
+    Promise.resolve(promise),
+    new Promise<T>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`${label}-timeout`)), timeoutMs);
+    }),
+  ]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
+}
+
 function OnboardingPage() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const [stage, setStage] = useState<"form" | "success">("form");
+  const [stage, setStage] = useState<OnboardingStage>("form");
   const [storeName, setStoreName] = useState("");
   const [productType, setProductType] = useState("dropshipping");
   const [audience, setAudience] = useState("young");
   const [tone, setTone] = useState("fun");
   const [color, setColor] = useState("#1a5d3e");
   const [generating, setGenerating] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("جاري تجهيز ذاكرة المتجر...");
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
   const [consents, setConsents] = useState<ConsentDialogValues>({
@@ -146,24 +162,33 @@ function OnboardingPage() {
   const finish = async () => {
     if (!user) return;
     setGenerating(true);
+    setLoadingMessage("جاري حفظ بيانات المتجر...");
     const heroVariant = getRememberedAttribution("hero_hook");
     if (heroVariant) {
       void trackEvent("hero_hook", heroVariant, "submit");
     }
 
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          ...profilePayload,
-          onboarded: false,
-        });
+      const saveResult = await withTimeout(
+        supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            ...profilePayload,
+            onboarded: false,
+          }),
+        10000,
+        "profile-save",
+      ).catch((saveError) => {
+        console.warn("[onboarding] profile save delayed", saveError);
+        toast.message("الحفظ تأخر قليلاً، سنكمل تجهيز الحزمة الآن");
+        return null;
+      });
 
-      if (error) throw error;
+      if (saveResult?.error) throw saveResult.error;
       track("onboarding_completed", { product_type: productType, audience });
-      await persistConsents("onboarding");
-      await refreshProfile();
+      void persistConsents("onboarding");
+      void refreshProfile();
 
       const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
       const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
@@ -173,7 +198,8 @@ function OnboardingPage() {
 
       let generatedText = fallbackPost;
       try {
-        const out = (await Promise.race([
+        setLoadingMessage("جاري بناء الحزمة البيعية... سنكمل تلقائياً إذا تأخر التوليد");
+        const out = await withTimeout(
           generateText({
             data: {
               prompt: promptText,
@@ -181,14 +207,13 @@ function OnboardingPage() {
               templateId: "onboarding-welcome",
             },
           }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("generate-timeout")), 25000),
-          ),
-        ])) as { result: string };
+          12000,
+          "generate",
+        );
         if (out?.result) generatedText = out.result;
       } catch (genErr) {
         console.warn("[onboarding] generateText fallback used", genErr);
-        toast.message("جهّزنا حزمة جاهزة لك بدون انتظار التوليد");
+        toast.message("جهّزنا حزمة فورية لك بدون انتظار التوليد");
       }
 
       setResult(generatedText);
@@ -201,14 +226,24 @@ function OnboardingPage() {
           primaryPost: generatedText,
         }),
       );
-      const { error: completeError } = await supabase
-        .from("profiles")
-        .update({ onboarded: true })
-        .eq("id", user.id);
-      if (completeError) {
-        console.warn("[onboarding] mark onboarded failed", completeError);
-      }
       setStage("success");
+
+      const markComplete = async () => {
+        const { error: completeError } = await supabase
+          .from("profiles")
+          .update({ onboarded: true })
+          .eq("id", user.id);
+        if (completeError) {
+          console.warn("[onboarding] mark onboarded failed", completeError);
+        }
+      };
+
+      void withTimeout(markComplete(), 7000, "mark-onboarded").catch((completeError) => {
+        console.warn("[onboarding] mark onboarded delayed", completeError);
+      });
+      void refreshProfile().catch((refreshError) => {
+        console.warn("[onboarding] refresh after success failed", refreshError);
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       console.warn("[onboarding] failed", message);
@@ -312,7 +347,7 @@ function OnboardingPage() {
         )}
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
-          {stage === "form" && (
+          {stage === "form" && !generating && (
             <div className="space-y-4">
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
@@ -440,6 +475,20 @@ function OnboardingPage() {
               </div>
             </div>
           )}
+          {stage === "form" && generating && (
+            <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Loader2 className="h-7 w-7 animate-spin" />
+              </span>
+              <div>
+                <h3 className="text-lg font-extrabold">لا تغلق الصفحة — نجهّز أول حزمة بيع</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{loadingMessage}</p>
+              </div>
+              <Button type="button" variant="outline" onClick={() => void skipToDashboard()} className="h-10 font-bold">
+                الدخول للوحة بدون انتظار
+              </Button>
+            </div>
+          )}
           {stage === "success" && result && successPack && <OnboardingSuccessPack pack={successPack} />}
           {stage === "success" && (!result || !successPack) && (
             <div className="flex flex-col items-center gap-4 py-10 text-center">
@@ -456,12 +505,6 @@ function OnboardingPage() {
               >
                 ادخل إلى اللوحة
               </Button>
-            </div>
-          )}
-          {stage === "form" && generating && (
-            <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm font-bold text-primary">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              جاري حفظ بياناتك وتجهيز الحزمة... قد تستغرق حتى 25 ثانية
             </div>
           )}
         </div>
