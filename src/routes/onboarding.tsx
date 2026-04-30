@@ -76,7 +76,41 @@ function OnboardingPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
+  const [consents, setConsents] = useState<ConsentDialogValues>({
+    email: true,
+    whatsapp: false,
+    productUpdates: true,
+  });
   const trimmedStoreName = storeName.trim();
+
+  const handleConsentChange = (key: ConsentDialogKey, value: boolean) => {
+    setConsents((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const persistConsents = async (source: "onboarding") => {
+    const pairs: Array<{ type: ConsentType; given: boolean }> = [
+      { type: "marketing_email", given: consents.email },
+      { type: "marketing_whatsapp", given: consents.whatsapp },
+      { type: "product_updates", given: consents.productUpdates },
+    ];
+    const results = await Promise.allSettled(
+      pairs.map((p) =>
+        recordConsent({
+          data: {
+            consent_type: p.type,
+            consent_given: p.given,
+            source,
+            metadata: { onboarding_step: "final" },
+          },
+        }),
+      ),
+    );
+    const failed = results.filter((r) => r.status === "rejected");
+    if (failed.length > 0) {
+      console.warn("[onboarding] consent persist partial failure", failed);
+      toast.error("تعذّر حفظ بعض تفضيلات التواصل، تقدر تعدّلها من الإعدادات");
+    }
+  };
 
   const profilePayload = {
     email: user?.email ?? null,
