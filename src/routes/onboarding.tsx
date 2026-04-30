@@ -339,8 +339,8 @@ function OnboardingPage() {
         )}
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-elegant sm:p-7">
-          {stage === "form" && (
-            <div className={cn("space-y-4", generating && "pointer-events-none opacity-40")} aria-busy={generating}>
+          {stage === "form" && !generating && (
+            <div className="space-y-4">
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="h-3 w-3" /> أهلاً بك في رِفد
