@@ -64,16 +64,32 @@ const setupProof = [
 
 const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "فكرة صورة", "سكربت Reel"] as const;
 
+type OnboardingStage = "form" | "success";
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string) {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`${label}-timeout`)), timeoutMs);
+    }),
+  ]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
+}
+
 function OnboardingPage() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const [stage, setStage] = useState<"form" | "success">("form");
+  const [stage, setStage] = useState<OnboardingStage>("form");
   const [storeName, setStoreName] = useState("");
   const [productType, setProductType] = useState("dropshipping");
   const [audience, setAudience] = useState("young");
   const [tone, setTone] = useState("fun");
   const [color, setColor] = useState("#1a5d3e");
   const [generating, setGenerating] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("جاري تجهيز ذاكرة المتجر...");
   const [result, setResult] = useState<string | null>(null);
   const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
   const [consents, setConsents] = useState<ConsentDialogValues>({
