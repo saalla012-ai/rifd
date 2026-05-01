@@ -15,12 +15,9 @@ import {
 } from "@/components/ui/select";
 import { PRODUCT_TYPES, AUDIENCES } from "@/lib/demo-results";
 import { supabase } from "@/integrations/supabase/client";
-import { generateText } from "@/server/ai-functions";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
-import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
-import { OnboardingSuccessPack } from "@/components/onboarding-success-pack";
 import { ConsentDialog, type ConsentDialogValues, type ConsentDialogKey } from "@/components/consent-dialog";
 import { recordConsent, type ConsentType } from "@/server/consent-functions";
 import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
@@ -64,7 +61,7 @@ const setupProof = [
 
 const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "فكرة صورة", "سكربت Reel"] as const;
 
-type OnboardingStage = "form" | "success";
+type OnboardingStage = "form";
 
 function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -90,8 +87,6 @@ function OnboardingPage() {
   const [color, setColor] = useState("#1a5d3e");
   const [generating, setGenerating] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("جاري تجهيز ذاكرة المتجر...");
-  const [result, setResult] = useState<string | null>(null);
-  const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
   const [consents, setConsents] = useState<ConsentDialogValues>({
     email: true,
     whatsapp: false,
