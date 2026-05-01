@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
