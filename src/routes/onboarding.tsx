@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,21 @@ function OnboardingPage() {
     productUpdates: true,
   });
   const trimmedStoreName = storeName.trim();
+
+  // نسبة إنجاز ذاكرة المتجر — كل خطوة فعلية تُحسب لتعكس الجاهزية الحقيقية للحزمة الأولى.
+  const completion = useMemo(() => {
+    const checks = [
+      trimmedStoreName.length > 0,
+      Boolean(productType),
+      Boolean(audience),
+      Boolean(tone),
+      Boolean(color),
+      consents.email || consents.whatsapp || consents.productUpdates,
+    ];
+    const done = checks.filter(Boolean).length;
+    return Math.round((done / checks.length) * 100);
+  }, [trimmedStoreName, productType, audience, tone, color, consents]);
+
 
   const handleConsentChange = (key: ConsentDialogKey, value: boolean) => {
     setConsents((prev) => ({ ...prev, [key]: value }));
@@ -279,12 +295,23 @@ function OnboardingPage() {
                 </div>
               ))}
             </div>
-            <div className="mb-6 flex items-center justify-between rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
-              <span className="text-xs font-bold text-muted-foreground">صفحة واحدة فقط</span>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                جاهزة خلال دقيقة
-              </span>
+            <div className="mb-6 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-bold text-foreground">
+                  جاهزية ذاكرة المتجر
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs font-extrabold text-primary">
+                  {completion}%
+                </span>
+              </div>
+              <Progress value={completion} className="mt-2 h-2" aria-label="نسبة إكمال بيانات المتجر" />
+              <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-muted-foreground">
+                <span>صفحة واحدة فقط</span>
+                <span className="inline-flex items-center gap-1 text-success">
+                  <ShieldCheck className="h-3 w-3" />
+                  جاهزة خلال دقيقة
+                </span>
+              </div>
             </div>
           </>
         )}

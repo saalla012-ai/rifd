@@ -16,7 +16,6 @@ import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProofCenterRouteImport } from './routes/proof-center'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as OnboardingSuccessPreviewRouteImport } from './routes/onboarding-success-preview'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -123,12 +122,6 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingSuccessPreviewRoute =
-  OnboardingSuccessPreviewRouteImport.update({
-    id: '/onboarding-success-preview',
-    path: '/onboarding-success-preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -507,7 +500,6 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
-  '/onboarding-success-preview': typeof OnboardingSuccessPreviewRoute
   '/pricing': typeof PricingRoute
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -586,7 +578,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
-  '/onboarding-success-preview': typeof OnboardingSuccessPreviewRoute
   '/pricing': typeof PricingRoute
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -667,7 +658,6 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
   '/onboarding': typeof OnboardingRoute
-  '/onboarding-success-preview': typeof OnboardingSuccessPreviewRoute
   '/pricing': typeof PricingRoute
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -749,7 +739,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/library'
     | '/onboarding'
-    | '/onboarding-success-preview'
     | '/pricing'
     | '/proof-center'
     | '/reset-password'
@@ -828,7 +817,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/library'
     | '/onboarding'
-    | '/onboarding-success-preview'
     | '/pricing'
     | '/proof-center'
     | '/reset-password'
@@ -908,7 +896,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/library'
     | '/onboarding'
-    | '/onboarding-success-preview'
     | '/pricing'
     | '/proof-center'
     | '/reset-password'
@@ -989,7 +976,6 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LibraryRoute: typeof LibraryRoute
   OnboardingRoute: typeof OnboardingRoute
-  OnboardingSuccessPreviewRoute: typeof OnboardingSuccessPreviewRoute
   PricingRoute: typeof PricingRoute
   ProofCenterRoute: typeof ProofCenterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1089,13 +1075,6 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding-success-preview': {
-      id: '/onboarding-success-preview'
-      path: '/onboarding-success-preview'
-      fullPath: '/onboarding-success-preview'
-      preLoaderRoute: typeof OnboardingSuccessPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -1645,7 +1624,6 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LibraryRoute: LibraryRoute,
   OnboardingRoute: OnboardingRoute,
-  OnboardingSuccessPreviewRoute: OnboardingSuccessPreviewRoute,
   PricingRoute: PricingRoute,
   ProofCenterRoute: ProofCenterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
