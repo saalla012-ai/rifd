@@ -178,7 +178,10 @@ function OnboardingPage() {
 
       if (saveResult?.error) throw saveResult.error;
       track("onboarding_completed", { product_type: productType, audience });
-      void persistConsents("onboarding");
+      setLoadingMessage("نسجّل تفضيلات التواصل...");
+      await withTimeout(persistConsents("onboarding"), 6000, "persist-consents").catch((consentError) => {
+        console.warn("[onboarding] consent persist delayed/failed", consentError);
+      });
       setLoadingMessage("تم حفظ البيانات — ننقلك الآن للوحة التحكم...");
       await withTimeout(refreshProfile(), 3500, "refresh-profile").catch((refreshError) => {
         console.warn("[onboarding] refresh before dashboard delayed", refreshError);
