@@ -240,7 +240,8 @@ function OnboardingPage() {
         : baseProfilePayload;
       const { error } = await supabase
         .from("profiles")
-        .upsert({ id: user.id, ...optionalOnboardingPayload, onboarded: true });
+        .update({ ...optionalOnboardingPayload, onboarded: true })
+        .eq("id", user.id);
       if (error) throw error;
       track("onboarding_skipped_pack", { product_type: productType, audience });
       await persistConsents("onboarding");
