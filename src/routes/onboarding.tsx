@@ -200,14 +200,13 @@ function OnboardingPage() {
     }
 
     try {
+      // السجل موجود مسبقاً عبر trigger handle_new_user؛ نستخدم update صريحاً لضمان وصول كل الأعمدة
+      // (بما فيها أعلام الموافقات وطابع وقتها) — upsert كان يحفظ بعض الأعمدة فقط في PostgREST.
       const saveResult = await withTimeout(
         supabase
           .from("profiles")
-          .upsert({
-            id: user.id,
-            ...profilePayload,
-            onboarded: true,
-          }),
+          .update({ ...profilePayload, onboarded: true })
+          .eq("id", user.id),
         10000,
         "profile-save",
       );
@@ -241,7 +240,8 @@ function OnboardingPage() {
         : baseProfilePayload;
       const { error } = await supabase
         .from("profiles")
-        .upsert({ id: user.id, ...optionalOnboardingPayload, onboarded: true });
+        .update({ ...optionalOnboardingPayload, onboarded: true })
+        .eq("id", user.id);
       if (error) throw error;
       track("onboarding_skipped_pack", { product_type: productType, audience });
       await persistConsents("onboarding");
