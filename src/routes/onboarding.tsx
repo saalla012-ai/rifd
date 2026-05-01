@@ -120,7 +120,7 @@ function OnboardingPage() {
    * ويتجنّب طبقة ‎createServerFn‎ التي قد تُسقط الطلب بسبب توقيت تهيئة الجلسة.
    */
   const persistConsents = async (source: "onboarding") => {
-    const userAgent = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null;
+    const userAgent = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : undefined;
     const pairs: Array<{ type: ConsentType; given: boolean }> = [
       { type: "marketing_email", given: consents.email },
       { type: "marketing_whatsapp", given: consents.whatsapp },
