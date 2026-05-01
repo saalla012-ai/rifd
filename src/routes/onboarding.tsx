@@ -20,7 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
 import { ConsentDialog, type ConsentDialogValues, type ConsentDialogKey } from "@/components/consent-dialog";
-import { recordConsent, type ConsentType } from "@/server/consent-functions";
+import { CONSENT_TEXTS, CONSENT_VERSION, type ConsentType } from "@/server/consent-functions";
 import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
 
 export const Route = createFileRoute("/onboarding")({
@@ -114,7 +114,13 @@ function OnboardingPage() {
     setConsents((prev) => ({ ...prev, [key]: value }));
   };
 
+  /**
+   * يسجّل الموافقات الثلاث عبر RPC ‎`record_consent`‎ المحمي بـ SECURITY DEFINER.
+   * نستدعيه مباشرة من العميل لأنه يحصل على ‎`auth.uid()`‎ من JWT الخاص بالمستخدم،
+   * ويتجنّب طبقة ‎createServerFn‎ التي قد تُسقط الطلب بسبب توقيت تهيئة الجلسة.
+   */
   const persistConsents = async (source: "onboarding") => {
+    const userAgent = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : undefined;
     const pairs: Array<{ type: ConsentType; given: boolean }> = [
       { type: "marketing_email", given: consents.email },
       { type: "marketing_whatsapp", given: consents.whatsapp },
@@ -122,21 +128,33 @@ function OnboardingPage() {
     ];
     const results = await Promise.allSettled(
       pairs.map((p) =>
-        recordConsent({
-          data: {
-            consent_type: p.type,
-            consent_given: p.given,
-            source,
-            metadata: { onboarding_step: "final" },
-          },
+        supabase.rpc("record_consent", {
+          _consent_type: p.type,
+          _consent_given: p.given,
+          _consent_text: CONSENT_TEXTS[p.type],
+          _consent_version: CONSENT_VERSION,
+          _source: source,
+          _user_agent: userAgent,
+          _metadata: { onboarding_step: "final" },
         }),
       ),
     );
-    const failed = results.filter((r) => r.status === "rejected");
+    const failed = results.filter(
+      (r) => r.status === "rejected" || (r.status === "fulfilled" && r.value.error),
+    );
     if (failed.length > 0) {
       console.warn("[onboarding] consent persist partial failure", failed);
       toast.error("تعذّر حفظ بعض تفضيلات التواصل، تقدر تعدّلها من الإعدادات");
     }
+  };
+
+  // أعلام التواصل تُكتب أيضاً مباشرة في profiles كنسخة احتياطية تظهر فوراً في الواجهة
+  // حتى لو تأخّر إدراج consent_records — مصدر الحقيقة القانوني يبقى consent_records.
+  const consentFlagsPayload = {
+    marketing_email_opt_in: consents.email,
+    marketing_whatsapp_opt_in: consents.whatsapp,
+    product_updates_opt_in: consents.productUpdates,
+    consent_last_updated_at: new Date().toISOString(),
   };
 
   const profilePayload = {
@@ -147,11 +165,13 @@ function OnboardingPage() {
     audience,
     tone,
     brand_color: color,
+    ...consentFlagsPayload,
   };
 
   const baseProfilePayload = {
     email: user?.email ?? null,
     full_name: (user?.user_metadata?.full_name as string | undefined) ?? (user?.user_metadata?.name as string | undefined) ?? profile?.full_name ?? null,
+    ...consentFlagsPayload,
   };
 
   useEffect(() => {
