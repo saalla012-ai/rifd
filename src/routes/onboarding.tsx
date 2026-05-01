@@ -295,12 +295,23 @@ function OnboardingPage() {
                 </div>
               ))}
             </div>
-            <div className="mb-6 flex items-center justify-between rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
-              <span className="text-xs font-bold text-muted-foreground">صفحة واحدة فقط</span>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                جاهزة خلال دقيقة
-              </span>
+            <div className="mb-6 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-bold text-foreground">
+                  جاهزية ذاكرة المتجر
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs font-extrabold text-primary">
+                  {completion}%
+                </span>
+              </div>
+              <Progress value={completion} className="mt-2 h-2" aria-label="نسبة إكمال بيانات المتجر" />
+              <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-muted-foreground">
+                <span>صفحة واحدة فقط</span>
+                <span className="inline-flex items-center gap-1 text-success">
+                  <ShieldCheck className="h-3 w-3" />
+                  جاهزة خلال دقيقة
+                </span>
+              </div>
             </div>
           </>
         )}
