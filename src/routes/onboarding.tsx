@@ -15,12 +15,9 @@ import {
 } from "@/components/ui/select";
 import { PRODUCT_TYPES, AUDIENCES } from "@/lib/demo-results";
 import { supabase } from "@/integrations/supabase/client";
-import { generateText } from "@/server/ai-functions";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics/posthog";
-import { buildSuccessPack, type SuccessPack } from "@/lib/onboarding-success";
-import { OnboardingSuccessPack } from "@/components/onboarding-success-pack";
 import { ConsentDialog, type ConsentDialogValues, type ConsentDialogKey } from "@/components/consent-dialog";
 import { recordConsent, type ConsentType } from "@/server/consent-functions";
 import { getRememberedAttribution, trackEvent } from "@/lib/ab-test";
@@ -64,7 +61,7 @@ const setupProof = [
 
 const quickOutputs = ["زاوية بيع سعودية", "منشور جاهز", "فكرة صورة", "سكربت Reel"] as const;
 
-type OnboardingStage = "form" | "success";
+type OnboardingStage = "form";
 
 function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -90,8 +87,6 @@ function OnboardingPage() {
   const [color, setColor] = useState("#1a5d3e");
   const [generating, setGenerating] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("جاري تجهيز ذاكرة المتجر...");
-  const [result, setResult] = useState<string | null>(null);
-  const [successPack, setSuccessPack] = useState<SuccessPack | null>(null);
   const [consents, setConsents] = useState<ConsentDialogValues>({
     email: true,
     whatsapp: false,
@@ -175,75 +170,20 @@ function OnboardingPage() {
           .upsert({
             id: user.id,
             ...profilePayload,
-            onboarded: false,
+            onboarded: true,
           }),
         10000,
         "profile-save",
-      ).catch((saveError) => {
-        console.warn("[onboarding] profile save delayed", saveError);
-        toast.message("الحفظ تأخر قليلاً، سنكمل تجهيز الحزمة الآن");
-        return null;
-      });
+      );
 
       if (saveResult?.error) throw saveResult.error;
       track("onboarding_completed", { product_type: productType, audience });
       void persistConsents("onboarding");
-      void refreshProfile();
-
-      const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
-      const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
-      const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${trimmedStoreName}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
-
-      const fallbackPost = `🌿 أهلاً بكم في ${trimmedStoreName}\nوجهتكم المختارة في ${productLabel} — تجربة مصممة خصيصاً لـ${audienceLabel}.\nاكتشف جديدنا اليوم واطلب بثقة. 💚\n\n#${trimmedStoreName.replace(/\s+/g, "_")} #تسوق_سعودي #${productLabel.replace(/\s+/g, "_")}`;
-
-      let generatedText = fallbackPost;
-      try {
-        setLoadingMessage("جاري بناء الحزمة البيعية... سنكمل تلقائياً إذا تأخر التوليد");
-        const out = await withTimeout(
-          generateText({
-            data: {
-              prompt: promptText,
-              templateTitle: "منشور ترحيبي",
-              templateId: "onboarding-welcome",
-            },
-          }),
-          12000,
-          "generate",
-        );
-        if (out?.result) generatedText = out.result;
-      } catch (genErr) {
-        console.warn("[onboarding] generateText fallback used", genErr);
-        toast.message("جهّزنا حزمة فورية لك بدون انتظار التوليد");
-      }
-
-      setResult(generatedText);
-      setSuccessPack(
-        buildSuccessPack({
-          storeName: trimmedStoreName,
-          productTypeLabel: productLabel,
-          audienceLabel,
-          tone,
-          primaryPost: generatedText,
-        }),
-      );
-      setStage("success");
-
-      const markComplete = async () => {
-        const { error: completeError } = await supabase
-          .from("profiles")
-          .update({ onboarded: true })
-          .eq("id", user.id);
-        if (completeError) {
-          console.warn("[onboarding] mark onboarded failed", completeError);
-        }
-      };
-
-      void withTimeout(markComplete(), 7000, "mark-onboarded").catch((completeError) => {
-        console.warn("[onboarding] mark onboarded delayed", completeError);
+      setLoadingMessage("تم حفظ البيانات — ننقلك الآن للوحة التحكم...");
+      await withTimeout(refreshProfile(), 3500, "refresh-profile").catch((refreshError) => {
+        console.warn("[onboarding] refresh before dashboard delayed", refreshError);
       });
-      void refreshProfile().catch((refreshError) => {
-        console.warn("[onboarding] refresh after success failed", refreshError);
-      });
+      void navigate({ to: "/dashboard" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       console.warn("[onboarding] failed", message);
@@ -486,24 +426,6 @@ function OnboardingPage() {
               </div>
               <Button type="button" variant="outline" onClick={() => void skipToDashboard()} className="h-10 font-bold">
                 الدخول للوحة بدون انتظار
-              </Button>
-            </div>
-          )}
-          {stage === "success" && result && successPack && <OnboardingSuccessPack pack={successPack} />}
-          {stage === "success" && (!result || !successPack) && (
-            <div className="flex flex-col items-center gap-4 py-10 text-center">
-              <ShieldCheck className="h-10 w-10 text-primary" />
-              <div>
-                <h3 className="text-lg font-extrabold">تم حفظ ذاكرة متجرك</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  تعذّر توليد الحزمة الأولى الآن، لكن إعداداتك جاهزة وتقدر تبدأ من اللوحة.
-                </p>
-              </div>
-              <Button
-                onClick={() => void navigate({ to: "/dashboard" })}
-                className="h-11 gradient-primary px-6 font-extrabold text-primary-foreground"
-              >
-                ادخل إلى اللوحة
               </Button>
             </div>
           )}
