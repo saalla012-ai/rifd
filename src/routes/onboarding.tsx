@@ -170,75 +170,20 @@ function OnboardingPage() {
           .upsert({
             id: user.id,
             ...profilePayload,
-            onboarded: false,
+            onboarded: true,
           }),
         10000,
         "profile-save",
-      ).catch((saveError) => {
-        console.warn("[onboarding] profile save delayed", saveError);
-        toast.message("الحفظ تأخر قليلاً، سنكمل تجهيز الحزمة الآن");
-        return null;
-      });
+      );
 
       if (saveResult?.error) throw saveResult.error;
       track("onboarding_completed", { product_type: productType, audience });
       void persistConsents("onboarding");
-      void refreshProfile();
-
-      const productLabel = PRODUCT_TYPES.find((p) => p.id === productType)?.label ?? productType;
-      const audienceLabel = AUDIENCES.find((a) => a.id === audience)?.label ?? audience;
-      const promptText = `اكتب منشور إنستقرام ترحيبي لمتجر "${trimmedStoreName}" المتخصص في ${productLabel}، يستهدف ${audienceLabel}. اجعله جذاباً وقصيراً مع 3 هاشتاقات.`;
-
-      const fallbackPost = `🌿 أهلاً بكم في ${trimmedStoreName}\nوجهتكم المختارة في ${productLabel} — تجربة مصممة خصيصاً لـ${audienceLabel}.\nاكتشف جديدنا اليوم واطلب بثقة. 💚\n\n#${trimmedStoreName.replace(/\s+/g, "_")} #تسوق_سعودي #${productLabel.replace(/\s+/g, "_")}`;
-
-      let generatedText = fallbackPost;
-      try {
-        setLoadingMessage("جاري بناء الحزمة البيعية... سنكمل تلقائياً إذا تأخر التوليد");
-        const out = await withTimeout(
-          generateText({
-            data: {
-              prompt: promptText,
-              templateTitle: "منشور ترحيبي",
-              templateId: "onboarding-welcome",
-            },
-          }),
-          12000,
-          "generate",
-        );
-        if (out?.result) generatedText = out.result;
-      } catch (genErr) {
-        console.warn("[onboarding] generateText fallback used", genErr);
-        toast.message("جهّزنا حزمة فورية لك بدون انتظار التوليد");
-      }
-
-      setResult(generatedText);
-      setSuccessPack(
-        buildSuccessPack({
-          storeName: trimmedStoreName,
-          productTypeLabel: productLabel,
-          audienceLabel,
-          tone,
-          primaryPost: generatedText,
-        }),
-      );
-      setStage("success");
-
-      const markComplete = async () => {
-        const { error: completeError } = await supabase
-          .from("profiles")
-          .update({ onboarded: true })
-          .eq("id", user.id);
-        if (completeError) {
-          console.warn("[onboarding] mark onboarded failed", completeError);
-        }
-      };
-
-      void withTimeout(markComplete(), 7000, "mark-onboarded").catch((completeError) => {
-        console.warn("[onboarding] mark onboarded delayed", completeError);
+      setLoadingMessage("تم حفظ البيانات — ننقلك الآن للوحة التحكم...");
+      await withTimeout(refreshProfile(), 3500, "refresh-profile").catch((refreshError) => {
+        console.warn("[onboarding] refresh before dashboard delayed", refreshError);
       });
-      void refreshProfile().catch((refreshError) => {
-        console.warn("[onboarding] refresh after success failed", refreshError);
-      });
+      void navigate({ to: "/dashboard" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       console.warn("[onboarding] failed", message);
