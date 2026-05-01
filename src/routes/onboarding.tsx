@@ -429,24 +429,6 @@ function OnboardingPage() {
               </Button>
             </div>
           )}
-          {stage === "success" && result && successPack && <OnboardingSuccessPack pack={successPack} />}
-          {stage === "success" && (!result || !successPack) && (
-            <div className="flex flex-col items-center gap-4 py-10 text-center">
-              <ShieldCheck className="h-10 w-10 text-primary" />
-              <div>
-                <h3 className="text-lg font-extrabold">تم حفظ ذاكرة متجرك</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  تعذّر توليد الحزمة الأولى الآن، لكن إعداداتك جاهزة وتقدر تبدأ من اللوحة.
-                </p>
-              </div>
-              <Button
-                onClick={() => void navigate({ to: "/dashboard" })}
-                className="h-11 gradient-primary px-6 font-extrabold text-primary-foreground"
-              >
-                ادخل إلى اللوحة
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </MarketingLayout>
