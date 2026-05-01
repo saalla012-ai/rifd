@@ -95,6 +95,21 @@ function OnboardingPage() {
   });
   const trimmedStoreName = storeName.trim();
 
+  // نسبة إنجاز ذاكرة المتجر — كل خطوة فعلية تُحسب لتعكس الجاهزية الحقيقية للحزمة الأولى.
+  const completion = useMemo(() => {
+    const checks = [
+      trimmedStoreName.length > 0,
+      Boolean(productType),
+      Boolean(audience),
+      Boolean(tone),
+      Boolean(color),
+      consents.email || consents.whatsapp || consents.productUpdates,
+    ];
+    const done = checks.filter(Boolean).length;
+    return Math.round((done / checks.length) * 100);
+  }, [trimmedStoreName, productType, audience, tone, color, consents]);
+
+
   const handleConsentChange = (key: ConsentDialogKey, value: boolean) => {
     setConsents((prev) => ({ ...prev, [key]: value }));
   };
