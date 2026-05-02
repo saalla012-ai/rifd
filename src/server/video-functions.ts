@@ -773,8 +773,8 @@ export const generateVideo = createServerFn({ method: "POST" })
         if (quotaErr) throw new Error(`free_monthly_video_quota_check_failed: ${quotaErr.message}`);
         const row = Array.isArray(quotaCheck) ? quotaCheck[0] : quotaCheck;
         if (row && row.allowed === false) {
-          const cycleEnd = row.cycle_end ? new Date(row.cycle_end as string).toISOString() : null;
-          throw new Error(`free_monthly_video_quota_exceeded:used=${row.used ?? 1}:cap=${row.cap ?? 1}:cycle_end=${cycleEnd ?? ""}`);
+          const cycleEnd = row.next_reset_at ? new Date(row.next_reset_at as string).toISOString() : "";
+          throw new Error(`free_monthly_video_quota_exceeded:used=${row.used ?? 1}:cap=${row.monthly_cap ?? 1}:cycle_end=${cycleEnd}`);
         }
       }
 
