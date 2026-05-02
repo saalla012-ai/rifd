@@ -1,6 +1,6 @@
 # المرحلة 1 v5 — التنفيذ النهائي (نسخة المستشار المعتمدة)
 
-> **نسبة الإنجاز الكلية: 70%** — Wave 1A + 1B + 2A + 2B + 2C مكتملة. المتبقي: Wave 2D (إعادة تصميم لوحة الفوترة الداخلية)، Wave 3 (المراقبة)، و(اختياري) Replicate.
+> **نسبة الإنجاز الكلية: 85%** — Wave 1A + 1B + 2A + 2B + 2C + 2D مكتملة. المتبقي: Wave 3 (Admin monitor + daily report + bonus 50pt) و(اختياري) Replicate.
 
 ## شريط التقدّم
 
@@ -12,7 +12,7 @@
 | **Wave 2A** — DB: monthly_usage + free monthly RPCs | ✅ مكتملة | 100% |
 | **Wave 2B** — Pricing UI + Marketing copy + Trust | ✅ مكتملة | 100% |
 | **Wave 2C** — Free monthly video backend + Top-up modal | ✅ مكتملة | 100% |
-| **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | 🔲 لم تبدأ | 0% |
+| **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | ✅ مكتملة | 100% |
 | **Wave 3** — Admin monitor + daily report + bonus | 🔲 لم تبدأ | 0% |
 
 ## مراجعة Wave 2C — تقرير الجودة (هذه الجولة)
