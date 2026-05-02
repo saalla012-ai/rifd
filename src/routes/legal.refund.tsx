@@ -9,7 +9,7 @@ export const Route = createFileRoute("/legal/refund")({
       {
         name: "description",
         content:
-          "ضمان استرجاع 14 يوماً على الاشتراك المدفوع الأول في رِفد للتقنية. شروط الاسترجاع، الاستثناءات، وكيفية تقديم الطلب.",
+          "ضمان 7 أيام استرداد كامل على أول اشتراك مدفوع في رِفد للتقنية، بدون أسئلة. شروط الاسترجاع والاستثناءات وكيفية تقديم الطلب.",
       },
     ],
   }),
@@ -18,14 +18,14 @@ export const Route = createFileRoute("/legal/refund")({
       <article className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
         <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center">
           <ShieldCheck className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-3 text-3xl font-extrabold">ضمان الاسترجاع 14 يوماً</h1>
-          <p className="mt-2 text-muted-foreground">تجربة أولى واضحة بشروط عادلة</p>
+          <h1 className="mt-3 text-3xl font-extrabold">ضمان 7 أيام — استرداد كامل بدون أسئلة</h1>
+          <p className="mt-2 text-muted-foreground">جرّب رِفد بثقة على أول اشتراك مدفوع</p>
         </div>
 
         <div className="mt-8 space-y-6 text-[15px] leading-[1.85] text-muted-foreground">
           <p className="text-foreground">
-            إذا لم تكن تجربة رِفد مناسبة لاحتياجك خلال أول <strong>14 يوماً</strong> من تاريخ تفعيل
-            أول اشتراك مدفوع، يمكنك طلب مراجعة الاسترجاع وفق الشروط أدناه.
+            إذا لم تكن تجربة رِفد مناسبة لاحتياجك خلال أول <strong>7 أيام</strong> من تاريخ تفعيل
+            أول اشتراك مدفوع، نُعيد لك المبلغ كاملاً بدون أسئلة وفق الشروط أدناه.
           </p>
 
           <section>
@@ -33,14 +33,14 @@ export const Route = createFileRoute("/legal/refund")({
             <ol className="list-decimal space-y-2 pr-5">
               <li>أرسل بريداً إلى <a className="text-primary hover:underline" href="mailto:refund@rifd.site">refund@rifd.site</a> من نفس البريد المسجَّل في حسابك.</li>
               <li>اذكر سبب الاسترجاع (اختياري — لتحسين الخدمة فقط).</li>
-              <li>نُعالج الطلب خلال <strong>3 أيام عمل</strong> ويعود المبلغ لحسابك خلال <strong>5–10 أيام عمل</strong> بحسب البنك.</li>
+              <li>نُعالج الطلب خلال <strong>يوم عمل واحد</strong> ويعود المبلغ لحسابك خلال <strong>5–10 أيام عمل</strong> بحسب البنك.</li>
             </ol>
           </section>
 
           <section>
             <h2 className="mb-3 text-xl font-bold text-foreground">شروط الاستحقاق</h2>
             <ul className="list-disc space-y-1 pr-5">
-              <li>أن يكون الطلب خلال 14 يوماً من تاريخ تفعيل أول اشتراك مدفوع.</li>
+              <li>أن يكون الطلب خلال 7 أيام من تاريخ تفعيل أول اشتراك مدفوع.</li>
               <li>أن يكون من نفس البريد المسجَّل في الحساب.</li>
               <li>أن لا يكون الحساب موقوفاً بسبب انتهاك شروط الاستخدام.</li>
             </ul>
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/legal/refund")({
                 <ul className="mt-2 list-disc space-y-1 pr-5 text-sm">
                   <li>باقات شحن نقاط الفيديو الإضافية بعد استخدامها أو تفعيلها.</li>
                   <li>التجديدات أو الاشتراكات اللاحقة بعد الاشتراك الأول.</li>
-                  <li>الحسابات التي تجاوزت 70% من الحصة الشهرية للاستخدام.</li>
+                  <li>الحسابات التي تجاوزت 50% من نقاط الفيديو الشهرية للباقة.</li>
                   <li>طلبات الاسترجاع المتكررة من نفس المستخدم خلال 12 شهراً.</li>
                 </ul>
               </div>

@@ -10,8 +10,8 @@ const BADGES = [
   },
   {
     icon: ShieldCheck,
-    title: "ضمان استرجاع 14 يوماً",
-    desc: "وفق سياسة الاسترجاع",
+    title: "ضمان 7 أيام استرداد كامل",
+    desc: "بدون أسئلة على أول اشتراك",
     color: "text-primary",
   },
   {
