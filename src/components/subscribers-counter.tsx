@@ -5,8 +5,9 @@ import { cn } from "@/lib/utils";
 
 /**
  * عدّاد المتاجر المنضمّة (إثبات حي):
- * يقرأ get_founding_status (RPC آمن) ويحدّث realtime عند كل اشتراك جديد.
- * — لا يعرض "مقاعد متبقية"؛ النموذج الجديد بسعر إطلاق مفتوح بلا Founding seats.
+ * يقرأ get_subscribers_count (RPC نظيف لا يعتمد على founding_*) ويحدّث realtime
+ * عند كل اشتراك جديد. — نموذج التسعير v5: سعر إطلاق مفتوح + ضمان 7 أيام،
+ * بلا Founding seats ولا "مقاعد متبقية".
  */
 export function SubscribersCounter({
   className,
@@ -24,12 +25,12 @@ export function SubscribersCounter({
 
     void (async () => {
       try {
-        // RPC آمن — يعمل للزوار غير المسجلين دون كشف رقم الواتساب أو طلبات الاشتراك
-        const { data, error } = await supabase.rpc("get_founding_status");
+        // RPC آمن — يعمل للزوار غير المسجلين دون كشف بيانات حساسة
+        const { data, error } = await supabase.rpc("get_subscribers_count");
         if (!mounted) return;
         if (error) throw error;
         const row = Array.isArray(data) ? data[0] : data;
-        const total = row?.current_subscribers ?? 564;
+        const total = row?.total ?? 564;
         baseRef.current = total;
         setCount(total);
       } catch {

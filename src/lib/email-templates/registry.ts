@@ -16,7 +16,6 @@ import { template as onboardingDay1 } from './onboarding-day1'
 import { template as onboardingTipDay3 } from './onboarding-tip-day3'
 import { template as onboardingDay5 } from './onboarding-day5'
 import { template as onboardingDay7 } from './onboarding-day7'
-import { template as freeTrialDiscount30 } from './free-trial-discount-30pct'
 import { template as paymentReceipt } from './payment-receipt'
 import { template as paymentFailed } from './payment-failed'
 import { template as quotaWarning80 } from './quota-warning-80pct'
@@ -35,7 +34,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'onboarding-tip-day3': onboardingTipDay3,
   'onboarding-day5': onboardingDay5,
   'onboarding-day7': onboardingDay7,
-  'free-trial-discount-30pct': freeTrialDiscount30,
   'payment-receipt': paymentReceipt,
   'payment-failed': paymentFailed,
   'quota-warning-80pct': quotaWarning80,
