@@ -82,6 +82,16 @@ export type Phase1Monitor = {
     overall_open_rate_pct: number;
     overall_click_rate_pct: number;
   };
+  wave_c3: {
+    referrals_total: number;
+    referrals_qualified: number;
+    active_codes: number;
+    k_factor: number;
+    annual_upgrade_shown: number;
+    annual_upgrade_clicked: number;
+    annual_upgrade_upgraded: number;
+    annual_click_rate_pct: number;
+  };
 };
 
 type AttemptEntry = { provider?: string; ok?: boolean; status?: string };
