@@ -1045,6 +1045,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_experiments: {
+        Row: {
+          billing_cycle: string | null
+          created_at: string
+          event_type: Database["public"]["Enums"]["pricing_event_type"]
+          id: string
+          metadata: Json | null
+          plan_id: string | null
+          session_id: string | null
+          user_id: string | null
+          variant: string | null
+        }
+        Insert: {
+          billing_cycle?: string | null
+          created_at?: string
+          event_type: Database["public"]["Enums"]["pricing_event_type"]
+          id?: string
+          metadata?: Json | null
+          plan_id?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          variant?: string | null
+        }
+        Update: {
+          billing_cycle?: string | null
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["pricing_event_type"]
+          id?: string
+          metadata?: Json | null
+          plan_id?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          variant?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           audience: string | null
@@ -1895,6 +1931,19 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_pricing_funnel: {
+        Args: { _days?: number }
+        Returns: {
+          annual_share_pct: number
+          annual_toggles: number
+          conversions: number
+          cta_click_rate_pct: number
+          cta_clicks: number
+          plan_clicks: number
+          top_plan: string
+          total_views: number
+        }[]
+      }
       get_provider_health_summary: {
         Args: never
         Returns: {
@@ -2209,6 +2258,12 @@ export type Database = {
         | "admin_adjust"
         | "expire"
       generation_type: "text" | "image" | "image_enhance"
+      pricing_event_type:
+        | "page_view"
+        | "annual_toggled"
+        | "plan_clicked"
+        | "cta_clicked"
+        | "converted"
       subscription_request_status:
         | "pending"
         | "contacted"
@@ -2388,6 +2443,13 @@ export const Constants = {
         "expire",
       ],
       generation_type: ["text", "image", "image_enhance"],
+      pricing_event_type: [
+        "page_view",
+        "annual_toggled",
+        "plan_clicked",
+        "cta_clicked",
+        "converted",
+      ],
       subscription_request_status: [
         "pending",
         "contacted",

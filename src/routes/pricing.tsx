@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -25,6 +25,8 @@ import {
   formatPlanNumber,
   videoCreditCost,
 } from "@/lib/plan-catalog";
+import { trackPricingEvent } from "@/lib/analytics/pricing-tracking";
+import { SaudiTestimonials } from "@/components/saudi-testimonials";
 
 const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
 const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
@@ -115,6 +117,26 @@ function PricingPage() {
 
   const ctaTarget = "/dashboard/billing";
 
+  // page_view مرة واحدة عند التحميل
+  useEffect(() => {
+    void trackPricingEvent("page_view", { billingCycle: "monthly" });
+  }, []);
+
+  const handleToggleAnnual = (next: boolean) => {
+    setYearly(next);
+    void trackPricingEvent("annual_toggled", {
+      billingCycle: next ? "yearly" : "monthly",
+      metadata: { yearly: next },
+    });
+  };
+
+  const handlePlanCta = (planId: string) => {
+    void trackPricingEvent("cta_clicked", {
+      planId,
+      billingCycle: yearly ? "yearly" : "monthly",
+    });
+  };
+
   return (
     <MarketingLayout>
       <section className="border-b border-border bg-secondary/30 py-12 sm:py-16">
@@ -150,18 +172,38 @@ function PricingPage() {
           <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-card p-1.5">
             <button
               type="button"
-              onClick={() => setYearly(false)}
-              className={cn("rounded-full px-4 py-1.5 text-sm font-bold", !yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
+              onClick={() => handleToggleAnnual(false)}
+              className={cn("rounded-full px-4 py-1.5 text-sm font-bold transition", !yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              aria-pressed={!yearly}
             >
               شهري
             </button>
             <button
               type="button"
-              onClick={() => setYearly(true)}
-              className={cn("inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-bold", yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
+              onClick={() => handleToggleAnnual(true)}
+              className={cn("inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-bold transition", yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              aria-pressed={yearly}
             >
-              سنوي <span className="rounded-full bg-success/25 px-1.5 py-0.5 text-[10px] font-bold text-success">وفّر {ANNUAL_DISCOUNT_PCT}%</span>
+              سنوي <span className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-bold", yearly ? "bg-primary-foreground/20 text-primary-foreground" : "bg-success/25 text-success")}>وفّر {ANNUAL_DISCOUNT_PCT}%</span>
             </button>
+          </div>
+
+          {/* CTA رئيسي موحّد */}
+          <div className="mt-5 inline-flex flex-col items-center gap-2">
+            <Button
+              asChild
+              size="lg"
+              className="gradient-primary font-extrabold text-primary-foreground shadow-elegant"
+              onClick={() => handlePlanCta("hero_cta")}
+            >
+              <Link to="/auth" search={{ redirect: "/dashboard/billing" }}>
+                <Sparkles className="ml-1 h-4 w-4" />
+                ابدأ تجربتك بـ 1 ر.س — استرد كاملاً خلال 7 أيام
+              </Link>
+            </Button>
+            <p className="text-[11px] font-bold text-muted-foreground">
+              {REFUND_GUARANTEE_LABEL} · بدون التزام طويل
+            </p>
           </div>
         </div>
       </section>
@@ -239,8 +281,9 @@ function PricingPage() {
                     asChild
                     className={cn("mt-5 w-full font-bold", isPopular && "gradient-primary text-primary-foreground shadow-elegant", isPremium && "gradient-gold text-gold-foreground shadow-gold")}
                     variant={plan.id === "free" ? "outline" : "default"}
+                    onClick={() => handlePlanCta(plan.id)}
                   >
-                    <Link to={plan.id === "free" ? "/onboarding" : ctaTarget}>
+                    <Link to={plan.id === "free" ? "/auth" : ctaTarget} search={plan.id === "free" ? { redirect: "/onboarding/wizard" } : undefined as never}>
                       {cta} <ArrowLeft className="mr-1 h-4 w-4" />
                     </Link>
                   </Button>
@@ -279,6 +322,8 @@ function PricingPage() {
           </div>
         </div>
       </section>
+
+      <SaudiTestimonials />
 
       <section className="border-t border-border bg-secondary/30 py-14">
         <div className="mx-auto max-w-3xl px-4">

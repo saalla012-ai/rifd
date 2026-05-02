@@ -174,6 +174,42 @@ function Phase1MonitorPage() {
             ]}
           />
 
+          {/* المرحلة 2 — Wave C: التحويل والنمو */}
+          <PhaseProgressBanner
+            phaseLabel="المرحلة 2 · التحويل والنمو"
+            phaseTitle="Wave C1 — تحسين صفحة الأسعار"
+            pillars={[
+              {
+                key: "pricing_views",
+                label: "زيارات الأسعار (7 أيام)",
+                value: data.wave_c1.total_views,
+                target: Math.max(50, data.wave_c1.total_views || 50),
+                hint: `${data.wave_c1.total_views} مشاهدة — وعي بالباقات`,
+              },
+              {
+                key: "pricing_cta_ctr",
+                label: "نقر CTA رئيسي",
+                value: data.wave_c1.cta_click_rate_pct,
+                target: 18,
+                hint: `${data.wave_c1.cta_click_rate_pct}% ضغطوا CTA — الهدف ≥18%`,
+              },
+              {
+                key: "annual_share",
+                label: "حصة السنوي",
+                value: data.wave_c1.annual_share_pct,
+                target: 25,
+                hint: `${data.wave_c1.annual_share_pct}% فعّلوا السنوي — الهدف ≥25%`,
+              },
+              {
+                key: "conversions_7d",
+                label: "تحويلات (7 أيام)",
+                value: data.wave_c1.conversions,
+                target: Math.max(5, Math.round((data.wave_c1.total_views || 1) * 0.05)),
+                hint: `${data.wave_c1.conversions} مشترك · أكثر باقة: ${data.wave_c1.top_plan}`,
+              },
+            ]}
+          />
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <MetricCard
               title="معدل الـRefund (24س)"
@@ -202,6 +238,38 @@ function Phase1MonitorPage() {
               hint={`${data.launch_bonus.remaining} مقعد متبقٍ — تُمنح تلقائياً عند تفعيل أول 100 مشترك مدفوع`}
               tone={data.launch_bonus.remaining > 0 ? "success" : "default"}
               icon={Award}
+            />
+          </div>
+
+          {/* Wave C1 — Pricing Funnel */}
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              title="مشاهدات /pricing (7 أيام)"
+              value={data.wave_c1.total_views.toLocaleString("ar-SA")}
+              hint={`أكثر باقة طلباً: ${data.wave_c1.top_plan}`}
+              tone="default"
+              icon={TrendingUp}
+            />
+            <MetricCard
+              title="نقر CTA رئيسي"
+              value={`${data.wave_c1.cta_click_rate_pct}%`}
+              hint={`${data.wave_c1.cta_clicks} نقرة — الهدف ≥18%`}
+              tone={data.wave_c1.cta_click_rate_pct >= 18 ? "success" : "warning"}
+              icon={Zap}
+            />
+            <MetricCard
+              title="حصة السنوي"
+              value={`${data.wave_c1.annual_share_pct}%`}
+              hint={`${data.wave_c1.annual_toggles} زائر فعّل التبديل — الهدف ≥25%`}
+              tone={data.wave_c1.annual_share_pct >= 25 ? "success" : "warning"}
+              icon={Award}
+            />
+            <MetricCard
+              title="تحويلات مدفوعة (7 أيام)"
+              value={data.wave_c1.conversions.toLocaleString("ar-SA")}
+              hint={`${data.wave_c1.plan_clicks} ضغطة على بطاقات الباقات`}
+              tone={data.wave_c1.conversions > 0 ? "success" : "default"}
+              icon={CheckCircle2}
             />
           </div>
 
