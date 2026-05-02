@@ -79,13 +79,14 @@ export const PLAN_CATALOG = [
     monthlyPriceSar: 0,
     yearlyPriceSar: 0,
     monthlyCredits: 150,
-    dailyTextCap: 10,
-    dailyImageCap: 7,
+    // Free لا يستخدم العدّاد اليومي — يستخدم monthlyTrialQuota أدناه فقط
+    dailyTextCap: 5,
+    dailyImageCap: 3,
     imageProAllowed: false,
     videoFastAllowed: true,
     videoQualityAllowed: false,
     maxVideoDurationSeconds: 5,
-    tagline: "تجربة شهرية متجددة: 5 نصوص + 3 صور + فيديو واحد سريع",
+    tagline: "تجربة شهرية متجددة: 5 نصوص + 3 صور + فيديو سريع واحد",
     monthlyTrialQuota: { text: 5, image: 3, video: 1 },
   },
   {
