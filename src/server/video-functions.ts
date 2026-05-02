@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   consume,
   getRefundLedgerId,
+  grantCompensationCredits,
   operationalSwitchEnabled,
   refund,
   videoCost,
