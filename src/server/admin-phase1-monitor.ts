@@ -57,6 +57,16 @@ export type Phase1Monitor = {
     onboarding_started_7d: number;
     completion_rate_pct: number;
   };
+  wave_c1: {
+    total_views: number;
+    annual_toggles: number;
+    plan_clicks: number;
+    cta_clicks: number;
+    conversions: number;
+    cta_click_rate_pct: number;
+    annual_share_pct: number;
+    top_plan: string;
+  };
 };
 
 type AttemptEntry = { provider?: string; ok?: boolean; status?: string };
