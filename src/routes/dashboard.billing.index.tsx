@@ -4,13 +4,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Crown,
   Film,
   Loader2,
   MessageCircle,
   ShieldCheck,
   Sparkles,
-  Users,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -32,11 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { PAID_PLANS, PLAN_BY_ID, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
+import { PAID_PLANS, PLAN_BY_ID, REFUND_GUARANTEE_LABEL, LAUNCH_BADGE_LABEL, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
 import {
   formatSaudiPhoneDisplay,
   normalizeSaudiPhone,
