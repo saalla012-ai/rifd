@@ -44,6 +44,48 @@ export type Database = {
         }
         Relationships: []
       }
+      activation_email_log: {
+        Row: {
+          clicked_at: string | null
+          day_marker: number
+          id: string
+          metadata: Json
+          opened_at: string | null
+          recipient_email: string
+          sent_at: string
+          skip_reason: string | null
+          skipped: boolean
+          template_name: string
+          user_id: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          day_marker: number
+          id?: string
+          metadata?: Json
+          opened_at?: string | null
+          recipient_email: string
+          sent_at?: string
+          skip_reason?: string | null
+          skipped?: boolean
+          template_name: string
+          user_id: string
+        }
+        Update: {
+          clicked_at?: string | null
+          day_marker?: number
+          id?: string
+          metadata?: Json
+          opened_at?: string | null
+          recipient_email?: string
+          sent_at?: string
+          skip_reason?: string | null
+          skipped?: boolean
+          template_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -1881,6 +1923,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_email_activation_funnel: { Args: { _days?: number }; Returns: Json }
       get_founding_status: {
         Args: never
         Returns: {

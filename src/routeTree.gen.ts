@@ -89,6 +89,7 @@ import { Route as ApiPublicHooksPhase1DailyReportRouteImport } from './routes/ap
 import { Route as ApiPublicHooksOcrReceiptRouteImport } from './routes/api.public.hooks.ocr-receipt'
 import { Route as ApiPublicHooksCheckStaleSubscriptionsRouteImport } from './routes/api.public.hooks.check-stale-subscriptions'
 import { Route as ApiPublicHooksCheckEmailDlqRouteImport } from './routes/api.public.hooks.check-email-dlq'
+import { Route as ApiPublicHooksActivationSequenceRouteImport } from './routes/api.public.hooks.activation-sequence'
 
 const VsChatgptRoute = VsChatgptRouteImport.update({
   id: '/vs-chatgpt',
@@ -502,6 +503,12 @@ const ApiPublicHooksCheckEmailDlqRoute =
     path: '/api/public/hooks/check-email-dlq',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksActivationSequenceRoute =
+  ApiPublicHooksActivationSequenceRouteImport.update({
+    id: '/api/public/hooks/activation-sequence',
+    path: '/api/public/hooks/activation-sequence',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -574,6 +581,7 @@ export interface FileRoutesByFullPath {
   '/api/public/video-provider-callback': typeof ApiPublicVideoProviderCallbackRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/activation-sequence': typeof ApiPublicHooksActivationSequenceRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
@@ -655,6 +663,7 @@ export interface FileRoutesByTo {
   '/api/public/video-provider-callback': typeof ApiPublicVideoProviderCallbackRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/activation-sequence': typeof ApiPublicHooksActivationSequenceRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
@@ -738,6 +747,7 @@ export interface FileRoutesById {
   '/api/public/video-provider-callback': typeof ApiPublicVideoProviderCallbackRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
+  '/api/public/hooks/activation-sequence': typeof ApiPublicHooksActivationSequenceRoute
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
@@ -822,6 +832,7 @@ export interface FileRouteTypes {
     | '/api/public/video-provider-callback'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
+    | '/api/public/hooks/activation-sequence'
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
@@ -903,6 +914,7 @@ export interface FileRouteTypes {
     | '/api/public/video-provider-callback'
     | '/lovable/email/suppression'
     | '/dashboard/billing'
+    | '/api/public/hooks/activation-sequence'
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
@@ -985,6 +997,7 @@ export interface FileRouteTypes {
     | '/api/public/video-provider-callback'
     | '/lovable/email/suppression'
     | '/dashboard/billing/'
+    | '/api/public/hooks/activation-sequence'
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
@@ -1054,6 +1067,7 @@ export interface RootRouteChildren {
   ApiPublicContactSubmitRoute: typeof ApiPublicContactSubmitRoute
   ApiPublicVideoProviderCallbackRoute: typeof ApiPublicVideoProviderCallbackRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksActivationSequenceRoute: typeof ApiPublicHooksActivationSequenceRoute
   ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
   ApiPublicHooksCheckStaleSubscriptionsRoute: typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   ApiPublicHooksOcrReceiptRoute: typeof ApiPublicHooksOcrReceiptRoute
@@ -1627,6 +1641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksCheckEmailDlqRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/activation-sequence': {
+      id: '/api/public/hooks/activation-sequence'
+      path: '/api/public/hooks/activation-sequence'
+      fullPath: '/api/public/hooks/activation-sequence'
+      preLoaderRoute: typeof ApiPublicHooksActivationSequenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1737,6 +1758,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicContactSubmitRoute: ApiPublicContactSubmitRoute,
   ApiPublicVideoProviderCallbackRoute: ApiPublicVideoProviderCallbackRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksActivationSequenceRoute: ApiPublicHooksActivationSequenceRoute,
   ApiPublicHooksCheckEmailDlqRoute: ApiPublicHooksCheckEmailDlqRoute,
   ApiPublicHooksCheckStaleSubscriptionsRoute:
     ApiPublicHooksCheckStaleSubscriptionsRoute,
