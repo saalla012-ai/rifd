@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getPhase1Monitor, type Phase1Monitor } from "@/server/admin-phase1-monitor";
+import { PhaseProgressBanner } from "@/components/phase-progress-banner";
 
 export const Route = createFileRoute("/admin/phase1-monitor")({
   beforeLoad: adminBeforeLoad,
@@ -124,6 +125,55 @@ function Phase1MonitorPage() {
         </div>
       ) : (
         <>
+          <PhaseProgressBanner
+            phaseLabel="المرحلة 1 · رِفد"
+            phaseTitle="جاهزية الإطلاق + Onboarding + الاحتفاظ"
+            pillars={[
+              {
+                key: "refund",
+                label: "ثبات المنتج (Refund)",
+                value: Math.max(0, 100 - data.refund.refund_rate_pct * (100 / data.refund.target_pct)),
+                target: 100,
+                hint: `معدل الاسترداد ${data.refund.refund_rate_pct}% — الهدف < ${data.refund.target_pct}%`,
+              },
+              {
+                key: "fallback",
+                label: "نجاح الـFallback",
+                value: data.fallbacks.fallback_success_rate_pct,
+                target: 95,
+                hint: `${data.fallbacks.successful_fallback}/${data.fallbacks.jobs_with_fallback} مهمة استعادت تلقائياً`,
+              },
+              {
+                key: "wizard",
+                label: "إكمال الـWizard (Wave B)",
+                value: data.wave_b.completion_rate_pct,
+                target: 75,
+                hint: `${data.wave_b.onboarding_completed_7d}/${data.wave_b.onboarding_started_7d} أكملوا الإعداد خلال 7 أيام`,
+              },
+              {
+                key: "first_win",
+                label: "أول إنجاز (شارة)",
+                value: data.wave_b.badges_24h.first_text + data.wave_b.badges_24h.first_image,
+                target: Math.max(1, data.wave_b.onboarding_completed_7d),
+                hint: `${data.wave_b.badges_24h.first_text + data.wave_b.badges_24h.first_image} شارة أولى مُنحت في 24س`,
+              },
+              {
+                key: "conversion",
+                label: "تحويل Free → Paid",
+                value: data.conversion.conversion_rate_pct,
+                target: 5,
+                hint: `${data.conversion.paid_users} مدفوع من ${data.conversion.free_users + data.conversion.paid_users}`,
+              },
+              {
+                key: "launch_bonus",
+                label: "مكافأة الإطلاق",
+                value: data.launch_bonus.total_granted,
+                target: data.launch_bonus.cap,
+                hint: `${data.launch_bonus.total_granted}/${data.launch_bonus.cap} مقعد مُفعّل`,
+              },
+            ]}
+          />
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <MetricCard
               title="معدل الـRefund (24س)"
