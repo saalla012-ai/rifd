@@ -102,6 +102,7 @@ export const PLAN_CATALOG = [
     videoQualityAllowed: false,
     maxVideoDurationSeconds: 8,
     tagline: "لبداية فيديو سريع منتظمة بلا تكلفة احترافية",
+    launchBadge: true,
   },
   {
     id: "growth",
@@ -118,6 +119,7 @@ export const PLAN_CATALOG = [
     maxVideoDurationSeconds: 8,
     tagline: "الأفضل لمعظم المتاجر النشطة",
     badge: "الأكثر توازناً",
+    launchBadge: true,
   },
   {
     id: "pro",
@@ -134,6 +136,7 @@ export const PLAN_CATALOG = [
     maxVideoDurationSeconds: 8,
     tagline: "للمتجر الذي يعتمد الفيديو كقناة نمو",
     badge: "أفضل هامش تشغيل",
+    launchBadge: true,
   },
   {
     id: "business",
@@ -150,6 +153,7 @@ export const PLAN_CATALOG = [
     maxVideoDurationSeconds: 8,
     tagline: "للفرق والوكالات الخفيفة متعددة الحملات",
     badge: "للتوسع",
+    launchBadge: true,
   },
 ] as const satisfies readonly PlanCatalogEntry[];
 
