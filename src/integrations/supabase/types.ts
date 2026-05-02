@@ -122,6 +122,36 @@ export type Database = {
         }
         Relationships: []
       }
+      annual_upgrade_offers: {
+        Row: {
+          clicked_at: string | null
+          discount_pct: number
+          id: string
+          metadata: Json
+          shown_at: string
+          upgraded_at: string | null
+          user_id: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          discount_pct?: number
+          id?: string
+          metadata?: Json
+          shown_at?: string
+          upgraded_at?: string | null
+          user_id: string
+        }
+        Update: {
+          clicked_at?: string | null
+          discount_pct?: number
+          id?: string
+          metadata?: Json
+          shown_at?: string
+          upgraded_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           founding_base_count: number
@@ -1306,6 +1336,66 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+          uses_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+          uses_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          uses_count?: number
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          code_used: string
+          created_at: string
+          id: string
+          qualified_at: string | null
+          referred_user_id: string
+          referrer_user_id: string
+          reward_points: number
+          rewarded_at: string | null
+          status: Database["public"]["Enums"]["referral_status"]
+        }
+        Insert: {
+          code_used: string
+          created_at?: string
+          id?: string
+          qualified_at?: string | null
+          referred_user_id: string
+          referrer_user_id: string
+          reward_points?: number
+          rewarded_at?: string | null
+          status?: Database["public"]["Enums"]["referral_status"]
+        }
+        Update: {
+          code_used?: string
+          created_at?: string
+          id?: string
+          qualified_at?: string | null
+          referred_user_id?: string
+          referrer_user_id?: string
+          reward_points?: number
+          rewarded_at?: string | null
+          status?: Database["public"]["Enums"]["referral_status"]
+        }
+        Relationships: []
+      }
       stale_subs_alert_state: {
         Row: {
           id: number
@@ -1868,6 +1958,7 @@ export type Database = {
           used: number
         }[]
       }
+      claim_referral_code: { Args: { _code: string }; Returns: Json }
       consume_credits: {
         Args: {
           _amount: number
@@ -1923,6 +2014,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      generate_referral_code: { Args: never; Returns: string }
       get_email_activation_funnel: { Args: { _days?: number }; Returns: Json }
       get_founding_status: {
         Args: never
@@ -2011,6 +2103,7 @@ export type Database = {
           founding_total_seats: number
         }[]
       }
+      get_referral_stats: { Args: { _days?: number }; Returns: Json }
       get_stale_subscription_requests: {
         Args: never
         Returns: {
@@ -2307,6 +2400,7 @@ export type Database = {
         | "plan_clicked"
         | "cta_clicked"
         | "converted"
+      referral_status: "pending" | "qualified" | "rewarded"
       subscription_request_status:
         | "pending"
         | "contacted"
@@ -2493,6 +2587,7 @@ export const Constants = {
         "cta_clicked",
         "converted",
       ],
+      referral_status: ["pending", "qualified", "rewarded"],
       subscription_request_status: [
         "pending",
         "contacted",
