@@ -767,6 +767,17 @@ export const generateVideo = createServerFn({ method: "POST" })
       const productImageRequired = data.source === "medium-test" ? (mediumTestSampleFromInput(data)?.requiresProductImage ?? false) : profile?.plan !== "free";
       const providerInput = { ...data, watermarkRequired, providerImageUrl } satisfies VideoInput;
 
+      // Free tier: حصة فيديو شهرية متجددة (1 فيديو/شهر) — تفحص قبل consume النقاط
+      if (profile?.plan === "free") {
+        const { data: quotaCheck, error: quotaErr } = await supabase.rpc("check_free_monthly_video_quota");
+        if (quotaErr) throw new Error(`free_monthly_video_quota_check_failed: ${quotaErr.message}`);
+        const row = Array.isArray(quotaCheck) ? quotaCheck[0] : quotaCheck;
+        if (row && row.allowed === false) {
+          const cycleEnd = row.cycle_end ? new Date(row.cycle_end as string).toISOString() : null;
+          throw new Error(`free_monthly_video_quota_exceeded:used=${row.used ?? 1}:cap=${row.cap ?? 1}:cycle_end=${cycleEnd ?? ""}`);
+        }
+      }
+
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
         aspect_ratio: data.aspectRatio,
