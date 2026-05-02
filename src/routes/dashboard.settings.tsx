@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConsentSettings } from "@/components/consent-settings";
+import { BadgesList } from "@/components/badges-list";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -147,6 +148,9 @@ function SettingsPage() {
             )}
           </Button>
         </div>
+
+        {/* شارات First-Win */}
+        <BadgesList />
 
         {/* إعدادات التواصل والتسويق (PDPL) */}
         <ConsentSettings />
