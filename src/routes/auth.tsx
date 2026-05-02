@@ -57,6 +57,7 @@ function AuthPage() {
   const redirectPath = search.redirect ?? "/dashboard";
   const onboardingIntent =
     redirectPath === "/onboarding" ||
+    redirectPath === "/onboarding/wizard" ||
     location.searchStr.includes("redirect=/onboarding") ||
     location.searchStr.includes("redirect=%2Fonboarding");
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
@@ -116,9 +117,9 @@ function AuthPage() {
           });
       }
       if (profile && !profile.onboarded) {
-        void navigate({ to: "/onboarding" });
+        void navigate({ to: "/onboarding/wizard" });
       } else if (!profile && mustCompleteOnboarding) {
-        void navigate({ to: "/onboarding" });
+        void navigate({ to: "/onboarding/wizard" });
       } else if (`${location.pathname}${location.searchStr}${location.hash}` !== redirectPath) {
         void navigate({ to: redirectPath as never });
       }
@@ -152,7 +153,7 @@ function AuthPage() {
         }
         track("signup_completed", { method: "email" });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
-        void navigate({ to: "/onboarding" });
+        void navigate({ to: "/onboarding/wizard" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -191,7 +192,7 @@ function AuthPage() {
         }
         window.localStorage.setItem(PENDING_SIGNUP_PHONE_KEY, normalizedWhatsapp);
       }
-      const finalRedirectPath = mode === "signup" ? "/onboarding" : redirectPath;
+      const finalRedirectPath = mode === "signup" ? "/onboarding/wizard" : redirectPath;
       const authReturnPath = finalRedirectPath === "/dashboard"
         ? "/auth"
         : `/auth?redirect=${encodeURIComponent(finalRedirectPath)}`;
