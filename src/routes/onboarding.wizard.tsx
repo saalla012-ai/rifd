@@ -76,7 +76,14 @@ async function logEvent(
   metadata: Record<string, unknown> = {},
 ) {
   try {
-    await supabase.from("onboarding_events").insert({ user_id: userId, step, event_type: eventType, metadata });
+    // الجدول جديد، types لم تُحدَّث بعد — نستخدم cast آمن للوصول
+    await (supabase as unknown as {
+      from: (t: string) => {
+        insert: (row: Record<string, unknown>) => Promise<{ error: unknown }>;
+      };
+    })
+      .from("onboarding_events")
+      .insert({ user_id: userId, step, event_type: eventType, metadata });
   } catch {
     /* silent */
   }
