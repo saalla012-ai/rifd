@@ -1685,6 +1685,16 @@ export type Database = {
           video_quality_allowed: boolean
         }[]
       }
+      grant_compensation_credits: {
+        Args: {
+          _amount: number
+          _reason: string
+          _reference_id?: string
+          _reference_type?: string
+          _user_id: string
+        }
+        Returns: string
+      }
       has_marketing_consent: {
         Args: {
           _consent_type: Database["public"]["Enums"]["consent_type"]
