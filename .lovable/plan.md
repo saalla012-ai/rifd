@@ -1,116 +1,97 @@
-# خطة: تجهيز حزمة وصول كاملة لـ Claude Max للمراجعة
+## الهدف
 
-**المبدأ**: لا نصلح أي شيء الآن. فقط نُجهّز لـ Claude **كل** ما قد يحتاجه (وأكثر) ليتمكن من المراجعة الشاملة واقتراح الإصلاحات.
+إنتاج وثيقة احترافية واحدة باللغة العربية موجَّهة للمستشار (Claude) تطلب منه **تحديث تقرير v4 إلى v5** بناءً على 8 نقاط فنية/استراتيجية تم اكتشافها بعد مراجعة كودنا الفعلي وقاعدة بياناتنا. الوثيقة ستكون مرفقاً جاهزاً للإرسال — ليست خطة تنفيذ داخل المنتج.
 
----
+## ما لن نفعله
 
-## 1. حساب Claude بصلاحيات كاملة (Admin + Pro)
+- لن نلمس أي كود تطبيقي (`src/`, `supabase/`).
+- لن نشغّل migrations أو نغيّر أسعار/خطط.
+- لن نبني UI جديداً.
+- لن نعدّل تقرير v4 الأصلي للمستشار (نتركه كما هو).
 
-إنشاء مستخدم `claude-audit@rifd.site` عبر Supabase Auth Admin API ثم:
+## مخرَج واحد
 
-- **الدور**: `admin` في `user_roles` (وصول لكل لوحات `/admin/*`)
-- **الخطة**: `pro` في `profiles` مع `onboarded = true`
-- **الرصيد**: 10,000 نقطة في `user_credits` (plan_credits + topup_credits)
-- **بروفايل تجريبي كامل**: store_name, audience, product_type, tone, brand_color (لتجربة كل الأدوات بدون onboarding)
-- **كلمة سر قوية**: `Audit-Claude-2026-Full-Access-X9k`
-- **email_confirm = true** (دخول مباشر بدون تحقق بريد)
-
-## 2. حزمة الوصول للقراءة المباشرة (Read-Only Access Pack)
-
-إنشاء ملف `audit-pack/CLAUDE-ACCESS.md` يحوي:
-
-### أ. بيانات الدخول
-- URL تسجيل الدخول
-- البريد + كلمة السر
-- ملاحظة: الحساب أدمن كامل، يقدر يدخل `/admin/*` بالكامل
-
-### ب. روابط مباشرة لكل اللوحات الإدارية
-قائمة 18 لوحة admin موجودة:
-- `/admin/analytics` — KPIs ومسار التحويل
-- `/admin/credit-ledger` — سجل النقاط
-- `/admin/subscriptions` — الاشتراكات النشطة/المعلقة
-- `/admin/abuse-monitor` — مراقبة الإساءة
-- `/admin/video-jobs` — حالة فيديوهات
-- `/admin/email-monitor` — DLQ + معدلات الإرسال
-- `/admin/audit` — سجل تدقيق الإجراءات
-- `/admin/plan-limits`, `/admin/credits`, `/admin/campaign-packs`, `/admin/contact-submissions`, `/admin/ab-tests`, `/admin/dns-check`, `/admin/domain-scan`, `/admin/reconcile`, `/admin/video-providers`
-
-### ج. روابط Dashboard (تجربة المستخدم النهائي)
-- `/dashboard` (الرئيسية)
-- `/dashboard/generate-text|image|video`
-- `/dashboard/campaign-studio`
-- `/dashboard/library`, `/dashboard/templates`
-- `/dashboard/billing`, `/dashboard/credits`, `/dashboard/usage`
-- `/dashboard/store-profile`, `/dashboard/settings`
-
-### د. تنبيهات صريحة (Known Issues / Gaps / Warnings)
-نطلب من Claude أن **يكتشف ويُبلّغ عن**:
-- Single point of failure: `fal.ai` هو المزود الوحيد للفيديو
-- معدل refund للفيديو 27-43% (بيانات قديمة، يحتاج تحقق حي)
-- 3 طلبات اشتراك Pro منتهية الصلاحية لم تُعالج
-- أي ثغرة RLS، أي endpoint عام بدون حماية، أي مفتاح مكشوف
-- أي تناقض بين `plan-catalog.ts` و `plan_entitlements` في DB
-- أي استهلاك غير محسوب في `cost.ts`
-
-## 3. Read-Only SQL Snippets للمراجع
-
-ملف `audit-pack/SQL-QUERIES.md` يحوي 15 استعلام جاهز يقدر Claude يطلبه منك تشغيله:
-- KPIs (signups, conversion, MRR)
-- Funnel (signup → onboarded → first_gen → paid)
-- Cost per user (cost.ts vs actual)
-- Credit ledger anomalies
-- RLS coverage check
-- Email deliverability stats
-- Video provider performance
-
-## 4. Code Map الكامل
-
-ملف `audit-pack/CODEBASE-MAP.md` يحوي:
-- خريطة كل المجلدات الرئيسية مع وصف 3 سطور
-- قائمة كل الـ server functions (`src/server/*`) مع الغرض
-- قائمة كل الـ public APIs (`src/routes/api/public/*`) مع الـ auth model
-- قائمة الـ migrations الأخيرة (آخر 10)
-- قائمة كل ملفات التهيئة الحرجة (config.toml, vite.config.ts, wrangler.jsonc)
-
-## 5. Production Screenshots لما تبقى
-
-التقاط 8 لقطات لـ Dashboard من production (`rifd.site`) بعد تسجيل دخول حساب Claude:
-- Dashboard home
-- Generate text/image/video (الثلاثة)
-- Campaign studio
-- Billing
-- Library
-- Settings + Consent settings (الجديدة)
-
-## 6. ملف نهائي موحّد للتسليم
-
-`audit-pack/README.md` يربط كل الملفات السابقة + `code-bundle.md` السابق + الـ screenshots، مع تعليمات لـ Claude:
-1. ادخل بحساب الأدمن
-2. ابدأ من `/admin/analytics` للنظرة العامة
-3. استخدم SQL-QUERIES.md للأرقام
-4. راجع CODEBASE-MAP.md قبل اقتراح أي تغيير
-5. **مهمتك**: مراجعة قبل حملة Telegram بهدف 80 مشترك مدفوع؛ ابحث عن المخاطر التقنية والاقتصادية وUX، ولا تصلح شيئاً بنفسك—فقط اقترح.
-
----
-
-## التنفيذ التقني (تفاصيل للمطوّر)
+ملف Markdown + PDF بنفس المحتوى:
 
 ```text
-1. Migration → SQL function create_audit_user(email, password)
-   تستدعي auth.admin via service role لإنشاء مستخدم
-   ثم INSERT في user_roles, profiles, user_credits
-   (idempotent: لو موجود → يحدّث الصلاحيات فقط)
-
-2. Server function: invoke once عبر admin-only endpoint
-   أو SQL مباشر باستخدام supabaseAdmin
-
-3. كتابة 4 ملفات Markdown في audit-pack/
-
-4. التقاط 8 screenshots عبر browser tool بعد login
+/mnt/documents/rifd-counter-brief-to-consultant-v1.md
+/mnt/documents/rifd-counter-brief-to-consultant-v1.pdf
 ```
 
-**لن نُعدّل أي ملف منتج (production code).** كل العمل في:
-- migration واحدة (إنشاء حساب)
-- مجلد `audit-pack/` (توثيق + screenshots)
+نهاية المهمة: وسم `<lov-artifact>` للملفين كي يحمّلهما المالك ويرسلهما للمستشار.
 
-بعد موافقتك، سأنفّذ بالترتيب وأرسل الحزمة الكاملة.
+## بنية الوثيقة (ترتيب مقصود)
+
+1. **مقدمة (نصف صفحة)** — شكر مهني، تأكيد أن v4 ممتاز كرؤية، لكن قبل التنفيذ توجد 8 ملاحظات تقنية مادية مبنية على فحص الكود الفعلي و DB. الهدف: v5 أكثر قابلية للتنفيذ.
+
+2. **سياق الفحص** — ما الذي راجعناه فعلياً (`src/server/video-functions.ts`, `src/server/credits.ts`, `src/lib/plan-catalog.ts`, جدول `video_jobs`, `credit_ledger`) + التواريخ + عدد الأسطر.
+
+3. **النقاط الـ8** — كل نقطة بنفس القالب المنظَّم:
+   - **العنوان** + التصنيف (تقني / استراتيجي / مالي / منتجي)
+   - **اقتباس v4**: السطر الذي اقترحه المستشار (مع رقم الصفحة/القسم).
+   - **الواقع في كودنا**: مرجع ملف+سطر، أو استعلام SQL+النتيجة.
+   - **المشكلة**: لماذا الاقتراح لا يُنفَّذ كما هو.
+   - **البديل المقترح**: حل عملي بديل.
+   - **سؤال موجَّه للمستشار** ينتظر إجابة في v5.
+
+   النقاط الثمان (ثابتة، تم تأكيدها في الجولة السابقة):
+   1. **FFmpeg على Cloudflare Workers مستحيل** → بديل: Shotstack / Remotion render خارجي / Cloudflare Container.
+   2. **SPOF خفي: Seedance + Kling كلاهما عبر fal.ai** → ليست redundancy فعلية. بديل: مزود ثاني خارج fal (Replicate، Runway مباشرة).
+   3. **خفض السعر 149 → 99 SAR قبل تثبيت تكلفة الفيديو** يهدد الهامش (PixVerse > $0.20 vs Seedance $0.18 لم يُختبر إنتاجياً).
+   4. **معدل refund 37%** — لم يُشخَّص السبب الجذري بعد (timeout vs quality vs prompt). الاستثمار في مزود جديد قبل التشخيص = مقامرة.
+   5. **توقع نمو 175%** يفترض حل اختناقات OCR/الدفع اليدوي — وهي غير مذكورة في v4.
+   6. **`plan-catalog.ts` (UI) ≠ `plan_entitlements` (DB)** — اقتراحات الأسعار تحتاج migration متزامن، vs.4 لم يحدد.
+   7. **Public endpoints 12 نقطة** (راجع `audit-pack/CODEBASE-MAP.md`) — أي توسعة API لمزود جديد تضيف سطح هجوم؛ v4 لم يطرح SOC للأمان.
+   8. **Founding seats + A/B + Consent (GDPR)** — أنظمة موجودة وتعمل؛ v4 يقترحها كأنها جديدة → دلالة على أن الفحص لم يصل لكامل الكود.
+
+4. **مصفوفة قرار (Decision Matrix)** — جدول يلخّص: النقطة | شدّتها (Blocker/Major/Minor) | تأثيرها على Roadmap v4 | هل تُلغي/تعدّل/تؤجّل توصية معينة.
+
+5. **طلبات صريحة لـv5** — قائمة مرقّمة (≈10 بنود) بما نريد أن يضيفه/يعدّله المستشار:
+   - بديل تقني واقعي بدل FFmpeg.
+   - خطة تشخيص refund قبل تغيير المزود.
+   - سيناريو هامش بـ 3 حالات (best/base/worst) لتسعير 99 SAR.
+   - تسلسل migration لتغيير `plan_entitlements`.
+   - مراجعة public endpoints.
+   - إعادة تقدير نمو 175% بعد إضافة قيود OCR/الدفع.
+   - Acknowledge للأنظمة الموجودة (founding/A/B/consent).
+
+6. **ملاحق (Appendix) — اختياري قصير**:
+   - A. SQL queries المستخدمة (3-4 استعلامات من `audit-pack/SQL-QUERIES.md` + نتائجها المختصرة).
+   - B. مراجع كود (ملف:سطر) لكل نقطة.
+   - C. timeline مقترح: متى نتوقع v5، ومن سيراجعه.
+
+## التفاصيل التقنية (لخطوات التنفيذ)
+
+### خطوة 1 — جمع الأدلة الحيّة من DB
+استعلامات `read_query` (عبر supabase tool) لا migrations:
+- إجمالي + معدل refund للفيديو (Q6 من SQL-QUERIES.md).
+- توزيع `video_jobs.error_message` (لتأكيد سبب الـ37%).
+- مقارنة `plan-catalog` ↔ `plan_entitlements` (Q13).
+- عدد active subs + MRR تقديري (Q1، Q3) لاختبار افتراض نمو 175%.
+
+### خطوة 2 — قراءة الملفات المرجعية
+- `src/server/video-functions.ts` (تأكيد المزود الحالي + نقطة الفشل).
+- `src/lib/plan-catalog.ts` (الأسعار الحالية).
+- `audit-pack/CODEBASE-MAP.md` (قائمة public endpoints).
+- مراجعة سريعة لـ`/mnt/documents/rifd-claude-prompt.md` للتأكد من نبرة المراسلة المعتمدة.
+
+### خطوة 3 — كتابة الـMarkdown
+ملف واحد، عربي RTL، نبرة محترمة لكن حازمة، لا اتهام، طول مستهدف 6-9 صفحات A4.
+
+### خطوة 4 — توليد PDF
+سكربت Python بسيط في `/tmp/` يستخدم `weasyprint` أو `markdown-pdf` المتوفر، مع دعم العربي (RTL + خط Noto Naskh / Amiri). فحص بصري لكل صفحة قبل التسليم (تحويل صفحات PDF إلى صور وفحصها كما تنص قواعد QA).
+
+### خطوة 5 — تسليم
+وسوم `<lov-artifact>` للملفين + ملخص شفوي قصير (3-4 أسطر) لما تحتويه الوثيقة، دون تكرار محتواها.
+
+## معايير القبول
+
+- الوثيقة قائمة بذاتها (لا تحتاج فتح v4 لفهمها — تقتبس منه ما يلزم).
+- كل نقطة مدعومة بمرجع ملف+سطر **أو** استعلام SQL+نتيجة (لا ادعاءات بدون دليل).
+- لا emojis. عربي فصيح. جداول حيث يلزم.
+- PDF مقروء بصرياً، عربي صحيح، بدون تخطيط مكسور (تم فحصه صفحة-صفحة).
+- 0 تغييرات على codebase أو DB.
+
+## ما الذي يحتاج موافقتك قبل البدء
+
+النطاق ثابت: 8 نقاط، وثيقة واحدة، صيغتان (md + pdf). إن وافقت أنفّذ مباشرة بعد الانتقال لوضع التنفيذ.
