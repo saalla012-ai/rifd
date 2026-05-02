@@ -1,6 +1,6 @@
 # المرحلة 1 v5 — التنفيذ النهائي (نسخة المستشار المعتمدة)
 
-> **نسبة الإنجاز الكلية: 30%** — اكتملت Wave 1A + Wave 1B (الاستقرار والتعويض). المتبقي: تنفيذ مزوّد Replicate الفعلي + Wave 2 (التسعير) + Wave 3 (المراقبة).
+> **نسبة الإنجاز الكلية: 55%** — Wave 1A + 1B + 2A + 2B (UI/Marketing) مكتملة. المتبقي: ربط quota الشهرية بالـ backend (2C)، إعادة هيكلة لوحة الفوترة الداخلية، Wave 3 (المراقبة)، و(اختياري) Replicate.
 
 ## شريط التقدّم
 
@@ -8,9 +8,35 @@
 |---|---|---|
 | **Wave 1A** — Migrations + kill-switch + health window | ✅ مكتملة | 100% |
 | **Wave 1B** — error categorization + compensation 50pt | ✅ مكتملة | 100% |
-| **Wave 1C** — تنفيذ Replicate provider في الكود | ⏳ مطلوب قرار | 0% |
-| **Wave 2** — Free monthly + pricing UI + quota dialogs | 🔲 لم تبدأ | 0% |
+| **Wave 1C** — تنفيذ Replicate provider في الكود | ⏸ مؤجلة (fal_ai مستقر) | 0% |
+| **Wave 2A** — DB: monthly_usage + free monthly RPCs | ✅ مكتملة | 100% |
+| **Wave 2B** — Pricing UI + Marketing copy + Trust | ✅ مكتملة | 100% |
+| **Wave 2C** — ربط free monthly video بالـ backend + Top-up modal | 🔲 لم تبدأ | 0% |
+| **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | 🔲 لم تبدأ | 0% |
 | **Wave 3** — Admin monitor + daily report + bonus | 🔲 لم تبدأ | 0% |
+
+## مراجعة Wave 2B — تقرير الجودة (هذه الجولة)
+
+**فحص تقني:** ✅ TypeScript نظيف، لا استيرادات مكسورة.
+
+**التناقضات المكتشفة والمصلحة:**
+1. ❌→✅ ضمان "14 يوم" في 6 ملفات (pricing meta + FAQ + trust-bar + trust-badges + about + billing.confirm + legal.refund) ⇒ موحَّد على **7 أيام استرداد كامل بدون أسئلة** (مصدر واحد: `REFUND_GUARANTEE_LABEL`).
+2. ❌→✅ Free tier: `dailyTextCap=10/dailyImageCap=7` تعارض tagline "5 نصوص + 3 صور" ⇒ صُحّح إلى 5/3 + توضيح أن الـ Free يستخدم `monthlyTrialQuota` فقط.
+3. ❌→✅ `subscribers-counter`: شريط "تبقى X مقعد قبل ارتفاع الأسعار" + 1000 ⇒ حُذف، استُبدل بشريط "سعر الإطلاق متاح + ضمان 7 أيام". صياغة "مشترك" → "متجر".
+4. ❌→✅ `quota-exceeded-dialog`: نصوص قديمة ("7 صور"، "30 صورة يومياً"، "🔥 عرض المؤسسين") ⇒ أُعيدت صياغة كل الفروع لتميّز Free شهري vs Paid يومي + شارة "✦ سعر الإطلاق".
+5. ⚠️ `legal.terms` و `legal.privacy`: "14 يوماً" تخص **مهلة إشعار التغيير** (قانوني، ليس ضماناً) — تُركت سليمة.
+6. ⚠️ `dashboard.billing.index.tsx` (472 سطر): لا يزال يقرأ `founding_total_seats/founding_base_count` ويعرض شريط "X / 1000". تأجيل لـ **Wave 2D** (إعادة تصميم كاملة) — لا يؤثر على الواجهة العامة لأنه داخل `/dashboard/billing` للمستخدمين المسجلين.
+
+**فحص التجاوب والوضعين:**
+- كل التعديلات تستخدم semantic tokens (`text-success`, `bg-card`, `border-border`, `text-muted-foreground`) ⇒ Dark/Light يعملان تلقائياً.
+- شبكات pricing: `grid md:grid-cols-2 xl:grid-cols-5` و bullets `sm:grid-cols-3` ⇒ Mobile/Tablet/Desktop سليم بدون كسر.
+- subscribers-counter: `flex-wrap` + `text-[11px]` ⇒ يلتف على الجوال.
+
+**كود قديم محذوف (تقرير الحذف):**
+- `seatsLeft = Math.max(0, 1000 - count)` و JSX block "تبقى X مقعد" من `subscribers-counter.tsx`.
+- نص شارة "🔥 عرض المؤسسين" و"30 صورة يومياً" و"7 صور" من `quota-exceeded-dialog.tsx`.
+
+
 
 ## مراجعة Wave 1B (الإنجاز الأخير)
 
