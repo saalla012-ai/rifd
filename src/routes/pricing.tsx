@@ -203,9 +203,14 @@ function PricingPage() {
                       <span className="text-4xl font-extrabold tracking-normal">{price}</span>
                       <span className="text-xs text-muted-foreground">ر.س / {yearly ? "سنوياً" : "شهرياً"}</span>
                     </div>
+                    {plan.launchBadge && (
+                      <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">
+                        <Sparkles className="h-3 w-3" /> {LAUNCH_BADGE_LABEL}
+                      </span>
+                    )}
                     {yearly && plan.monthlyPriceSar > 0 && (
                       <p className="mt-1 text-xs font-bold text-success">
-                        توفر {(plan.monthlyPriceSar * 12 - plan.yearlyPriceSar).toLocaleString("ar-SA")} ر.س سنوياً
+                        وفّر {(plan.monthlyPriceSar * 12 - plan.yearlyPriceSar).toLocaleString("ar-SA")} ر.س سنوياً
                       </p>
                     )}
                   </div>
