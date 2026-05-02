@@ -517,7 +517,7 @@ function ConfirmRequestPage() {
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                 <div className="text-xs text-muted-foreground">
                   <strong className="text-foreground">ضمان الخدمة:</strong> إذا لم يتم تفعيل اشتراكك خلال 24 ساعة من تأكيد الدفع،
-                  ستحصل على شهر إضافي مجاناً + استرداد كامل عند الطلب خلال 14 يوم.
+                  ستحصل على شهر إضافي مجاناً + استرداد كامل عند الطلب خلال 7 أيام بدون أسئلة.
                   بياناتك البنكية محمية ولن نطلب منك أبداً أي معلومات بنكية حساسة.
                 </div>
               </div>
