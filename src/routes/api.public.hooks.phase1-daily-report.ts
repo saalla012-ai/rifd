@@ -127,8 +127,34 @@ export const Route = createFileRoute("/api/public/hooks/phase1-daily-report")({
             .eq("status", "activated")
             .gte("activated_at", since24h);
 
+          // 6) Wave B — Onboarding & Badges (24س)
+          const { count: wizardStarted24h } = await supabaseAdmin
+            .from("onboarding_events")
+            .select("id", { count: "exact", head: true })
+            .eq("event_type", "started")
+            .gte("created_at", since24h);
+          const { count: wizardCompleted24h } = await supabaseAdmin
+            .from("onboarding_events")
+            .select("id", { count: "exact", head: true })
+            .eq("event_type", "wizard_completed")
+            .gte("created_at", since24h);
+          const wizardCompletionRate = !wizardStarted24h || wizardStarted24h === 0
+            ? 0
+            : ((wizardCompleted24h ?? 0) / wizardStarted24h) * 100;
+
+          const { data: badgesRaw } = await supabaseAdmin
+            .from("user_badges")
+            .select("badge_type")
+            .gte("awarded_at", since24h);
+          const badges = (badgesRaw ?? []) as Array<{ badge_type: string }>;
+          const bText = badges.filter((b) => b.badge_type === "first_text").length;
+          const bImage = badges.filter((b) => b.badge_type === "first_image").length;
+          const bVideo = badges.filter((b) => b.badge_type === "first_video").length;
+          const bActive = badges.filter((b) => b.badge_type === "active_store").length;
+
           const healthyRefund = refundRate < 15;
           const healthyFb = withFb === 0 || fbRate >= 95;
+          const healthyOnboarding = wizardCompletionRate >= 75 || (wizardStarted24h ?? 0) === 0;
 
           const lines = [
             `📊 <b>تقرير يومي — مراقبة المرحلة 1</b>`,
@@ -146,6 +172,12 @@ export const Route = createFileRoute("/api/public/hooks/phase1-daily-report")({
             `💼 <b>الاشتراكات</b>`,
             `• طلبات جديدة: ${newReqs ?? 0}`,
             `• تفعيلات اليوم: ${activatedToday ?? 0}`,
+            "",
+            `🚀 <b>Onboarding & First-Win (24س)</b>`,
+            `• بدأ الـWizard: ${wizardStarted24h ?? 0}`,
+            `• أكمل الـWizard: ${wizardCompleted24h ?? 0} (${wizardCompletionRate.toFixed(1)}%) ${healthyOnboarding ? "✅" : "⚠️"}`,
+            `• شارات أُمنحت: نص ${bText} · صورة ${bImage} · فيديو ${bVideo}`,
+            `• 🏆 متجر نشط: ${bActive}`,
             "",
             `🏅 <b>مكافأة الإطلاق</b>`,
             `• مُنحت لـ ${bonus.total_granted}/${bonus.cap} عضو مؤسس`,
