@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Search, Sparkles, Image as ImageIcon, Type, Lock, ArrowLeft } from "lucide-react";
+import { Search, Sparkles, Image as ImageIcon, Type, Lock, ArrowLeft, LayoutTemplate } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyStateCTA } from "@/components/empty-state-cta";
 import { PROMPTS, CATEGORIES, type PromptType, type PromptCategory } from "@/lib/prompts-data";
 import { cn } from "@/lib/utils";
 
