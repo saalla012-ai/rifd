@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { track } from "@/lib/analytics/posthog";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { TrustBadges } from "@/components/trust-badges";
+import { AnnualUpgradeBanner } from "@/components/annual-upgrade-banner";
 import { ActivationSteps } from "@/components/activation-steps";
 import { SubscribersCounter } from "@/components/subscribers-counter";
 import { FounderCard } from "@/components/founder-card";
@@ -219,6 +220,9 @@ function BillingPage() {
 
   return (
     <DashboardShell>
+      <div className="mb-4">
+        <AnnualUpgradeBanner />
+      </div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold text-primary">المرحلة 5 من الخطة · التقدم 99%</p>

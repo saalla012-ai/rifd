@@ -1,87 +1,70 @@
-# خطة v8 — Wave C2 ✅ مكتمل (المرحلة 2)
+# خطة v9 — Wave C3 ✅ مكتمل (المرحلة 2 — 100%)
 
-## ✅ ما أُنجز هذه الجولة (Wave C2 — Activation Email Sequence)
+## ✅ ما أُنجز هذه الجولة (Wave C3 — Referrals + Annual Upgrade Loop)
 
 ### Database
-- جدول `activation_email_log` (user_id · day_marker · template_name ·
-  recipient_email · sent_at · skipped + skip_reason · opened_at · clicked_at).
-  - Unique على (user_id, day_marker) — يمنع إرسال نفس اليوم مرتين.
-  - RLS: المستخدم يرى سجلّه فقط · الأدمن يقرأ الكل · service_role يكتب.
-  - فهارس على user_id و sent_at و day_marker.
-- RPC `get_email_activation_funnel(_days)` (SECURITY DEFINER + has_role):
-  لكل يوم (0/1/3/7/14): sent · skipped · opened · clicked · open_rate · click_rate.
-- pg_cron يومي 06:00 UTC (09:00 Riyadh):
-  `rifd-activation-emails-daily` → يستدعي
-  `https://project--{id}.lovable.app/api/public/hooks/activation-sequence`.
+- `referral_codes` — كود فريد 8 أحرف لكل مستخدم (uses_count).
+- `referrals` — referrer/referred + status (pending/qualified/rewarded) + reward_points.
+- `annual_upgrade_offers` — تتبّع shown/clicked/upgraded للعرض السنوي.
+- enum `referral_status` (pending · qualified · rewarded).
+- RLS كامل: المستخدم يرى سجلاته فقط · الأدمن يرى الكل · service_role يكتب.
+- RPC `generate_referral_code()` — توليد كود فريد بدون أحرف ملتبسة (O/0/I/1).
+- RPC `claim_referral_code(_code)` — تسجيل دعوة (يمنع self-referral + already-referred).
+- Trigger `qualify_referral_on_paid_plan` على profiles — يؤهّل الإحالة تلقائياً عند ترقية المُحال من free لمدفوعة (50pt للمُحيل).
+- RPC `get_referral_stats(_days)` — إحصائيات الأدمن (k-factor, qualified, annual upgrade).
 
-### Backend (TanStack server route)
-- مسار جديد: `/api/public/hooks/activation-sequence`
-  - يفحص 5 مراحل بنافذة ±12 ساعة حول كل علامة (Day 0/1/3/7/14).
-  - **Anchor مختلف لكل مرحلة**:
-    - Day 0 → `onboarding_completed_at` (بعد إكمال wizard).
-    - Day 1/3/7/14 → `created_at` (من تاريخ التسجيل).
-  - **Smart Segmentation حسب الشارات**:
-    - Day 0 يُتخطّى إذا مُنحت شارة `active_store`.
-    - Day 1 يُتخطّى إذا مُنحت `first_text`.
-    - Day 7 يُتخطّى إذا مُنحت `first_image`.
-    - Day 3 يُرسَل فقط إن `onboarded=false`.
-    - Day 14 يُرسَل فقط إن `plan='free'`.
-  - يُسجّل كل محاولة في `activation_email_log` مع سبب التخطّي.
-  - Suppression check قبل الإرسال (لا يُرسل لمن أوقف الاشتراك).
-
-### Email Templates (React Email)
-- جديد: `activation-day0.tsx` — «متجرك جاهز — أول إعلان احترافي بانتظارك ✨»
-  - 3 CTAs بلغة المنتج: «اكتب نصاً يبيع» · «صمّم صورة إعلان» · «ولّد فيديو ترويجي».
-- جديد: `activation-day14.tsx` — «50pt مكافأة الإطلاق تنتهي قريباً 🎁»
-  - يربط مكافأة Wave A بعرض الترقية.
-- إعادة استخدام: `welcome` · `onboarding-day1` · `onboarding-tip-day3` ·
-  `onboarding-day7` (موجودة من Wave B لا تكرار).
-- مُسجَّلة في `src/lib/email-templates/registry.ts`.
+### Frontend
+- صفحة جديدة `/dashboard/referrals`:
+  - Hero بـ«50pt لكلٍ منكما» + شرح المكافأة.
+  - زر «ولّد كودك» إن لم يكن موجوداً، أو عرض الكود مع نسخ + مشاركة واتساب.
+  - 3 إحصائيات: مسجّلون · مؤهّلون · نقاط مكتسبة.
+  - سجل تفصيلي للإحالات مع حالة كل واحدة.
+- مكوّن جديد `<AnnualUpgradeBanner />` في `/dashboard/billing`:
+  - يظهر فقط للمشتركين الشهريين بعد 30 يوم نشطين.
+  - خصم 20% للترقية السنوية + يربط `/pricing?ref=annual-upgrade`.
+  - يُسجّل shown/clicked في `annual_upgrade_offers` (مرة واحدة لكل مستخدم).
+- صفحة `/auth` تقبل `?ref=CODE` (validateSearch مع regex `[A-Z0-9]{4,16}`):
+  - بعد signUp ناجح يستدعي `claim_referral_code` تلقائياً.
+  - تُتبَّع في PostHog: `signup_completed { referred: true/false }`.
 
 ### Admin Monitor
-- بانر `<PhaseProgressBanner />` ثالث للمرحلة 2 (Wave C2) مع 3 محاور:
-  Sent · Open Rate (هدف 40%) · Click Rate (هدف 12%).
-- 4 بطاقات Activation Funnel:
-  إجمالي الإرسال · Open % · Click % · مراحل نشطة.
-- جدول تفصيلي لكل مرحلة (Day Marker): sent · skipped · opened · clicked.
-- توسيع `Phase1Monitor` type ليشمل `wave_c2`.
+- بانر `<PhaseProgressBanner />` رابع لـ Wave C3 (3 محاور: k-factor · مؤهّلة · سنوية).
+- 4 بطاقات: أكواد نشطة · إحالات 30 يوم · k-factor · CTR ترقية سنوية.
+- توسيع `Phase1Monitor` لـ `wave_c3`.
 
 ### النصوص — لغة المنتج موحّدة
-- «اكتب نصاً يبيع» · «صمّم صورة إعلان» · «ولّد فيديو ترويجي»
-- «50pt مكافأة الإطلاق» (متّسقة مع Wave A).
-- لا هلوسة — كل CTA يربط بميزة منتج فعلية.
+- «اكتب نصاً يبيع · صمّم صورة إعلان · ولّد فيديو ترويجي» في رسالة المشاركة.
+- «ادعُ صاحب متجر — تحصلون على 50pt لكلٍ منكما».
+- «ترقية سنوية بخصم 20% — وفّر شهرين كاملين».
+- لا هلوسة — كل CTA مرتبط بميزة فعلية.
 
 ### تجاوب + ثيم
-- بطاقات Wave C2 تستخدم `sm:grid-cols-2 lg:grid-cols-4`.
-- الجدول التفصيلي `overflow-x-auto` للموبايل.
-- Tokens فقط: `bg-card`, `border-border`, `text-success`, `text-muted-foreground`.
-- Light/Dark Mode بدون كسر.
+- جميع grids بـ `sm:` و `lg:` · بطاقات `flex-col sm:flex-row` للموبايل.
+- design tokens فقط: `bg-card`, `border-border`, `text-success`, `text-primary`, `gradient-primary`, `shadow-elegant`.
+- Light/Dark بدون كسر · RTL مدعوم.
 
 ### Typecheck
 - ✅ نظيف · لا استيرادات مكسورة · لا تكرار.
 
 ---
 
-## 🎯 KPIs المرحلة 2 (Wave C2)
-- **Open rate ≥40%** — مقاس عبر `opened_at IS NOT NULL`.
-- **Click rate ≥12%** — مقاس عبر `clicked_at IS NOT NULL`.
-- **Free → Paid +5pp** — مقاس عبر تحويلات Day 14.
+## 🎯 KPIs المرحلة 2 (Wave C3)
+- **k-factor ≥0.30** — مقاس عبر `referrals_total / new_users`.
+- **Annual share ≥35%** — مقاس عبر تحويلات بانر الترقية السنوية.
+- **LTV +25%** — أثر متوقّع من زيادة المدة + الإحالات.
 
 ---
 
-## 🚀 المرحلة التالية — Wave C3: Referrals + Annual Upgrade Loop
+## 📊 ملخّص المرحلة 2 — مكتملة 100% (3/3 Waves)
+- ✅ Wave C1 — Pricing Optimization (CTA + شهادات + tracking).
+- ✅ Wave C2 — Activation Email Sequence (5 مراحل + segmentation).
+- ✅ Wave C3 — Referrals + Annual Upgrade Loop.
 
-### Migrations
-- جدول `referrals` (referrer_id · referred_id · code · status · reward_granted_at).
-- RPC `generate_referral_code(user_id)` و `claim_referral(code)`.
-- جدول `annual_upgrade_offers` للمستخدمين الشهريين بعد 30 يوم.
+**النمو الذاتي مفعّل**: كل عميل جديد ➜ كود إحالة ➜ 50pt عند ترقية صديقه ➜ بعد 30 يوم بانر ترقية سنوية بـ20% خصم.
 
-### Frontend
-- صفحة `/referrals` — كود مشاركة + تتبّع المُحالين.
-- بانر ترقية سنوية في `/dashboard/billing` بعد 30 يوم اشتراك شهري.
-- خصم 20% عند ترقية شهري→سنوي.
+---
 
-### KPIs
-- **k ≥0.3** — متوسط إحالات لكل مستخدم.
-- **Annual share ≥35%** — حصة الباقات السنوية من الإيرادات.
-- **LTV +25%** — قيمة العميل مدى الحياة.
+## 🚀 المرحلة التالية المقترحة — Phase 3: Retention & Expansion
+1. **Win-back Campaign** للمستخدمين الذين ألغوا (إيميل + خصم استرداد).
+2. **In-app Templates Marketplace** — قوالب جاهزة للحملات الموسمية السعودية.
+3. **Affiliate Tier 2** — وكلاء عمولة 20% للوكالات التسويقية.

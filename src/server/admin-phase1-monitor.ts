@@ -82,6 +82,16 @@ export type Phase1Monitor = {
     overall_open_rate_pct: number;
     overall_click_rate_pct: number;
   };
+  wave_c3: {
+    referrals_total: number;
+    referrals_qualified: number;
+    active_codes: number;
+    k_factor: number;
+    annual_upgrade_shown: number;
+    annual_upgrade_clicked: number;
+    annual_upgrade_upgraded: number;
+    annual_click_rate_pct: number;
+  };
 };
 
 type AttemptEntry = { provider?: string; ok?: boolean; status?: string };
@@ -340,6 +350,21 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
           totals: { sent, opened, clicked },
           overall_open_rate_pct: sent > 0 ? Math.round((opened / sent) * 1000) / 10 : 0,
           overall_click_rate_pct: sent > 0 ? Math.round((clicked / sent) * 1000) / 10 : 0,
+        };
+      })(),
+      wave_c3: await (async () => {
+        const { data: refRaw } = await adb.rpc("get_referral_stats", { _days: 30 });
+        const r = (refRaw ?? {}) as Record<string, unknown>;
+        const ann = (r.annual_upgrade ?? {}) as Record<string, unknown>;
+        return {
+          referrals_total: Number(r.referrals_total ?? 0),
+          referrals_qualified: Number(r.referrals_qualified ?? 0),
+          active_codes: Number(r.active_codes ?? 0),
+          k_factor: Number(r.k_factor ?? 0),
+          annual_upgrade_shown: Number(ann.shown ?? 0),
+          annual_upgrade_clicked: Number(ann.clicked ?? 0),
+          annual_upgrade_upgraded: Number(ann.upgraded ?? 0),
+          annual_click_rate_pct: Number(ann.click_rate_pct ?? 0),
         };
       })(),
     };
