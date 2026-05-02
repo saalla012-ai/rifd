@@ -37,8 +37,10 @@ function DashboardLayout() {
     }
     if (!profile) return;
     const needsOnboarding = !profile.onboarded;
-    if (needsOnboarding && window.location.pathname !== "/onboarding") {
-      void navigate({ to: "/onboarding" });
+    const path = window.location.pathname;
+    const isOnOnboarding = path === "/onboarding" || path.startsWith("/onboarding/");
+    if (needsOnboarding && !isOnOnboarding) {
+      void navigate({ to: "/onboarding/wizard" });
     }
   }, [loading, user, profile, navigate]);
 
