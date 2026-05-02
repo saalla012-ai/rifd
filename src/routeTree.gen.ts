@@ -61,6 +61,7 @@ import { Route as AdminVideoJobsRouteImport } from './routes/admin.video-jobs'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminReconcileRouteImport } from './routes/admin.reconcile'
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
+import { Route as AdminPhase1MonitorRouteImport } from './routes/admin.phase1-monitor'
 import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
 import { Route as AdminDnsCheckRouteImport } from './routes/admin.dns-check'
@@ -350,6 +351,11 @@ const AdminPlanLimitsRoute = AdminPlanLimitsRouteImport.update({
   path: '/admin/plan-limits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPhase1MonitorRoute = AdminPhase1MonitorRouteImport.update({
+  id: '/admin/phase1-monitor',
+  path: '/admin/phase1-monitor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEmailMonitorRoute = AdminEmailMonitorRouteImport.update({
   id: '/admin/email-monitor',
   path: '/admin/email-monitor',
@@ -518,6 +524,7 @@ export interface FileRoutesByFullPath {
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
+  '/admin/phase1-monitor': typeof AdminPhase1MonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -596,6 +603,7 @@ export interface FileRoutesByTo {
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
+  '/admin/phase1-monitor': typeof AdminPhase1MonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -676,6 +684,7 @@ export interface FileRoutesById {
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
+  '/admin/phase1-monitor': typeof AdminPhase1MonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -757,6 +766,7 @@ export interface FileRouteTypes {
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
+    | '/admin/phase1-monitor'
     | '/admin/plan-limits'
     | '/admin/reconcile'
     | '/admin/subscriptions'
@@ -835,6 +845,7 @@ export interface FileRouteTypes {
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
+    | '/admin/phase1-monitor'
     | '/admin/plan-limits'
     | '/admin/reconcile'
     | '/admin/subscriptions'
@@ -914,6 +925,7 @@ export interface FileRouteTypes {
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
+    | '/admin/phase1-monitor'
     | '/admin/plan-limits'
     | '/admin/reconcile'
     | '/admin/subscriptions'
@@ -994,6 +1006,7 @@ export interface RootRouteChildren {
   AdminDnsCheckRoute: typeof AdminDnsCheckRoute
   AdminDomainScanRoute: typeof AdminDomainScanRoute
   AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
+  AdminPhase1MonitorRoute: typeof AdminPhase1MonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
   AdminReconcileRoute: typeof AdminReconcileRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
@@ -1392,6 +1405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlanLimitsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/phase1-monitor': {
+      id: '/admin/phase1-monitor'
+      path: '/admin/phase1-monitor'
+      fullPath: '/admin/phase1-monitor'
+      preLoaderRoute: typeof AdminPhase1MonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/email-monitor': {
       id: '/admin/email-monitor'
       path: '/admin/email-monitor'
@@ -1642,6 +1662,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminDnsCheckRoute: AdminDnsCheckRoute,
   AdminDomainScanRoute: AdminDomainScanRoute,
   AdminEmailMonitorRoute: AdminEmailMonitorRoute,
+  AdminPhase1MonitorRoute: AdminPhase1MonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
   AdminReconcileRoute: AdminReconcileRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
