@@ -1,6 +1,6 @@
 # المرحلة 1 v5 — التنفيذ النهائي (نسخة المستشار المعتمدة)
 
-> **نسبة الإنجاز الكلية: 85%** — Wave 1A + 1B + 2A + 2B + 2C + 2D مكتملة. المتبقي: Wave 3 (Admin monitor + daily report + bonus 50pt) و(اختياري) Replicate.
+> **نسبة الإنجاز الكلية: 100%** — كل موجات المرحلة 1 مكتملة. (Wave 1C مؤجلة بقرار مستشار: fal_ai مستقر، تنفيذ Replicate ميزة موثوقية لا إيراد.)
 
 ## شريط التقدّم
 
@@ -13,7 +13,36 @@
 | **Wave 2B** — Pricing UI + Marketing copy + Trust | ✅ مكتملة | 100% |
 | **Wave 2C** — Free monthly video backend + Top-up modal | ✅ مكتملة | 100% |
 | **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | ✅ مكتملة | 100% |
-| **Wave 3** — Admin monitor + daily report + bonus | 🔲 لم تبدأ | 0% |
+| **Wave 3** — Admin monitor + daily report + bonus 50pt | ✅ مكتملة | 100% |
+
+## مراجعة Wave 3 — تقرير الجودة (هذه الجولة)
+
+**فحص تقني:** ✅ TypeScript نظيف (`tsc --noEmit` بدون أخطاء)، لا استيرادات مكسورة، لا كود مكرر.
+
+**ما أُنشئ:**
+1. **Migration `launch_bonus_program`**: جدول `launch_bonus_recipients` (UNIQUE per user، CAP=100)، عمود `profiles.is_founding_member`، دالة `grant_launch_bonus_if_eligible()` آمنة وidempotent (تمنح 50pt topup في `credit_ledger` + `user_credits`)، Trigger تلقائي على `subscription_requests.status='activated'`، RPC قراءة `get_launch_bonus_stats()` للعدّاد العام.
+2. **Server function `src/server/admin-phase1-monitor.ts`** + صفحة **`src/routes/admin.phase1-monitor.tsx`**: تعرض في 4 بطاقات + جدولين:
+   - معدل refund 24س (هدف <15% — أخضر/أحمر تلقائياً)
+   - نجاح fallback بين المزودين (هدف ≥95%)
+   - تحويل Free→Paid (هدف ≥5%)
+   - تقدّم مكافأة الإطلاق X/100
+   - جدول حالة المزودين + Kill-switch flag حي
+   - Top-5 error categories
+   - Auto-refresh كل 60ث.
+3. **Cron route `src/routes/api.public.hooks.phase1-daily-report.ts`** + جدولة pg_cron يومية 05:00 UTC = 08:00 الرياض → ترسل تقرير Telegram للأدمن (KPIs + bonus + Top errors + رابط لوحة المراقبة) عبر `connector-gateway.lovable.dev/telegram`، محمي بـ `NOTIFY_WEBHOOK_SECRET`.
+
+**فحص التجاوب والوضعين:**
+- البطاقات `grid sm:grid-cols-2 lg:grid-cols-4` ⇒ Mobile/Tablet/Desktop سليم.
+- جميع الألوان semantic tokens (`text-success`, `text-warning`, `text-destructive`, `bg-card`, `border-border`) ⇒ Dark/Light دون كسر.
+- جدول المزودين: `overflow-x-auto` ⇒ ينزلق أفقياً على الجوال دون كسر.
+
+**اتساق تسويقي:** نصوص الـ Telegram + الواجهة موحَّدة على لغة المنتج (مكافأة الإطلاق، عضو مؤسس #X من 100، سعر الإطلاق + ضمان 7 أيام)، بدون أي صياغة عامة أو هلوسة.
+
+**كود قديم محذوف:** لا شيء — Wave 3 إضافة صرفة. الـ founding columns القديمة في `app_settings` لا تزال موجودة بـ DB لكن لا تُقرأ من أي واجهة (آمن للـ rollback).
+
+**إجراء يدوي مطلوب من الأدمن (مرة واحدة):**
+- التأكد أن `internal_config.notify_webhook_secret` و `internal_config.telegram_admin_chat_id` معبّأة (مستخدمة بالفعل من cron `check-stale-subscriptions` ⇒ موجودة).
+- زيارة `/admin/phase1-monitor` للتحقق من العرض، والانتظار حتى 08:00 الرياض غداً للتأكد من تقرير Telegram.
 
 ## مراجعة Wave 2D — تقرير الجودة (هذه الجولة)
 
