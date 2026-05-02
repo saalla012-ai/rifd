@@ -835,19 +835,25 @@ export const generateVideo = createServerFn({ method: "POST" })
 
       return { job: updated as VideoJobRow, creditsCharged: cost, remainingTotal: charge.remainingTotal, pending: finalStatus === "processing" };
     } catch (e) {
+      const errorCategory = categorizeVideoError(e);
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (ledgerId ? await getRefundLedgerId(supabaseAdmin, ledgerId) : null);
+      let compensationLedgerId: string | null = null;
       if (jobId) {
+        compensationLedgerId = await compensateUserForProviderFailure({ userId, jobId, category: errorCategory });
         const { data: failedJob } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
         await markProcessingJobRefunded({
           jobId,
           refundLedgerId: effectiveRefundLedgerId,
           errorMessage: publicVideoError(e).message,
+          errorCategory,
           metadata: {
             ...((failedJob?.metadata as Record<string, unknown> | null) ?? {}),
             failure_stage: "generate_video",
             original_error: errorMessage(e),
             refund_ledger_id: effectiveRefundLedgerId,
+            compensation_ledger_id: compensationLedgerId,
+            compensation_credits: compensationLedgerId ? PROVIDER_FAILURE_COMPENSATION_CREDITS : 0,
           },
         });
       }
