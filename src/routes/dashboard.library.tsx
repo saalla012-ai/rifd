@@ -259,13 +259,18 @@ function LibraryPage() {
       {loading ? (
         <div className="mt-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : !hasVisibleItems ? (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
-          <FolderKanban className="mx-auto mb-3 h-8 w-8 text-primary" />
-          <p className="font-bold text-foreground">{search.campaignId ? "لم تُنشئ أصولاً لهذه الحملة بعد." : "مكتبتك تنتظر أول أصل جاهز."}</p>
-          <p className="mt-1">{search.campaignId ? "ارجع لبيت الحملة وابدأ بالنص أو الصورة." : "ابدأ من مركز قيادة الحملة حتى تنتج نصاً يبيع، صورة إعلان، أو فيديو قصير ضمن نفس السياق."}</p>
-          <Button asChild className="mt-4 gradient-primary text-primary-foreground">
-            <Link to="/dashboard/campaign-studio" search={search.campaignId ? { campaignId: search.campaignId, focus: "house" } as never : undefined}>{search.campaignId ? "العودة للاستوديو" : "ابدأ من مركز قيادة الحملة"}</Link>
-          </Button>
+        <div className="mt-6">
+          <EmptyStateCTA
+            icon={FolderKanban}
+            title={search.campaignId ? "لم تُنشئ أصولاً لهذه الحملة بعد" : "مكتبتك تنتظر أول أصل جاهز"}
+            description={
+              search.campaignId
+                ? "ارجع لبيت الحملة وابدأ بالنص أو الصورة لتكتمل الحملة."
+                : "ابدأ من مركز قيادة الحملة حتى تنتج نصاً يبيع، صورة إعلان، أو فيديو قصير ضمن نفس السياق."
+            }
+            ctaLabel={search.campaignId ? "العودة للاستوديو" : "ابدأ من مركز قيادة الحملة"}
+            ctaTo="/dashboard/campaign-studio"
+          />
         </div>
       ) : (
         <>
