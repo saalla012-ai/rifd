@@ -148,7 +148,8 @@ function WizardPage() {
 
   // إن أكمل سابقاً
   useEffect(() => {
-    if (profile?.onboarding_completed_at) {
+    const completedAt = (profile as unknown as { onboarding_completed_at?: string | null } | null)?.onboarding_completed_at;
+    if (completedAt) {
       navigate({ to: "/dashboard" });
     }
   }, [profile, navigate]);
