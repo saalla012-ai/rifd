@@ -49,7 +49,7 @@ export const Route = createFileRoute("/dashboard/billing/")({
 
 const PLAN_LABELS: Record<PlanId, string> = Object.fromEntries(Object.entries(PLAN_BY_ID).map(([key, value]) => [key, value.name])) as Record<PlanId, string>;
 
-const FUTURE_INCREASE_PCT = 30;
+
 
 const PLAN_PURCHASE_GUIDE: Record<PaidPlanId, { fit: string; capability: string; focus: string }> = {
   starter: {
@@ -87,10 +87,6 @@ const STATUS_META: Record<
 
 type Settings = {
   whatsapp_number: string;
-  founding_total_seats: number;
-  founding_program_active: boolean;
-  founding_base_count?: number;
-  founding_discount_pct?: number;
 };
 
 type RequestRow = {
@@ -110,7 +106,6 @@ function BillingPage() {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [seatsTaken, setSeatsTaken] = useState(0);
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -123,12 +118,8 @@ function BillingPage() {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [settingsRes, seatsRes, reqRes] = await Promise.all([
+    const [settingsRes, reqRes] = await Promise.all([
       supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
-      supabase
-        .from("subscription_requests")
-        .select("id", { count: "exact", head: true })
-        .in("status", ["activated", "contacted"]),
       supabase
         .from("subscription_requests")
         .select("id, plan, billing_cycle, store_name, whatsapp, email, payment_method, notes, status, created_at")
@@ -136,7 +127,6 @@ function BillingPage() {
         .limit(10),
     ]);
     setSettings((settingsRes.data as Settings | null) ?? null);
-    setSeatsTaken(seatsRes.count ?? 0);
     setRequests((reqRes.data as RequestRow[] | null) ?? []);
     setLoading(false);
   }, []);
@@ -151,15 +141,10 @@ function BillingPage() {
     if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
   }, [profile]);
 
-  const seatsTotal = settings?.founding_total_seats ?? 1000;
-  const seatsLeft = Math.max(0, seatsTotal - seatsTaken);
-  const seatsPct = seatsTotal > 0 ? (seatsTaken / seatsTotal) * 100 : 0;
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
-  const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
   const selected = PLAN_BY_ID[plan];
   const selectedGuide = PLAN_PURCHASE_GUIDE[plan];
   const price = billingCycle === "yearly" ? selected.yearlyPriceSar : selected.monthlyPriceSar;
-  const futurePrice = Math.round(price * (1 + increasePct / 100));
   const selectedFastVideos = estimateVideoCount(selected.monthlyCredits, "fast", 5);
   const selectedQualityVideos = selected.videoQualityAllowed ? estimateVideoCount(selected.monthlyCredits, "quality", 5) : 0;
   const pendingRequest = useMemo(
