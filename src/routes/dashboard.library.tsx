@@ -7,6 +7,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { EmptyStateCTA } from "@/components/empty-state-cta";
 import { cn } from "@/lib/utils";
 import { VIDEO_QUALITY_LABELS } from "@/lib/plan-catalog";
 import { listVideoJobs, refreshVideoJob } from "@/server/video-functions";
