@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 /**
- * Live subscribers counter:
- * displayed = founding_base_count + count(activated|contacted requests)
- * Subscribes to realtime inserts so the number ticks up live.
+ * عدّاد المتاجر المنضمّة (إثبات حي):
+ * يقرأ get_founding_status (RPC آمن) ويحدّث realtime عند كل اشتراك جديد.
+ * — لا يعرض "مقاعد متبقية"؛ النموذج الجديد بسعر إطلاق مفتوح بلا Founding seats.
  */
 export function SubscribersCounter({
   className,
@@ -84,7 +84,7 @@ export function SubscribersCounter({
     );
   }
 
-  const seatsLeft = count == null ? null : Math.max(0, 1000 - count);
+  // لا حساب لـ "مقاعد متبقية" — تم حذف Founding seats من نموذج التسعير v5.
 
   return (
     <div
@@ -106,7 +106,7 @@ export function SubscribersCounter({
               </span>
               مباشر الآن
             </div>
-            <div className="text-xs text-muted-foreground">عدد المشتركين الحالي</div>
+            <div className="text-xs text-muted-foreground">عدد المتاجر المنضمّة</div>
           </div>
         </div>
         <div className="text-left">
@@ -127,19 +127,17 @@ export function SubscribersCounter({
             )}
           </div>
           <div className="flex items-center justify-end gap-1 text-[10px] font-medium text-success">
-            <TrendingUp className="h-3 w-3" /> مشترك
+            <TrendingUp className="h-3 w-3" /> متجر
           </div>
         </div>
       </div>
 
-      {seatsLeft !== null && seatsLeft > 0 && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11px]">
-          <span className="font-bold text-warning">
-            ⚠️ تبقى {seatsLeft.toLocaleString("ar-SA")} مقعد قبل ارتفاع الأسعار
-          </span>
-          <span className="text-muted-foreground">كل عضو جديد يقرّبنا من +30%</span>
-        </div>
-      )}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2 text-[11px]">
+        <span className="font-bold text-success">
+          ✦ سعر الإطلاق متاح الآن — مدة محدودة قبل التسعير الكامل
+        </span>
+        <span className="text-muted-foreground">انضم بنفس السعر مع ضمان 7 أيام</span>
+      </div>
     </div>
   );
 }
