@@ -170,7 +170,7 @@ function BillingPage() {
       "",
       `📦 الباقة: ${selected.name} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
       `🎬 نقاط الفيديو: ${formatPlanNumber(selected.monthlyCredits)} نقطة`,
-      `💰 السعر: ${price} ر.س (سيرتفع لـ ${futurePrice} ر.س بعد برنامج المؤسسين)`,
+      `💰 السعر: ${price} ر.س (سعر الإطلاق + ضمان 7 أيام استرداد كامل)`,
       storeName ? `🏪 المتجر: ${storeName}` : "",
       `📱 واتساب: ${whatsapp}`,
       `📧 البريد: ${user?.email ?? ""}`,
