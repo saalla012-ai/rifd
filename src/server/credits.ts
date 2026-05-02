@@ -147,7 +147,7 @@ export async function grantCompensationCredits(
     _user_id: params.userId,
     _amount: params.amount,
     _reason: params.reason,
-    _reference_id: params.referenceId ?? null,
+    _reference_id: params.referenceId ?? undefined,
     _reference_type: params.referenceType ?? "video_job",
   });
   if (error) {
