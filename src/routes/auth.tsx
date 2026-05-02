@@ -43,9 +43,11 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "ادخل حسابك في رِفد أو سجّل جديداً لتجهيز أول حزمة محتوى سعودية لمتجرك: منشور، صورة، وفكرة فيديو." },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; ref?: string } => {
     const redirect = sanitizeRedirectPath(search.redirect);
-    return redirect ? { redirect } : {};
+    const refRaw = typeof search.ref === "string" ? search.ref.trim().toUpperCase() : undefined;
+    const ref = refRaw && /^[A-Z0-9]{4,16}$/.test(refRaw) ? refRaw : undefined;
+    return { ...(redirect ? { redirect } : {}), ...(ref ? { ref } : {}) };
   },
   component: AuthPage,
 });
@@ -151,7 +153,16 @@ function AuthPage() {
           window.localStorage.removeItem(PENDING_SIGNUP_PHONE_KEY);
           throw error;
         }
-        track("signup_completed", { method: "email" });
+        // Wave C3: مطالبة بكود الإحالة إن وُجد
+        if (search.ref) {
+          try {
+            await supabase.rpc("claim_referral_code", { _code: search.ref });
+            track("referral_claimed", { code: search.ref });
+          } catch (refErr) {
+            console.warn("[auth] referral claim failed", refErr);
+          }
+        }
+        track("signup_completed", { method: "email", referred: Boolean(search.ref) });
         toast.success("تم إنشاء حسابك! جاري التحويل...");
         void navigate({ to: "/onboarding/wizard" });
       } else {
