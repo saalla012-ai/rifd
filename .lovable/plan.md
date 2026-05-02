@@ -15,7 +15,32 @@
 | **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | 🔲 لم تبدأ | 0% |
 | **Wave 3** — Admin monitor + daily report + bonus | 🔲 لم تبدأ | 0% |
 
-## مراجعة Wave 2B — تقرير الجودة (هذه الجولة)
+## مراجعة Wave 2C — تقرير الجودة (هذه الجولة)
+
+**فحص تقني:** ✅ TypeScript نظيف، لا استيرادات مكسورة، لا كود مكرر.
+
+**ما أُضيف في `src/server/video-functions.ts` (داخل `generateVideo.handler`):**
+1. **بوابة قبل الخصم**: قبل `consume()` للنقاط، إذا الخطة `free` ⇒ استدعاء RPC `check_free_monthly_video_quota` (يعمل بـ `auth.uid()` عبر `supabase` المستخدم لا `supabaseAdmin`). عند تجاوز الحد ⇒ `throw new Error("free_monthly_video_quota_exceeded:used=X:cap=1:cycle_end=ISO")`.
+2. **تسجيل الاستهلاك بعد النجاح**: بعد إنشاء `video_jobs` row بنجاح، استدعاء `record_free_monthly_video_usage` (idempotent على مستوى الدورة). الفشل لا يُفشل المهمة (الفيديو أُنشئ والنقاط خُصمت) — يُسجَّل تحذير فقط.
+3. لا تعديل على `consume()` نفسها — البوابة الشهرية مستقلة عن العدّاد اليومي للمدفوعين.
+
+**ما أُضيف في `src/components/quota-exceeded-dialog.tsx`:**
+- نوع جديد `QuotaErrorKind = "free_monthly_video"` + كاشف regex.
+- فرع UI مخصص: عنوان "استخدمت فيديو الشهر المجاني" + نص بيع للترقية + شارة سعر الإطلاق + ضمان 7 أيام.
+- تحسين فرع `insufficient_credits` ليصبح **Top-up modal فوري**: عنوان CTA مباشر "اشحن نقاط فيديو الآن" + benefits مُعاد كتابتها لتركّز على السرعة (24 ساعة) + الاستمرارية (لا توقف للحملة).
+
+**فحص التجاوب والوضعين:**
+- لا تغيير في الـ layout؛ `QuotaExceededDialog` يستخدم `Dialog` من shadcn (responsive افتراضياً، `max-w-md`، تُلتف على الجوال).
+- جميع الألوان semantic tokens (`text-success`, `text-gold`, `bg-primary`) ⇒ Dark/Light يعملان دون كسر.
+- النصوص العربية الجديدة بطول مناسب لا يكسر الأزرار.
+
+**كود قديم محذوف (تقرير الحذف):**
+- صياغة عامة "رصيد نقاط الفيديو لا يكفي" + CTA "شحن نقاط فيديو" + benefits غير بيعية ⇒ استُبدلت بـ Top-up modal مباشر.
+
+**حالات لم تُلمس عمداً:**
+- `consume_text_quota` و `consume_image_quota` للحصة الشهرية للنصوص/الصور للـ Free: **مكتملة في DB من Wave 2A** (تعمل تلقائياً عبر منطق `monthly_text_cap`/`monthly_image_cap` داخل الـ RPCs الموجودة) — لا حاجة لتعديل كود الـ frontend لأن `consume()` يستدعيها مسبقاً وأكواد الخطأ `text_quota_exceeded`/`image_quota_exceeded` يتعرّف عليها الـ Dialog.
+
+## مراجعة Wave 2B — تقرير الجودة (الجولة السابقة)
 
 **فحص تقني:** ✅ TypeScript نظيف، لا استيرادات مكسورة.
 
