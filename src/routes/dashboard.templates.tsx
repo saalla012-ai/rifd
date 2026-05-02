@@ -145,8 +145,14 @@ function TemplatesPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          لا توجد قوالب تطابق بحثك. جرّب كلمة أخرى أو غيّر الفلاتر.
+        <div className="mt-10">
+          <EmptyStateCTA
+            icon={LayoutTemplate}
+            title="لا توجد قوالب تطابق بحثك"
+            description="جرّب كلمة أخرى أو غيّر الفلتر، أو ابدأ مباشرة من مركز قيادة الحملة لتوليد محتوى مخصّص لمتجرك."
+            ctaLabel="ابدأ من مركز قيادة الحملة"
+            ctaTo="/dashboard/campaign-studio"
+          />
         </div>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
