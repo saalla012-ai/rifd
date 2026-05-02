@@ -244,6 +244,11 @@ function PricingPage() {
                       {cta} <ArrowLeft className="mr-1 h-4 w-4" />
                     </Link>
                   </Button>
+                  {plan.id !== "free" && (
+                    <p className="mt-2 flex items-center justify-center gap-1 text-[11px] font-bold text-success">
+                      <ShieldCheck className="h-3 w-3" /> {REFUND_GUARANTEE_LABEL}
+                    </p>
+                  )}
                 </article>
               );
             })}
