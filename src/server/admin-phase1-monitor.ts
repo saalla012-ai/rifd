@@ -187,18 +187,30 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
     };
 
     // 7) Wave B — onboarding funnel + badges
+    type FunnelRow = {
+      total_started: number | string;
+      step1_completed: number | string;
+      step2_completed: number | string;
+      step3_completed: number | string;
+      wizard_completed: number | string;
+      autogen_succeeded: number | string;
+      autogen_failed: number | string;
+      active_store_badges: number | string;
+    };
     const { data: funnelRaw } = await adb.rpc("get_onboarding_funnel", { _days: 7 });
-    const funnel = ((funnelRaw as Array<{
-      step: number;
-      users_started: number;
-      users_completed: number;
-      completion_rate_pct: number;
-    }> | null) ?? []).map((r) => ({
-      step: Number(r.step),
-      users_started: Number(r.users_started),
-      users_completed: Number(r.users_completed),
-      completion_rate_pct: Number(r.completion_rate_pct ?? 0),
-    }));
+    const funnelRow = ((funnelRaw as FunnelRow[] | null) ?? [])[0];
+    const totalStarted = Number(funnelRow?.total_started ?? 0);
+    const step1 = Number(funnelRow?.step1_completed ?? 0);
+    const step2 = Number(funnelRow?.step2_completed ?? 0);
+    const step3 = Number(funnelRow?.step3_completed ?? 0);
+    const wizardCompleted = Number(funnelRow?.wizard_completed ?? 0);
+    // (autogen_succeeded / autogen_failed متاحة في funnelRow لاستخدام مستقبلي)
+    const pct = (n: number, d: number) => (d === 0 ? 0 : Math.round((n / d) * 1000) / 10);
+    const funnel = [
+      { step: 1, users_started: totalStarted, users_completed: step1, completion_rate_pct: pct(step1, totalStarted) },
+      { step: 2, users_started: step1, users_completed: step2, completion_rate_pct: pct(step2, step1) },
+      { step: 3, users_started: step2, users_completed: step3, completion_rate_pct: pct(step3, step2) },
+    ];
 
     const { data: badgesRaw } = await adb
       .from("user_badges")
@@ -218,14 +230,8 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
       .select("id", { count: "exact", head: true })
       .eq("event_type", "started")
       .gte("created_at", since7d);
-    const { count: completed7d } = await adb
-      .from("onboarding_events")
-      .select("id", { count: "exact", head: true })
-      .eq("event_type", "wizard_completed")
-      .gte("created_at", since7d);
-    const completionRate = !started7d || started7d === 0
-      ? 0
-      : Math.round(((completed7d ?? 0) / started7d) * 1000) / 10;
+    const completed7d = wizardCompleted;
+    const completionRate = pct(completed7d, started7d ?? 0);
 
     return {
       generated_at: new Date().toISOString(),
