@@ -5,6 +5,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
+  Mail,
+  MailOpen,
+  MousePointerClick,
   RefreshCw,
   ShieldCheck,
   TrendingUp,
@@ -271,6 +274,108 @@ function Phase1MonitorPage() {
               tone={data.wave_c1.conversions > 0 ? "success" : "default"}
               icon={CheckCircle2}
             />
+          </div>
+
+          {/* Wave C2 — Activation Email Sequence */}
+          <div className="mt-8">
+            <PhaseProgressBanner
+              phaseLabel="المرحلة 2 · Wave C2"
+              phaseTitle="Wave C2 — سلسلة إيميلات التفعيل"
+              loading={loading}
+              pillars={[
+                {
+                  key: "sent",
+                  label: "إجمالي الإرسال (30 يوم)",
+                  value: data.wave_c2.totals.sent,
+                  target: Math.max(50, data.wave_c2.totals.sent || 50),
+                  hint: `${data.wave_c2.totals.sent} رسالة وصلت لطابور الإرسال`,
+                },
+                {
+                  key: "open",
+                  label: "Open Rate",
+                  value: data.wave_c2.overall_open_rate_pct,
+                  target: 40,
+                  hint: `${data.wave_c2.overall_open_rate_pct}% فتحوا الإيميل — الهدف ≥40%`,
+                },
+                {
+                  key: "click",
+                  label: "Click Rate",
+                  value: data.wave_c2.overall_click_rate_pct,
+                  target: 12,
+                  hint: `${data.wave_c2.overall_click_rate_pct}% نقروا CTA — الهدف ≥12%`,
+                },
+              ]}
+            />
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard
+                title="رسائل أُرسلت (30 يوم)"
+                value={data.wave_c2.totals.sent.toLocaleString("ar-SA")}
+                hint={`5 مراحل · Day 0/1/3/7/14`}
+                tone="default"
+                icon={Mail}
+              />
+              <MetricCard
+                title="معدّل الفتح الإجمالي"
+                value={`${data.wave_c2.overall_open_rate_pct}%`}
+                hint={`${data.wave_c2.totals.opened} فتح — الهدف ≥40%`}
+                tone={data.wave_c2.overall_open_rate_pct >= 40 ? "success" : "warning"}
+                icon={MailOpen}
+              />
+              <MetricCard
+                title="معدّل النقر الإجمالي"
+                value={`${data.wave_c2.overall_click_rate_pct}%`}
+                hint={`${data.wave_c2.totals.clicked} نقرة — الهدف ≥12%`}
+                tone={data.wave_c2.overall_click_rate_pct >= 12 ? "success" : "warning"}
+                icon={MousePointerClick}
+              />
+              <MetricCard
+                title="مراحل نشطة"
+                value={`${data.wave_c2.per_day.length}/5`}
+                hint={`Segmentation حسب الشارات (نص/صورة/فيديو/متجر نشط)`}
+                tone={data.wave_c2.per_day.length >= 3 ? "success" : "default"}
+                icon={Award}
+              />
+            </div>
+
+            {data.wave_c2.per_day.length > 0 && (
+              <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+                <div className="border-b border-border bg-muted/40 px-4 py-2 text-xs font-bold text-muted-foreground">
+                  تفصيل لكل مرحلة (Day Marker)
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-right text-xs text-muted-foreground">
+                        <th className="px-3 py-2 font-semibold">اليوم</th>
+                        <th className="px-3 py-2 font-semibold">أُرسلت</th>
+                        <th className="px-3 py-2 font-semibold">تُخطّيت</th>
+                        <th className="px-3 py-2 font-semibold">فُتحت</th>
+                        <th className="px-3 py-2 font-semibold">نُقرت</th>
+                        <th className="px-3 py-2 font-semibold">Open %</th>
+                        <th className="px-3 py-2 font-semibold">Click %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.wave_c2.per_day.map((d) => (
+                        <tr key={d.day} className="border-b border-border/50 last:border-0">
+                          <td className="px-3 py-2 font-bold text-foreground">Day {d.day}</td>
+                          <td className="px-3 py-2 tabular-nums">{d.sent}</td>
+                          <td className="px-3 py-2 tabular-nums text-muted-foreground">{d.skipped}</td>
+                          <td className="px-3 py-2 tabular-nums">{d.opened}</td>
+                          <td className="px-3 py-2 tabular-nums">{d.clicked}</td>
+                          <td className={cn("px-3 py-2 tabular-nums font-bold", d.open_rate >= 40 ? "text-success" : "text-muted-foreground")}>
+                            {d.open_rate}%
+                          </td>
+                          <td className={cn("px-3 py-2 tabular-nums font-bold", d.click_rate >= 12 ? "text-success" : "text-muted-foreground")}>
+                            {d.click_rate}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Providers status */}
