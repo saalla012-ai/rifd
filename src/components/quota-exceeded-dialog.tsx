@@ -17,13 +17,14 @@ import {
 } from "@/components/ui/dialog";
 import { VIDEO_QUALITY_LABELS, videoCreditCost } from "@/lib/plan-catalog";
 
-export type QuotaErrorKind = "text_quota" | "image_quota" | "insufficient_credits" | "plan_quota" | "unknown";
+export type QuotaErrorKind = "text_quota" | "image_quota" | "insufficient_credits" | "free_monthly_video" | "plan_quota" | "unknown";
 
 export function detectQuotaError(message: string): QuotaErrorKind | null {
   if (!message) return null;
   const m = message.toLowerCase();
 
   // كودات السيرفر (credits.ts + RPC)
+  if (/free_monthly_video_quota_exceeded/i.test(message)) return "free_monthly_video";
   if (/text_quota_exceeded/i.test(message)) return "text_quota";
   if (/image_quota_exceeded/i.test(message)) return "image_quota";
   if (/insufficient_credits/i.test(message)) return "insufficient_credits";
