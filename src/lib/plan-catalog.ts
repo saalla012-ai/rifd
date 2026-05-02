@@ -56,7 +56,20 @@ export type PlanCatalogEntry = {
   maxVideoDurationSeconds: VideoDuration;
   tagline: string;
   badge?: string;
+  /** للـ Free فقط: حصة شهرية متجددة بدلاً من اليومية */
+  monthlyTrialQuota?: { text: number; image: number; video: number };
+  /** شارة "سعر الإطلاق" تظهر على المدفوعة */
+  launchBadge?: boolean;
 };
+
+/** نص شارة سعر الإطلاق — مصدر واحد للحقيقة */
+export const LAUNCH_BADGE_LABEL = "سعر الإطلاق";
+
+/** نص شارة الضمان — مصدر واحد للحقيقة */
+export const REFUND_GUARANTEE_LABEL = "ضمان 7 أيام استرداد كامل";
+
+/** خصم سنوي ثابت 20% (Toggle) */
+export const ANNUAL_DISCOUNT_PCT = 20;
 
 export const PLAN_CATALOG = [
   {
@@ -72,7 +85,8 @@ export const PLAN_CATALOG = [
     videoFastAllowed: true,
     videoQualityAllowed: false,
     maxVideoDurationSeconds: 5,
-    tagline: "للتجربة الآمنة وبناء أول ذاكرة متجر",
+    tagline: "تجربة شهرية متجددة: 5 نصوص + 3 صور + فيديو واحد سريع",
+    monthlyTrialQuota: { text: 5, image: 3, video: 1 },
   },
   {
     id: "starter",
