@@ -243,6 +243,20 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
     const completed7d = wizardCompleted;
     const completionRate = pct(completed7d, started7d ?? 0);
 
+    // Wave C1 — Pricing Funnel (آخر 7 أيام)
+    type PricingFunnelRow = {
+      total_views: number | string | null;
+      annual_toggles: number | string | null;
+      plan_clicks: number | string | null;
+      cta_clicks: number | string | null;
+      conversions: number | string | null;
+      cta_click_rate_pct: number | string | null;
+      annual_share_pct: number | string | null;
+      top_plan: string | null;
+    };
+    const { data: pricingRaw } = await adb.rpc("get_pricing_funnel", { _days: 7 });
+    const pricingRow = ((pricingRaw as PricingFunnelRow[] | null) ?? [])[0];
+
     return {
       generated_at: new Date().toISOString(),
       window_hours: 24,
@@ -272,6 +286,16 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
         onboarding_completed_7d: completed7d ?? 0,
         onboarding_started_7d: started7d ?? 0,
         completion_rate_pct: completionRate,
+      },
+      wave_c1: {
+        total_views: Number(pricingRow?.total_views ?? 0),
+        annual_toggles: Number(pricingRow?.annual_toggles ?? 0),
+        plan_clicks: Number(pricingRow?.plan_clicks ?? 0),
+        cta_clicks: Number(pricingRow?.cta_clicks ?? 0),
+        conversions: Number(pricingRow?.conversions ?? 0),
+        cta_click_rate_pct: Number(pricingRow?.cta_click_rate_pct ?? 0),
+        annual_share_pct: Number(pricingRow?.annual_share_pct ?? 0),
+        top_plan: pricingRow?.top_plan ?? "—",
       },
     };
   });
