@@ -1,5 +1,42 @@
 # المرحلة 1 v5 — التنفيذ النهائي (نسخة المستشار المعتمدة)
 
+> **نسبة الإنجاز الكلية: 30%** — اكتملت Wave 1A + Wave 1B (الاستقرار والتعويض). المتبقي: تنفيذ مزوّد Replicate الفعلي + Wave 2 (التسعير) + Wave 3 (المراقبة).
+
+## شريط التقدّم
+
+| الموجة | الحالة | النسبة |
+|---|---|---|
+| **Wave 1A** — Migrations + kill-switch + health window | ✅ مكتملة | 100% |
+| **Wave 1B** — error categorization + compensation 50pt | ✅ مكتملة | 100% |
+| **Wave 1C** — تنفيذ Replicate provider في الكود | ⏳ مطلوب قرار | 0% |
+| **Wave 2** — Free monthly + pricing UI + quota dialogs | 🔲 لم تبدأ | 0% |
+| **Wave 3** — Admin monitor + daily report + bonus | 🔲 لم تبدأ | 0% |
+
+## مراجعة Wave 1B (الإنجاز الأخير)
+
+**فحص تقني:** ✅ TypeScript بدون أخطاء، لا استيرادات مكسورة، لا كود مكرر.
+
+**ما أُضيف في `src/server/video-functions.ts`:**
+- دالة `categorizeVideoError()` تصنّف 5 فئات: `provider_error | timeout | content_error | user_error | unknown`.
+- ثابت `PROVIDER_FAILURE_COMPENSATION_CREDITS = 50`.
+- دالة `compensateUserForProviderFailure()` تمنح 50 نقطة فقط عند `provider_error` أو `timeout` (idempotent عبر job_id).
+- `markProcessingJobRefunded()` يكتب الآن `error_category` في عمود الجدول + داخل metadata.
+- `generateVideo` و `refreshVideoJob` يستدعيان التعويض تلقائياً عند الفشل التشغيلي.
+
+**ما لم يُحذف:** كل منطق الـ fallback الحالي (`loadProviderConfigs` + `providerPriorityScore` + `markProviderFailure/Success`) محفوظ ومُكمَّل — لم نكسر أي شيء.
+
+## ⚠️ قرار مطلوب قبل المتابعة (Wave 1C vs Wave 2)
+
+المهاجرة فعّلت `replicate` في DB كأساسي (priority=100) لكن `PROVIDERS` map في `video-functions.ts` يحتوي فقط على `fal_ai` فعلياً. النتيجة الحالية: كل الطلبات تذهب لـ `fal_ai` بأمان (لا انقطاع إنتاج)، لكن Replicate لا يُستدعى رغم أنه أساسي في DB.
+
+**الخيارات:**
+1. **تنفيذ Replicate كامل الآن** (إنشاء/متابعة prediction + parsing + خرائط باراميترات Veo 3 Fast) قبل Wave 2.
+2. **الانتقال مباشرة لـ Wave 2** (Free monthly + pricing UI) وإبقاء Replicate لموجة منفصلة لاحقة.
+
+**توصيتي كخبير سوق سعودي:** الخيار 2. الأثر التجاري لـ Wave 2 (تحسين التحويل + Free monthly + إزالة الشطب) أعلى من تبديل المزوّد الأساسي ما دام `fal_ai` مستقر. Replicate ميزة موثوقية، Wave 2 ميزة إيراد.
+
+---
+
 كل البنود الـ10 معتمدة. التعديلات الـ3 الرئيسية مدمجة + الإضافات الإلزامية الـ3.
 
 ## ملخص القرارات المعتمدة

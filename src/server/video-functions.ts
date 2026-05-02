@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   consume,
   getRefundLedgerId,
+  grantCompensationCredits,
   operationalSwitchEnabled,
   refund,
   videoCost,
@@ -239,6 +240,26 @@ function publicVideoError(e: unknown): Error {
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
 }
+
+/**
+ * يصنّف الأخطاء لتمييز أعطال المزوّد (يستحق تعويض) عن أخطاء المستخدم/المحتوى.
+ * - provider_error: عطل تقني من المزوّد (5xx، fetch failed، prediction error) → يستحق تعويض
+ * - timeout: تأخر تجاوز الحد الزمني → يستحق تعويض
+ * - content_error: المحتوى مرفوض من المزوّد (سياسة، nsfw) → لا تعويض
+ * - user_error: مدخلات خاطئة (صورة غير صالحة، quota) → لا تعويض
+ * - unknown: غير مصنّف افتراضياً
+ */
+export type VideoErrorCategory = "provider_error" | "user_error" | "content_error" | "timeout" | "unknown";
+
+export function categorizeVideoError(error: unknown): VideoErrorCategory {
+  const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  if (/timeout|timed.?out|تأخر/i.test(msg)) return "timeout";
+  if (/content.?policy|nsfw|safety|moderation|rejected.?content|سياسة المحتوى/i.test(msg)) return "content_error";
+  if (/provider_image_|invalid_video_tier|insufficient_credits|quota|not_allowed|too_many_processing|product_image_required|template_locked|sequence_violation|invalid_medium_test/i.test(msg)) return "user_error";
+  if (/provider|prediction|fetch failed|5\d\d|network|fal_|replicate|gateway|service unavailable/i.test(msg)) return "provider_error";
+  return "unknown";
+}
+
 
 function personaPrompt(personaId?: string) {
   return ({
@@ -652,13 +673,14 @@ async function createProviderJob(input: VideoInput, jobId: string, preflightConf
   throw new Error("no_video_provider_available");
 }
 
-async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId: string | null; errorMessage: string; metadata?: Record<string, unknown> }) {
+async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId: string | null; errorMessage: string; errorCategory?: VideoErrorCategory; metadata?: Record<string, unknown> }) {
   const { data: currentMetadataRow } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
   const updatePayload: Database["public"]["Tables"]["video_jobs"]["Update"] = {
     status: "refunded",
     error_message: params.errorMessage,
     ...(params.refundLedgerId ? { refund_ledger_id: params.refundLedgerId } : {}),
-    metadata: mergeMetadata(currentMetadataRow?.metadata, params.metadata),
+    ...(params.errorCategory ? { error_category: params.errorCategory } : {}),
+    metadata: mergeMetadata(currentMetadataRow?.metadata, { ...(params.metadata ?? {}), error_category: params.errorCategory ?? "unknown" }),
   };
 
   const { data, error } = await supabaseAdmin.from("video_jobs").update(updatePayload).eq("id", params.jobId).eq("status", "processing").select("*").maybeSingle();
@@ -668,6 +690,22 @@ async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId
   const { data: current, error: readError } = await supabaseAdmin.from("video_jobs").select("*").eq("id", params.jobId).single();
   if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو بعد الاسترداد: ${readError?.message ?? "غير موجودة"}`);
   return current as VideoJobRow;
+}
+
+/**
+ * يمنح المستخدم 50 نقطة تعويض عند فشل التوليد بسبب عطل من المزوّد.
+ * Idempotent عبر referenceId (job_id) — لا يكرّر التعويض على نفس المهمة.
+ */
+const PROVIDER_FAILURE_COMPENSATION_CREDITS = 50;
+async function compensateUserForProviderFailure(params: { userId: string; jobId: string; category: VideoErrorCategory }) {
+  if (params.category !== "provider_error" && params.category !== "timeout") return null;
+  return await grantCompensationCredits(supabaseAdmin, {
+    userId: params.userId,
+    amount: PROVIDER_FAILURE_COMPENSATION_CREDITS,
+    reason: `provider_failure_${params.category}`,
+    referenceId: params.jobId,
+    referenceType: "video_job",
+  });
 }
 
 async function markProcessingJobCompleted(params: { jobId: string; userId: string; resultUrl: string; metadata?: Record<string, unknown> }) {
@@ -797,19 +835,25 @@ export const generateVideo = createServerFn({ method: "POST" })
 
       return { job: updated as VideoJobRow, creditsCharged: cost, remainingTotal: charge.remainingTotal, pending: finalStatus === "processing" };
     } catch (e) {
+      const errorCategory = categorizeVideoError(e);
       const refundLedgerId = ledgerId ? await refund(supabaseAdmin, ledgerId, "video_generation_failed") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (ledgerId ? await getRefundLedgerId(supabaseAdmin, ledgerId) : null);
+      let compensationLedgerId: string | null = null;
       if (jobId) {
+        compensationLedgerId = await compensateUserForProviderFailure({ userId, jobId, category: errorCategory });
         const { data: failedJob } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", jobId).maybeSingle();
         await markProcessingJobRefunded({
           jobId,
           refundLedgerId: effectiveRefundLedgerId,
           errorMessage: publicVideoError(e).message,
+          errorCategory,
           metadata: {
             ...((failedJob?.metadata as Record<string, unknown> | null) ?? {}),
             failure_stage: "generate_video",
             original_error: errorMessage(e),
             refund_ledger_id: effectiveRefundLedgerId,
+            compensation_ledger_id: compensationLedgerId,
+            compensation_credits: compensationLedgerId ? PROVIDER_FAILURE_COMPENSATION_CREDITS : 0,
           },
         });
       }
@@ -842,7 +886,14 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (isStale) {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_timeout") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
-      const updated = await markProcessingJobRefunded({ jobId: row.id, refundLedgerId: effectiveRefundLedgerId, errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً." });
+      const compensationLedgerId = await compensateUserForProviderFailure({ userId, jobId: row.id, category: "timeout" });
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId: effectiveRefundLedgerId,
+        errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً مع منحك 50 نقطة تعويضاً.",
+        errorCategory: "timeout",
+        metadata: { compensation_ledger_id: compensationLedgerId, compensation_credits: compensationLedgerId ? PROVIDER_FAILURE_COMPENSATION_CREDITS : 0 },
+      });
       return { job: updated };
     }
 
@@ -871,9 +922,17 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     }
 
     if (prediction.status === "failed" || prediction.status === "canceled") {
+      const errorCategory = categorizeVideoError(prediction.error ?? "provider_failure");
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_failed") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
-      const updated = await markProcessingJobRefunded({ jobId: row.id, refundLedgerId: effectiveRefundLedgerId, errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود" });
+      const compensationLedgerId = await compensateUserForProviderFailure({ userId, jobId: row.id, category: errorCategory });
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId: effectiveRefundLedgerId,
+        errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود",
+        errorCategory,
+        metadata: { compensation_ledger_id: compensationLedgerId, compensation_credits: compensationLedgerId ? PROVIDER_FAILURE_COMPENSATION_CREDITS : 0 },
+      });
       return { job: updated };
     }
 
