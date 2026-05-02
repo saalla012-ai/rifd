@@ -112,19 +112,6 @@ const FAQS = [
 
 function PricingPage() {
   const [yearly, setYearly] = useState(false);
-  const [seatsLeft, setSeatsLeft] = useState<number | null>(null);
-  const [seatsTotal, setSeatsTotal] = useState(1000);
-  const [discountPct, setDiscountPct] = useState(30);
-
-  useEffect(() => {
-    void (async () => {
-      const { data } = await supabase.rpc("get_founding_status");
-      const row = Array.isArray(data) ? data[0] : data;
-      setSeatsTotal(row?.seats_total ?? 1000);
-      setSeatsLeft(row?.seats_left ?? 1000);
-      setDiscountPct(row?.discount_pct ?? 30);
-    })();
-  }, []);
 
   const ctaTarget = "/dashboard/billing";
 
@@ -150,7 +137,7 @@ function PricingPage() {
               <Film className="mb-2 h-4 w-4 text-primary" /> صورة المنتج مطلوبة في المدفوع لتقليل النتائج العامة.
             </div>
             <div className="rounded-xl border border-border bg-card/80 p-3 text-xs leading-5 text-muted-foreground">
-              <Gift className="mb-2 h-4 w-4 text-gold" /> رصيد الباقة يتجدد كل 30 يوم دون ترحيل.
+              <ShieldCheck className="mb-2 h-4 w-4 text-success" /> {REFUND_GUARANTEE_LABEL} — جرّب دون قلق.
             </div>
           </div>
 
@@ -158,25 +145,6 @@ function PricingPage() {
             <Suspense fallback={<div className="h-12 w-full rounded-xl border border-border bg-card/70" aria-hidden="true" />}>
               <SubscribersCounter />
             </Suspense>
-          </div>
-
-          <div className="mx-auto mt-4 min-h-[6.75rem] max-w-md">
-            {seatsLeft !== null && seatsLeft > 0 && (
-              <div className="rounded-xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 font-bold text-gold">
-                    <Users className="h-4 w-4" /> المقاعد المتبقية بسعر المؤسسين
-                  </span>
-                  <span className="font-extrabold text-gold">
-                    {seatsLeft.toLocaleString("ar-SA")} / {seatsTotal.toLocaleString("ar-SA")}
-                  </span>
-                </div>
-                <Progress value={((seatsTotal - seatsLeft) / seatsTotal) * 100} className="mt-2 h-2" />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  سعرك مجمّد مدى الحياة — سترتفع الأسعار {discountPct}% بعد اكتمال برنامج المؤسسين
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-card p-1.5">
@@ -192,7 +160,7 @@ function PricingPage() {
               onClick={() => setYearly(true)}
               className={cn("inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-bold", yearly ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
             >
-              سنوي <span className="rounded-full bg-gold/25 px-1.5 py-0.5 text-[10px] text-gold">شهران مجاناً</span>
+              سنوي <span className="rounded-full bg-success/25 px-1.5 py-0.5 text-[10px] font-bold text-success">وفّر {ANNUAL_DISCOUNT_PCT}%</span>
             </button>
           </div>
         </div>
