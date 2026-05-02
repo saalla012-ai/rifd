@@ -110,6 +110,159 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_video_jobs_20260502: {
+        Row: {
+          aspect_ratio: string | null
+          completed_at: string | null
+          created_at: string | null
+          credits_charged: number | null
+          duration_seconds: number | null
+          error_message: string | null
+          estimated_cost_usd: number | null
+          id: string | null
+          ledger_id: string | null
+          metadata: Json | null
+          product_image_url: string | null
+          prompt: string | null
+          provider: string | null
+          provider_job_id: string | null
+          quality: Database["public"]["Enums"]["video_quality"] | null
+          refund_ledger_id: string | null
+          result_url: string | null
+          selected_persona_id: string | null
+          speaker_image_url: string | null
+          starting_frame_url: string | null
+          status: Database["public"]["Enums"]["video_job_status"] | null
+          storage_path: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: number | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          estimated_cost_usd?: number | null
+          id?: string | null
+          ledger_id?: string | null
+          metadata?: Json | null
+          product_image_url?: string | null
+          prompt?: string | null
+          provider?: string | null
+          provider_job_id?: string | null
+          quality?: Database["public"]["Enums"]["video_quality"] | null
+          refund_ledger_id?: string | null
+          result_url?: string | null
+          selected_persona_id?: string | null
+          speaker_image_url?: string | null
+          starting_frame_url?: string | null
+          status?: Database["public"]["Enums"]["video_job_status"] | null
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          aspect_ratio?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: number | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          estimated_cost_usd?: number | null
+          id?: string | null
+          ledger_id?: string | null
+          metadata?: Json | null
+          product_image_url?: string | null
+          prompt?: string | null
+          provider?: string | null
+          provider_job_id?: string | null
+          quality?: Database["public"]["Enums"]["video_quality"] | null
+          refund_ledger_id?: string | null
+          result_url?: string | null
+          selected_persona_id?: string | null
+          speaker_image_url?: string | null
+          starting_frame_url?: string | null
+          status?: Database["public"]["Enums"]["video_job_status"] | null
+          storage_path?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      backup_video_provider_configs_20260502: {
+        Row: {
+          cost_5s: number | null
+          cost_8s: number | null
+          created_at: string | null
+          display_name_admin: string | null
+          enabled: boolean | null
+          health_status: string | null
+          id: string | null
+          last_error_at: string | null
+          last_error_message: string | null
+          last_success_at: string | null
+          metadata: Json | null
+          mode: string | null
+          priority: number | null
+          provider_key: string | null
+          public_enabled: boolean | null
+          supported_qualities: string[] | null
+          supports_1_1: boolean | null
+          supports_16_9: boolean | null
+          supports_9_16: boolean | null
+          supports_starting_frame: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          cost_5s?: number | null
+          cost_8s?: number | null
+          created_at?: string | null
+          display_name_admin?: string | null
+          enabled?: boolean | null
+          health_status?: string | null
+          id?: string | null
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          metadata?: Json | null
+          mode?: string | null
+          priority?: number | null
+          provider_key?: string | null
+          public_enabled?: boolean | null
+          supported_qualities?: string[] | null
+          supports_1_1?: boolean | null
+          supports_16_9?: boolean | null
+          supports_9_16?: boolean | null
+          supports_starting_frame?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          cost_5s?: number | null
+          cost_8s?: number | null
+          created_at?: string | null
+          display_name_admin?: string | null
+          enabled?: boolean | null
+          health_status?: string | null
+          id?: string | null
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          metadata?: Json | null
+          mode?: string | null
+          priority?: number | null
+          provider_key?: string | null
+          public_enabled?: boolean | null
+          supported_qualities?: string[] | null
+          supports_1_1?: boolean | null
+          supports_16_9?: boolean | null
+          supports_9_16?: boolean | null
+          supports_starting_frame?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       campaign_packs: {
         Row: {
           ab_variants: Json
@@ -799,6 +952,87 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_health_window: {
+        Row: {
+          created_at: string
+          fail_count: number
+          fail_rate: number | null
+          id: string
+          provider_key: string
+          success_count: number
+          total_count: number | null
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          fail_count?: number
+          fail_rate?: number | null
+          id?: string
+          provider_key: string
+          success_count?: number
+          total_count?: number | null
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          fail_count?: number
+          fail_rate?: number | null
+          id?: string
+          provider_key?: string
+          success_count?: number
+          total_count?: number | null
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      provider_kill_switch_events: {
+        Row: {
+          created_at: string
+          fail_count: number
+          fail_rate: number
+          id: string
+          metadata: Json | null
+          provider_key: string
+          restore_reason: string | null
+          restored_at: string | null
+          restored_by: string | null
+          success_count: number
+          triggered_at: string
+          window_minutes: number
+        }
+        Insert: {
+          created_at?: string
+          fail_count: number
+          fail_rate: number
+          id?: string
+          metadata?: Json | null
+          provider_key: string
+          restore_reason?: string | null
+          restored_at?: string | null
+          restored_by?: string | null
+          success_count: number
+          triggered_at?: string
+          window_minutes?: number
+        }
+        Update: {
+          created_at?: string
+          fail_count?: number
+          fail_rate?: number
+          id?: string
+          metadata?: Json | null
+          provider_key?: string
+          restore_reason?: string | null
+          restored_at?: string | null
+          restored_by?: string | null
+          success_count?: number
+          triggered_at?: string
+          window_minutes?: number
+        }
+        Relationships: []
+      }
       stale_subs_alert_state: {
         Row: {
           id: number
@@ -1106,6 +1340,9 @@ export type Database = {
           created_at: string
           credits_charged: number
           duration_seconds: number
+          error_category:
+            | Database["public"]["Enums"]["video_error_category"]
+            | null
           error_message: string | null
           estimated_cost_usd: number | null
           id: string
@@ -1132,6 +1369,9 @@ export type Database = {
           created_at?: string
           credits_charged: number
           duration_seconds?: number
+          error_category?:
+            | Database["public"]["Enums"]["video_error_category"]
+            | null
           error_message?: string | null
           estimated_cost_usd?: number | null
           id?: string
@@ -1158,6 +1398,9 @@ export type Database = {
           created_at?: string
           credits_charged?: number
           duration_seconds?: number
+          error_category?:
+            | Database["public"]["Enums"]["video_error_category"]
+            | null
           error_message?: string | null
           estimated_cost_usd?: number | null
           id?: string
@@ -1376,6 +1619,21 @@ export type Database = {
           seats_total: number
         }[]
       }
+      get_provider_health_summary: {
+        Args: never
+        Returns: {
+          active_kill_switch: boolean
+          enabled: boolean
+          fail_24h: number
+          fail_rate_24h: number
+          health_status: string
+          last_kill_switch_at: string
+          priority: number
+          provider_key: string
+          success_24h: number
+          total_24h: number
+        }[]
+      }
       get_public_app_settings: {
         Args: never
         Returns: {
@@ -1426,6 +1684,16 @@ export type Database = {
           video_fast_allowed: boolean
           video_quality_allowed: boolean
         }[]
+      }
+      grant_compensation_credits: {
+        Args: {
+          _amount: number
+          _reason: string
+          _reference_id?: string
+          _reference_type?: string
+          _user_id: string
+        }
+        Returns: string
       }
       has_marketing_consent: {
         Args: {
@@ -1571,6 +1839,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      restore_provider: {
+        Args: { _provider_key: string; _reason?: string }
+        Returns: {
+          cost_5s: number
+          cost_8s: number
+          created_at: string
+          display_name_admin: string
+          enabled: boolean
+          health_status: string
+          id: string
+          last_error_at: string | null
+          last_error_message: string | null
+          last_success_at: string | null
+          metadata: Json
+          mode: string
+          priority: number
+          provider_key: string
+          public_enabled: boolean
+          supported_qualities: string[]
+          supports_1_1: boolean
+          supports_16_9: boolean
+          supports_9_16: boolean
+          supports_starting_frame: boolean
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "video_provider_configs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       withdraw_consent: {
         Args: {
           _consent_type: Database["public"]["Enums"]["consent_type"]
@@ -1614,6 +1914,12 @@ export type Database = {
         | "expired"
       topup_status: "pending" | "paid" | "activated" | "rejected" | "refunded"
       user_plan: "free" | "pro" | "business" | "starter" | "growth"
+      video_error_category:
+        | "provider_error"
+        | "user_error"
+        | "content_error"
+        | "timeout"
+        | "unknown"
       video_job_status:
         | "pending"
         | "processing"
@@ -1787,6 +2093,13 @@ export const Constants = {
       ],
       topup_status: ["pending", "paid", "activated", "rejected", "refunded"],
       user_plan: ["free", "pro", "business", "starter", "growth"],
+      video_error_category: [
+        "provider_error",
+        "user_error",
+        "content_error",
+        "timeout",
+        "unknown",
+      ],
       video_job_status: [
         "pending",
         "processing",

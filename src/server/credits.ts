@@ -127,6 +127,36 @@ export async function refund(
   return typeof data === "string" ? data : null;
 }
 
+/**
+ * يمنح المستخدم نقاط تعويضية تلقائياً عند فشل توليد الفيديو من جانب المزوّد
+ * بعد استنفاد كل المزودين الاحتياطيين.
+ * - آمن ضد الازدواج (idempotent عبر reference_id).
+ * - لا يرفع استثناءً: فشل التعويض لا يحجب الرسالة الأصلية للمستخدم.
+ */
+export async function grantCompensationCredits(
+  db: DbClient,
+  params: {
+    userId: string;
+    amount: number;
+    reason: string;
+    referenceId?: string | null;
+    referenceType?: string;
+  }
+): Promise<string | null> {
+  const { data, error } = await db.rpc("grant_compensation_credits", {
+    _user_id: params.userId,
+    _amount: params.amount,
+    _reason: params.reason,
+    _reference_id: params.referenceId ?? undefined,
+    _reference_type: params.referenceType ?? "video_job",
+  });
+  if (error) {
+    console.error(`grant_compensation_credits failed: ${error.message}`);
+    return null;
+  }
+  return typeof data === "string" ? data : null;
+}
+
 export async function getRefundLedgerId(db: DbClient, ledgerId: string): Promise<string | null> {
   const { data, error } = await db
     .from("credit_ledger")
