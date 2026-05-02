@@ -204,8 +204,7 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
     const step2 = Number(funnelRow?.step2_completed ?? 0);
     const step3 = Number(funnelRow?.step3_completed ?? 0);
     const wizardCompleted = Number(funnelRow?.wizard_completed ?? 0);
-    const autogenSucceeded = Number(funnelRow?.autogen_succeeded ?? 0);
-    const autogenFailed = Number(funnelRow?.autogen_failed ?? 0);
+    // (autogen_succeeded / autogen_failed متاحة في funnelRow لاستخدام مستقبلي)
     const pct = (n: number, d: number) => (d === 0 ? 0 : Math.round((n / d) * 1000) / 10);
     const funnel = [
       { step: 1, users_started: totalStarted, users_completed: step1, completion_rate_pct: pct(step1, totalStarted) },
