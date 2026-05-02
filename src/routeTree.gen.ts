@@ -84,6 +84,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
+import { Route as ApiPublicHooksPhase1DailyReportRouteImport } from './routes/api.public.hooks.phase1-daily-report'
 import { Route as ApiPublicHooksOcrReceiptRouteImport } from './routes/api.public.hooks.ocr-receipt'
 import { Route as ApiPublicHooksCheckStaleSubscriptionsRouteImport } from './routes/api.public.hooks.check-stale-subscriptions'
 import { Route as ApiPublicHooksCheckEmailDlqRouteImport } from './routes/api.public.hooks.check-email-dlq'
@@ -471,6 +472,12 @@ const DashboardBillingConfirmRequestIdRoute =
     path: '/billing/confirm/$requestId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const ApiPublicHooksPhase1DailyReportRoute =
+  ApiPublicHooksPhase1DailyReportRouteImport.update({
+    id: '/api/public/hooks/phase1-daily-report',
+    path: '/api/public/hooks/phase1-daily-report',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksOcrReceiptRoute =
   ApiPublicHooksOcrReceiptRouteImport.update({
     id: '/api/public/hooks/ocr-receipt',
@@ -563,6 +570,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
+  '/api/public/hooks/phase1-daily-report': typeof ApiPublicHooksPhase1DailyReportRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -642,6 +650,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
+  '/api/public/hooks/phase1-daily-report': typeof ApiPublicHooksPhase1DailyReportRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -723,6 +732,7 @@ export interface FileRoutesById {
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
+  '/api/public/hooks/phase1-daily-report': typeof ApiPublicHooksPhase1DailyReportRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -805,6 +815,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
+    | '/api/public/hooks/phase1-daily-report'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -884,6 +895,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
+    | '/api/public/hooks/phase1-daily-report'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -964,6 +976,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
+    | '/api/public/hooks/phase1-daily-report'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1032,6 +1045,7 @@ export interface RootRouteChildren {
   ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
   ApiPublicHooksCheckStaleSubscriptionsRoute: typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   ApiPublicHooksOcrReceiptRoute: typeof ApiPublicHooksOcrReceiptRoute
+  ApiPublicHooksPhase1DailyReportRoute: typeof ApiPublicHooksPhase1DailyReportRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -1566,6 +1580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingConfirmRequestIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/public/hooks/phase1-daily-report': {
+      id: '/api/public/hooks/phase1-daily-report'
+      path: '/api/public/hooks/phase1-daily-report'
+      fullPath: '/api/public/hooks/phase1-daily-report'
+      preLoaderRoute: typeof ApiPublicHooksPhase1DailyReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/ocr-receipt': {
       id: '/api/public/hooks/ocr-receipt'
       path: '/api/public/hooks/ocr-receipt'
@@ -1689,6 +1710,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksCheckStaleSubscriptionsRoute:
     ApiPublicHooksCheckStaleSubscriptionsRoute,
   ApiPublicHooksOcrReceiptRoute: ApiPublicHooksOcrReceiptRoute,
+  ApiPublicHooksPhase1DailyReportRoute: ApiPublicHooksPhase1DailyReportRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
