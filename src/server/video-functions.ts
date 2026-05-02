@@ -886,7 +886,14 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     if (isStale) {
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_timeout") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
-      const updated = await markProcessingJobRefunded({ jobId: row.id, refundLedgerId: effectiveRefundLedgerId, errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً." });
+      const compensationLedgerId = await compensateUserForProviderFailure({ userId, jobId: row.id, category: "timeout" });
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId: effectiveRefundLedgerId,
+        errorMessage: "تأخر توليد الفيديو أكثر من المتوقع، وتم رد النقاط تلقائياً مع منحك 50 نقطة تعويضاً.",
+        errorCategory: "timeout",
+        metadata: { compensation_ledger_id: compensationLedgerId, compensation_credits: compensationLedgerId ? PROVIDER_FAILURE_COMPENSATION_CREDITS : 0 },
+      });
       return { job: updated };
     }
 
@@ -915,9 +922,17 @@ export const refreshVideoJob = createServerFn({ method: "POST" })
     }
 
     if (prediction.status === "failed" || prediction.status === "canceled") {
+      const errorCategory = categorizeVideoError(prediction.error ?? "provider_failure");
       const refundLedgerId = row.ledger_id ? await refund(supabaseAdmin, row.ledger_id, "video_generation_failed") : null;
       const effectiveRefundLedgerId = refundLedgerId ?? (row.ledger_id ? await getRefundLedgerId(supabaseAdmin, row.ledger_id) : null);
-      const updated = await markProcessingJobRefunded({ jobId: row.id, refundLedgerId: effectiveRefundLedgerId, errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود" });
+      const compensationLedgerId = await compensateUserForProviderFailure({ userId, jobId: row.id, category: errorCategory });
+      const updated = await markProcessingJobRefunded({
+        jobId: row.id,
+        refundLedgerId: effectiveRefundLedgerId,
+        errorMessage: prediction.error ?? "فشل توليد الفيديو لدى المزود",
+        errorCategory,
+        metadata: { compensation_ledger_id: compensationLedgerId, compensation_credits: compensationLedgerId ? PROVIDER_FAILURE_COMPENSATION_CREDITS : 0 },
+      });
       return { job: updated };
     }
 
