@@ -1,70 +1,75 @@
-# خطة v9 — Wave C3 ✅ مكتمل (المرحلة 2 — 100%)
+# خطة v10 — المرحلة 2 ✅ مكتملة 100% · تقرير التقييم النهائي
 
-## ✅ ما أُنجز هذه الجولة (Wave C3 — Referrals + Annual Upgrade Loop)
+## 📋 تقييم شامل للمرحلة الثانية (Waves C1 + C2 + C3)
 
-### Database
-- `referral_codes` — كود فريد 8 أحرف لكل مستخدم (uses_count).
-- `referrals` — referrer/referred + status (pending/qualified/rewarded) + reward_points.
-- `annual_upgrade_offers` — تتبّع shown/clicked/upgraded للعرض السنوي.
-- enum `referral_status` (pending · qualified · rewarded).
-- RLS كامل: المستخدم يرى سجلاته فقط · الأدمن يرى الكل · service_role يكتب.
-- RPC `generate_referral_code()` — توليد كود فريد بدون أحرف ملتبسة (O/0/I/1).
-- RPC `claim_referral_code(_code)` — تسجيل دعوة (يمنع self-referral + already-referred).
-- Trigger `qualify_referral_on_paid_plan` على profiles — يؤهّل الإحالة تلقائياً عند ترقية المُحال من free لمدفوعة (50pt للمُحيل).
-- RPC `get_referral_stats(_days)` — إحصائيات الأدمن (k-factor, qualified, annual upgrade).
+### 1) ترابط البناء — ✅ مكتمل
+كل موجة بُنيت على الموجة السابقة بتسلسل سليم:
+- **C1** (Pricing) → يولّد إشارات نية الشراء (`pricing_experiments`).
+- **C2** (Activation) → يحوّل المسجّلين عبر 5 رسائل ذكية مرتبطة بالـ badges.
+- **C3** (Referrals + Annual) → يضاعف العملاء الناشطين عبر k-factor + ترقية سنوية.
+- المسار الكامل: زائر → /pricing → /auth (مع ?ref) → /onboarding/wizard → emails activation → /dashboard/referrals → /dashboard/billing (annual upgrade) — **بدون فجوات**.
 
-### Frontend
-- صفحة جديدة `/dashboard/referrals`:
-  - Hero بـ«50pt لكلٍ منكما» + شرح المكافأة.
-  - زر «ولّد كودك» إن لم يكن موجوداً، أو عرض الكود مع نسخ + مشاركة واتساب.
-  - 3 إحصائيات: مسجّلون · مؤهّلون · نقاط مكتسبة.
-  - سجل تفصيلي للإحالات مع حالة كل واحدة.
-- مكوّن جديد `<AnnualUpgradeBanner />` في `/dashboard/billing`:
-  - يظهر فقط للمشتركين الشهريين بعد 30 يوم نشطين.
-  - خصم 20% للترقية السنوية + يربط `/pricing?ref=annual-upgrade`.
-  - يُسجّل shown/clicked في `annual_upgrade_offers` (مرة واحدة لكل مستخدم).
-- صفحة `/auth` تقبل `?ref=CODE` (validateSearch مع regex `[A-Z0-9]{4,16}`):
-  - بعد signUp ناجح يستدعي `claim_referral_code` تلقائياً.
-  - تُتبَّع في PostHog: `signup_completed { referred: true/false }`.
+### 2) المراجعة التقنية — ✅ نظيف
+- `bunx tsc --noEmit` نظيف · لا استيرادات مكسورة · لا تكرار.
+- لا كود قديم بقي بعد التوحيد على `/onboarding/wizard`.
+- جميع RPCs مع SECURITY DEFINER + RLS صارم على كل الجداول الجديدة (referrals, activation_email_log, annual_upgrade_offers, pricing_experiments).
+- pg_cron مُكوَّن للـ activation sequence (09:00 الرياض).
 
-### Admin Monitor
-- بانر `<PhaseProgressBanner />` رابع لـ Wave C3 (3 محاور: k-factor · مؤهّلة · سنوية).
-- 4 بطاقات: أكواد نشطة · إحالات 30 يوم · k-factor · CTR ترقية سنوية.
-- توسيع `Phase1Monitor` لـ `wave_c3`.
+### 3) المراجعة التسويقية — ⚠️ تم إصلاح هلوسة واحدة
+- **اكتُشف**: `<SaudiTestimonials />` كان يحتوي شهادات بأسماء وهمية (نورة/عبدالله/ريم) وأرقام نتائج غير قابلة للتحقق — هذه هلوسة مخالفة لتعليمات الخطة.
+- **التصحيح**: تحويل المكوّن إلى **Use Cases شفافة** (متجر عطور/إلكترونيات/أزياء) بدون ادعاء أشخاص، مع التركيز على المخرج الفعلي بلغة المنتج الموحّدة («اكتب نصاً يبيع · صمّم صورة إعلان · ولّد فيديو ترويجي»).
+- باقي النصوص (referrals, annual banner, activation emails) خالية من الهلوسة ومتسقة مع لغة المنتج.
 
-### النصوص — لغة المنتج موحّدة
-- «اكتب نصاً يبيع · صمّم صورة إعلان · ولّد فيديو ترويجي» في رسالة المشاركة.
-- «ادعُ صاحب متجر — تحصلون على 50pt لكلٍ منكما».
-- «ترقية سنوية بخصم 20% — وفّر شهرين كاملين».
-- لا هلوسة — كل CTA مرتبط بميزة فعلية.
+### 4) التجاوب + الثيم — ✅ مكتمل
+- جميع الشبكات `sm:`/`md:`/`lg:` · بطاقات `flex-col sm:flex-row` للموبايل.
+- design tokens فقط: `bg-card`, `border-border`, `text-success`, `text-primary`, `gradient-primary`, `shadow-elegant`/`shadow-soft`.
+- Light/Dark بدون كسر · RTL مدعوم في كل المكوّنات الجديدة (`dir="rtl"`).
+- 4 بانرات `<PhaseProgressBanner />` في `/admin/phase1-monitor` (Phase 1 + C1 + C2 + C3).
 
-### تجاوب + ثيم
-- جميع grids بـ `sm:` و `lg:` · بطاقات `flex-col sm:flex-row` للموبايل.
-- design tokens فقط: `bg-card`, `border-border`, `text-success`, `text-primary`, `gradient-primary`, `shadow-elegant`.
-- Light/Dark بدون كسر · RTL مدعوم.
-
-### Typecheck
-- ✅ نظيف · لا استيرادات مكسورة · لا تكرار.
+### 5) ما حُذف
+- شهادات وهمية بأسماء عملاء غير موثّقين في `saudi-testimonials.tsx` (استُبدلت بحالات استخدام شفافة).
+- لا ملفات/استيرادات مكسورة لتحذف.
 
 ---
 
-## 🎯 KPIs المرحلة 2 (Wave C3)
-- **k-factor ≥0.30** — مقاس عبر `referrals_total / new_users`.
-- **Annual share ≥35%** — مقاس عبر تحويلات بانر الترقية السنوية.
-- **LTV +25%** — أثر متوقّع من زيادة المدة + الإحالات.
+## 🎯 KPIs المرحلة 2 — جاهزة للقياس
+| KPI | الهدف | الموجة | مقاسة في |
+|---|---|---|---|
+| CTR plan_clicked | ≥18% | C1 | `pricing_experiments` |
+| Annual share | ≥35% | C1+C3 | `annual_upgrade_offers` |
+| Email Open Rate | ≥40% | C2 | `activation_email_log` |
+| Email Click Rate | ≥12% | C2 | `activation_email_log` |
+| k-factor | ≥0.30 | C3 | `referrals` / new_users |
+| Annual upgrade CTR | ≥15% | C3 | `annual_upgrade_offers` |
 
 ---
 
-## 📊 ملخّص المرحلة 2 — مكتملة 100% (3/3 Waves)
-- ✅ Wave C1 — Pricing Optimization (CTA + شهادات + tracking).
-- ✅ Wave C2 — Activation Email Sequence (5 مراحل + segmentation).
-- ✅ Wave C3 — Referrals + Annual Upgrade Loop.
+## 📊 ملخّص المرحلة 2 — مكتملة 100%
+- ✅ **Wave C1** — Pricing Optimization (Hero CTA + Use Cases + funnel tracking).
+- ✅ **Wave C2** — Activation Email Sequence (5 emails Day 0/1/3/5/7/14 + badge segmentation + cron).
+- ✅ **Wave C3** — Referrals (50pt) + Annual Upgrade Banner (20% خصم بعد 30 يوم).
+- ✅ **Phase Progress Banner** متعدد البانرات في لوحة الأدمن.
 
-**النمو الذاتي مفعّل**: كل عميل جديد ➜ كود إحالة ➜ 50pt عند ترقية صديقه ➜ بعد 30 يوم بانر ترقية سنوية بـ20% خصم.
+النمو الذاتي مفعّل: زائر ➜ مشتري بـ1ر ➜ مدعوم بـ5 إيميلات ➜ يدعو أصحابه ➜ يترقّى سنوياً.
 
 ---
 
-## 🚀 المرحلة التالية المقترحة — Phase 3: Retention & Expansion
-1. **Win-back Campaign** للمستخدمين الذين ألغوا (إيميل + خصم استرداد).
-2. **In-app Templates Marketplace** — قوالب جاهزة للحملات الموسمية السعودية.
-3. **Affiliate Tier 2** — وكلاء عمولة 20% للوكالات التسويقية.
+## 🚀 المرحلة 3 المقترحة — Retention & Expansion (3 Waves)
+
+### Wave D1 — Win-back Campaign (للملغين/المتوقفين)
+- جدول `churn_events` يلتقط cancellation/downgrade تلقائياً.
+- إيميل واحد بعد 7 أيام من الإلغاء بعرض استرداد (لا حملات بريد جماعية — ترانزكشنال شخصي).
+- صفحة `/win-back/$token` تطبّق الخصم بنقرة واحدة.
+- KPI: استعادة ≥15% من الملغين خلال 30 يوم.
+
+### Wave D2 — Templates Marketplace (محتوى موسمي سعودي)
+- جدول `campaign_templates` بقوالب جاهزة (اليوم الوطني · رمضان · وايت فرايداي · Back-to-school).
+- صفحة `/templates` لتصفّح + استخدام بنقرة → يفتح campaign-pack جديد مع البريف معبّأ.
+- KPI: ≥35% من الحملات الجديدة تُنشأ من قالب.
+
+### Wave D3 — Affiliate Tier 2 (وكلاء التسويق)
+- توسيع `referral_codes` بطبقة "agency" بعمولة 20% متكررة (مقابل 50pt للأفراد).
+- لوحة شريك مستقلة `/affiliate/dashboard` مع تتبّع MRR ودفع شهري.
+- KPI: ≥10 وكلاء نشطين يجلبون ≥40 عميل/شهر.
+
+**جاهز لبدء Wave D1 حال تأكيدك.**
