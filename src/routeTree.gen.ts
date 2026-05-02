@@ -32,6 +32,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as OnboardingWizardRouteImport } from './routes/onboarding.wizard'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalRefundRouteImport } from './routes/legal.refund'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
@@ -204,6 +205,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const OnboardingWizardRoute = OnboardingWizardRouteImport.update({
+  id: '/wizard',
+  path: '/wizard',
+  getParentRoute: () => OnboardingRoute,
 } as any)
 const LegalTermsRoute = LegalTermsRouteImport.update({
   id: '/legal/terms',
@@ -512,7 +518,7 @@ export interface FileRoutesByFullPath {
   '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/pricing': typeof PricingRoute
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -561,6 +567,7 @@ export interface FileRoutesByFullPath {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/onboarding/wizard': typeof OnboardingWizardRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
@@ -592,7 +599,7 @@ export interface FileRoutesByTo {
   '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/pricing': typeof PricingRoute
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -641,6 +648,7 @@ export interface FileRoutesByTo {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/onboarding/wizard': typeof OnboardingWizardRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
@@ -674,7 +682,7 @@ export interface FileRoutesById {
   '/for-perfumes-beauty': typeof ForPerfumesBeautyRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/library': typeof LibraryRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/pricing': typeof PricingRoute
   '/proof-center': typeof ProofCenterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -723,6 +731,7 @@ export interface FileRoutesById {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/refund': typeof LegalRefundRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/onboarding/wizard': typeof OnboardingWizardRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/invoice/$requestId': typeof ApiInvoiceRequestIdRoute
   '/api/public/contact-submit': typeof ApiPublicContactSubmitRoute
@@ -806,6 +815,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
+    | '/onboarding/wizard'
     | '/dashboard/'
     | '/api/invoice/$requestId'
     | '/api/public/contact-submit'
@@ -886,6 +896,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
+    | '/onboarding/wizard'
     | '/dashboard'
     | '/api/invoice/$requestId'
     | '/api/public/contact-submit'
@@ -967,6 +978,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/refund'
     | '/legal/terms'
+    | '/onboarding/wizard'
     | '/dashboard/'
     | '/api/invoice/$requestId'
     | '/api/public/contact-submit'
@@ -1000,7 +1012,7 @@ export interface RootRouteChildren {
   ForPerfumesBeautyRoute: typeof ForPerfumesBeautyRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LibraryRoute: typeof LibraryRoute
-  OnboardingRoute: typeof OnboardingRoute
+  OnboardingRoute: typeof OnboardingRouteWithChildren
   PricingRoute: typeof PricingRoute
   ProofCenterRoute: typeof ProofCenterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1215,6 +1227,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/onboarding/wizard': {
+      id: '/onboarding/wizard'
+      path: '/wizard'
+      fullPath: '/onboarding/wizard'
+      preLoaderRoute: typeof OnboardingWizardRouteImport
+      parentRoute: typeof OnboardingRoute
     }
     '/legal/terms': {
       id: '/legal/terms'
@@ -1649,6 +1668,18 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
+interface OnboardingRouteChildren {
+  OnboardingWizardRoute: typeof OnboardingWizardRoute
+}
+
+const OnboardingRouteChildren: OnboardingRouteChildren = {
+  OnboardingWizardRoute: OnboardingWizardRoute,
+}
+
+const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
+  OnboardingRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -1664,7 +1695,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForPerfumesBeautyRoute: ForPerfumesBeautyRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LibraryRoute: LibraryRoute,
-  OnboardingRoute: OnboardingRoute,
+  OnboardingRoute: OnboardingRouteWithChildren,
   PricingRoute: PricingRoute,
   ProofCenterRoute: ProofCenterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
