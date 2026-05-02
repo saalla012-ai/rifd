@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/hooks/use-theme";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { FirstWinToast } from "@/components/first-win-toast";
 
 type DashboardNavPath =
   | "/dashboard"
@@ -342,6 +343,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </nav>
         </header>
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        <FirstWinToast />
       </div>
     </div>
   );

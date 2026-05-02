@@ -871,6 +871,33 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          step: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          step: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          step?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       operational_switches: {
         Row: {
           enabled: boolean
@@ -1039,6 +1066,8 @@ export type Database = {
           marketing_telegram_opt_in: boolean
           marketing_whatsapp_opt_in: boolean
           onboarded: boolean
+          onboarding_completed_at: string | null
+          onboarding_step: number
           plan: Database["public"]["Enums"]["user_plan"]
           product_type: string | null
           product_updates_opt_in: boolean
@@ -1070,6 +1099,8 @@ export type Database = {
           marketing_telegram_opt_in?: boolean
           marketing_whatsapp_opt_in?: boolean
           onboarded?: boolean
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
           plan?: Database["public"]["Enums"]["user_plan"]
           product_type?: string | null
           product_updates_opt_in?: boolean
@@ -1101,6 +1132,8 @@ export type Database = {
           marketing_telegram_opt_in?: boolean
           marketing_whatsapp_opt_in?: boolean
           onboarded?: boolean
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
           plan?: Database["public"]["Enums"]["user_plan"]
           product_type?: string | null
           product_updates_opt_in?: boolean
@@ -1447,6 +1480,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge_type: Database["public"]["Enums"]["badge_type"]
+          id: string
+          metadata: Json
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_type: Database["public"]["Enums"]["badge_type"]
+          id?: string
+          metadata?: Json
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_type?: Database["public"]["Enums"]["badge_type"]
+          id?: string
+          metadata?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           cycle_ends_at: string | null
@@ -1780,6 +1837,14 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      fn_award_badge_if_new: {
+        Args: {
+          _badge: Database["public"]["Enums"]["badge_type"]
+          _metadata?: Json
+          _user_id: string
+        }
+        Returns: boolean
+      }
       get_founding_status: {
         Args: never
         Returns: {
@@ -1796,6 +1861,19 @@ export type Database = {
           cap: number
           remaining: number
           total_granted: number
+        }[]
+      }
+      get_onboarding_funnel: {
+        Args: { _days?: number }
+        Returns: {
+          active_store_badges: number
+          autogen_failed: number
+          autogen_succeeded: number
+          step1_completed: number
+          step2_completed: number
+          step3_completed: number
+          total_started: number
+          wizard_completed: number
         }[]
       }
       get_or_create_current_monthly_cycle: {
@@ -1859,6 +1937,14 @@ export type Database = {
         Args: never
         Returns: {
           total: number
+        }[]
+      }
+      get_user_badges: {
+        Args: { _user_id?: string }
+        Returns: {
+          awarded_at: string
+          badge_type: Database["public"]["Enums"]["badge_type"]
+          metadata: Json
         }[]
       }
       get_user_consent_status: {
@@ -2097,6 +2183,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      badge_type: "first_text" | "first_image" | "first_video" | "active_store"
       consent_source:
         | "onboarding"
         | "settings"
@@ -2272,6 +2359,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      badge_type: ["first_text", "first_image", "first_video", "active_store"],
       consent_source: [
         "onboarding",
         "settings",
