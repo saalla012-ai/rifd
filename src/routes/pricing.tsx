@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -25,6 +25,8 @@ import {
   formatPlanNumber,
   videoCreditCost,
 } from "@/lib/plan-catalog";
+import { trackPricingEvent } from "@/lib/analytics/pricing-tracking";
+import { SaudiTestimonials } from "@/components/saudi-testimonials";
 
 const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
 const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
@@ -114,6 +116,26 @@ function PricingPage() {
   const [yearly, setYearly] = useState(false);
 
   const ctaTarget = "/dashboard/billing";
+
+  // page_view مرة واحدة عند التحميل
+  useEffect(() => {
+    void trackPricingEvent("page_view", { billingCycle: "monthly" });
+  }, []);
+
+  const handleToggleAnnual = (next: boolean) => {
+    setYearly(next);
+    void trackPricingEvent("annual_toggled", {
+      billingCycle: next ? "yearly" : "monthly",
+      metadata: { yearly: next },
+    });
+  };
+
+  const handlePlanCta = (planId: string) => {
+    void trackPricingEvent("cta_clicked", {
+      planId,
+      billingCycle: yearly ? "yearly" : "monthly",
+    });
+  };
 
   return (
     <MarketingLayout>
