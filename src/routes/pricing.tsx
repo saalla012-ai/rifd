@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -11,15 +11,20 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Users,
   Zap,
 } from "lucide-react";
 import { MarketingLayout } from "@/components/marketing-layout";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { PLAN_CATALOG, VIDEO_QUALITY_LABELS, formatPlanNumber, videoCreditCost } from "@/lib/plan-catalog";
+import {
+  ANNUAL_DISCOUNT_PCT,
+  LAUNCH_BADGE_LABEL,
+  PLAN_CATALOG,
+  REFUND_GUARANTEE_LABEL,
+  VIDEO_QUALITY_LABELS,
+  formatPlanNumber,
+  videoCreditCost,
+} from "@/lib/plan-catalog";
 
 const SubscribersCounter = lazy(() => import("@/components/subscribers-counter").then((m) => ({ default: m.SubscribersCounter })));
 const TrustBadges = lazy(() => import("@/components/trust-badges").then((m) => ({ default: m.TrustBadges })));
