@@ -816,7 +816,7 @@ export const generateVideo = createServerFn({ method: "POST" })
 
       // Free tier: تسجيل استهلاك فيديو الشهر بعد نجاح الإنشاء (idempotent على مستوى الدورة)
       if (profile?.plan === "free") {
-        const { error: recordErr } = await supabaseAdmin.rpc("record_free_monthly_video_usage", { _user_id: userId } as never);
+        const { error: recordErr } = await supabase.rpc("record_free_monthly_video_usage");
         if (recordErr) {
           // لا نُفشل المهمة — نسجّل تحذيراً فقط لأن الفيديو أُنشئ والنقاط خُصمت بالفعل.
           console.warn("[video] record_free_monthly_video_usage failed", { userId, jobId, err: recordErr.message });
