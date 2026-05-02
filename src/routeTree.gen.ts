@@ -44,6 +44,7 @@ import { Route as DashboardUsageRouteImport } from './routes/dashboard.usage'
 import { Route as DashboardTemplatesRouteImport } from './routes/dashboard.templates'
 import { Route as DashboardStoreProfileRouteImport } from './routes/dashboard.store-profile'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as DashboardReferralsRouteImport } from './routes/dashboard.referrals'
 import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library'
 import { Route as DashboardGenerateVideoRouteImport } from './routes/dashboard.generate-video'
 import { Route as DashboardGenerateTextRouteImport } from './routes/dashboard.generate-text'
@@ -266,6 +267,11 @@ const DashboardStoreProfileRoute = DashboardStoreProfileRouteImport.update({
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReferralsRoute = DashboardReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardLibraryRoute = DashboardLibraryRouteImport.update({
@@ -563,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
   '/dashboard/generate-video': typeof DashboardGenerateVideoRoute
   '/dashboard/library': typeof DashboardLibraryRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
   '/dashboard/templates': typeof DashboardTemplatesRoute
@@ -645,6 +652,7 @@ export interface FileRoutesByTo {
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
   '/dashboard/generate-video': typeof DashboardGenerateVideoRoute
   '/dashboard/library': typeof DashboardLibraryRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
   '/dashboard/templates': typeof DashboardTemplatesRoute
@@ -729,6 +737,7 @@ export interface FileRoutesById {
   '/dashboard/generate-text': typeof DashboardGenerateTextRoute
   '/dashboard/generate-video': typeof DashboardGenerateVideoRoute
   '/dashboard/library': typeof DashboardLibraryRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/store-profile': typeof DashboardStoreProfileRoute
   '/dashboard/templates': typeof DashboardTemplatesRoute
@@ -814,6 +823,7 @@ export interface FileRouteTypes {
     | '/dashboard/generate-text'
     | '/dashboard/generate-video'
     | '/dashboard/library'
+    | '/dashboard/referrals'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
     | '/dashboard/templates'
@@ -896,6 +906,7 @@ export interface FileRouteTypes {
     | '/dashboard/generate-text'
     | '/dashboard/generate-video'
     | '/dashboard/library'
+    | '/dashboard/referrals'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
     | '/dashboard/templates'
@@ -979,6 +990,7 @@ export interface FileRouteTypes {
     | '/dashboard/generate-text'
     | '/dashboard/generate-video'
     | '/dashboard/library'
+    | '/dashboard/referrals'
     | '/dashboard/settings'
     | '/dashboard/store-profile'
     | '/dashboard/templates'
@@ -1326,6 +1338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/referrals': {
+      id: '/dashboard/referrals'
+      path: '/referrals'
+      fullPath: '/dashboard/referrals'
+      preLoaderRoute: typeof DashboardReferralsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/library': {
       id: '/dashboard/library'
       path: '/library'
@@ -1659,6 +1678,7 @@ interface DashboardRouteChildren {
   DashboardGenerateTextRoute: typeof DashboardGenerateTextRoute
   DashboardGenerateVideoRoute: typeof DashboardGenerateVideoRoute
   DashboardLibraryRoute: typeof DashboardLibraryRoute
+  DashboardReferralsRoute: typeof DashboardReferralsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStoreProfileRoute: typeof DashboardStoreProfileRoute
   DashboardTemplatesRoute: typeof DashboardTemplatesRoute
@@ -1676,6 +1696,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardGenerateTextRoute: DashboardGenerateTextRoute,
   DashboardGenerateVideoRoute: DashboardGenerateVideoRoute,
   DashboardLibraryRoute: DashboardLibraryRoute,
+  DashboardReferralsRoute: DashboardReferralsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStoreProfileRoute: DashboardStoreProfileRoute,
   DashboardTemplatesRoute: DashboardTemplatesRoute,

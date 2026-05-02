@@ -30,7 +30,7 @@ export function AnnualUpgradeBanner() {
       .from("subscription_requests")
       .select("billing_cycle, activated_at")
       .eq("user_id", user.id)
-      .eq("status", "approved")
+      .eq("status", "activated")
       .order("activated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
