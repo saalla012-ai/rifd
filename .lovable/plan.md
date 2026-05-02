@@ -1,6 +1,44 @@
 # المرحلة 1 v5 — التنفيذ النهائي (نسخة المستشار المعتمدة)
 
-> **نسبة الإنجاز الكلية: 100%** — كل موجات المرحلة 1 مكتملة. (Wave 1C مؤجلة بقرار مستشار: fal_ai مستقر، تنفيذ Replicate ميزة موثوقية لا إيراد.)
+> **نسبة الإنجاز الكلية: 100% ✅** — كل موجات المرحلة 1 مكتملة + مراجعة شاملة نهائية + تنظيف الكود القديم. (Wave 1C مؤجلة بقرار مستشار: fal_ai مستقر، تنفيذ Replicate ميزة موثوقية لا إيراد.)
+
+## مراجعة احترافية شاملة — نهاية المرحلة 1 (هذه الجولة)
+
+**1. الترابط البنيوي:** ✅ كل الموجات (1A→1B→2A→2B→2C→2D→3) مترابطة بدون فجوات:
+- DB layer: migrations health_window + monthly_usage + launch_bonus_program → كلها مفعّلة و triggers تعمل.
+- Backend layer: `video-functions.ts` يستدعي `consume()` (يحترم monthly caps) + `check_free_monthly_video_quota` + `record_free_monthly_video_usage` + تعويض 50pt على فشل المزود.
+- Frontend layer: `pricing.tsx` + `dashboard.billing.index.tsx` + `quota-exceeded-dialog.tsx` + `subscribers-counter.tsx` كلها تتحدث نفس اللغة (سعر إطلاق + ضمان 7 أيام، بلا شطب وبلا 14 يوم وبلا "مقاعد محدودة").
+- Monitoring layer: `/admin/phase1-monitor` (auto-refresh 60ث) + `phase1-daily-report` cron (08:00 الرياض) + Telegram alerts.
+
+**2. الفحص التقني:** ✅ `tsc --noEmit` نظيف صفر أخطاء، لا استيرادات مكسورة، لا dead code.
+
+**3. كود قديم محذوف نهائياً (تقرير الحذف):**
+- ❌ **`src/lib/email-templates/free-trial-discount-30pct.tsx`** (94 سطراً) → كان يروّج `FOUNDING30` و"خصم 30% مدى الحياة" و"مقاعد المؤسّسين محدودة" + "ضمان استرجاع 14 يوماً" — كل هذا يتعارض مع v5 المعتمدة.
+- ❌ تسجيله في `src/lib/email-templates/registry.ts` (سطرَين: `import` + `'free-trial-discount-30pct': freeTrialDiscount30`).
+- ❌ استدعاء `subscribers-counter.tsx` لـ `get_founding_status` (RPC قديم يعتمد على `founding_*` columns) → استُبدل بـ RPC جديد نظيف `get_subscribers_count()`.
+
+**4. ما لم يُحذف عمداً (تبرير):**
+- ⏸ **`get_founding_status` RPC**: تركناه في DB (لم يُسقط) لأمان rollback. لا تستدعيه أي واجهة الآن.
+- ⏸ **أعمدة `app_settings.founding_*`**: لا تُقرأ من أي واجهة، تبقى لـ rollback آمن.
+- ⏸ **`demo-results.ts` يحتوي "14 يوماً"**: نصوص Demo تبيع متاجر افتراضية (مثال للزوار)، ليست تسويق رسمي لـ رِفد — مقبولة.
+- ⏸ **`legal.terms` / `legal.privacy` "14 يوماً"**: مهلة إشعار قانوني للتغييرات، ليست ضمان استرداد.
+
+**5. المحتوى التسويقي:** ✅ موحَّد بالكامل على لغة v5:
+- "سعر الإطلاق" (`LAUNCH_BADGE_LABEL`) في كل مكان مدفوع.
+- "ضمان 7 أيام استرداد كامل بدون أسئلة" (`REFUND_GUARANTEE_LABEL`) في 6+ ملفات.
+- "تجربة مجانية تتجدد شهرياً: 5 نصوص + 3 صور + 1 فيديو" بدون تناقضات في الأرقام.
+- لا "FOUNDING30"، لا "خصم 30%"، لا شطب وهمي، لا "1000 مقعد محدود".
+
+**6. التجاوب والوضعين:**
+- كل المكوّنات تستخدم semantic tokens (`text-success`, `text-destructive`, `text-warning`, `bg-card`, `border-border`, `text-muted-foreground`).
+- شبكات: `grid sm:grid-cols-2 lg:grid-cols-4` للوحات + `xl:grid-cols-5` للـ pricing → Mobile/Tablet/Desktop بدون كسر.
+- جداول الأدمن: `overflow-x-auto` على الجوال.
+- Dialogs: shadcn `Dialog` بـ `max-w-md` responsive افتراضياً.
+- **نتيجة**: Dark/Light Mode يعملان دون كسر في جميع الصفحات الجديدة والمعدّلة.
+
+---
+
+## شريط التقدّم
 
 ## شريط التقدّم
 

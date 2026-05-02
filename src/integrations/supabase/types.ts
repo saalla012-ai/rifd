@@ -1855,6 +1855,12 @@ export type Database = {
           whatsapp: string
         }[]
       }
+      get_subscribers_count: {
+        Args: never
+        Returns: {
+          total: number
+        }[]
+      }
       get_user_consent_status: {
         Args: { _consent_type?: Database["public"]["Enums"]["consent_type"] }
         Returns: {
