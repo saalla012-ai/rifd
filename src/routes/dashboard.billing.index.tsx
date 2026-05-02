@@ -249,7 +249,7 @@ function BillingPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              {isPaidUser && <Crown className="h-5 w-5 text-gold" />}
+              {isPaidUser && <Sparkles className="h-5 w-5 text-gold" />}
               <h2 className="text-lg font-bold">باقتك الحالية: {PLAN_LABELS[(profile?.plan ?? "free") as PlanId] ?? profile?.plan}</h2>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
