@@ -673,13 +673,14 @@ async function createProviderJob(input: VideoInput, jobId: string, preflightConf
   throw new Error("no_video_provider_available");
 }
 
-async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId: string | null; errorMessage: string; metadata?: Record<string, unknown> }) {
+async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId: string | null; errorMessage: string; errorCategory?: VideoErrorCategory; metadata?: Record<string, unknown> }) {
   const { data: currentMetadataRow } = await supabaseAdmin.from("video_jobs").select("metadata").eq("id", params.jobId).maybeSingle();
   const updatePayload: Database["public"]["Tables"]["video_jobs"]["Update"] = {
     status: "refunded",
     error_message: params.errorMessage,
     ...(params.refundLedgerId ? { refund_ledger_id: params.refundLedgerId } : {}),
-    metadata: mergeMetadata(currentMetadataRow?.metadata, params.metadata),
+    ...(params.errorCategory ? { error_category: params.errorCategory } : {}),
+    metadata: mergeMetadata(currentMetadataRow?.metadata, { ...(params.metadata ?? {}), error_category: params.errorCategory ?? "unknown" }),
   };
 
   const { data, error } = await supabaseAdmin.from("video_jobs").update(updatePayload).eq("id", params.jobId).eq("status", "processing").select("*").maybeSingle();
@@ -689,6 +690,22 @@ async function markProcessingJobRefunded(params: { jobId: string; refundLedgerId
   const { data: current, error: readError } = await supabaseAdmin.from("video_jobs").select("*").eq("id", params.jobId).single();
   if (readError || !current) throw new Error(`فشل جلب مهمة الفيديو بعد الاسترداد: ${readError?.message ?? "غير موجودة"}`);
   return current as VideoJobRow;
+}
+
+/**
+ * يمنح المستخدم 50 نقطة تعويض عند فشل التوليد بسبب عطل من المزوّد.
+ * Idempotent عبر referenceId (job_id) — لا يكرّر التعويض على نفس المهمة.
+ */
+const PROVIDER_FAILURE_COMPENSATION_CREDITS = 50;
+async function compensateUserForProviderFailure(params: { userId: string; jobId: string; category: VideoErrorCategory }) {
+  if (params.category !== "provider_error" && params.category !== "timeout") return null;
+  return await grantCompensationCredits(supabaseAdmin, {
+    userId: params.userId,
+    amount: PROVIDER_FAILURE_COMPENSATION_CREDITS,
+    reason: `provider_failure_${params.category}`,
+    referenceId: params.jobId,
+    referenceType: "video_job",
+  });
 }
 
 async function markProcessingJobCompleted(params: { jobId: string; userId: string; resultUrl: string; metadata?: Record<string, unknown> }) {
