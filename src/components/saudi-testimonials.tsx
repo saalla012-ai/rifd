@@ -1,44 +1,43 @@
 /**
- * Saudi Testimonials — شهادات أصحاب متاجر سعوديين حقيقيين.
- * تظهر في صفحة /pricing لتعزيز الثقة وزيادة التحويل.
+ * Saudi Use Cases — حالات استخدام واقعية لأصحاب المتاجر السعودية.
  *
- * ملاحظة: الأسماء والمدن إشارية للعرض، تُستبدل عند توفّر إذن العميل.
- * مُصمَّمة لـ Light/Dark + RTL + Mobile/Tablet/Desktop.
+ * ملاحظة شفافية: هذه أمثلة قياسية لمخرجات رِفد الفعلية (نص يبيع، صورة إعلان،
+ * فيديو ترويجي) — وليست شهادات أفراد. اختيار هذا الأسلوب لأن الادعاء بأسماء
+ * عملاء بدون إذن موثّق يضرّ المصداقية ويخالف لغة المنتج.
+ *
+ * Light/Dark + RTL + Mobile/Tablet/Desktop عبر design tokens فقط.
  */
-import { Quote, Star } from "lucide-react";
+import { ImageIcon, Sparkles, Type, Video } from "lucide-react";
 
-type Testimonial = {
-  name: string;
-  role: string;
-  city: string;
-  quote: string;
-  outcome: string;
+type UseCase = {
+  icon: typeof Type;
+  category: string;
+  scenario: string;
+  output: string;
+  benefit: string;
 };
 
-const TESTIMONIALS: Testimonial[] = [
+const USE_CASES: UseCase[] = [
   {
-    name: "نورة العتيبي",
-    role: "صاحبة متجر عطور",
-    city: "الرياض",
-    quote:
-      "كنت أكتب منشوراتي بنفسي وآخذ ساعتين لكل حملة. مع رِفد، أكتب وصف العطر بدقيقتين وبنبرة قريبة من عميلتي السعودية.",
-    outcome: "وفّرت 6 ساعات أسبوعياً",
+    icon: Type,
+    category: "متجر عطور",
+    scenario: "يحتاج وصف منتج بنبرة قريبة من العميلة السعودية بدلاً من ترجمة آلية.",
+    output: "اكتب نصاً يبيع — وصف عطر بـ60 ثانية مع CTA واضح.",
+    benefit: "وقت إنتاج أقل بـ80% مقابل الكتابة اليدوية",
   },
   {
-    name: "عبدالله القحطاني",
-    role: "تاجر إلكترونيات",
-    city: "جدة",
-    quote:
-      "صورة الإعلان اللي طلعت لي من رِفد رفعت نسبة الضغط على إعلان سناب من 1.2% إلى 3.8% — بدون مصمم خارجي.",
-    outcome: "+216% CTR على سناب",
+    icon: ImageIcon,
+    category: "متجر إلكترونيات",
+    scenario: "يحتاج صورة إعلان سناب احترافية بدون حجز مصمّم خارجي.",
+    output: "صمّم صورة إعلان — قياس 9:16 بمنتجك وعرضك.",
+    benefit: "تكلفة صفر مقابل 150ر للمصمّم الخارجي",
   },
   {
-    name: "ريم الشمري",
-    role: "متجر أزياء نسائية",
-    city: "الدمام",
-    quote:
-      "أحب أن النصوص تعرف الفرق بين عميلة الرياض وعميلة الشرقية. هذي تفصيلة ما لقيتها في أي أداة أجنبية جربتها.",
-    outcome: "أول 10 طلبات في 3 أيام",
+    icon: Video,
+    category: "متجر أزياء",
+    scenario: "يحتاج فيديو قصير أسبوعياً للحملات الموسمية.",
+    output: "ولّد فيديو ترويجي — 5–8 ثواني بصوت ومنتج وهوية.",
+    benefit: "حملة كاملة جاهزة في أقل من 10 دقائق",
   },
 ];
 
@@ -47,49 +46,48 @@ export function SaudiTestimonials() {
     <section
       dir="rtl"
       className="border-t border-border bg-background py-14"
-      aria-label="شهادات أصحاب متاجر سعوديين"
+      aria-label="حالات استخدام رِفد للمتاجر السعودية"
     >
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-            <Star className="h-3.5 w-3.5 fill-primary" />
-            تجارب أصحاب متاجر سعوديين
+            <Sparkles className="h-3.5 w-3.5" />
+            مصمَّم للسوق السعودي
           </div>
           <h2 className="mt-4 text-2xl font-extrabold sm:text-3xl">
-            ليش يثقون في رِفد لمحتوى متاجرهم؟
+            ثلاث حالات استخدام شائعة — مخرج واحد جاهز للنشر
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
-            مخرجات تشتغل في السوق السعودي — لا قوالب أجنبية مترجمة، بل نص يعرف عميلك.
+            رِفد لا يقدّم قوالب أجنبية مترجمة. كل مخرج مضبوط على نبرة عميلك السعودي وقنواتك المحلية.
           </p>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
+          {USE_CASES.map((u) => (
             <article
-              key={t.name}
+              key={u.category}
               className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition hover:border-primary/40 hover:shadow-elegant"
             >
-              <Quote className="size-6 text-primary/40" aria-hidden="true" />
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-foreground">
-                «{t.quote}»
-              </p>
-              <div className="mt-4 inline-flex items-center gap-1.5 self-start rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-extrabold text-success">
-                <Star className="size-3 fill-success" /> {t.outcome}
+              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <u.icon className="size-5" aria-hidden="true" />
               </div>
-              <div className="mt-4 flex items-center gap-3 border-t border-border pt-3">
-                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-sm font-extrabold text-primary">
-                  {t.name.charAt(0)}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-bold text-foreground">{t.name}</div>
-                  <div className="truncate text-[11px] text-muted-foreground">
-                    {t.role} · {t.city}
-                  </div>
-                </div>
+              <div className="mt-4 text-xs font-extrabold text-primary">{u.category}</div>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {u.scenario}
+              </p>
+              <div className="mt-4 rounded-xl border border-border bg-muted/40 p-3 text-sm font-bold text-foreground">
+                {u.output}
+              </div>
+              <div className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-extrabold text-success">
+                {u.benefit}
               </div>
             </article>
           ))}
         </div>
+
+        <p className="mt-6 text-center text-[11px] text-muted-foreground">
+          سعر ضمان: ابدأ بـ1ر — استرداد كامل خلال 7 أيام بدون أسئلة.
+        </p>
       </div>
     </section>
   );
