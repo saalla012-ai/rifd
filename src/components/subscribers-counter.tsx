@@ -79,7 +79,7 @@ export function SubscribersCounter({
         ) : (
           count.toLocaleString("ar-SA")
         )}{" "}
-        مشترك انضموا الآن
+        متجر انضم إلى رِفد
       </span>
     );
   }
