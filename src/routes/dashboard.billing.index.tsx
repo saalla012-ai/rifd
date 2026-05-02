@@ -345,7 +345,9 @@ function BillingPage() {
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
                   </p>
-                  <p className="mt-1 text-[11px] font-medium text-warning">سيرتفع لـ {futurePrice} ر.س بعد برنامج المؤسسين</p>
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">
+                    <Sparkles className="h-3 w-3" /> {LAUNCH_BADGE_LABEL}
+                  </span>
                 </div>
                 <Button type="submit" size="lg" disabled={submitting} className="gradient-primary text-primary-foreground shadow-elegant">
                   {submitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="ml-2 h-4 w-4" />}
@@ -362,19 +364,20 @@ function BillingPage() {
           <div className="space-y-5">
             <FounderCard whatsappNumber={whatsappNumber} />
             <ActivationSteps />
-            <aside className="rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent p-6 shadow-gold">
+            <aside className="rounded-2xl border-2 border-success/40 bg-gradient-to-br from-success/10 via-success/5 to-transparent p-6 shadow-soft">
               <div className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-gold" />
-                <span className="text-xs font-bold uppercase tracking-wide text-gold">الأعضاء المؤسسين</span>
+                <ShieldCheck className="h-5 w-5 text-success" />
+                <span className="text-xs font-bold uppercase tracking-wide text-success">{LAUNCH_BADGE_LABEL}</span>
               </div>
-              <h3 className="mt-3 text-xl font-extrabold">احجز سعرك قبل الزيادة</h3>
-              <div className="mt-5 rounded-xl bg-card/50 p-4 backdrop-blur">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 font-medium"><Users className="h-4 w-4 text-gold" /> المقاعد المتبقية</span>
-                  <span className="font-extrabold text-gold">{loading ? "..." : `${seatsLeft.toLocaleString("ar-SA")} / ${seatsTotal.toLocaleString("ar-SA")}`}</span>
+              <h3 className="mt-3 text-xl font-extrabold">جرّب رِفد بثقة كاملة</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                ادفع اليوم بسعر الإطلاق، وإن لم تكن التجربة مناسبة خلال أول 7 أيام نُعيد لك المبلغ كاملاً بدون أسئلة.
+              </p>
+              <div className="mt-4 rounded-xl border border-success/30 bg-card/50 p-4 backdrop-blur">
+                <div className="flex items-center gap-2 text-sm font-bold text-success">
+                  <ShieldCheck className="h-4 w-4" /> {REFUND_GUARANTEE_LABEL}
                 </div>
-                <Progress value={seatsPct} className="mt-2 h-2" />
-                <p className="mt-2 text-xs text-muted-foreground">بعد اكتمال المقاعد سترتفع الأسعار {increasePct}%</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">على أول اشتراك مدفوع — استرجاع كامل بدون أسئلة.</p>
               </div>
               <ul className="mt-5 space-y-2.5 text-sm">
                 {["نقاط فيديو واضحة دون رسوم مخفية", "النصوص والصور لا تخصم من نقاط الفيديو", "تأكيد فوري للطلب وتفعيل خلال 24 ساعة", "تفاصيل فوترة واضحة بعد كل دفعة"].map((item) => (
