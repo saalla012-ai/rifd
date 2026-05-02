@@ -281,8 +281,9 @@ function PricingPage() {
                     asChild
                     className={cn("mt-5 w-full font-bold", isPopular && "gradient-primary text-primary-foreground shadow-elegant", isPremium && "gradient-gold text-gold-foreground shadow-gold")}
                     variant={plan.id === "free" ? "outline" : "default"}
+                    onClick={() => handlePlanCta(plan.id)}
                   >
-                    <Link to={plan.id === "free" ? "/onboarding" : ctaTarget}>
+                    <Link to={plan.id === "free" ? "/auth" : ctaTarget} search={plan.id === "free" ? { redirect: "/onboarding/wizard" } : undefined as never}>
                       {cta} <ArrowLeft className="mr-1 h-4 w-4" />
                     </Link>
                   </Button>
@@ -321,6 +322,8 @@ function PricingPage() {
           </div>
         </div>
       </section>
+
+      <SaudiTestimonials />
 
       <section className="border-t border-border bg-secondary/30 py-14">
         <div className="mx-auto max-w-3xl px-4">
