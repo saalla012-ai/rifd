@@ -85,7 +85,7 @@ export function SubscribersCounter({
     );
   }
 
-  // لا حساب لـ "مقاعد متبقية" — تم حذف Founding seats من نموذج التسعير v5.
+  // نموذج التسعير v5: سعر إطلاق مفتوح بلا Founding seats — لا حساب لـ "مقاعد متبقية".
 
   return (
     <div
