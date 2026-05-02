@@ -767,6 +767,17 @@ export const generateVideo = createServerFn({ method: "POST" })
       const productImageRequired = data.source === "medium-test" ? (mediumTestSampleFromInput(data)?.requiresProductImage ?? false) : profile?.plan !== "free";
       const providerInput = { ...data, watermarkRequired, providerImageUrl } satisfies VideoInput;
 
+      // Free tier: حصة فيديو شهرية متجددة (1 فيديو/شهر) — تفحص قبل consume النقاط
+      if (profile?.plan === "free") {
+        const { data: quotaCheck, error: quotaErr } = await supabase.rpc("check_free_monthly_video_quota");
+        if (quotaErr) throw new Error(`free_monthly_video_quota_check_failed: ${quotaErr.message}`);
+        const row = Array.isArray(quotaCheck) ? quotaCheck[0] : quotaCheck;
+        if (row && row.allowed === false) {
+          const cycleEnd = row.next_reset_at ? new Date(row.next_reset_at as string).toISOString() : "";
+          throw new Error(`free_monthly_video_quota_exceeded:used=${row.used ?? 1}:cap=${row.monthly_cap ?? 1}:cycle_end=${cycleEnd}`);
+        }
+      }
+
       const charge = await consume(supabase, cost, "consume_video", {
         quality: data.quality,
         aspect_ratio: data.aspectRatio,
@@ -802,6 +813,15 @@ export const generateVideo = createServerFn({ method: "POST" })
       if (insertError || !inserted) throw new Error(`فشل إنشاء مهمة الفيديو: ${insertError?.message ?? "استجابة فارغة"}`);
       const job = inserted as VideoJobRow;
       jobId = job.id;
+
+      // Free tier: تسجيل استهلاك فيديو الشهر بعد نجاح الإنشاء (idempotent على مستوى الدورة)
+      if (profile?.plan === "free") {
+        const { error: recordErr } = await supabase.rpc("record_free_monthly_video_usage");
+        if (recordErr) {
+          // لا نُفشل المهمة — نسجّل تحذيراً فقط لأن الفيديو أُنشئ والنقاط خُصمت بالفعل.
+          console.warn("[video] record_free_monthly_video_usage failed", { userId, jobId, err: recordErr.message });
+        }
+      }
 
       const routed = await createProviderJob(providerInput, job.id, providerConfigs);
       const finalStatus = routed.result.resultUrl ? "completed" : "processing";
