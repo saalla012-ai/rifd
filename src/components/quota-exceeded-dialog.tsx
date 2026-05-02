@@ -92,6 +92,22 @@ function generationKindFromMessage(message: string): "image" | "text" | "unknown
 }
 
 function getVariant(kindOfError: QuotaErrorKind, generationKind: "نص" | "صورة" | "فيديو"): Variant {
+  if (kindOfError === "free_monthly_video") {
+    return {
+      icon: Crown,
+      title: "استخدمت فيديو الشهر المجاني",
+      subtitle: "الباقة المجانية تمنحك فيديو سريع واحد كل شهر. ارقَّ الآن بسعر الإطلاق لتوليد فيديوهات بلا علامة مائية حسب رصيد نقاطك الشهري.",
+      badge: "✦ سعر الإطلاق متاح + ضمان 7 أيام استرداد كامل",
+      cta: { label: "ترقّ لباقة فيديو بالنقاط", to: "/dashboard/billing" },
+      benefits: [
+        "فيديوهات بحسب رصيد نقاطك الشهري بدون قيد عدد",
+        "بدون علامة مائية + قابل للنشر باسم متجرك",
+        "صور Pro للحملات (Growth وأعلى)",
+        "ضمان 7 أيام استرداد كامل بدون أسئلة",
+      ],
+    };
+  }
+
   if (kindOfError === "text_quota") {
     return {
       icon: Clock,
