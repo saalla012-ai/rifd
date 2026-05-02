@@ -312,5 +312,35 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
         annual_share_pct: Number(pricingRow?.annual_share_pct ?? 0),
         top_plan: pricingRow?.top_plan ?? "—",
       },
+      wave_c2: await (async () => {
+        const { data: actRaw } = await adb.rpc("get_email_activation_funnel", { _days: 30 });
+        const root = (actRaw ?? {}) as {
+          window_days?: number;
+          per_day?: Array<{
+            day: number; sent: number; skipped: number; opened: number; clicked: number;
+            open_rate: number | string; click_rate: number | string;
+          }>;
+          totals?: { sent: number; opened: number; clicked: number };
+        };
+        const totals = root.totals ?? { sent: 0, opened: 0, clicked: 0 };
+        const sent = Number(totals.sent ?? 0);
+        const opened = Number(totals.opened ?? 0);
+        const clicked = Number(totals.clicked ?? 0);
+        return {
+          window_days: Number(root.window_days ?? 30),
+          per_day: (root.per_day ?? []).map((r) => ({
+            day: Number(r.day),
+            sent: Number(r.sent),
+            skipped: Number(r.skipped),
+            opened: Number(r.opened),
+            clicked: Number(r.clicked),
+            open_rate: Number(r.open_rate),
+            click_rate: Number(r.click_rate),
+          })),
+          totals: { sent, opened, clicked },
+          overall_open_rate_pct: sent > 0 ? Math.round((opened / sent) * 1000) / 10 : 0,
+          overall_click_rate_pct: sent > 0 ? Math.round((clicked / sent) * 1000) / 10 : 0,
+        };
+      })(),
     };
   });
