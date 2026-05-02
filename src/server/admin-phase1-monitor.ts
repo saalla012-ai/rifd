@@ -231,14 +231,8 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
       .select("id", { count: "exact", head: true })
       .eq("event_type", "started")
       .gte("created_at", since7d);
-    const { count: completed7d } = await adb
-      .from("onboarding_events")
-      .select("id", { count: "exact", head: true })
-      .eq("event_type", "wizard_completed")
-      .gte("created_at", since7d);
-    const completionRate = !started7d || started7d === 0
-      ? 0
-      : Math.round(((completed7d ?? 0) / started7d) * 1000) / 10;
+    const completed7d = wizardCompleted;
+    const completionRate = pct(completed7d, started7d ?? 0);
 
     return {
       generated_at: new Date().toISOString(),
