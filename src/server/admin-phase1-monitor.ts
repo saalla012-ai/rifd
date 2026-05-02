@@ -50,6 +50,13 @@ export type Phase1Monitor = {
     remaining: number;
     cap: number;
   };
+  wave_b: {
+    funnel: Array<{ step: number; users_started: number; users_completed: number; completion_rate_pct: number }>;
+    badges_24h: { first_text: number; first_image: number; first_video: number; active_store: number };
+    onboarding_completed_7d: number;
+    onboarding_started_7d: number;
+    completion_rate_pct: number;
+  };
 };
 
 type AttemptEntry = { provider?: string; ok?: boolean; status?: string };
@@ -179,6 +186,47 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
       cap: 100,
     };
 
+    // 7) Wave B — onboarding funnel + badges
+    const { data: funnelRaw } = await adb.rpc("get_onboarding_funnel", { _days: 7 });
+    const funnel = ((funnelRaw as Array<{
+      step: number;
+      users_started: number;
+      users_completed: number;
+      completion_rate_pct: number;
+    }> | null) ?? []).map((r) => ({
+      step: Number(r.step),
+      users_started: Number(r.users_started),
+      users_completed: Number(r.users_completed),
+      completion_rate_pct: Number(r.completion_rate_pct ?? 0),
+    }));
+
+    const { data: badgesRaw } = await adb
+      .from("user_badges")
+      .select("badge_type")
+      .gte("awarded_at", since24h);
+    const badgesArr = (badgesRaw ?? []) as Array<{ badge_type: string }>;
+    const badges24h = {
+      first_text: badgesArr.filter((b) => b.badge_type === "first_text").length,
+      first_image: badgesArr.filter((b) => b.badge_type === "first_image").length,
+      first_video: badgesArr.filter((b) => b.badge_type === "first_video").length,
+      active_store: badgesArr.filter((b) => b.badge_type === "active_store").length,
+    };
+
+    const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const { count: started7d } = await adb
+      .from("onboarding_events")
+      .select("id", { count: "exact", head: true })
+      .eq("event_type", "started")
+      .gte("created_at", since7d);
+    const { count: completed7d } = await adb
+      .from("onboarding_events")
+      .select("id", { count: "exact", head: true })
+      .eq("event_type", "wizard_completed")
+      .gte("created_at", since7d);
+    const completionRate = !started7d || started7d === 0
+      ? 0
+      : Math.round(((completed7d ?? 0) / started7d) * 1000) / 10;
+
     return {
       generated_at: new Date().toISOString(),
       window_hours: 24,
@@ -202,5 +250,12 @@ export const getPhase1Monitor = createServerFn({ method: "POST" })
       },
       top_errors: topErrors,
       launch_bonus: bonusRow,
+      wave_b: {
+        funnel,
+        badges_24h: badges24h,
+        onboarding_completed_7d: completed7d ?? 0,
+        onboarding_started_7d: started7d ?? 0,
+        completion_rate_pct: completionRate,
+      },
     };
   });
