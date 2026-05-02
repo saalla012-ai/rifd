@@ -110,6 +110,78 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_plan_entitlements_20260502: {
+        Row: {
+          active: boolean | null
+          daily_image_cap: number | null
+          daily_text_cap: number | null
+          image_pro_allowed: boolean | null
+          max_video_duration_seconds: number | null
+          monthly_credits: number | null
+          monthly_price_sar: number | null
+          plan: Database["public"]["Enums"]["user_plan"] | null
+          updated_at: string | null
+          video_fast_allowed: boolean | null
+          video_quality_allowed: boolean | null
+          yearly_price_sar: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          daily_image_cap?: number | null
+          daily_text_cap?: number | null
+          image_pro_allowed?: boolean | null
+          max_video_duration_seconds?: number | null
+          monthly_credits?: number | null
+          monthly_price_sar?: number | null
+          plan?: Database["public"]["Enums"]["user_plan"] | null
+          updated_at?: string | null
+          video_fast_allowed?: boolean | null
+          video_quality_allowed?: boolean | null
+          yearly_price_sar?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          daily_image_cap?: number | null
+          daily_text_cap?: number | null
+          image_pro_allowed?: boolean | null
+          max_video_duration_seconds?: number | null
+          monthly_credits?: number | null
+          monthly_price_sar?: number | null
+          plan?: Database["public"]["Enums"]["user_plan"] | null
+          updated_at?: string | null
+          video_fast_allowed?: boolean | null
+          video_quality_allowed?: boolean | null
+          yearly_price_sar?: number | null
+        }
+        Relationships: []
+      }
+      backup_user_credits_20260502: {
+        Row: {
+          cycle_ends_at: string | null
+          cycle_started_at: string | null
+          plan_credits: number | null
+          topup_credits: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          cycle_ends_at?: string | null
+          cycle_started_at?: string | null
+          plan_credits?: number | null
+          topup_credits?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          cycle_ends_at?: string | null
+          cycle_started_at?: string | null
+          plan_credits?: number | null
+          topup_credits?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       backup_video_jobs_20260502: {
         Row: {
           aspect_ratio: string | null
@@ -721,6 +793,39 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_usage: {
+        Row: {
+          created_at: string
+          cycle_end: string
+          cycle_start: string
+          image_used: number
+          text_used: number
+          updated_at: string
+          user_id: string
+          video_used: number
+        }
+        Insert: {
+          created_at?: string
+          cycle_end?: string
+          cycle_start?: string
+          image_used?: number
+          text_used?: number
+          updated_at?: string
+          user_id: string
+          video_used?: number
+        }
+        Update: {
+          created_at?: string
+          cycle_end?: string
+          cycle_start?: string
+          image_used?: number
+          text_used?: number
+          updated_at?: string
+          user_id?: string
+          video_used?: number
+        }
+        Relationships: []
+      }
       operational_switches: {
         Row: {
           enabled: boolean
@@ -801,7 +906,10 @@ export type Database = {
           image_pro_allowed: boolean
           max_video_duration_seconds: number
           monthly_credits: number
+          monthly_image_cap: number | null
           monthly_price_sar: number
+          monthly_text_cap: number | null
+          monthly_video_count_cap: number | null
           plan: Database["public"]["Enums"]["user_plan"]
           updated_at: string
           video_fast_allowed: boolean
@@ -815,7 +923,10 @@ export type Database = {
           image_pro_allowed?: boolean
           max_video_duration_seconds?: number
           monthly_credits?: number
+          monthly_image_cap?: number | null
           monthly_price_sar?: number
+          monthly_text_cap?: number | null
+          monthly_video_count_cap?: number | null
           plan: Database["public"]["Enums"]["user_plan"]
           updated_at?: string
           video_fast_allowed?: boolean
@@ -829,7 +940,10 @@ export type Database = {
           image_pro_allowed?: boolean
           max_video_duration_seconds?: number
           monthly_credits?: number
+          monthly_image_cap?: number | null
           monthly_price_sar?: number
+          monthly_text_cap?: number | null
+          monthly_video_count_cap?: number | null
           plan?: Database["public"]["Enums"]["user_plan"]
           updated_at?: string
           video_fast_allowed?: boolean
@@ -1562,6 +1676,15 @@ export type Database = {
         }
       }
       check_email_dlq_health: { Args: never; Returns: Json }
+      check_free_monthly_video_quota: {
+        Args: never
+        Returns: {
+          allowed: boolean
+          monthly_cap: number
+          next_reset_at: string
+          used: number
+        }[]
+      }
       consume_credits: {
         Args: {
           _amount: number
@@ -1618,6 +1741,25 @@ export type Database = {
           seats_left: number
           seats_total: number
         }[]
+      }
+      get_or_create_current_monthly_cycle: {
+        Args: { _user_id: string }
+        Returns: {
+          created_at: string
+          cycle_end: string
+          cycle_start: string
+          image_used: number
+          text_used: number
+          updated_at: string
+          user_id: string
+          video_used: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "monthly_usage"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_provider_health_summary: {
         Args: never
@@ -1728,7 +1870,10 @@ export type Database = {
           image_pro_allowed: boolean
           max_video_duration_seconds: number
           monthly_credits: number
+          monthly_image_cap: number | null
           monthly_price_sar: number
+          monthly_text_cap: number | null
+          monthly_video_count_cap: number | null
           plan: Database["public"]["Enums"]["user_plan"]
           updated_at: string
           video_fast_allowed: boolean
@@ -1775,6 +1920,7 @@ export type Database = {
         }
         Returns: string
       }
+      record_free_monthly_video_usage: { Args: never; Returns: undefined }
       record_generation: {
         Args: {
           _completion_tokens?: number
