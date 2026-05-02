@@ -11,7 +11,7 @@
 | **Wave 1C** — تنفيذ Replicate provider في الكود | ⏸ مؤجلة (fal_ai مستقر) | 0% |
 | **Wave 2A** — DB: monthly_usage + free monthly RPCs | ✅ مكتملة | 100% |
 | **Wave 2B** — Pricing UI + Marketing copy + Trust | ✅ مكتملة | 100% |
-| **Wave 2C** — ربط free monthly video بالـ backend + Top-up modal | 🔲 لم تبدأ | 0% |
+| **Wave 2C** — Free monthly video backend + Top-up modal | ✅ مكتملة | 100% |
 | **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | 🔲 لم تبدأ | 0% |
 | **Wave 3** — Admin monitor + daily report + bonus | 🔲 لم تبدأ | 0% |
 
