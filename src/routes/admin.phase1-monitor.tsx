@@ -378,6 +378,44 @@ function Phase1MonitorPage() {
             )}
           </div>
 
+          {/* Wave C3 — Referrals + Annual Upgrade */}
+          <div className="mt-8">
+            <PhaseProgressBanner
+              phaseLabel="المرحلة 2 · Wave C3"
+              phaseTitle="Wave C3 — الإحالات والترقية السنوية"
+              loading={loading}
+              pillars={[
+                {
+                  key: "k",
+                  label: "k-factor (إحالات/مستخدم)",
+                  value: data.wave_c3.k_factor * 100,
+                  target: 30,
+                  hint: `k=${data.wave_c3.k_factor} — الهدف ≥0.30`,
+                },
+                {
+                  key: "qualified",
+                  label: "إحالات مؤهّلة (ترقّت)",
+                  value: data.wave_c3.referrals_qualified,
+                  target: Math.max(5, data.wave_c3.referrals_total || 5),
+                  hint: `${data.wave_c3.referrals_qualified}/${data.wave_c3.referrals_total} ترقّت لباقة مدفوعة`,
+                },
+                {
+                  key: "annual",
+                  label: "ترقيات سنوية من العرض",
+                  value: data.wave_c3.annual_upgrade_upgraded,
+                  target: Math.max(3, data.wave_c3.annual_upgrade_shown || 3),
+                  hint: `${data.wave_c3.annual_upgrade_clicked} نقرة من ${data.wave_c3.annual_upgrade_shown} عرض`,
+                },
+              ]}
+            />
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard title="أكواد إحالة نشطة" value={data.wave_c3.active_codes.toLocaleString("ar-SA")} hint="مستخدمون ولّدوا كودهم" tone="default" icon={Users} />
+              <MetricCard title="إحالات (30 يوم)" value={data.wave_c3.referrals_total.toLocaleString("ar-SA")} hint={`${data.wave_c3.referrals_qualified} مؤهّلة`} tone={data.wave_c3.referrals_qualified > 0 ? "success" : "default"} icon={Award} />
+              <MetricCard title="k-factor" value={data.wave_c3.k_factor.toFixed(2)} hint="الهدف ≥0.30" tone={data.wave_c3.k_factor >= 0.3 ? "success" : "warning"} icon={TrendingUp} />
+              <MetricCard title="ترقيات سنوية CTR" value={`${data.wave_c3.annual_click_rate_pct}%`} hint={`${data.wave_c3.annual_upgrade_upgraded} اشتركوا سنوياً`} tone={data.wave_c3.annual_click_rate_pct > 0 ? "success" : "default"} icon={Zap} />
+            </div>
+          </div>
+
           {/* Providers status */}
           <div className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-soft">
             <div className="mb-4 flex items-center gap-2">
