@@ -217,6 +217,10 @@ export const Route = createFileRoute("/api/public/hooks/phase1-daily-report")({
                 bonus_granted: bonus.total_granted,
                 new_requests: newReqs ?? 0,
                 activated_today: activatedToday ?? 0,
+                wizard_started_24h: wizardStarted24h ?? 0,
+                wizard_completed_24h: wizardCompleted24h ?? 0,
+                wizard_completion_pct: Math.round(wizardCompletionRate * 10) / 10,
+                badges_24h: { first_text: bText, first_image: bImage, first_video: bVideo, active_store: bActive },
               },
             }),
             { status: 200, headers: { "Content-Type": "application/json" } }
