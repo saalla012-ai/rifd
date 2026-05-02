@@ -241,6 +241,38 @@ function Phase1MonitorPage() {
             />
           </div>
 
+          {/* Wave C1 — Pricing Funnel */}
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              title="مشاهدات /pricing (7 أيام)"
+              value={data.wave_c1.total_views.toLocaleString("ar-SA")}
+              hint={`أكثر باقة طلباً: ${data.wave_c1.top_plan}`}
+              tone="default"
+              icon={TrendingUp}
+            />
+            <MetricCard
+              title="نقر CTA رئيسي"
+              value={`${data.wave_c1.cta_click_rate_pct}%`}
+              hint={`${data.wave_c1.cta_clicks} نقرة — الهدف ≥18%`}
+              tone={data.wave_c1.cta_click_rate_pct >= 18 ? "success" : "warning"}
+              icon={Zap}
+            />
+            <MetricCard
+              title="حصة السنوي"
+              value={`${data.wave_c1.annual_share_pct}%`}
+              hint={`${data.wave_c1.annual_toggles} زائر فعّل التبديل — الهدف ≥25%`}
+              tone={data.wave_c1.annual_share_pct >= 25 ? "success" : "warning"}
+              icon={Award}
+            />
+            <MetricCard
+              title="تحويلات مدفوعة (7 أيام)"
+              value={data.wave_c1.conversions.toLocaleString("ar-SA")}
+              hint={`${data.wave_c1.plan_clicks} ضغطة على بطاقات الباقات`}
+              tone={data.wave_c1.conversions > 0 ? "success" : "default"}
+              icon={CheckCircle2}
+            />
+          </div>
+
           {/* Providers status */}
           <div className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-soft">
             <div className="mb-4 flex items-center gap-2">
