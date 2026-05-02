@@ -251,6 +251,75 @@ function Phase1MonitorPage() {
             )}
           </div>
 
+          {/* Wave B — Onboarding Funnel & Badges */}
+          <div className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="mb-4 flex items-center gap-2">
+              <Award className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-bold">Wave B — Onboarding & First-Win (آخر 7 أيام)</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard
+                title="بدأ الـWizard"
+                value={data.wave_b.onboarding_started_7d.toLocaleString("ar-SA")}
+                hint="عدد المستخدمين الذين فتحوا /onboarding/wizard"
+                icon={Users}
+              />
+              <MetricCard
+                title="أكمل الـWizard"
+                value={`${data.wave_b.completion_rate_pct}%`}
+                hint={`${data.wave_b.onboarding_completed_7d}/${data.wave_b.onboarding_started_7d} — الهدف ≥ 75%`}
+                tone={data.wave_b.completion_rate_pct >= 75 ? "success" : "warning"}
+                icon={CheckCircle2}
+              />
+              <MetricCard
+                title="First-Win (24س)"
+                value={(
+                  data.wave_b.badges_24h.first_text +
+                  data.wave_b.badges_24h.first_image +
+                  data.wave_b.badges_24h.first_video
+                ).toLocaleString("ar-SA")}
+                hint={`نص ${data.wave_b.badges_24h.first_text} · صورة ${data.wave_b.badges_24h.first_image} · فيديو ${data.wave_b.badges_24h.first_video}`}
+                tone="success"
+                icon={Zap}
+              />
+              <MetricCard
+                title="متجر نشط (24س)"
+                value={data.wave_b.badges_24h.active_store.toLocaleString("ar-SA")}
+                hint="نص + صورة + فيديو خلال 24 ساعة"
+                tone="success"
+                icon={Award}
+              />
+            </div>
+            {data.wave_b.funnel.length > 0 && (
+              <div className="mt-5 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-right text-xs text-muted-foreground">
+                      <th className="px-3 py-2 font-semibold">الخطوة</th>
+                      <th className="px-3 py-2 font-semibold">بدأوا</th>
+                      <th className="px-3 py-2 font-semibold">أكملوا</th>
+                      <th className="px-3 py-2 font-semibold">نسبة الإكمال</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.wave_b.funnel.map((row) => (
+                      <tr key={row.step} className="border-b border-border/40">
+                        <td className="px-3 py-2 font-bold">الخطوة {row.step}</td>
+                        <td className="px-3 py-2 tabular-nums">{row.users_started.toLocaleString("ar-SA")}</td>
+                        <td className="px-3 py-2 tabular-nums">{row.users_completed.toLocaleString("ar-SA")}</td>
+                        <td className="px-3 py-2 tabular-nums">
+                          <span className={cn(row.completion_rate_pct >= 75 ? "text-success" : "text-warning", "font-bold")}>
+                            {row.completion_rate_pct}%
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           <p className="mt-6 text-xs text-muted-foreground">
             آخر تحديث: {fmtDate(data.generated_at)} · النافذة: آخر {data.window_hours} ساعة.
           </p>
