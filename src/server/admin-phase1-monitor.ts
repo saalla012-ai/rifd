@@ -67,6 +67,21 @@ export type Phase1Monitor = {
     annual_share_pct: number;
     top_plan: string;
   };
+  wave_c2: {
+    window_days: number;
+    per_day: Array<{
+      day: number;
+      sent: number;
+      skipped: number;
+      opened: number;
+      clicked: number;
+      open_rate: number;
+      click_rate: number;
+    }>;
+    totals: { sent: number; opened: number; clicked: number };
+    overall_open_rate_pct: number;
+    overall_click_rate_pct: number;
+  };
 };
 
 type AttemptEntry = { provider?: string; ok?: boolean; status?: string };
