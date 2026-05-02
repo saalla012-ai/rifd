@@ -174,6 +174,42 @@ function Phase1MonitorPage() {
             ]}
           />
 
+          {/* المرحلة 2 — Wave C: التحويل والنمو */}
+          <PhaseProgressBanner
+            phaseLabel="المرحلة 2 · التحويل والنمو"
+            phaseTitle="Wave C1 — تحسين صفحة الأسعار"
+            pillars={[
+              {
+                key: "pricing_views",
+                label: "زيارات الأسعار (7 أيام)",
+                value: data.wave_c1.total_views,
+                target: Math.max(50, data.wave_c1.total_views || 50),
+                hint: `${data.wave_c1.total_views} مشاهدة — وعي بالباقات`,
+              },
+              {
+                key: "pricing_cta_ctr",
+                label: "نقر CTA رئيسي",
+                value: data.wave_c1.cta_click_rate_pct,
+                target: 18,
+                hint: `${data.wave_c1.cta_click_rate_pct}% ضغطوا CTA — الهدف ≥18%`,
+              },
+              {
+                key: "annual_share",
+                label: "حصة السنوي",
+                value: data.wave_c1.annual_share_pct,
+                target: 25,
+                hint: `${data.wave_c1.annual_share_pct}% فعّلوا السنوي — الهدف ≥25%`,
+              },
+              {
+                key: "conversions_7d",
+                label: "تحويلات (7 أيام)",
+                value: data.wave_c1.conversions,
+                target: Math.max(5, Math.round((data.wave_c1.total_views || 1) * 0.05)),
+                hint: `${data.wave_c1.conversions} مشترك · أكثر باقة: ${data.wave_c1.top_plan}`,
+              },
+            ]}
+          />
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <MetricCard
               title="معدل الـRefund (24س)"
