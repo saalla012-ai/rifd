@@ -250,7 +250,7 @@ function WizardPage() {
         ),
       ]);
 
-      setGenResult({ text: textRes.result, imageUrl: imageRes.imageUrl });
+      setGenResult({ text: textRes.result, imageUrl: imageRes.url });
       await finishWizard("succeeded");
     } catch (e) {
       console.warn("[onboarding-wizard] autogen failed", e);
