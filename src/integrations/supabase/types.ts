@@ -793,6 +793,51 @@ export type Database = {
         }
         Relationships: []
       }
+      launch_bonus_recipients: {
+        Row: {
+          credits_granted: number
+          granted_at: string
+          id: string
+          ledger_id: string | null
+          recipient_number: number
+          subscription_request_id: string | null
+          user_id: string
+        }
+        Insert: {
+          credits_granted?: number
+          granted_at?: string
+          id?: string
+          ledger_id?: string | null
+          recipient_number: number
+          subscription_request_id?: string | null
+          user_id: string
+        }
+        Update: {
+          credits_granted?: number
+          granted_at?: string
+          id?: string
+          ledger_id?: string | null
+          recipient_number?: number
+          subscription_request_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "launch_bonus_recipients_ledger_id_fkey"
+            columns: ["ledger_id"]
+            isOneToOne: false
+            referencedRelation: "credit_ledger"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "launch_bonus_recipients_subscription_request_id_fkey"
+            columns: ["subscription_request_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_usage: {
         Row: {
           created_at: string
@@ -989,6 +1034,7 @@ export type Database = {
           full_name: string | null
           high_margin_products: string[]
           id: string
+          is_founding_member: boolean
           marketing_email_opt_in: boolean
           marketing_telegram_opt_in: boolean
           marketing_whatsapp_opt_in: boolean
@@ -1019,6 +1065,7 @@ export type Database = {
           full_name?: string | null
           high_margin_products?: string[]
           id: string
+          is_founding_member?: boolean
           marketing_email_opt_in?: boolean
           marketing_telegram_opt_in?: boolean
           marketing_whatsapp_opt_in?: boolean
@@ -1049,6 +1096,7 @@ export type Database = {
           full_name?: string | null
           high_margin_products?: string[]
           id?: string
+          is_founding_member?: boolean
           marketing_email_opt_in?: boolean
           marketing_telegram_opt_in?: boolean
           marketing_whatsapp_opt_in?: boolean
@@ -1742,6 +1790,14 @@ export type Database = {
           seats_total: number
         }[]
       }
+      get_launch_bonus_stats: {
+        Args: never
+        Returns: {
+          cap: number
+          remaining: number
+          total_granted: number
+        }[]
+      }
       get_or_create_current_monthly_cycle: {
         Args: { _user_id: string }
         Returns: {
@@ -1836,6 +1892,14 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      grant_launch_bonus_if_eligible: {
+        Args: { _subscription_request_id?: string; _user_id: string }
+        Returns: {
+          granted: boolean
+          reason: string
+          recipient_number: number
+        }[]
       }
       has_marketing_consent: {
         Args: {

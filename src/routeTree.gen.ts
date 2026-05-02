@@ -61,6 +61,7 @@ import { Route as AdminVideoJobsRouteImport } from './routes/admin.video-jobs'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminReconcileRouteImport } from './routes/admin.reconcile'
 import { Route as AdminPlanLimitsRouteImport } from './routes/admin.plan-limits'
+import { Route as AdminPhase1MonitorRouteImport } from './routes/admin.phase1-monitor'
 import { Route as AdminEmailMonitorRouteImport } from './routes/admin.email-monitor'
 import { Route as AdminDomainScanRouteImport } from './routes/admin.domain-scan'
 import { Route as AdminDnsCheckRouteImport } from './routes/admin.dns-check'
@@ -83,6 +84,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as DashboardBillingConfirmRequestIdRouteImport } from './routes/dashboard.billing.confirm.$requestId'
+import { Route as ApiPublicHooksPhase1DailyReportRouteImport } from './routes/api.public.hooks.phase1-daily-report'
 import { Route as ApiPublicHooksOcrReceiptRouteImport } from './routes/api.public.hooks.ocr-receipt'
 import { Route as ApiPublicHooksCheckStaleSubscriptionsRouteImport } from './routes/api.public.hooks.check-stale-subscriptions'
 import { Route as ApiPublicHooksCheckEmailDlqRouteImport } from './routes/api.public.hooks.check-email-dlq'
@@ -350,6 +352,11 @@ const AdminPlanLimitsRoute = AdminPlanLimitsRouteImport.update({
   path: '/admin/plan-limits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPhase1MonitorRoute = AdminPhase1MonitorRouteImport.update({
+  id: '/admin/phase1-monitor',
+  path: '/admin/phase1-monitor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEmailMonitorRoute = AdminEmailMonitorRouteImport.update({
   id: '/admin/email-monitor',
   path: '/admin/email-monitor',
@@ -465,6 +472,12 @@ const DashboardBillingConfirmRequestIdRoute =
     path: '/billing/confirm/$requestId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const ApiPublicHooksPhase1DailyReportRoute =
+  ApiPublicHooksPhase1DailyReportRouteImport.update({
+    id: '/api/public/hooks/phase1-daily-report',
+    path: '/api/public/hooks/phase1-daily-report',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksOcrReceiptRoute =
   ApiPublicHooksOcrReceiptRouteImport.update({
     id: '/api/public/hooks/ocr-receipt',
@@ -518,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
+  '/admin/phase1-monitor': typeof AdminPhase1MonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -556,6 +570,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
+  '/api/public/hooks/phase1-daily-report': typeof ApiPublicHooksPhase1DailyReportRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -596,6 +611,7 @@ export interface FileRoutesByTo {
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
+  '/admin/phase1-monitor': typeof AdminPhase1MonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -634,6 +650,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
+  '/api/public/hooks/phase1-daily-report': typeof ApiPublicHooksPhase1DailyReportRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -676,6 +693,7 @@ export interface FileRoutesById {
   '/admin/dns-check': typeof AdminDnsCheckRoute
   '/admin/domain-scan': typeof AdminDomainScanRoute
   '/admin/email-monitor': typeof AdminEmailMonitorRoute
+  '/admin/phase1-monitor': typeof AdminPhase1MonitorRoute
   '/admin/plan-limits': typeof AdminPlanLimitsRoute
   '/admin/reconcile': typeof AdminReconcileRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -714,6 +732,7 @@ export interface FileRoutesById {
   '/api/public/hooks/check-email-dlq': typeof ApiPublicHooksCheckEmailDlqRoute
   '/api/public/hooks/check-stale-subscriptions': typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   '/api/public/hooks/ocr-receipt': typeof ApiPublicHooksOcrReceiptRoute
+  '/api/public/hooks/phase1-daily-report': typeof ApiPublicHooksPhase1DailyReportRoute
   '/dashboard/billing/confirm/$requestId': typeof DashboardBillingConfirmRequestIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -757,6 +776,7 @@ export interface FileRouteTypes {
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
+    | '/admin/phase1-monitor'
     | '/admin/plan-limits'
     | '/admin/reconcile'
     | '/admin/subscriptions'
@@ -795,6 +815,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
+    | '/api/public/hooks/phase1-daily-report'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -835,6 +856,7 @@ export interface FileRouteTypes {
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
+    | '/admin/phase1-monitor'
     | '/admin/plan-limits'
     | '/admin/reconcile'
     | '/admin/subscriptions'
@@ -873,6 +895,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
+    | '/api/public/hooks/phase1-daily-report'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -914,6 +937,7 @@ export interface FileRouteTypes {
     | '/admin/dns-check'
     | '/admin/domain-scan'
     | '/admin/email-monitor'
+    | '/admin/phase1-monitor'
     | '/admin/plan-limits'
     | '/admin/reconcile'
     | '/admin/subscriptions'
@@ -952,6 +976,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-email-dlq'
     | '/api/public/hooks/check-stale-subscriptions'
     | '/api/public/hooks/ocr-receipt'
+    | '/api/public/hooks/phase1-daily-report'
     | '/dashboard/billing/confirm/$requestId'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -994,6 +1019,7 @@ export interface RootRouteChildren {
   AdminDnsCheckRoute: typeof AdminDnsCheckRoute
   AdminDomainScanRoute: typeof AdminDomainScanRoute
   AdminEmailMonitorRoute: typeof AdminEmailMonitorRoute
+  AdminPhase1MonitorRoute: typeof AdminPhase1MonitorRoute
   AdminPlanLimitsRoute: typeof AdminPlanLimitsRoute
   AdminReconcileRoute: typeof AdminReconcileRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
@@ -1019,6 +1045,7 @@ export interface RootRouteChildren {
   ApiPublicHooksCheckEmailDlqRoute: typeof ApiPublicHooksCheckEmailDlqRoute
   ApiPublicHooksCheckStaleSubscriptionsRoute: typeof ApiPublicHooksCheckStaleSubscriptionsRoute
   ApiPublicHooksOcrReceiptRoute: typeof ApiPublicHooksOcrReceiptRoute
+  ApiPublicHooksPhase1DailyReportRoute: typeof ApiPublicHooksPhase1DailyReportRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -1392,6 +1419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlanLimitsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/phase1-monitor': {
+      id: '/admin/phase1-monitor'
+      path: '/admin/phase1-monitor'
+      fullPath: '/admin/phase1-monitor'
+      preLoaderRoute: typeof AdminPhase1MonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/email-monitor': {
       id: '/admin/email-monitor'
       path: '/admin/email-monitor'
@@ -1546,6 +1580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingConfirmRequestIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/api/public/hooks/phase1-daily-report': {
+      id: '/api/public/hooks/phase1-daily-report'
+      path: '/api/public/hooks/phase1-daily-report'
+      fullPath: '/api/public/hooks/phase1-daily-report'
+      preLoaderRoute: typeof ApiPublicHooksPhase1DailyReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/ocr-receipt': {
       id: '/api/public/hooks/ocr-receipt'
       path: '/api/public/hooks/ocr-receipt'
@@ -1642,6 +1683,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminDnsCheckRoute: AdminDnsCheckRoute,
   AdminDomainScanRoute: AdminDomainScanRoute,
   AdminEmailMonitorRoute: AdminEmailMonitorRoute,
+  AdminPhase1MonitorRoute: AdminPhase1MonitorRoute,
   AdminPlanLimitsRoute: AdminPlanLimitsRoute,
   AdminReconcileRoute: AdminReconcileRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
@@ -1668,6 +1710,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksCheckStaleSubscriptionsRoute:
     ApiPublicHooksCheckStaleSubscriptionsRoute,
   ApiPublicHooksOcrReceiptRoute: ApiPublicHooksOcrReceiptRoute,
+  ApiPublicHooksPhase1DailyReportRoute: ApiPublicHooksPhase1DailyReportRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
