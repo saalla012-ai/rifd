@@ -241,6 +241,26 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
 }
 
+/**
+ * يصنّف الأخطاء لتمييز أعطال المزوّد (يستحق تعويض) عن أخطاء المستخدم/المحتوى.
+ * - provider_error: عطل تقني من المزوّد (5xx، fetch failed، prediction error) → يستحق تعويض
+ * - timeout: تأخر تجاوز الحد الزمني → يستحق تعويض
+ * - content_error: المحتوى مرفوض من المزوّد (سياسة، nsfw) → لا تعويض
+ * - user_error: مدخلات خاطئة (صورة غير صالحة، quota) → لا تعويض
+ * - unknown: غير مصنّف افتراضياً
+ */
+export type VideoErrorCategory = "provider_error" | "user_error" | "content_error" | "timeout" | "unknown";
+
+export function categorizeVideoError(error: unknown): VideoErrorCategory {
+  const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  if (/timeout|timed.?out|تأخر/i.test(msg)) return "timeout";
+  if (/content.?policy|nsfw|safety|moderation|rejected.?content|سياسة المحتوى/i.test(msg)) return "content_error";
+  if (/provider_image_|invalid_video_tier|insufficient_credits|quota|not_allowed|too_many_processing|product_image_required|template_locked|sequence_violation|invalid_medium_test/i.test(msg)) return "user_error";
+  if (/provider|prediction|fetch failed|5\d\d|network|fal_|replicate|gateway|service unavailable/i.test(msg)) return "provider_error";
+  return "unknown";
+}
+
+
 function personaPrompt(personaId?: string) {
   return ({
     "male-young": "متحدث سعودي شاب بثوب أبيض وشماغ أبيض، أسلوب UGC طبيعي وموثوق.",
