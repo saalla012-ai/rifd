@@ -1,6 +1,6 @@
 # المرحلة 1 v5 — التنفيذ النهائي (نسخة المستشار المعتمدة)
 
-> **نسبة الإنجاز الكلية: 70%** — Wave 1A + 1B + 2A + 2B + 2C مكتملة. المتبقي: Wave 2D (إعادة تصميم لوحة الفوترة الداخلية)، Wave 3 (المراقبة)، و(اختياري) Replicate.
+> **نسبة الإنجاز الكلية: 85%** — Wave 1A + 1B + 2A + 2B + 2C + 2D مكتملة. المتبقي: Wave 3 (Admin monitor + daily report + bonus 50pt) و(اختياري) Replicate.
 
 ## شريط التقدّم
 
@@ -12,10 +12,30 @@
 | **Wave 2A** — DB: monthly_usage + free monthly RPCs | ✅ مكتملة | 100% |
 | **Wave 2B** — Pricing UI + Marketing copy + Trust | ✅ مكتملة | 100% |
 | **Wave 2C** — Free monthly video backend + Top-up modal | ✅ مكتملة | 100% |
-| **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | 🔲 لم تبدأ | 0% |
+| **Wave 2D** — إعادة هيكلة dashboard.billing.index (إزالة Founding seats) | ✅ مكتملة | 100% |
 | **Wave 3** — Admin monitor + daily report + bonus | 🔲 لم تبدأ | 0% |
 
-## مراجعة Wave 2C — تقرير الجودة (هذه الجولة)
+## مراجعة Wave 2D — تقرير الجودة (هذه الجولة)
+
+**فحص تقني:** ✅ TypeScript نظيف، لا استيرادات مكسورة، لا متغيرات غير مستخدمة.
+
+**التعديلات في `src/routes/dashboard.billing.index.tsx`:**
+1. **حذف بطاقة "الأعضاء المؤسسين"** كاملة (Crown + Users + Progress + شريط "X/1000 مقعد" + "بعد اكتمال المقاعد سترتفع الأسعار 30%") ⇒ استُبدلت ببطاقة "جرّب رِفد بثقة كاملة" بصياغة بيعية: سعر الإطلاق + ضمان 7 أيام استرداد كامل بدون أسئلة.
+2. **استبدال** "سيرتفع لـ X ر.س بعد برنامج المؤسسين" تحت السعر بشارة `LAUNCH_BADGE_LABEL` خضراء.
+3. **تنظيف رسالة واتساب**: "(سيرتفع لـ X ر.س...)" ⇒ "(سعر الإطلاق + ضمان 7 أيام استرداد كامل)".
+
+**كود قديم محذوف (تقرير الحذف):**
+- ثابت `FUTURE_INCREASE_PCT = 30` (سطر 55).
+- استيرادات `Crown`, `Users` من lucide + `Progress` من shadcn (لم تعد مستخدمة).
+- State: `seatsTaken` + `setSeatsTaken` + استعلام `subscription_requests count`.
+- Computed: `seatsTotal`, `seatsLeft`, `seatsPct`, `increasePct`, `futurePrice`.
+- حقول `Settings` type: `founding_total_seats`, `founding_program_active`, `founding_base_count`, `founding_discount_pct` ⇒ تبقى في `app_settings` بـ DB لكن الواجهة لا تقرؤها (آمن للـ rollback لاحقاً).
+
+**فحص التجاوب والوضعين:**
+- البطاقة الجديدة تستخدم `border-success/40` + `bg-gradient-to-br from-success/10` (semantic tokens) ⇒ Dark/Light يعملان.
+- البنية `rounded-2xl border-2` + `space-y-5` في sidebar `lg:grid-cols-3` تبقى دون كسر على Mobile/Tablet/Desktop.
+- استعلام DB أخف الآن (طلب واحد محذوف) ⇒ تحسين أداء طفيف.
+
 
 **فحص تقني:** ✅ TypeScript نظيف، لا استيرادات مكسورة، لا كود مكرر.
 

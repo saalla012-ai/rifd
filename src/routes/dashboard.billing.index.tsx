@@ -4,13 +4,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Crown,
   Film,
   Loader2,
   MessageCircle,
   ShieldCheck,
   Sparkles,
-  Users,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -32,11 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { PAID_PLANS, PLAN_BY_ID, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
+import { PAID_PLANS, PLAN_BY_ID, REFUND_GUARANTEE_LABEL, LAUNCH_BADGE_LABEL, VIDEO_QUALITY_LABELS, estimateVideoCount, formatPlanNumber, videoCreditCost, type PaidPlanId, type PlanId } from "@/lib/plan-catalog";
 import {
   formatSaudiPhoneDisplay,
   normalizeSaudiPhone,
@@ -52,7 +49,7 @@ export const Route = createFileRoute("/dashboard/billing/")({
 
 const PLAN_LABELS: Record<PlanId, string> = Object.fromEntries(Object.entries(PLAN_BY_ID).map(([key, value]) => [key, value.name])) as Record<PlanId, string>;
 
-const FUTURE_INCREASE_PCT = 30;
+
 
 const PLAN_PURCHASE_GUIDE: Record<PaidPlanId, { fit: string; capability: string; focus: string }> = {
   starter: {
@@ -90,10 +87,6 @@ const STATUS_META: Record<
 
 type Settings = {
   whatsapp_number: string;
-  founding_total_seats: number;
-  founding_program_active: boolean;
-  founding_base_count?: number;
-  founding_discount_pct?: number;
 };
 
 type RequestRow = {
@@ -113,7 +106,6 @@ function BillingPage() {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [seatsTaken, setSeatsTaken] = useState(0);
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -126,12 +118,8 @@ function BillingPage() {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [settingsRes, seatsRes, reqRes] = await Promise.all([
+    const [settingsRes, reqRes] = await Promise.all([
       supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
-      supabase
-        .from("subscription_requests")
-        .select("id", { count: "exact", head: true })
-        .in("status", ["activated", "contacted"]),
       supabase
         .from("subscription_requests")
         .select("id, plan, billing_cycle, store_name, whatsapp, email, payment_method, notes, status, created_at")
@@ -139,7 +127,6 @@ function BillingPage() {
         .limit(10),
     ]);
     setSettings((settingsRes.data as Settings | null) ?? null);
-    setSeatsTaken(seatsRes.count ?? 0);
     setRequests((reqRes.data as RequestRow[] | null) ?? []);
     setLoading(false);
   }, []);
@@ -154,15 +141,10 @@ function BillingPage() {
     if (profile?.whatsapp) setWhatsapp(formatSaudiPhoneDisplay(profile.whatsapp));
   }, [profile]);
 
-  const seatsTotal = settings?.founding_total_seats ?? 1000;
-  const seatsLeft = Math.max(0, seatsTotal - seatsTaken);
-  const seatsPct = seatsTotal > 0 ? (seatsTaken / seatsTotal) * 100 : 0;
   const whatsappNumber = settings?.whatsapp_number ?? "966582286215";
-  const increasePct = settings?.founding_discount_pct ?? FUTURE_INCREASE_PCT;
   const selected = PLAN_BY_ID[plan];
   const selectedGuide = PLAN_PURCHASE_GUIDE[plan];
   const price = billingCycle === "yearly" ? selected.yearlyPriceSar : selected.monthlyPriceSar;
-  const futurePrice = Math.round(price * (1 + increasePct / 100));
   const selectedFastVideos = estimateVideoCount(selected.monthlyCredits, "fast", 5);
   const selectedQualityVideos = selected.videoQualityAllowed ? estimateVideoCount(selected.monthlyCredits, "quality", 5) : 0;
   const pendingRequest = useMemo(
@@ -188,7 +170,7 @@ function BillingPage() {
       "",
       `📦 الباقة: ${selected.name} ${billingCycle === "yearly" ? "(سنوي)" : "(شهري)"}`,
       `🎬 نقاط الفيديو: ${formatPlanNumber(selected.monthlyCredits)} نقطة`,
-      `💰 السعر: ${price} ر.س (سيرتفع لـ ${futurePrice} ر.س بعد برنامج المؤسسين)`,
+      `💰 السعر: ${price} ر.س (سعر الإطلاق + ضمان 7 أيام استرداد كامل)`,
       storeName ? `🏪 المتجر: ${storeName}` : "",
       `📱 واتساب: ${whatsapp}`,
       `📧 البريد: ${user?.email ?? ""}`,
@@ -252,7 +234,7 @@ function BillingPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              {isPaidUser && <Crown className="h-5 w-5 text-gold" />}
+              {isPaidUser && <Sparkles className="h-5 w-5 text-gold" />}
               <h2 className="text-lg font-bold">باقتك الحالية: {PLAN_LABELS[(profile?.plan ?? "free") as PlanId] ?? profile?.plan}</h2>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -348,7 +330,9 @@ function BillingPage() {
                   <p className="mt-2 text-2xl font-extrabold">
                     {price} <span className="text-sm font-normal text-muted-foreground">ر.س / {billingCycle === "yearly" ? "سنوياً" : "شهرياً"}</span>
                   </p>
-                  <p className="mt-1 text-[11px] font-medium text-warning">سيرتفع لـ {futurePrice} ر.س بعد برنامج المؤسسين</p>
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">
+                    <Sparkles className="h-3 w-3" /> {LAUNCH_BADGE_LABEL}
+                  </span>
                 </div>
                 <Button type="submit" size="lg" disabled={submitting} className="gradient-primary text-primary-foreground shadow-elegant">
                   {submitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="ml-2 h-4 w-4" />}
@@ -365,19 +349,20 @@ function BillingPage() {
           <div className="space-y-5">
             <FounderCard whatsappNumber={whatsappNumber} />
             <ActivationSteps />
-            <aside className="rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent p-6 shadow-gold">
+            <aside className="rounded-2xl border-2 border-success/40 bg-gradient-to-br from-success/10 via-success/5 to-transparent p-6 shadow-soft">
               <div className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-gold" />
-                <span className="text-xs font-bold uppercase tracking-wide text-gold">الأعضاء المؤسسين</span>
+                <ShieldCheck className="h-5 w-5 text-success" />
+                <span className="text-xs font-bold uppercase tracking-wide text-success">{LAUNCH_BADGE_LABEL}</span>
               </div>
-              <h3 className="mt-3 text-xl font-extrabold">احجز سعرك قبل الزيادة</h3>
-              <div className="mt-5 rounded-xl bg-card/50 p-4 backdrop-blur">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 font-medium"><Users className="h-4 w-4 text-gold" /> المقاعد المتبقية</span>
-                  <span className="font-extrabold text-gold">{loading ? "..." : `${seatsLeft.toLocaleString("ar-SA")} / ${seatsTotal.toLocaleString("ar-SA")}`}</span>
+              <h3 className="mt-3 text-xl font-extrabold">جرّب رِفد بثقة كاملة</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                ادفع اليوم بسعر الإطلاق، وإن لم تكن التجربة مناسبة خلال أول 7 أيام نُعيد لك المبلغ كاملاً بدون أسئلة.
+              </p>
+              <div className="mt-4 rounded-xl border border-success/30 bg-card/50 p-4 backdrop-blur">
+                <div className="flex items-center gap-2 text-sm font-bold text-success">
+                  <ShieldCheck className="h-4 w-4" /> {REFUND_GUARANTEE_LABEL}
                 </div>
-                <Progress value={seatsPct} className="mt-2 h-2" />
-                <p className="mt-2 text-xs text-muted-foreground">بعد اكتمال المقاعد سترتفع الأسعار {increasePct}%</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">على أول اشتراك مدفوع — استرجاع كامل بدون أسئلة.</p>
               </div>
               <ul className="mt-5 space-y-2.5 text-sm">
                 {["نقاط فيديو واضحة دون رسوم مخفية", "النصوص والصور لا تخصم من نقاط الفيديو", "تأكيد فوري للطلب وتفعيل خلال 24 ساعة", "تفاصيل فوترة واضحة بعد كل دفعة"].map((item) => (
